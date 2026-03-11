@@ -3144,18 +3144,15 @@ async function joinPairByInviteCode(
     return null;
   }
 
-  const { error: updatePairError } = await supabase
-    .from("pairs")
-    .update({ partner_2_telegram_id: telegramId })
-    .eq("id", pair.id);
+ const { error: updatePairError } = await supabase
+  .from("pairs")
+  .update({ partner_2_telegram_id: telegramId })
+  .eq("id", pair.id);
 
-  if (updatePairError) {
-    console.error("joinPairByInviteCode update pair error:", updatePairError);
-    return null;
-  }
-
-  const { error: updateProfileError } = await supabase
-    .from("profiles")
+if (updatePairError) {
+  console.error("joinPairByInviteCode update pair error:", updatePairError);
+  return null;
+}
 
 const { data: joinedProfileBefore } = await supabase
   .from("profiles")
@@ -3165,13 +3162,15 @@ const { data: joinedProfileBefore } = await supabase
 
 console.log("JOINER PROFILE BEFORE UPDATE:", joinedProfileBefore);
 
-    .update({ pair_id: pair.id })
-    .eq("telegram_id", telegramId);
+const { error: updateProfileError } = await supabase
+  .from("profiles")
+  .update({ pair_id: pair.id })
+  .eq("telegram_id", telegramId);
 
-  if (updateProfileError) {
-    console.error("joinPairByInviteCode update profile error:", updateProfileError);
-    return null;
-  }
+if (updateProfileError) {
+  console.error("joinPairByInviteCode update profile error:", updateProfileError);
+  return null;
+}
 
   console.log("PAIR UPDATED");
 
