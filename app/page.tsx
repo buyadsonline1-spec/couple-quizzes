@@ -803,6 +803,14 @@ function PairScreen({
     ? `https://t.me/testcouple1_bot?startapp=invite_${pair.inviteCode}`
     : "";
 
+    function copyInvite() {
+  if (!inviteLink) return;
+
+  navigator.clipboard.writeText(inviteLink);
+
+  alert("Ссылка скопирована!");
+}
+
   return (
     <div style={{ padding: 16, display: "grid", gap: 14 }}>
       <div style={{ ...cardBaseStyle(), padding: 18 }}>
@@ -853,6 +861,33 @@ function PairScreen({
       }}
     >
       {inviteLink}
+      <button
+  onClick={copyInvite}
+  style={{
+    ...primaryButtonStyle,
+    width: "100%",
+    marginTop: 12,
+  }}
+>
+  Скопировать ссылку
+</button>
+<a
+  href={`https://t.me/share/url?url=${encodeURIComponent(inviteLink)}`}
+  target="_blank"
+  style={{
+    ...secondaryButtonStyle,
+    display: "block",
+    textAlign: "center",
+    marginTop: 10,
+  }}
+>
+  Отправить приглашение
+</a>
+{pair.inviteCode && !pair.partner && (
+  <div style={{ marginTop: 8, color: "#4b446a", fontSize: 14 }}>
+    Ожидаем подключения партнёра…
+  </div>
+)}
     </div>
   </div>
 )}
