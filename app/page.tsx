@@ -3104,7 +3104,7 @@ console.log("PARTNER PROFILE:", partnerProfile);
   };
 }
 
-console.log("TRY JOIN WITH CODE:", inviteCode);
+
 
 async function joinPairByInviteCode(
   telegramId: number,
@@ -3194,7 +3194,7 @@ export default function Page() {
   }));
 };
 
-console.log("PAIR STATE AFTER BOOTSTRAP:", pairState);
+
 
   const [mounted, setMounted] = useState(false);
   const [screen, setScreen] = useState<Screen>("welcome");
@@ -3216,7 +3216,7 @@ console.log("PAIR STATE AFTER BOOTSTRAP:", pairState);
   test();
 }, []);
 
-  useEffect(() => {
+ useEffect(() => {
   async function bootstrap() {
     setMounted(true);
 
@@ -3226,9 +3226,8 @@ console.log("PAIR STATE AFTER BOOTSTRAP:", pairState);
 
     const telegramUser = tg?.initDataUnsafe?.user;
     const startParam = tg?.initDataUnsafe?.start_param;
+    
 
-    console.log("TG USER:", telegramUser);
-console.log("START PARAM:", startParam);
 
     const saved = loadState();
     setAppState(saved);
@@ -3263,74 +3262,30 @@ console.log("START PARAM:", startParam);
 
     await upsertTelegramProfile(currentUser);
 
-   let pairState = await loadPairStateForUser(currentUser.id!);
+    let nextPairState = await loadPairStateForUser(currentUser.id!);
 
-   // если пользователь пришёл по invite ссылке
-if (!pairState.pairId && startParam?.startsWith("invite_")) {
-  const inviteCode = startParam.replace("invite_", "");
-
-  const joinedPair = await joinPairByInviteCode(
-    currentUser.id!,
-    inviteCode
-  );
-
-  if (joinedPair) {
-    pairState = joinedPair;
-  }
-}
-
-    if (!pairState.pairId && startParam?.startsWith("invite_")) {
+    if (!nextPairState.pairId && startParam?.startsWith("invite_")) {
       const inviteCode = startParam.replace("invite_", "");
-const joinedPair = await joinPairByInviteCode(currentUser.id!, inviteCode);
+
+      console.log("TRY JOIN WITH CODE:", inviteCode);
+
+      const joinedPair = await joinPairByInviteCode(
+        currentUser.id!,
+        inviteCode
+      );
+
       if (joinedPair) {
-        pairState = joinedPair;
+        nextPairState = joinedPair;
       }
     }
 
-    useEffect(() => {
-  if (!user?.id || !appState.pair.pairId) return;
-
-  const refreshPair = async () => {
-    const nextPairState = await loadPairStateForUser(user.id!);
+    console.log("PAIR STATE AFTER BOOTSTRAP:", nextPairState);
 
     setAppState((prev) => ({
       ...prev,
       pair: nextPairState,
     }));
-  };
 
-  const channel = supabase
-    .channel(`pair-live-${appState.pair.pairId}`)
-    .on(
-      "postgres_changes",
-      {
-        event: "*",
-        schema: "public",
-        table: "pairs",
-        filter: `id=eq.${appState.pair.pairId}`,
-      },
-      refreshPair
-    )
-    .on(
-      "postgres_changes",
-      {
-        event: "*",
-        schema: "public",
-        table: "profiles",
-      },
-      refreshPair
-    )
-    .subscribe();
-
-  return () => {
-    supabase.removeChannel(channel);
-  };
-}, [user?.id, appState.pair.pairId]);
-
-    setAppState((prev) => ({
-      ...prev,
-      pair: pairState,
-    }));
   }
 
   bootstrap();
