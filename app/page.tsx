@@ -3235,6 +3235,20 @@ export default function Page() {
 
    let pairState = await loadPairStateForUser(currentUser.id!);
 
+   // если пользователь пришёл по invite ссылке
+if (!pairState.pairId && startParam?.startsWith("invite_")) {
+  const inviteCode = startParam.replace("invite_", "");
+
+  const joinedPair = await joinPairByInviteCode(
+    currentUser.id!,
+    inviteCode
+  );
+
+  if (joinedPair) {
+    pairState = joinedPair;
+  }
+}
+
     if (!pairState.pairId && startParam?.startsWith("invite_")) {
       const inviteCode = startParam.replace("invite_", "");
 const joinedPair = await joinPairByInviteCode(currentUser.id!, inviteCode);
