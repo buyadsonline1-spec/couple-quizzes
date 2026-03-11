@@ -797,19 +797,25 @@ function PairScreen({
   onBack: () => void;
   onCreateInvite: () => void;
 }) {
- const hasPair = !!pair.pairId;
-  const inviteLink =
+
+  const hasPair = !!pair.pairId;
+
+const inviteLink =
   pair.inviteCode
     ? `https://t.me/testcouple1_bot?startapp=invite_${pair.inviteCode}`
     : "";
 
-    function copyInvite() {
+  async function copyInvite() {
   if (!inviteLink) return;
 
-  navigator.clipboard.writeText(inviteLink);
-
-  alert("Ссылка скопирована!");
+  try {
+    await navigator.clipboard.writeText(inviteLink);
+    alert("Ссылка скопирована");
+  } catch {
+    alert("Не удалось скопировать ссылку");
+  }
 }
+
 
   return (
     <div style={{ padding: 16, display: "grid", gap: 14 }}>
@@ -861,7 +867,7 @@ function PairScreen({
       }}
     >
       {inviteLink}
-      <button
+     <button
   onClick={copyInvite}
   style={{
     ...primaryButtonStyle,
@@ -871,13 +877,16 @@ function PairScreen({
 >
   Скопировать ссылку
 </button>
+
 <a
   href={`https://t.me/share/url?url=${encodeURIComponent(inviteLink)}`}
   target="_blank"
+  rel="noreferrer"
   style={{
     ...secondaryButtonStyle,
     display: "block",
     textAlign: "center",
+    textDecoration: "none",
     marginTop: 10,
   }}
 >
@@ -888,6 +897,7 @@ function PairScreen({
     Ожидаем подключения партнёра…
   </div>
 )}
+
     </div>
   </div>
 )}
@@ -930,6 +940,7 @@ function PairScreen({
     </div>
   );
 }
+
 
 function getPersonalityResult(answerIndexes: number[]): TestResult {
   const labels = [
@@ -3231,7 +3242,46 @@ const joinedPair = await joinPairByInviteCode(currentUser.id!, inviteCode);
         pairState = joinedPair;
       }
     }
-    
+
+    useEffect(() => {
+  if (!user?.id || !appState.pair.pairId) return;
+
+  const refreshPair = async () => {
+    const nextPairState = await loadPairStateForUser(user.id!);
+
+    setAppState((prev) => ({
+      ...prev,
+      pair: nextPairState,
+    }));
+  };
+
+  const channel = supabase
+    .channel(`pair-live-${appState.pair.pairId}`)
+    .on(
+      "postgres_changes",
+      {
+        event: "*",
+        schema: "public",
+        table: "pairs",
+        filter: `id=eq.${appState.pair.pairId}`,
+      },
+      refreshPair
+    )
+    .on(
+      "postgres_changes",
+      {
+        event: "*",
+        schema: "public",
+        table: "profiles",
+      },
+      refreshPair
+    )
+    .subscribe();
+
+  return () => {
+    supabase.removeChannel(channel);
+  };
+}, [user?.id, appState.pair.pairId]);
 
     setAppState((prev) => ({
       ...prev,
