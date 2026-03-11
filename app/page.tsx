@@ -1470,7 +1470,7 @@ function MainMenu({
         <MenuButton label="Игры" emoji="🎮" onClick={() => onNavigate("games")} />
         <MenuButton label="Тесты" emoji="🧠" onClick={() => onNavigate("tests")} />
         <MenuButton label="Очки и призы" emoji="🎡" onClick={() => onNavigate("rewards")} />
-          <MenuButton label="Пара]]" emoji="💕" onClick={() => onNavigate("pair")} />
+          <MenuButton label="Пара" emoji="💕" onClick={() => onNavigate("pair")} />
         <div style={{ gridColumn: "1 / -1" }}>
           <MenuButton
             label="Профиль и статистика"
