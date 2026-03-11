@@ -3068,6 +3068,9 @@ async function loadPairStateForUser(telegramId: number): Promise<PairState> {
       ? pair.partner_2_telegram_id
       : pair.partner_1_telegram_id;
 
+      console.log("LOAD PAIR:", pair);
+console.log("PARTNER TELEGRAM ID:", partnerTelegramId);
+
   let partner: PairMember | null = null;
 
   if (partnerTelegramId) {
@@ -3088,6 +3091,8 @@ async function loadPairStateForUser(telegramId: number): Promise<PairState> {
     }
   }
 
+  console.log("PARTNER PROFILE:", partnerProfile);
+
   return {
     pairId: pair.id,
     inviteCode: pair.invite_code,
@@ -3095,6 +3100,8 @@ async function loadPairStateForUser(telegramId: number): Promise<PairState> {
     createdByTelegramId: pair.created_by_telegram_id,
   };
 }
+
+console.log("TRY JOIN WITH CODE:", inviteCode);
 
 async function joinPairByInviteCode(
   telegramId: number,
@@ -3105,6 +3112,8 @@ async function joinPairByInviteCode(
     .select("pair_id")
     .eq("telegram_id", telegramId)
     .maybeSingle();
+
+    console.log("joinPairByInviteCode called", { telegramId, inviteCode });
 
   if (profile?.pair_id) {
     return loadPairStateForUser(telegramId);
@@ -3128,6 +3137,8 @@ async function joinPairByInviteCode(
     return loadPairStateForUser(telegramId);
   }
 
+  console.log("PAIR FOUND:", pair);
+
   if (pair.partner_2_telegram_id) {
     console.error("joinPairByInviteCode: pair already full");
     return null;
@@ -3145,6 +3156,15 @@ async function joinPairByInviteCode(
 
   const { error: updateProfileError } = await supabase
     .from("profiles")
+
+const { data: joinedProfileBefore } = await supabase
+  .from("profiles")
+  .select("*")
+  .eq("telegram_id", telegramId)
+  .maybeSingle();
+
+console.log("JOINER PROFILE BEFORE UPDATE:", joinedProfileBefore);
+
     .update({ pair_id: pair.id })
     .eq("telegram_id", telegramId);
 
@@ -3152,6 +3172,8 @@ async function joinPairByInviteCode(
     console.error("joinPairByInviteCode update profile error:", updateProfileError);
     return null;
   }
+
+  console.log("PAIR UPDATED");
 
   return loadPairStateForUser(telegramId);
 }
@@ -3169,6 +3191,9 @@ export default function Page() {
     },
   }));
 };
+
+console.log("PAIR STATE AFTER BOOTSTRAP:", pairState);
+
   const [mounted, setMounted] = useState(false);
   const [screen, setScreen] = useState<Screen>("welcome");
   const [appState, setAppState] = useState<AppState>(DEFAULT_STATE);
@@ -3199,6 +3224,9 @@ export default function Page() {
 
     const telegramUser = tg?.initDataUnsafe?.user;
     const startParam = tg?.initDataUnsafe?.start_param;
+
+    console.log("TG USER:", telegramUser);
+console.log("START PARAM:", startParam);
 
     const saved = loadState();
     setAppState(saved);
