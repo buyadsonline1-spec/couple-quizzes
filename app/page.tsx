@@ -76,6 +76,10 @@ type AppState = {
   completedTestIds: string[];
   pollAnswers: Record<string, number[]>;
   pair: PairState;
+  profile: {
+  displayName: string;
+  avatar: string | null;
+};
 };
 
  type Poll = {
@@ -714,6 +718,10 @@ const DEFAULT_STATE: AppState = {
     partner: null,
     createdByTelegramId: null,
   },
+    profile: {
+  displayName: "",
+  avatar: null,
+},
 };
 
 function getScaleResult(totalScore: number, maxScore: number): TestResult {
@@ -1151,7 +1159,22 @@ function loadState(): AppState {
   partner: parsed.pair?.partner ?? DEFAULT_STATE.pair.partner,
   createdByTelegramId:
     parsed.pair?.createdByTelegramId ?? DEFAULT_STATE.pair.createdByTelegramId,
+pollAnswers: parsed.pollAnswers ?? DEFAULT_STATE.pollAnswers,
+
+pair: {
+  pairId: parsed.pair?.pairId ?? DEFAULT_STATE.pair.pairId,
+  inviteCode: parsed.pair?.inviteCode ?? DEFAULT_STATE.pair.inviteCode,
+  partner: parsed.pair?.partner ?? DEFAULT_STATE.pair.partner,
+  createdByTelegramId:
+    parsed.pair?.createdByTelegramId ?? DEFAULT_STATE.pair.createdByTelegramId,
 },
+
+profile: {
+  displayName:
+    parsed.profile?.displayName ?? DEFAULT_STATE.profile.displayName,
+  avatar:
+    parsed.profile?.avatar ?? DEFAULT_STATE.profile.avatar,
+        }},
     };
   } catch {
     return DEFAULT_STATE;
