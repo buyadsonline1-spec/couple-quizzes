@@ -25,17 +25,16 @@ declare global {
 }
 
 type Screen =
-  | "welcome"
+
   | "menu"
   | "polls"
-  | "polls-boy"
-  | "polls-girl"
+
   | "games"
   | "tests"
-  | "rewards"
-  | "leaderboard"
+
   | "pair"
-  | "profile";
+  | "profile"
+  | "top";
 
 type TgUser = {
   id?: number;
@@ -1521,26 +1520,28 @@ function MainMenu({
         </div>
       </div>
 
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
-          gap: 14,
-        }}
-      >
-        <MenuButton label="Опросы" emoji="🗳️" onClick={() => onNavigate("polls")} />
-        <MenuButton label="Игры" emoji="🎮" onClick={() => onNavigate("games")} />
-        <MenuButton label="Тесты" emoji="🧠" onClick={() => onNavigate("tests")} />
-        <MenuButton label="Очки и призы" emoji="🎡" onClick={() => onNavigate("rewards")} />
-          <MenuButton label="Пара" emoji="💕" onClick={() => onNavigate("pair")} />
-        <div style={{ gridColumn: "1 / -1" }}>
-          <MenuButton
-            label="Профиль и статистика"
-            emoji="👤"
-            onClick={() => onNavigate("profile")}
-          />
-        </div>
-      </div>
+     <div
+  style={{
+    display: "grid",
+    gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
+    gap: 14,
+  }}
+>
+  <MenuButton label="Опросы" emoji="🗳️" onClick={() => onNavigate("polls")} />
+  <MenuButton label="Игры" emoji="🎮" onClick={() => onNavigate("games")} />
+  <MenuButton label="Тесты" emoji="🧠" onClick={() => onNavigate("tests")} />
+  <MenuButton label="Очки и призы" emoji="🎡" onClick={() => onNavigate("rewards")} />
+  <MenuButton label="Пара" emoji="💕" onClick={() => onNavigate("pair")} />
+  <MenuButton label="Топ игроков" emoji="🏆" onClick={() => onNavigate("top")} />
+
+  <div style={{ gridColumn: "1 / -1" }}>
+    <MenuButton
+      label="Профиль и статистика"
+      emoji="👤"
+      onClick={() => onNavigate("profile")}
+    />
+  </div>
+</div>
     </div>
   );
 }
@@ -3543,6 +3544,7 @@ export default function Page() {
     onCreateInvite={handleCreateInvite}
   />
 )}
+
 
         {!showDailyBonus && screen === "welcome" && totalActivities > 999999 && <div />}
       </div>
