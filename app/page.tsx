@@ -3187,16 +3187,16 @@ export default function Page() {
 
     await upsertTelegramProfile(currentUser);
 
-    let pairState = await loadPairStateForUser(currentUser.id);
+   let pairState = await loadPairStateForUser(currentUser.id!);
 
     if (!pairState.pairId && startParam?.startsWith("invite_")) {
       const inviteCode = startParam.replace("invite_", "");
-      const joinedPair = await joinPairByInviteCode(currentUser.id, inviteCode);
-
+const joinedPair = await joinPairByInviteCode(currentUser.id!, inviteCode);
       if (joinedPair) {
         pairState = joinedPair;
       }
     }
+    
 
     setAppState((prev) => ({
       ...prev,
