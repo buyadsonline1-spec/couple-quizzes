@@ -3071,27 +3071,30 @@ async function loadPairStateForUser(telegramId: number): Promise<PairState> {
       console.log("LOAD PAIR:", pair);
 console.log("PARTNER TELEGRAM ID:", partnerTelegramId);
 
-  let partner: PairMember | null = null;
+ let partner: PairMember | null = null;
+let partnerProfile: any = null;
 
-  if (partnerTelegramId) {
-    const { data: partnerProfile } = await supabase
-      .from("profiles")
-      .select("*")
-      .eq("telegram_id", partnerTelegramId)
-      .maybeSingle();
+if (partnerTelegramId) {
+  const { data } = await supabase
+    .from("profiles")
+    .select("*")
+    .eq("telegram_id", partnerTelegramId)
+    .maybeSingle();
 
-    if (partnerProfile) {
-      partner = {
-        telegramId: partnerProfile.telegram_id,
-        firstName: partnerProfile.first_name ?? undefined,
-        lastName: partnerProfile.last_name ?? undefined,
-        username: partnerProfile.username ?? undefined,
-        photoUrl: partnerProfile.photo_url ?? undefined,
-      };
-    }
+  partnerProfile = data;
+
+  if (partnerProfile) {
+    partner = {
+      telegramId: partnerProfile.telegram_id,
+      firstName: partnerProfile.first_name ?? undefined,
+      lastName: partnerProfile.last_name ?? undefined,
+      username: partnerProfile.username ?? undefined,
+      photoUrl: partnerProfile.photo_url ?? undefined,
+    };
   }
+}
 
-  console.log("PARTNER PROFILE:", partnerProfile);
+console.log("PARTNER PROFILE:", partnerProfile);
 
   return {
     pairId: pair.id,
