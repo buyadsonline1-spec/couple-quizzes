@@ -1124,58 +1124,50 @@ function loadState(): AppState {
 
     const parsed = JSON.parse(raw) as Partial<AppState>;
     return {
-      points: parsed.points ?? DEFAULT_STATE.points,
-      dailyBonus: {
-        streakDay:
-          parsed.dailyBonus?.streakDay ?? DEFAULT_STATE.dailyBonus.streakDay,
-        lastClaimDate:
-          parsed.dailyBonus?.lastClaimDate ??
-          DEFAULT_STATE.dailyBonus.lastClaimDate,
-        totalPointsEarnedFromBonus:
-          parsed.dailyBonus?.totalPointsEarnedFromBonus ??
-          DEFAULT_STATE.dailyBonus.totalPointsEarnedFromBonus,
-      },
-      stats: {
-        pollsCompleted:
-          parsed.stats?.pollsCompleted ?? DEFAULT_STATE.stats.pollsCompleted,
-        gamesPlayed:
-          parsed.stats?.gamesPlayed ?? DEFAULT_STATE.stats.gamesPlayed,
-        testsCompleted:
-          parsed.stats?.testsCompleted ?? DEFAULT_STATE.stats.testsCompleted,
-        rewardsRedeemed:
-          parsed.stats?.rewardsRedeemed ?? DEFAULT_STATE.stats.rewardsRedeemed,
-      },
-      completedPollIds:
-        parsed.completedPollIds ?? DEFAULT_STATE.completedPollIds,
-      wonRewards: parsed.wonRewards ?? DEFAULT_STATE.wonRewards,
-      completedTestIds:
-  parsed.completedTestIds ?? DEFAULT_STATE.completedTestIds,
-      completedGameIds:
-        parsed.completedGameIds ?? DEFAULT_STATE.completedGameIds,
-        pollAnswers: parsed.pollAnswers ?? DEFAULT_STATE.pollAnswers,
-        pair: {
-  pairId: parsed.pair?.pairId ?? DEFAULT_STATE.pair.pairId,
-  inviteCode: parsed.pair?.inviteCode ?? DEFAULT_STATE.pair.inviteCode,
-  partner: parsed.pair?.partner ?? DEFAULT_STATE.pair.partner,
-  createdByTelegramId:
-    parsed.pair?.createdByTelegramId ?? DEFAULT_STATE.pair.createdByTelegramId,
-pollAnswers: parsed.pollAnswers ?? DEFAULT_STATE.pollAnswers,
+  points: parsed.points ?? DEFAULT_STATE.points,
+  dailyBonus: {
+    streakDay:
+      parsed.dailyBonus?.streakDay ?? DEFAULT_STATE.dailyBonus.streakDay,
+    lastClaimDate:
+      parsed.dailyBonus?.lastClaimDate ??
+      DEFAULT_STATE.dailyBonus.lastClaimDate,
+    totalPointsEarnedFromBonus:
+      parsed.dailyBonus?.totalPointsEarnedFromBonus ??
+      DEFAULT_STATE.dailyBonus.totalPointsEarnedFromBonus,
+  },
+  stats: {
+    pollsCompleted:
+      parsed.stats?.pollsCompleted ?? DEFAULT_STATE.stats.pollsCompleted,
+    gamesPlayed:
+      parsed.stats?.gamesPlayed ?? DEFAULT_STATE.stats.gamesPlayed,
+    testsCompleted:
+      parsed.stats?.testsCompleted ?? DEFAULT_STATE.stats.testsCompleted,
+    rewardsRedeemed:
+      parsed.stats?.rewardsRedeemed ?? DEFAULT_STATE.stats.rewardsRedeemed,
+  },
+  completedPollIds:
+    parsed.completedPollIds ?? DEFAULT_STATE.completedPollIds,
+  wonRewards: parsed.wonRewards ?? DEFAULT_STATE.wonRewards,
+  completedTestIds:
+    parsed.completedTestIds ?? DEFAULT_STATE.completedTestIds,
+  completedGameIds:
+    parsed.completedGameIds ?? DEFAULT_STATE.completedGameIds,
+  pollAnswers: parsed.pollAnswers ?? DEFAULT_STATE.pollAnswers,
+  pair: {
+    pairId: parsed.pair?.pairId ?? DEFAULT_STATE.pair.pairId,
+    inviteCode: parsed.pair?.inviteCode ?? DEFAULT_STATE.pair.inviteCode,
+    partner: parsed.pair?.partner ?? DEFAULT_STATE.pair.partner,
+    createdByTelegramId:
+      parsed.pair?.createdByTelegramId ??
+      DEFAULT_STATE.pair.createdByTelegramId,
+  },
+  profile: {
+    displayName:
+      parsed.profile?.displayName ?? DEFAULT_STATE.profile.displayName,
+    avatar: parsed.profile?.avatar ?? DEFAULT_STATE.profile.avatar,
+  },
+};
 
-pair: {
-  pairId: parsed.pair?.pairId ?? DEFAULT_STATE.pair.pairId,
-  inviteCode: parsed.pair?.inviteCode ?? DEFAULT_STATE.pair.inviteCode,
-  partner: parsed.pair?.partner ?? DEFAULT_STATE.pair.partner,
-  createdByTelegramId:
-    parsed.pair?.createdByTelegramId ?? DEFAULT_STATE.pair.createdByTelegramId,
-},
-
-profile: {
-  displayName:
-    parsed.profile?.displayName ?? DEFAULT_STATE.profile.displayName,
-  avatar:
-    parsed.profile?.avatar ?? DEFAULT_STATE.profile.avatar,
-        }},
-    };
   } catch {
     return DEFAULT_STATE;
   }
