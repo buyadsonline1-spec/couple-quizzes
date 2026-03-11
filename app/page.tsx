@@ -25,13 +25,14 @@ declare global {
 }
 
 type Screen =
-
+  | "welcome"
   | "menu"
   | "polls"
-
+  | "polls-boy"
+  | "polls-girl"
   | "games"
   | "tests"
-
+  | "rewards"
   | "pair"
   | "profile"
   | "top";
