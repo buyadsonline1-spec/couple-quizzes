@@ -1123,6 +1123,7 @@ function loadState(): AppState {
     if (!raw) return DEFAULT_STATE;
 
     const parsed = JSON.parse(raw) as Partial<AppState>;
+  
     return {
   points: parsed.points ?? DEFAULT_STATE.points,
   dailyBonus: {
