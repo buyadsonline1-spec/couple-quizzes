@@ -10,15 +10,15 @@ declare global {
         ready?: () => void;
         expand?: () => void;
         initDataUnsafe?: {
-          user?: {
-            id?: number;
-            first_name?: string;
-            last_name?: string;
-            username?: string;
-            photo_url?: string;
-            start_param?: string;
-          };
-        };
+  user?: {
+    id?: number;
+    first_name?: string;
+    last_name?: string;
+    username?: string;
+    photo_url?: string;
+  };
+  start_param?: string;
+};
       };
     };
   }
@@ -1470,7 +1470,7 @@ function MainMenu({
         <MenuButton label="Игры" emoji="🎮" onClick={() => onNavigate("games")} />
         <MenuButton label="Тесты" emoji="🧠" onClick={() => onNavigate("tests")} />
         <MenuButton label="Очки и призы" emoji="🎡" onClick={() => onNavigate("rewards")} />
-          <MenuButton label="Паро" emoji="💕" onClick={() => onNavigate("pair")} />
+          <MenuButton label="Пара]]" emoji="💕" onClick={() => onNavigate("pair")} />
         <div style={{ gridColumn: "1 / -1" }}>
           <MenuButton
             label="Профиль и статистика"
