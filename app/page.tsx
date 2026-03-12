@@ -4229,15 +4229,39 @@ if (updateProfileError) {
 }
 
 export default function Page() {
+
+  function getLiveTelegramUser(): TgUser | null {
+  const tgUser = window.Telegram?.WebApp?.initDataUnsafe?.user;
+  if (!tgUser?.id) return null;
+
+  return {
+    id: tgUser.id,
+    first_name: tgUser.first_name,
+    last_name: tgUser.last_name,
+    username: tgUser.username,
+    photo_url: tgUser.photo_url,
+  };
+}
   
 
- const handleJoinByCode = async (inviteCode: string) => {
-  if (!user?.id) {
-    alert("Подключение по коду доступно только внутри Telegram.");
+const handleJoinByCode = async (inviteCode: string) => {
+  const liveUser = getLiveTelegramUser();
+  const telegramId = liveUser?.id ?? user?.id ?? null;
+
+  console.log("JOIN liveUser:", liveUser);
+  console.log("JOIN state user:", user);
+
+  if (!telegramId) {
+    alert("Telegram не передал ID пользователя. Открой mini app через кнопку бота или startapp-ссылку.");
     return;
   }
 
-  const joinedPair = await joinPairByInviteCode(user.id, inviteCode);
+  if (liveUser) {
+    setUser(liveUser);
+    await upsertTelegramProfile(liveUser);
+  }
+
+  const joinedPair = await joinPairByInviteCode(telegramId, inviteCode);
 
   if (!joinedPair) {
     alert("Не удалось подключиться. Проверь код приглашения.");
@@ -4253,15 +4277,21 @@ export default function Page() {
 };
 
 const handleCreateInvite = async () => {
-  if (!user?.id) {
-    alert("Не удалось определить пользователя");
+  const liveUser = getLiveTelegramUser();
+  const actualUser = liveUser ?? user;
+
+  if (!actualUser?.id) {
+    alert("Telegram не передал пользователя. Открой mini app через бота.");
     return;
   }
 
-
+  if (liveUser) {
+    setUser(liveUser);
+    await upsertTelegramProfile(liveUser);
+  }
 
   if (appState.pair?.pairId) {
-    alert("Пара уже создана");
+    
     return;
   }
 
@@ -4271,8 +4301,8 @@ const handleCreateInvite = async () => {
     .from("pairs")
     .insert({
       invite_code: inviteCode,
-      created_by_telegram_id: user.id,
-      partner_1_telegram_id: user.id,
+      created_by_telegram_id: actualUser.id,
+      partner_1_telegram_id: actualUser.id,
       partner_2_telegram_id: null,
     })
     .select()
@@ -4287,7 +4317,7 @@ const handleCreateInvite = async () => {
   const { error: updateProfileError } = await supabase
     .from("profiles")
     .update({ pair_id: createdPair.id })
-    .eq("telegram_id", user.id);
+    .eq("telegram_id", actualUser.id);
 
   if (updateProfileError) {
     console.error("update profile with pair_id error:", updateProfileError);
@@ -4295,7 +4325,7 @@ const handleCreateInvite = async () => {
     return;
   }
 
-  const nextPairState = await loadPairStateForUser(user.id);
+  const nextPairState = await loadPairStateForUser(actualUser.id);
 
   setAppState((prev) => ({
     ...prev,
