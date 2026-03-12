@@ -694,6 +694,19 @@ const WHEEL_COLORS = [
   "#a8e6a1",
 ];
 
+const TOP_PLAYERS = [
+  { id: "1", name: "Аня и Макс", points: 1240 },
+  { id: "2", name: "Лера и Дима", points: 1180 },
+  { id: "3", name: "Соня и Илья", points: 1090 },
+  { id: "4", name: "Катя и Артём", points: 980 },
+  { id: "5", name: "Мила и Егор", points: 910 },
+  { id: "6", name: "Ника и Рома", points: 860 },
+  { id: "7", name: "Юля и Денис", points: 790 },
+  { id: "8", name: "Алина и Тимур", points: 730 },
+  { id: "9", name: "Вика и Саша", points: 690 },
+  { id: "10", name: "Полина и Кирилл", points: 640 },
+];
+
 const DEFAULT_STATE: AppState = {
   points: 0,
   dailyBonus: {
@@ -1762,13 +1775,13 @@ function PollsScreen({
 
         <button
           onClick={handleNext}
-          disabled={!selected}
+          disabled={selected === undefined}
           style={{
             ...primaryButtonStyle,
             width: "100%",
             marginTop: 16,
-            opacity: selected ? 1 : 0.55,
-            cursor: selected ? "pointer" : "not-allowed",
+            opacity: selected !== undefined ? 1 : 0.55,
+cursor: selected !== undefined ? "pointer" : "not-allowed",
           }}
         >
           {currentQuestionIndex === activePoll.questions.length - 1
@@ -2825,6 +2838,141 @@ function RewardsScreen({
   );
 }
 
+function TopPlayersScreen({
+  user,
+  points,
+  onBack,
+}: {
+  user: TgUser | null;
+  points: number;
+  onBack: () => void;
+}) {
+  const currentPairName =
+    user?.first_name
+      ? `${user.first_name}${user?.last_name ? ` ${user.last_name}` : ""}`
+      : "Вы";
+
+  const currentPlayer = {
+    id: "me",
+    name: currentPairName,
+    points,
+  };
+
+  const allPlayers = [...TOP_PLAYERS, currentPlayer]
+    .sort((a, b) => b.points - a.points)
+    .map((player, index) => ({
+      ...player,
+      place: index + 1,
+      isCurrentUser: player.id === "me",
+    }));
+
+  return (
+    <div style={{ padding: 16, display: "grid", gap: 14 }}>
+      <div style={{ ...cardBaseStyle(), padding: 18 }}>
+        <div style={{ fontSize: 28, fontWeight: 900, color: "#1f1d3a" }}>
+          🏆 Топ игроков
+        </div>
+        <div style={{ marginTop: 8, color: "#3a345c", fontSize: 15, lineHeight: 1.45 }}>
+          Лучшие игроки и пары по количеству набранных очков.
+        </div>
+      </div>
+
+      <div style={{ ...cardBaseStyle(), padding: 18 }}>
+        <div style={{ fontSize: 22, fontWeight: 900, color: "#1f1d3a" }}>
+          Рейтинг
+        </div>
+
+        <div style={{ display: "grid", gap: 10, marginTop: 14 }}>
+          {allPlayers.map((player) => {
+            const isTop1 = player.place === 1;
+            const isTop2 = player.place === 2;
+            const isTop3 = player.place === 3;
+
+            return (
+              <div
+                key={player.id}
+                style={{
+                  padding: "12px 14px",
+                  borderRadius: 18,
+                  background: player.isCurrentUser
+                    ? "rgba(255,255,255,0.34)"
+                    : "rgba(255,255,255,0.24)",
+                  border: player.isCurrentUser
+                    ? "2px solid rgba(108,58,255,0.42)"
+                    : "1px solid transparent",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  gap: 12,
+                }}
+              >
+                <div style={{ display: "flex", alignItems: "center", gap: 12, minWidth: 0 }}>
+                  <div
+                    style={{
+                      width: 40,
+                      height: 40,
+                      borderRadius: 999,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      fontWeight: 900,
+                      fontSize: 16,
+                      color: "#1f1d3a",
+                      background: isTop1
+                        ? "linear-gradient(135deg, #ffd54f, #ffb300)"
+                        : isTop2
+                        ? "linear-gradient(135deg, #f1f1f1, #cfcfcf)"
+                        : isTop3
+                        ? "linear-gradient(135deg, #ffcc80, #ff9e80)"
+                        : "rgba(255,255,255,0.45)",
+                    }}
+                  >
+                    {player.place}
+                  </div>
+
+                  <div style={{ minWidth: 0 }}>
+                    <div
+                      style={{
+                        fontSize: 16,
+                        fontWeight: 900,
+                        color: "#1f1d3a",
+                        whiteSpace: "nowrap",
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                      }}
+                    >
+                      {player.name}
+                      {player.isCurrentUser ? " (Вы)" : ""}
+                    </div>
+                    <div style={{ marginTop: 4, fontSize: 13, color: "#4d466c" }}>
+                      {isTop1 ? "Лидер рейтинга" : `Место #${player.place}`}
+                    </div>
+                  </div>
+                </div>
+
+                <div
+                  style={{
+                    whiteSpace: "nowrap",
+                    fontSize: 16,
+                    fontWeight: 900,
+                    color: "#6b46ff",
+                  }}
+                >
+                  ⭐ {player.points}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      <button onClick={onBack} style={secondaryButtonStyle}>
+        Назад в меню
+      </button>
+    </div>
+  );
+
+
 function ProfileAndStatsScreen({
   user,
   points,
@@ -3523,6 +3671,14 @@ export default function Page() {
             onSpin={handleSpinReward}
           />
         )}
+
+        {screen === "top" && (
+  <TopPlayersScreen
+    user={user}
+    points={appState.points}
+    onBack={() => setScreen("menu")}
+  />
+)}
 
         {screen === "profile" && (
         <ProfileAndStatsScreen
