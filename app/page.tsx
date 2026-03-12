@@ -4214,32 +4214,36 @@ if (updateProfileError) {
 }
 
 export default function Page() {
+  
+
+  const handleJoinByCode = async (inviteCode: string) => {
+  if (!user?.id) {
+    alert("Не удалось определить пользователя");
+    return;
+  }
+
+  const joinedPair = await joinPairByInviteCode(user.id, inviteCode);
+
+  if (!joinedPair) {
+    alert("Не удалось подключиться. Проверь код приглашения.");
+    return;
+  }
+
+  setAppState((prev) => ({
+    ...prev,
+    pair: joinedPair,
+  }));
+
+  alert("Пара успешно подключена 💕");
+};
+
 const handleCreateInvite = async () => {
   if (!user?.id) {
     alert("Не удалось определить пользователя");
     return;
   }
 
-    const handleJoinByCode = async (inviteCode: string) => {
-    if (!user?.id) {
-      alert("Не удалось определить пользователя");
-      return;
-    }
 
-    const joinedPair = await joinPairByInviteCode(user.id, inviteCode);
-
-    if (!joinedPair) {
-      alert("Не удалось подключиться. Проверь код приглашения.");
-      return;
-    }
-
-    setAppState((prev) => ({
-      ...prev,
-      pair: joinedPair,
-    }));
-
-    alert("Пара успешно подключена 💕");
-  };
 
   if (appState.pair?.pairId) {
     alert("Пара уже создана");
