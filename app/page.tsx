@@ -2386,19 +2386,18 @@ function PollsScreen({
                   </div>
                 </div>
 
-                <div
-                  style={{
-                    marginTop: 8,
-                    display: "flex",
-                    justifyContent: "space-between",
-                    gap: 10,
-                    fontSize: 12,
-                    color: "#5a5378",
-                  }}
-                >
-                  <span>{poll.theme || "Опрос"}</span>
-                  <span>{poll.questions.length} вопросов</span>
-                </div>
+               <div
+  style={{
+    marginTop: 8,
+    display: "flex",
+    justifyContent: "flex-end",
+    gap: 10,
+    fontSize: 12,
+    color: "#5a5378",
+  }}
+>
+  <span>{poll.questions.length} вопросов</span>
+</div>
 
                 <button
                   onClick={() => startPoll(poll.id)}
