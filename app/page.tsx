@@ -2254,15 +2254,23 @@ function PollsScreen({
   onCompletePoll: (poll: Poll, answers: number[]) => void;
 }) {
   const filteredPolls = POLLS.filter((p) => p.gender === genderFilter);
-  const totalPages = Math.max(...filteredPolls.map((p) => p.page));
+
   const [page, setPage] = useState(1);
   const [activePollId, setActivePollId] = useState<string | null>(null);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [answers, setAnswers] = useState<number[]>([]);
   const [finished, setFinished] = useState(false);
 
-  const visiblePolls = filteredPolls.filter((poll) => poll.page === page);
-  const activePoll = POLLS.find((poll) => poll.id === activePollId) || null;
+const POLLS_PER_PAGE = 4;
+
+const startIndex = (page - 1) * POLLS_PER_PAGE;
+const endIndex = startIndex + POLLS_PER_PAGE;
+
+const visiblePolls = filteredPolls.slice(startIndex, endIndex);
+
+const totalPages = Math.ceil(filteredPolls.length / POLLS_PER_PAGE);
+
+const activePoll = POLLS.find((poll) => poll.id === activePollId) || null;
   const currentQuestion = activePoll?.questions[currentQuestionIndex] || null;
 
   function startPoll(pollId: string) {
@@ -4116,16 +4124,52 @@ if (updateProfileError) {
 }
 
 export default function Page() {
-  const handleCreateInvite = () => {
+const handleCreateInvite = async () => {
+  if (!user?.id) {
+    alert("Не удалось определить пользователя");
+    return;
+  }
+
+  if (appState.pair?.pairId) {
+    alert("Пара уже создана");
+    return;
+  }
+
   const inviteCode = Math.random().toString(36).slice(2, 8).toUpperCase();
+
+  const { data: createdPair, error: createPairError } = await supabase
+    .from("pairs")
+    .insert({
+      invite_code: inviteCode,
+      created_by_telegram_id: user.id,
+      partner_1_telegram_id: user.id,
+      partner_2_telegram_id: null,
+    })
+    .select()
+    .single();
+
+  if (createPairError || !createdPair) {
+    console.error("create pair error:", createPairError);
+    alert("Не удалось создать приглашение");
+    return;
+  }
+
+  const { error: updateProfileError } = await supabase
+    .from("profiles")
+    .update({ pair_id: createdPair.id })
+    .eq("telegram_id", user.id);
+
+  if (updateProfileError) {
+    console.error("update profile with pair_id error:", updateProfileError);
+    alert("Пара создана, но не удалось привязать её к профилю");
+    return;
+  }
+
+  const nextPairState = await loadPairStateForUser(user.id);
 
   setAppState((prev) => ({
     ...prev,
-    pair: {
-      ...prev.pair,
-      inviteCode,
-      createdByTelegramId: user?.id ?? null,
-    },
+    pair: nextPairState,
   }));
 };
 
