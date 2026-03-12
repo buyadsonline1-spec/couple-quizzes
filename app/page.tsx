@@ -1279,7 +1279,7 @@ function PairScreen({
   points,
   pollAnswers,
   onBack,
-  onCreateInvite,
+
   onJoinByCode,
 }: {
   user: TgUser | null;
@@ -1287,7 +1287,7 @@ function PairScreen({
   points: number;
   pollAnswers: Record<string, number[]>;
   onBack: () => void;
-  onCreateInvite: () => void;
+
   onJoinByCode: (code: string) => Promise<void>;
 }) {
 
@@ -1437,73 +1437,45 @@ function PairScreen({
               Пара ещё не подключена
             </div>
 
-                      <div style={{ ...cardBaseStyle(), padding: 18 }}>
-            <div style={{ fontSize: 18, fontWeight: 900, color: "#1f1d3a" }}>
-              Подключиться по коду
-            </div>
+                     
+  <div
+    style={{
+      display: "inline-flex",
+      alignItems: "center",
+      gap: 8,
+      padding: "8px 12px",
+      borderRadius: 999,
+      background: "rgba(255,255,255,0.30)",
+      color: "#3b3158",
+      fontSize: 13,
+      fontWeight: 800,
+    }}
+  >
+    ⏳ Статус: ожидание подключения
+  </div>
 
-            <div
-              style={{
-                marginTop: 8,
-                color: "#4b446a",
-                lineHeight: 1.45,
-                fontSize: 14,
-              }}
-            >
-              Если тебе отправили код приглашения, введи его здесь.
-            </div>
+  <div
+    style={{
+      marginTop: 14,
+      fontSize: 22,
+      fontWeight: 900,
+      color: "#1f1d3a",
+    }}
+  >
+    Пара ещё не подключена
+  </div>
 
-            <input
-              value={joinCode}
-              onChange={(e) => setJoinCode(e.target.value.toUpperCase())}
-              placeholder="Например: AB12CD"
-              style={{
-                width: "100%",
-                marginTop: 12,
-                padding: "14px 16px",
-                borderRadius: 16,
-                border: "1px solid rgba(255,255,255,0.30)",
-                background: "rgba(255,255,255,0.24)",
-                outline: "none",
-                fontSize: 16,
-                fontWeight: 800,
-                color: "#1f1d3a",
-                boxSizing: "border-box",
-              }}
-            />
-
-            <button
-              onClick={handleJoin}
-              disabled={joining}
-              style={{
-                ...primaryButtonStyle,
-                width: "100%",
-                marginTop: 12,
-                opacity: joining ? 0.6 : 1,
-                cursor: joining ? "not-allowed" : "pointer",
-              }}
-            >
-              {joining ? "Подключаем..." : "Подключиться"}
-            </button>
-          </div>
-
-            <div
-              style={{
-                marginTop: 8,
-                color: "#4b446a",
-                lineHeight: 1.45,
-              }}
-            >
-              Пригласи партнёра по ссылке, чтобы проходить опросы вместе и считать совместимость.
-            </div>
-
-            <button
-              onClick={onCreateInvite}
-              style={{ ...primaryButtonStyle, width: "100%", marginTop: 16 }}
-            >
-              Создать приглашение
-            </button>
-          </div>
+  <div
+    style={{
+      marginTop: 8,
+      color: "#4b446a",
+      lineHeight: 1.45,
+      fontSize: 14,
+    }}
+  >
+    Отправь партнёру свой код или ссылку-приглашение ниже.
+  </div>
+</div>
 
           {pair.inviteCode && (
             <div style={{ ...cardBaseStyle(), padding: 18 }}>
@@ -4627,7 +4599,7 @@ const handleCreateInvite = async () => {
     points={appState.points}
     pollAnswers={appState.pollAnswers}
     onBack={() => setScreen("menu")}
-    onCreateInvite={handleCreateInvite}
+    
     onJoinByCode={handleJoinByCode}
   />
 )}
