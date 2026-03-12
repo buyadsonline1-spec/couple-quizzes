@@ -4354,12 +4354,9 @@ console.log("TG INIT DATA:", tg?.initDataUnsafe);
     setShowDailyBonus(true);
 
     if (!telegramUser?.id) {
-      setUser({
-        first_name: "Гость",
-        username: "guest",
-      });
-      return;
-    }
+  console.log("Telegram user not ready yet");
+  return;
+}
 
     const currentUser: TgUser = {
       id: telegramUser.id,
