@@ -809,34 +809,77 @@ function PairScreen({
   user,
   pair,
   points,
+  pollAnswers,
   onBack,
   onCreateInvite,
 }: {
   user: TgUser | null;
   pair: PairState;
   points: number;
+  pollAnswers: Record<string, number[]>;
   onBack: () => void;
   onCreateInvite: () => void;
 }) {
-
   const hasPair = !!pair.pairId;
 
-const inviteLink =
-  pair.inviteCode
+  const inviteLink = pair.inviteCode
     ? `https://t.me/testcouple1_bot?startapp=invite_${pair.inviteCode}`
     : "";
 
+  const match = calculateMatch(
+    pollAnswers["girl-romance"],
+    pollAnswers["boy-romance"]
+  );
+
   async function copyInvite() {
-  if (!inviteLink) return;
+    if (!inviteLink) return;
 
-  try {
-    await navigator.clipboard.writeText(inviteLink);
-    alert("Ссылка скопирована");
-  } catch {
-    alert("Не удалось скопировать ссылку");
+    try {
+      await navigator.clipboard.writeText(inviteLink);
+      alert("Ссылка скопирована");
+    } catch {
+      alert("Не удалось скопировать ссылку");
+    }
   }
-}
 
+  function avatarCircle(name?: string, lastName?: string, photoUrl?: string) {
+    if (photoUrl) {
+      return (
+        <img
+          src={photoUrl}
+          alt={name || "User"}
+          style={{
+            width: 58,
+            height: 58,
+            borderRadius: 999,
+            objectFit: "cover",
+            border: "2px solid rgba(255,255,255,0.45)",
+          }}
+        />
+      );
+    }
+
+    return (
+      <div
+        style={{
+          width: 58,
+          height: 58,
+          borderRadius: 999,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          background: "rgba(255,255,255,0.34)",
+          color: "#201a39",
+          fontWeight: 900,
+          fontSize: 20,
+          border: "2px solid rgba(255,255,255,0.42)",
+          flexShrink: 0,
+        }}
+      >
+        {getInitials(name, lastName)}
+      </div>
+    );
+  }
 
   return (
     <div style={{ padding: 16, display: "grid", gap: 14 }}>
@@ -844,7 +887,14 @@ const inviteLink =
         <div style={{ fontSize: 28, fontWeight: 900, color: "#1f1d3a" }}>
           Пара
         </div>
-        <div style={{ marginTop: 8, color: "#3a345c", fontSize: 15, lineHeight: 1.45 }}>
+        <div
+          style={{
+            marginTop: 8,
+            color: "#3a345c",
+            fontSize: 15,
+            lineHeight: 1.45,
+          }}
+        >
           Здесь можно пригласить партнёра и посмотреть статус вашей пары.
         </div>
       </div>
@@ -852,10 +902,40 @@ const inviteLink =
       {!hasPair ? (
         <>
           <div style={{ ...cardBaseStyle(), padding: 18 }}>
-            <div style={{ fontSize: 22, fontWeight: 900, color: "#1f1d3a" }}>
+            <div
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 8,
+                padding: "8px 12px",
+                borderRadius: 999,
+                background: "rgba(255,255,255,0.30)",
+                color: "#3b3158",
+                fontSize: 13,
+                fontWeight: 800,
+              }}
+            >
+              ⏳ Статус: ожидание подключения
+            </div>
+
+            <div
+              style={{
+                marginTop: 14,
+                fontSize: 22,
+                fontWeight: 900,
+                color: "#1f1d3a",
+              }}
+            >
               Пара ещё не подключена
             </div>
-            <div style={{ marginTop: 8, color: "#4b446a", lineHeight: 1.45 }}>
+
+            <div
+              style={{
+                marginTop: 8,
+                color: "#4b446a",
+                lineHeight: 1.45,
+              }}
+            >
               Пригласи партнёра по ссылке, чтобы проходить опросы вместе и считать совместимость.
             </div>
 
@@ -868,87 +948,221 @@ const inviteLink =
           </div>
 
           {pair.inviteCode && (
-  <div style={{ ...cardBaseStyle(), padding: 18 }}>
-    <div style={{ fontSize: 18, fontWeight: 900, color: "#1f1d3a" }}>
-      Ссылка-приглашение
-    </div>
+            <div style={{ ...cardBaseStyle(), padding: 18 }}>
+              <div style={{ fontSize: 18, fontWeight: 900, color: "#1f1d3a" }}>
+                Ссылка-приглашение
+              </div>
 
-    <div
-      style={{
-        marginTop: 12,
-        padding: "14px 16px",
-        borderRadius: 16,
-        background: "rgba(255,255,255,0.24)",
-        fontWeight: 700,
-        color: "#241b40",
-        textAlign: "left",
-        fontSize: 14,
-        lineHeight: 1.45,
-        wordBreak: "break-all",
-      }}
-    >
-      {inviteLink}
-     <button
-  onClick={copyInvite}
-  style={{
-    ...primaryButtonStyle,
-    width: "100%",
-    marginTop: 12,
-  }}
->
-  Скопировать ссылку
-</button>
+              <div
+                style={{
+                  marginTop: 12,
+                  padding: "14px 16px",
+                  borderRadius: 16,
+                  background: "rgba(255,255,255,0.24)",
+                  color: "#241b40",
+                  textAlign: "left",
+                  fontSize: 14,
+                  lineHeight: 1.45,
+                  wordBreak: "break-all",
+                }}
+              >
+                {inviteLink}
+              </div>
 
-<a
-  href={`https://t.me/share/url?url=${encodeURIComponent(inviteLink)}`}
-  target="_blank"
-  rel="noreferrer"
-  style={{
-    ...secondaryButtonStyle,
-    display: "block",
-    textAlign: "center",
-    textDecoration: "none",
-    marginTop: 10,
-  }}
->
-  Отправить приглашение
-</a>
-{pair.inviteCode && !pair.partner && (
-  <div style={{ marginTop: 8, color: "#4b446a", fontSize: 14 }}>
-    Ожидаем подключения партнёра…
-  </div>
-)}
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "1fr 1fr",
+                  gap: 10,
+                  marginTop: 12,
+                }}
+              >
+                <button
+                  onClick={copyInvite}
+                  style={{
+                    ...primaryButtonStyle,
+                    width: "100%",
+                    marginTop: 0,
+                    padding: "14px 16px",
+                    fontSize: 16,
+                  }}
+                >
+                  Копировать
+                </button>
 
-    </div>
-  </div>
-)}
+                <a
+                  href={`https://t.me/share/url?url=${encodeURIComponent(inviteLink)}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  style={{
+                    ...secondaryButtonStyle,
+                    marginTop: 0,
+                    width: "100%",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    textAlign: "center",
+                    textDecoration: "none",
+                    padding: "14px 16px",
+                  }}
+                >
+                  Отправить
+                </a>
+              </div>
+
+              {!pair.partner && (
+                <div
+                  style={{
+                    marginTop: 12,
+                    padding: "12px 14px",
+                    borderRadius: 14,
+                    background: "rgba(255,255,255,0.18)",
+                    color: "#4b446a",
+                    fontSize: 14,
+                    fontWeight: 700,
+                  }}
+                >
+                  Ожидаем подключения партнёра…
+                </div>
+              )}
+            </div>
+          )}
         </>
       ) : (
         <>
           <div style={{ ...cardBaseStyle(), padding: 18 }}>
-            <div style={{ fontSize: 22, fontWeight: 900, color: "#1f1d3a" }}>
-              Вы в паре 💕
+            <div
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 8,
+                padding: "8px 12px",
+                borderRadius: 999,
+                background: "rgba(255,255,255,0.30)",
+                color: "#3b3158",
+                fontSize: 13,
+                fontWeight: 800,
+              }}
+            >
+              💕 Статус: вы в паре
             </div>
 
-            <div style={{ display: "grid", gap: 10, marginTop: 14 }}>
-              <StatRow
-                label="Ты"
-                value={user?.first_name ? 1 : 1}
-              />
+            <div
+              style={{
+                marginTop: 14,
+                fontSize: 22,
+                fontWeight: 900,
+                color: "#1f1d3a",
+              }}
+            >
+              Вы в паре
+            </div>
+
+            <div style={{ display: "grid", gap: 12, marginTop: 16 }}>
               <div
                 style={{
-                  padding: "12px 14px",
-                  borderRadius: 16,
+                  padding: "14px 16px",
+                  borderRadius: 18,
                   background: "rgba(255,255,255,0.24)",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 12,
                 }}
               >
-                <div style={{ color: "#2c2647", fontWeight: 700 }}>Партнёр</div>
-                <div style={{ color: "#1c1733", fontWeight: 900, marginTop: 4 }}>
-                  {pair.partner?.firstName || "Подключён"}
-                  {pair.partner?.username ? ` (@${pair.partner.username})` : ""}
+                {avatarCircle(user?.first_name, user?.last_name, user?.photo_url)}
+                <div>
+                  <div style={{ color: "#2c2647", fontWeight: 700 }}>Ты</div>
+                  <div
+                    style={{
+                      color: "#1c1733",
+                      fontWeight: 900,
+                      marginTop: 4,
+                      fontSize: 16,
+                    }}
+                  >
+                    {[user?.first_name, user?.last_name].filter(Boolean).join(" ") || "Пользователь"}
+                  </div>
+                  <div style={{ marginTop: 4, color: "#5a5378", fontSize: 13 }}>
+                    {user?.username ? `@${user.username}` : "Без username"}
+                  </div>
                 </div>
               </div>
 
+              <div
+                style={{
+                  padding: "14px 16px",
+                  borderRadius: 18,
+                  background: "rgba(255,255,255,0.24)",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 12,
+                }}
+              >
+                {avatarCircle(
+                  pair.partner?.firstName,
+                  pair.partner?.lastName,
+                  pair.partner?.photoUrl
+                )}
+                <div>
+                  <div style={{ color: "#2c2647", fontWeight: 700 }}>Партнёр</div>
+                  <div
+                    style={{
+                      color: "#1c1733",
+                      fontWeight: 900,
+                      marginTop: 4,
+                      fontSize: 16,
+                    }}
+                  >
+                    {pair.partner?.firstName || "Подключён"}
+                    {pair.partner?.lastName ? ` ${pair.partner.lastName}` : ""}
+                  </div>
+                  <div style={{ marginTop: 4, color: "#5a5378", fontSize: 13 }}>
+                    {pair.partner?.username ? `@${pair.partner.username}` : "Без username"}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div style={{ ...cardBaseStyle(), padding: 18 }}>
+            <div style={{ fontSize: 22, fontWeight: 900, color: "#1f1d3a" }}>
+              Совместимость
+            </div>
+
+            <div
+              style={{
+                marginTop: 14,
+                padding: "18px 16px",
+                borderRadius: 18,
+                background: "rgba(255,255,255,0.24)",
+                textAlign: "center",
+              }}
+            >
+              <div
+                style={{
+                  fontSize: 34,
+                  fontWeight: 900,
+                  color: "#6b46ff",
+                }}
+              >
+                {match !== null ? `${match}%` : "—"}
+              </div>
+
+              <div
+                style={{
+                  marginTop: 8,
+                  color: "#4d466c",
+                  fontSize: 14,
+                  lineHeight: 1.45,
+                }}
+              >
+                {match !== null
+                  ? "Процент совпадения по вашим ответам"
+                  : "Совместимость появится, когда вы пройдёте романтические опросы за него и за неё"}
+              </div>
+            </div>
+
+            <div style={{ display: "grid", gap: 10, marginTop: 14 }}>
               <StatRow label="Очки" value={points} />
             </div>
           </div>
@@ -3698,6 +3912,7 @@ export default function Page() {
     user={user}
     pair={appState.pair}
     points={appState.points}
+    pollAnswers={appState.pollAnswers}
     onBack={() => setScreen("menu")}
     onCreateInvite={handleCreateInvite}
   />
