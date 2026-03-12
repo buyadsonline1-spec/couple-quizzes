@@ -1280,6 +1280,7 @@ function PairScreen({
   pollAnswers,
   onBack,
   onCreateInvite,
+  onJoinByCode,
 }: {
   user: TgUser | null;
   pair: PairState;
@@ -1287,17 +1288,40 @@ function PairScreen({
   pollAnswers: Record<string, number[]>;
   onBack: () => void;
   onCreateInvite: () => void;
+  onJoinByCode: (code: string) => Promise<void>;
 }) {
+
   const hasPair = !!pair.pairId;
 
   const inviteLink = pair.inviteCode
     ? `https://t.me/testcouple1_bot?startapp=invite_${pair.inviteCode}`
     : "";
 
+      const inviteCode = pair.inviteCode || "";
+
+      <div
+  style={{
+    marginTop: 12,
+    padding: "12px 14px",
+    borderRadius: 16,
+    background: "rgba(255,255,255,0.24)",
+    color: "#241b40",
+    textAlign: "center",
+  }}
+>
+  <div style={{ fontSize: 13, color: "#5a5378" }}>Код приглашения</div>
+  <div style={{ marginTop: 4, fontSize: 24, fontWeight: 900, letterSpacing: 1 }}>
+    {inviteCode}
+  </div>
+</div>
+
   const match = calculateMatch(
     pollAnswers["girl-romance"],
     pollAnswers["boy-romance"]
   );
+
+    const [joinCode, setJoinCode] = useState("");
+  const [joining, setJoining] = useState(false);
 
   async function copyInvite() {
     if (!inviteLink) return;
@@ -1307,6 +1331,22 @@ function PairScreen({
       alert("Ссылка скопирована");
     } catch {
       alert("Не удалось скопировать ссылку");
+    }
+  }
+
+    async function handleJoin() {
+    const code = joinCode.trim().toUpperCase();
+    if (!code) {
+      alert("Введите код приглашения");
+      return;
+    }
+
+    try {
+      setJoining(true);
+      await onJoinByCode(code);
+      setJoinCode("");
+    } finally {
+      setJoining(false);
     }
   }
 
@@ -1396,6 +1436,56 @@ function PairScreen({
             >
               Пара ещё не подключена
             </div>
+
+                      <div style={{ ...cardBaseStyle(), padding: 18 }}>
+            <div style={{ fontSize: 18, fontWeight: 900, color: "#1f1d3a" }}>
+              Подключиться по коду
+            </div>
+
+            <div
+              style={{
+                marginTop: 8,
+                color: "#4b446a",
+                lineHeight: 1.45,
+                fontSize: 14,
+              }}
+            >
+              Если тебе отправили код приглашения, введи его здесь.
+            </div>
+
+            <input
+              value={joinCode}
+              onChange={(e) => setJoinCode(e.target.value.toUpperCase())}
+              placeholder="Например: AB12CD"
+              style={{
+                width: "100%",
+                marginTop: 12,
+                padding: "14px 16px",
+                borderRadius: 16,
+                border: "1px solid rgba(255,255,255,0.30)",
+                background: "rgba(255,255,255,0.24)",
+                outline: "none",
+                fontSize: 16,
+                fontWeight: 800,
+                color: "#1f1d3a",
+                boxSizing: "border-box",
+              }}
+            />
+
+            <button
+              onClick={handleJoin}
+              disabled={joining}
+              style={{
+                ...primaryButtonStyle,
+                width: "100%",
+                marginTop: 12,
+                opacity: joining ? 0.6 : 1,
+                cursor: joining ? "not-allowed" : "pointer",
+              }}
+            >
+              {joining ? "Подключаем..." : "Подключиться"}
+            </button>
+          </div>
 
             <div
               style={{
@@ -4130,6 +4220,27 @@ const handleCreateInvite = async () => {
     return;
   }
 
+    const handleJoinByCode = async (inviteCode: string) => {
+    if (!user?.id) {
+      alert("Не удалось определить пользователя");
+      return;
+    }
+
+    const joinedPair = await joinPairByInviteCode(user.id, inviteCode);
+
+    if (!joinedPair) {
+      alert("Не удалось подключиться. Проверь код приглашения.");
+      return;
+    }
+
+    setAppState((prev) => ({
+      ...prev,
+      pair: joinedPair,
+    }));
+
+    alert("Пара успешно подключена 💕");
+  };
+
   if (appState.pair?.pairId) {
     alert("Пара уже создана");
     return;
@@ -4513,6 +4624,7 @@ const handleCreateInvite = async () => {
     pollAnswers={appState.pollAnswers}
     onBack={() => setScreen("menu")}
     onCreateInvite={handleCreateInvite}
+    onJoinByCode={handleJoinByCode}
   />
 )}
 
