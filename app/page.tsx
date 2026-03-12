@@ -1407,7 +1407,7 @@ function PairScreen({
         </div>
       </div>
 
-      {!hasPair ? (
+            {!hasPair ? (
         <>
           <div style={{ ...cardBaseStyle(), padding: 18 }}>
             <div
@@ -1436,50 +1436,42 @@ function PairScreen({
             >
               Пара ещё не подключена
             </div>
+            
 
-                     
-  <div
-    style={{
-      display: "inline-flex",
-      alignItems: "center",
-      gap: 8,
-      padding: "8px 12px",
-      borderRadius: 999,
-      background: "rgba(255,255,255,0.30)",
-      color: "#3b3158",
-      fontSize: 13,
-      fontWeight: 800,
-    }}
-  >
-    ⏳ Статус: ожидание подключения
-  </div>
-
-  <div
-    style={{
-      marginTop: 14,
-      fontSize: 22,
-      fontWeight: 900,
-      color: "#1f1d3a",
-    }}
-  >
-    Пара ещё не подключена
-  </div>
-
-  <div
-    style={{
-      marginTop: 8,
-      color: "#4b446a",
-      lineHeight: 1.45,
-      fontSize: 14,
-    }}
-  >
-    Отправь партнёру свой код или ссылку-приглашение ниже.
-  </div>
-</div>
+            <div
+              style={{
+                marginTop: 8,
+                color: "#4b446a",
+                lineHeight: 1.45,
+                fontSize: 14,
+              }}
+            >
+              Отправь партнёру свой код или ссылку-приглашение ниже.
+            </div>
+          </div>
 
           {pair.inviteCode && (
             <div style={{ ...cardBaseStyle(), padding: 18 }}>
               <div style={{ fontSize: 18, fontWeight: 900, color: "#1f1d3a" }}>
+                Код приглашения
+              </div>
+
+              <div
+                style={{
+                  marginTop: 12,
+                  padding: "12px 14px",
+                  borderRadius: 16,
+                  background: "rgba(255,255,255,0.24)",
+                  color: "#241b40",
+                  textAlign: "center",
+                }}
+              >
+                <div style={{ fontSize: 24, fontWeight: 900, letterSpacing: 1 }}>
+                  {pair.inviteCode}
+                </div>
+              </div>
+
+              <div style={{ fontSize: 18, fontWeight: 900, color: "#1f1d3a", marginTop: 14 }}>
                 Ссылка-приглашение
               </div>
 
@@ -1557,6 +1549,56 @@ function PairScreen({
               )}
             </div>
           )}
+
+          <div style={{ ...cardBaseStyle(), padding: 18 }}>
+            <div style={{ fontSize: 18, fontWeight: 900, color: "#1f1d3a" }}>
+              Подключиться по коду
+            </div>
+
+            <div
+              style={{
+                marginTop: 8,
+                color: "#4b446a",
+                lineHeight: 1.45,
+                fontSize: 14,
+              }}
+            >
+              Если тебе отправили код приглашения, введи его здесь.
+            </div>
+
+            <input
+              value={joinCode}
+              onChange={(e) => setJoinCode(e.target.value.toUpperCase())}
+              placeholder="Например: AB12CD"
+              style={{
+                width: "100%",
+                marginTop: 12,
+                padding: "14px 16px",
+                borderRadius: 16,
+                border: "1px solid rgba(255,255,255,0.30)",
+                background: "rgba(255,255,255,0.24)",
+                outline: "none",
+                fontSize: 16,
+                fontWeight: 800,
+                color: "#1f1d3a",
+                boxSizing: "border-box",
+              }}
+            />
+
+            <button
+              onClick={handleJoin}
+              disabled={joining}
+              style={{
+                ...primaryButtonStyle,
+                width: "100%",
+                marginTop: 12,
+                opacity: joining ? 0.6 : 1,
+                cursor: joining ? "not-allowed" : "pointer",
+              }}
+            >
+              {joining ? "Подключаем..." : "Подключиться"}
+            </button>
+          </div>
         </>
       ) : (
         <>
@@ -1688,7 +1730,7 @@ function PairScreen({
               >
                 {match !== null
                   ? "Процент совпадения по вашим ответам"
-                  : "Совместимость появится, когда вы пройдёте романтические опросы за него и за неё"}
+                  : "Совместимость появится, когда вы пройдёте парные опросы"}
               </div>
             </div>
 
@@ -1698,6 +1740,7 @@ function PairScreen({
           </div>
         </>
       )}
+
 
       <button onClick={onBack} style={secondaryButtonStyle}>
         Назад в меню
