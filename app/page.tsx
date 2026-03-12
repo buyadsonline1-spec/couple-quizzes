@@ -1436,7 +1436,7 @@ function PairScreen({
             >
               Пара ещё не подключена
             </div>
-            
+
 
             <div
               style={{
@@ -4231,9 +4231,9 @@ if (updateProfileError) {
 export default function Page() {
   
 
-  const handleJoinByCode = async (inviteCode: string) => {
+ const handleJoinByCode = async (inviteCode: string) => {
   if (!user?.id) {
-    alert("Не удалось определить пользователя");
+    alert("Подключение по коду доступно только внутри Telegram.");
     return;
   }
 
@@ -4334,6 +4334,8 @@ const handleCreateInvite = async () => {
     tg?.expand?.();
 
     const telegramUser = tg?.initDataUnsafe?.user;
+    console.log("TG USER:", telegramUser);
+console.log("TG INIT DATA:", tg?.initDataUnsafe);
     const startParam = tg?.initDataUnsafe?.start_param;
     
 
