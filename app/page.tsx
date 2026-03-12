@@ -2971,6 +2971,7 @@ function TopPlayersScreen({
       </button>
     </div>
   );
+}
 
 
 function ProfileAndStatsScreen({
