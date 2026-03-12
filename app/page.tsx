@@ -88,6 +88,9 @@ type AppState = {
   description: string;
   reward: number;
   gender: "boy" | "girl";
+  page: number;
+  theme?: string;
+  matchGroup?: string;
   questions: {
     id: string;
     text: string;
@@ -373,137 +376,602 @@ const TESTS: TestDefinition[] = [
   },
 ];
 
-const POLLS: Poll[] = [
-
-{
-id:"girl-romance",
-title:"Романтика в отношениях",
-description:"О том, какие жесты делают отношения по-настоящему приятными.",
-reward:60,
-gender:"girl",
-questions:[
-{ id:"q1", text:"Что для тебя самое романтичное?", options:["Комплименты","Объятия","Сюрпризы","Совместный вечер"] },
-{ id:"q2", text:"Идеальное свидание это...", options:["Кафе","Прогулка","Фильм дома","Поездка"] },
-{ id:"q3", text:"Что важнее всего на свидании?", options:["Атмосфера","Внимание","Юмор","Разговор"] },
-{ id:"q4", text:"Какой жест особенно трогает?", options:["Письмо","Цветы","Объятие","Подарок"] },
-{ id:"q5", text:"Лучший вечер вместе?", options:["Кино","Ужин","Прогулка","Путешествие"] },
-{ id:"q6", text:"Что делает момент особенным?", options:["Музыка","Слова","Нежность","Время"] }
-]
-},
-
-{
-id:"girl-attention",
-title:"Внимание партнёра",
-description:"Что для тебя важнее всего в отношениях.",
-reward:60,
-gender:"girl",
-questions:[
-{ id:"q1", text:"Что приятнее всего?", options:["Комплименты","Подарки","Забота","Время вместе"] },
-{ id:"q2", text:"Когда ты чувствуешь любовь?", options:["Когда слушают","Когда обнимают","Когда поддерживают","Когда удивляют"] },
-{ id:"q3", text:"Что ценишь больше всего?", options:["Внимание","Поддержку","Нежность","Юмор"] },
-{ id:"q4", text:"Что делает отношения крепче?", options:["Честность","Общение","Доверие","Забота"] },
-{ id:"q5", text:"Как партнёр может порадовать?", options:["Подарок","Комплимент","Помощь","Сюрприз"] },
-{ id:"q6", text:"Что важнее всего в любви?", options:["Уважение","Нежность","Доверие","Внимание"] }
-]
-},
-
-{
-id:"girl-jealousy",
-title:"Ревность",
-description:"Как ты относишься к вниманию других девушек.",
-reward:55,
-gender:"girl",
-questions:[
-{ id:"q1", text:"Если на него смотрят другие девушки?", options:["Нормально","Немного ревную","Сильно ревную","Не нравится"] },
-{ id:"q2", text:"Он общается с бывшей?", options:["Спокойно","Настороженно","Не нравится","Против"] },
-{ id:"q3", text:"Лайки другим девушкам?", options:["Нормально","Не люблю","Раздражает","Ссоримся"] },
-{ id:"q4", text:"Дружба с девушками?", options:["Нормально","Если границы","Сложно","Против"] },
-{ id:"q5", text:"Что важнее всего?", options:["Доверие","Честность","Границы","Уважение"] },
-{ id:"q6", text:"Как решать ревность?", options:["Разговор","Доверие","Время","Поддержка"] }
-]
-},
-
-{
-id:"girl-love",
-title:"Как ты проявляешь любовь",
-description:"О твоём стиле любви.",
-reward:60,
-gender:"girl",
-questions:[
-{ id:"q1", text:"Как ты показываешь любовь?", options:["Слова","Объятия","Забота","Подарки"] },
-{ id:"q2", text:"Что делаешь чаще?", options:["Комплименты","Объятия","Помогаю","Сюрпризы"] },
-{ id:"q3", text:"Что важнее?", options:["Внимание","Нежность","Время","Поддержка"] },
-{ id:"q4", text:"Любишь ли сюрпризы?", options:["Очень","Иногда","Редко","Нет"] },
-{ id:"q5", text:"Как радуешь партнёра?", options:["Подарок","Слова","Забота","Поцелуй"] },
-{ id:"q6", text:"Главное в любви?", options:["Доверие","Нежность","Поддержка","Честность"] }
-]
-},
-
-{
-id:"boy-attraction",
-title:"Что тебя привлекает",
-description:"О том, что ты ценишь в девушке.",
-reward:60,
-gender:"boy",
-questions:[
-{ id:"q1", text:"Что привлекает больше всего?", options:["Улыбка","Характер","Внешность","Юмор"] },
-{ id:"q2", text:"Самое привлекательное качество?", options:["Нежность","Уверенность","Доброта","Энергия"] },
-{ id:"q3", text:"Что цепляет сразу?", options:["Глаза","Голос","Стиль","Улыбка"] },
-{ id:"q4", text:"Что важно в отношениях?", options:["Доверие","Поддержка","Страсть","Уважение"] },
-{ id:"q5", text:"Какой характер нравится?", options:["Мягкий","Сильный","Весёлый","Спокойный"] },
-{ id:"q6", text:"Что делает девушку особенной?", options:["Харизма","Забота","Юмор","Энергия"] }
-]
-},
-
-{
-id:"boy-romance",
-title:"Романтика",
-description:"Как ты относишься к романтике.",
-reward:60,
-gender:"boy",
-questions:[
-{ id:"q1", text:"Любишь романтику?", options:["Очень","Иногда","Редко","Нет"] },
-{ id:"q2", text:"Что романтичнее?", options:["Ужин","Прогулка","Путешествие","Сюрприз"] },
-{ id:"q3", text:"Даришь ли подарки?", options:["Часто","Иногда","Редко","Нет"] },
-{ id:"q4", text:"Любишь свидания?", options:["Да","Иногда","Редко","Нет"] },
-{ id:"q5", text:"Лучший вечер?", options:["Фильм","Прогулка","Ужин","Поездка"] },
-{ id:"q6", text:"Как удивить девушку?", options:["Подарок","Цветы","Сюрприз","Комплимент"] }
-]
-},
-
-{
-id:"boy-jealousy",
-title:"Ревность",
-description:"Как ты реагируешь на внимание других мужчин.",
-reward:55,
-gender:"boy",
-questions:[
-{ id:"q1", text:"Другие парни пишут ей?", options:["Нормально","Не нравится","Раздражает","Злюсь"] },
-{ id:"q2", text:"Она общается с бывшим?", options:["Спокойно","Не люблю","Не нравится","Против"] },
-{ id:"q3", text:"Фото в соцсетях?", options:["Нормально","Иногда ревную","Не люблю","Против"] },
-{ id:"q4", text:"Мужчины на работе?", options:["Ок","Если границы","Не нравится","Ревную"] },
-{ id:"q5", text:"Что важнее?", options:["Доверие","Честность","Уважение","Верность"] },
-{ id:"q6", text:"Как решать ревность?", options:["Разговор","Доверие","Спокойствие","Время"] }
-]
-},
-
-{
-id:"boy-relationship",
-title:"Идеальные отношения",
-description:"Как ты представляешь отношения.",
-reward:60,
-gender:"boy",
-questions:[
-{ id:"q1", text:"Главное в отношениях?", options:["Доверие","Поддержка","Свобода","Любовь"] },
-{ id:"q2", text:"Идеальный вечер?", options:["Фильм","Прогулка","Ужин","Путешествие"] },
-{ id:"q3", text:"Что ценишь в девушке?", options:["Доброту","Юмор","Нежность","Ум"] },
-{ id:"q4", text:"Что делает пару сильной?", options:["Доверие","Поддержка","Честность","Забота"] },
-{ id:"q5", text:"Как решать конфликты?", options:["Разговор","Компромисс","Пауза","Юмор"] },
-{ id:"q6", text:"Что важно каждый день?", options:["Внимание","Забота","Поддержка","Любовь"] }
-]
+function createPollQuestions(base: string) {
+  return [
+    {
+      id: "q1",
+      text: `${base}: что ближе всего?`,
+      options: ["Никогда", "Редко", "Иногда", "Часто"],
+    },
+    {
+      id: "q2",
+      text: `${base}: что раздражает сильнее всего?`,
+      options: ["Невнимание", "Холодность", "Грубость", "Ложь"],
+    },
+    {
+      id: "q3",
+      text: `${base}: что важнее всего?`,
+      options: ["Честность", "Уважение", "Забота", "Доверие"],
+    },
+    {
+      id: "q4",
+      text: `${base}: как лучше решать это?`,
+      options: ["Разговором", "Спокойствием", "Компромиссом", "Временем"],
+    },
+    {
+      id: "q5",
+      text: `${base}: что для тебя норма?`,
+      options: ["Полностью ок", "Скорее ок", "Скорее нет", "Нет"],
+    },
+    {
+      id: "q6",
+      text: `${base}: что ты выберешь?`,
+      options: ["Мягкость", "Прямоту", "Поддержку", "Свободу"],
+    },
+  ];
 }
 
+const POLLS: Poll[] = [
+  // =========================
+  // BOY — PAGE 1
+  // =========================
+  {
+    id: "boy-page1-housewife",
+    title: "Какая хозяйка твоя девушка?",
+    description: "Какой ты видишь её в быту и домашних делах.",
+    reward: 60,
+    gender: "boy",
+    page: 1,
+    theme: "Быт",
+    questions: createPollQuestions("Какая хозяйка твоя девушка"),
+  },
+  {
+    id: "boy-page1-conflicts",
+    title: "Решение конфликтов",
+    description: "Как твоя девушка ведёт себя в ссорах и после них.",
+    reward: 60,
+    gender: "boy",
+    page: 1,
+    theme: "Конфликты",
+    matchGroup: "conflicts",
+    questions: createPollQuestions("Решение конфликтов"),
+  },
+  {
+    id: "boy-page1-jealousy",
+    title: "Будешь ли ты ревновать, если...?",
+    description: "О ревности, границах и доверии в отношениях.",
+    reward: 60,
+    gender: "boy",
+    page: 1,
+    theme: "Ревность",
+    matchGroup: "jealousy",
+    questions: createPollQuestions("Будешь ли ты ревновать, если"),
+  },
+  {
+    id: "boy-page1-allowed",
+    title: "Можно ли твоей девушке делать это?",
+    description: "Что для тебя допустимо, а что уже нет.",
+    reward: 60,
+    gender: "boy",
+    page: 1,
+    theme: "Границы",
+    matchGroup: "boundaries",
+    questions: createPollQuestions("Можно ли твоей девушке делать это"),
+  },
+  {
+    id: "boy-page1-nervous",
+    title: "Насколько нервозна твоя девушка?",
+    description: "Как ты воспринимаешь её характер и эмоциональность.",
+    reward: 60,
+    gender: "boy",
+    page: 1,
+    theme: "Характер",
+    questions: createPollQuestions("Насколько нервозна твоя девушка"),
+  },
+
+  // =========================
+  // BOY — PAGE 2
+  // =========================
+  {
+    id: "boy-page2-romance",
+    title: "Романтика и забота",
+    description: "Что важно для тебя в проявлении любви.",
+    reward: 60,
+    gender: "boy",
+    page: 2,
+    theme: "Романтика",
+    matchGroup: "romance",
+    questions: createPollQuestions("Романтика и забота"),
+  },
+  {
+    id: "boy-page2-space",
+    title: "Границы и личное пространство",
+    description: "Сколько свободы должно быть у каждого в паре.",
+    reward: 60,
+    gender: "boy",
+    page: 2,
+    theme: "Личное пространство",
+    matchGroup: "space",
+    questions: createPollQuestions("Границы и личное пространство"),
+  },
+  {
+    id: "boy-page2-time",
+    title: "Совместное время и интересы",
+    description: "Как вы должны проводить время вместе.",
+    reward: 60,
+    gender: "boy",
+    page: 2,
+    theme: "Время вместе",
+    matchGroup: "time",
+    questions: createPollQuestions("Совместное время и интересы"),
+  },
+  {
+    id: "boy-page2-role",
+    title: "Роль девушки в отношениях",
+    description: "Что ты ожидаешь от девушки в паре.",
+    reward: 60,
+    gender: "boy",
+    page: 2,
+    theme: "Роли",
+    matchGroup: "roles",
+    questions: createPollQuestions("Роль девушки в отношениях"),
+  },
+  {
+    id: "boy-page2-appearance",
+    title: "Внешность и уход за собой",
+    description: "Насколько для тебя важны стиль и уход.",
+    reward: 60,
+    gender: "boy",
+    page: 2,
+    theme: "Внешность",
+    questions: createPollQuestions("Внешность и уход за собой"),
+  },
+
+  // =========================
+  // BOY — PAGE 3
+  // =========================
+  {
+    id: "boy-page3-family",
+    title: "Семья и дети",
+    description: "Как ты смотришь на семью, детей и серьёзность отношений.",
+    reward: 60,
+    gender: "boy",
+    page: 3,
+    theme: "Семья",
+    matchGroup: "future",
+    questions: createPollQuestions("Семья и дети"),
+  },
+  {
+    id: "boy-page3-money",
+    title: "Деньги и подарки",
+    description: "Про траты, подарки и материальную сторону отношений.",
+    reward: 60,
+    gender: "boy",
+    page: 3,
+    theme: "Финансы",
+    questions: createPollQuestions("Деньги и подарки"),
+  },
+  {
+    id: "boy-page3-trust",
+    title: "Честность и доверие",
+    description: "Что для тебя значит верность и открытость.",
+    reward: 60,
+    gender: "boy",
+    page: 3,
+    theme: "Доверие",
+    matchGroup: "trust",
+    questions: createPollQuestions("Честность и доверие"),
+  },
+  {
+    id: "boy-page3-habits",
+    title: "Привычки в быту",
+    description: "Что в повседневной жизни тебя устраивает или раздражает.",
+    reward: 60,
+    gender: "boy",
+    page: 3,
+    theme: "Быт",
+    questions: createPollQuestions("Привычки в быту"),
+  },
+  {
+    id: "boy-page3-attention",
+    title: "Общение и внимание",
+    description: "Как часто нужно общаться и быть на связи.",
+    reward: 60,
+    gender: "boy",
+    page: 3,
+    theme: "Общение",
+    questions: createPollQuestions("Общение и внимание"),
+  },
+
+  // =========================
+  // BOY — PAGE 4
+  // =========================
+  {
+    id: "boy-page4-dreams",
+    title: "Мечты и цели девушки",
+    description: "Как ты относишься к её амбициям и мечтам.",
+    reward: 60,
+    gender: "boy",
+    page: 4,
+    theme: "Мечты",
+    questions: createPollQuestions("Мечты и цели девушки"),
+  },
+  {
+    id: "boy-page4-food",
+    title: "Еда и кулинария",
+    description: "Про вкусы, готовку и общие гастро-привычки.",
+    reward: 60,
+    gender: "boy",
+    page: 4,
+    theme: "Еда",
+    questions: createPollQuestions("Еда и кулинария"),
+  },
+  {
+    id: "boy-page4-talk",
+    title: "Стиль общения",
+    description: "Как тебе комфортнее общаться в паре.",
+    reward: 60,
+    gender: "boy",
+    page: 4,
+    theme: "Общение",
+    questions: createPollQuestions("Стиль общения"),
+  },
+  {
+    id: "boy-page4-rest",
+    title: "Отдых и путешествия",
+    description: "Как вы должны отдыхать и проводить выходные.",
+    reward: 60,
+    gender: "boy",
+    page: 4,
+    theme: "Отдых",
+    questions: createPollQuestions("Отдых и путешествия"),
+  },
+  {
+    id: "boy-page4-friends",
+    title: "Подруги и окружение",
+    description: "Как ты относишься к её друзьям и кругу общения.",
+    reward: 60,
+    gender: "boy",
+    page: 4,
+    theme: "Окружение",
+    questions: createPollQuestions("Подруги и окружение"),
+  },
+
+  // =========================
+  // BOY — PAGE 5
+  // =========================
+  {
+    id: "boy-page5-values",
+    title: "Ценности в отношениях",
+    description: "Что для тебя главное в крепкой паре.",
+    reward: 60,
+    gender: "boy",
+    page: 5,
+    theme: "Ценности",
+    matchGroup: "values",
+    questions: createPollQuestions("Ценности в отношениях"),
+  },
+  {
+    id: "boy-page5-love",
+    title: "Любовь и привязанность",
+    description: "Как ты понимаешь настоящую любовь.",
+    reward: 60,
+    gender: "boy",
+    page: 5,
+    theme: "Любовь",
+    questions: createPollQuestions("Любовь и привязанность"),
+  },
+  {
+    id: "boy-page5-support",
+    title: "Поддержка в трудные моменты",
+    description: "Какой должна быть девушка, когда тебе тяжело.",
+    reward: 60,
+    gender: "boy",
+    page: 5,
+    theme: "Поддержка",
+    questions: createPollQuestions("Поддержка в трудные моменты"),
+  },
+  {
+    id: "boy-page5-ideal-life",
+    title: "Идеальная совместная жизнь",
+    description: "Как ты представляешь счастливую жизнь вдвоём.",
+    reward: 60,
+    gender: "boy",
+    page: 5,
+    theme: "Будущее",
+    questions: createPollQuestions("Идеальная совместная жизнь"),
+  },
+  {
+    id: "boy-page5-the-one",
+    title: "Что делает девушку той самой?",
+    description: "Какие качества для тебя самые важные.",
+    reward: 60,
+    gender: "boy",
+    page: 5,
+    theme: "Идеал",
+    questions: createPollQuestions("Что делает девушку той самой"),
+  },
+
+  // =========================
+  // GIRL — PAGE 1
+  // =========================
+  {
+    id: "girl-page1-allowed",
+    title: "Можно ли твоему парню делать это..?",
+    description: "Что для тебя допустимо, а что уже нарушение границ.",
+    reward: 60,
+    gender: "girl",
+    page: 1,
+    theme: "Границы",
+    matchGroup: "boundaries",
+    questions: createPollQuestions("Можно ли твоему парню делать это"),
+  },
+  {
+    id: "girl-page1-jealousy",
+    title: "Будешь ли ты ревновать, если..?",
+    description: "О ревности, тревоге и доверии в отношениях.",
+    reward: 60,
+    gender: "girl",
+    page: 1,
+    theme: "Ревность",
+    matchGroup: "jealousy",
+    questions: createPollQuestions("Будешь ли ты ревновать, если"),
+  },
+  {
+    id: "girl-page1-cheating",
+    title: "Измена ли это для тебя?",
+    description: "Где проходит твоя личная граница измены.",
+    reward: 60,
+    gender: "girl",
+    page: 1,
+    theme: "Верность",
+    questions: createPollQuestions("Измена ли это для тебя"),
+  },
+  {
+    id: "girl-page1-know-boy",
+    title: "Как хорошо ты знаешь своего парня?",
+    description: "Насколько ты чувствуешь и понимаешь его.",
+    reward: 60,
+    gender: "girl",
+    page: 1,
+    theme: "Понимание",
+    questions: createPollQuestions("Как хорошо ты знаешь своего парня"),
+  },
+  {
+    id: "girl-page1-future",
+    title: "Планы на будущее и совместные цели",
+    description: "Как ты видишь ваше будущее вместе.",
+    reward: 60,
+    gender: "girl",
+    page: 1,
+    theme: "Будущее",
+    matchGroup: "future",
+    questions: createPollQuestions("Планы на будущее и совместные цели"),
+  },
+
+  // =========================
+  // GIRL — PAGE 2
+  // =========================
+  {
+    id: "girl-page2-love",
+    title: "Как ты показываешь свою любовь?",
+    description: "О твоём стиле любви и заботы.",
+    reward: 60,
+    gender: "girl",
+    page: 2,
+    theme: "Любовь",
+    questions: createPollQuestions("Как ты показываешь свою любовь"),
+  },
+  {
+    id: "girl-page2-conflicts",
+    title: "Как ты ведешь себя во время ссор?",
+    description: "Как ты реагируешь на конфликты и напряжение.",
+    reward: 60,
+    gender: "girl",
+    page: 2,
+    theme: "Конфликты",
+    matchGroup: "conflicts",
+    questions: createPollQuestions("Как ты ведешь себя во время ссор"),
+  },
+  {
+    id: "girl-page2-space",
+    title: "Свобода и личное пространство",
+    description: "Сколько свободы должно быть у вас обоих.",
+    reward: 60,
+    gender: "girl",
+    page: 2,
+    theme: "Личное пространство",
+    matchGroup: "space",
+    questions: createPollQuestions("Свобода и личное пространство"),
+  },
+  {
+    id: "girl-page2-duties",
+    title: "Какие обязанности ты считаешь своими в паре?",
+    description: "Как ты видишь свой вклад в отношения.",
+    reward: 60,
+    gender: "girl",
+    page: 2,
+    theme: "Обязанности",
+    questions: createPollQuestions("Какие обязанности ты считаешь своими в паре"),
+  },
+  {
+    id: "girl-page2-role",
+    title: "Роль мужчины в отношениях",
+    description: "Что ты ожидаешь от мужчины рядом с собой.",
+    reward: 60,
+    gender: "girl",
+    page: 2,
+    theme: "Роли",
+    matchGroup: "roles",
+    questions: createPollQuestions("Роль мужчины в отношениях"),
+  },
+
+  // =========================
+  // GIRL — PAGE 3
+  // =========================
+  {
+    id: "girl-page3-dreams",
+    title: "Мечты и фантазии",
+    description: "О желаниях, романтике и внутреннем мире.",
+    reward: 60,
+    gender: "girl",
+    page: 3,
+    theme: "Мечты",
+    questions: createPollQuestions("Мечты и фантазии"),
+  },
+  {
+    id: "girl-page3-food",
+    title: "Кулинария и еда",
+    description: "Про вкусы, комфорт и еду в отношениях.",
+    reward: 60,
+    gender: "girl",
+    page: 3,
+    theme: "Еда",
+    questions: createPollQuestions("Кулинария и еда"),
+  },
+  {
+    id: "girl-page3-style",
+    title: "Стиль и мода",
+    description: "О внешности, стиле и самовыражении.",
+    reward: 60,
+    gender: "girl",
+    page: 3,
+    theme: "Стиль",
+    questions: createPollQuestions("Стиль и мода"),
+  },
+  {
+    id: "girl-page3-health",
+    title: "Здоровье и уход за собой",
+    description: "Насколько для тебя важны уход и самочувствие.",
+    reward: 60,
+    gender: "girl",
+    page: 3,
+    theme: "Уход",
+    questions: createPollQuestions("Здоровье и уход за собой"),
+  },
+  {
+    id: "girl-page3-hobby",
+    title: "Хобби и увлечения",
+    description: "Чем ты любишь заниматься и как хочешь делиться этим.",
+    reward: 60,
+    gender: "girl",
+    page: 3,
+    theme: "Хобби",
+    questions: createPollQuestions("Хобби и увлечения"),
+  },
+
+  // =========================
+  // GIRL — PAGE 4
+  // =========================
+  {
+    id: "girl-page4-self",
+    title: "Саморазвитие и мечты",
+    description: "О целях, росте и жизненном направлении.",
+    reward: 60,
+    gender: "girl",
+    page: 4,
+    theme: "Саморазвитие",
+    questions: createPollQuestions("Саморазвитие и мечты"),
+  },
+  {
+    id: "girl-page4-family",
+    title: "Семья и друзья",
+    description: "Какую роль в твоей жизни играет окружение.",
+    reward: 60,
+    gender: "girl",
+    page: 4,
+    theme: "Семья",
+    questions: createPollQuestions("Семья и друзья"),
+  },
+  {
+    id: "girl-page4-travel",
+    title: "Путешествия и приключения",
+    description: "Как ты любишь отдыхать и открывать новое.",
+    reward: 60,
+    gender: "girl",
+    page: 4,
+    theme: "Путешествия",
+    questions: createPollQuestions("Путешествия и приключения"),
+  },
+  {
+    id: "girl-page4-art",
+    title: "Творчество и вдохновение",
+    description: "О том, что тебя вдохновляет и наполняет.",
+    reward: 60,
+    gender: "girl",
+    page: 4,
+    theme: "Творчество",
+    questions: createPollQuestions("Творчество и вдохновение"),
+  },
+  {
+    id: "girl-page4-values",
+    title: "Ценности и убеждения",
+    description: "Что для тебя по-настоящему важно в жизни и любви.",
+    reward: 60,
+    gender: "girl",
+    page: 4,
+    theme: "Ценности",
+    matchGroup: "values",
+    questions: createPollQuestions("Ценности и убеждения"),
+  },
+
+  // =========================
+  // GIRL — PAGE 5
+  // =========================
+  {
+    id: "girl-page5-romance",
+    title: "Романтика и забота",
+    description: "Какие проявления любви для тебя самые важные.",
+    reward: 60,
+    gender: "girl",
+    page: 5,
+    theme: "Романтика",
+    matchGroup: "romance",
+    questions: createPollQuestions("Романтика и забота"),
+  },
+  {
+    id: "girl-page5-trust",
+    title: "Доверие и безопасность",
+    description: "Когда ты чувствуешь себя спокойно рядом с мужчиной.",
+    reward: 60,
+    gender: "girl",
+    page: 5,
+    theme: "Доверие",
+    matchGroup: "trust",
+    questions: createPollQuestions("Доверие и безопасность"),
+  },
+  {
+    id: "girl-page5-home",
+    title: "Быт и порядок",
+    description: "Как ты представляешь домашнюю жизнь вдвоём.",
+    reward: 60,
+    gender: "girl",
+    page: 5,
+    theme: "Быт",
+    questions: createPollQuestions("Быт и порядок"),
+  },
+  {
+    id: "girl-page5-money",
+    title: "Деньги и подарки",
+    description: "О тратах, внимании и материальной стороне любви.",
+    reward: 60,
+    gender: "girl",
+    page: 5,
+    theme: "Финансы",
+    questions: createPollQuestions("Деньги и подарки"),
+  },
+  {
+    id: "girl-page5-ideal-pair",
+    title: "Какой ты видишь идеальную пару?",
+    description: "О твоём представлении счастливых отношений.",
+    reward: 60,
+    gender: "girl",
+    page: 5,
+    theme: "Идеал",
+    questions: createPollQuestions("Какой ты видишь идеальную пару"),
+  },
 ];
+
 
 const GAMES: Game[] = [
   {
@@ -1786,11 +2254,14 @@ function PollsScreen({
   onCompletePoll: (poll: Poll, answers: number[]) => void;
 }) {
   const filteredPolls = POLLS.filter((p) => p.gender === genderFilter);
+  const totalPages = Math.max(...filteredPolls.map((p) => p.page));
+  const [page, setPage] = useState(1);
   const [activePollId, setActivePollId] = useState<string | null>(null);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [answers, setAnswers] = useState<number[]>([]);
   const [finished, setFinished] = useState(false);
 
+  const visiblePolls = filteredPolls.filter((poll) => poll.page === page);
   const activePoll = POLLS.find((poll) => poll.id === activePollId) || null;
   const currentQuestion = activePoll?.questions[currentQuestionIndex] || null;
 
@@ -1801,13 +2272,13 @@ function PollsScreen({
     setFinished(false);
   }
 
- function handleSelect(optionIndex: number) {
-  setAnswers((prev) => {
-    const next = [...prev];
-    next[currentQuestionIndex] = optionIndex;
-    return next;
-  });
-}
+  function handleSelect(optionIndex: number) {
+    setAnswers((prev) => {
+      const next = [...prev];
+      next[currentQuestionIndex] = optionIndex;
+      return next;
+    });
+  }
 
   function handleNext() {
     if (!activePoll || !currentQuestion) return;
@@ -1834,84 +2305,165 @@ function PollsScreen({
   }
 
   if (!activePollId) {
-  return (
-    <div style={{ padding: 16, display: "grid", gap: 14 }}>
-      <div style={{ ...cardBaseStyle(), padding: 18 }}>
-        <div style={{ fontSize: 28, fontWeight: 900, color: "#1f1d3a" }}>
-          Опросы
-        </div>
-        <div style={{ marginTop: 8, color: "#3a345c", fontSize: 15 }}>
-          Выбери опрос и пройди его до конца, чтобы получить очки.
-        </div>
-      </div>
-
-      <div style={{ fontSize: 22, fontWeight: 900 }}>
-  {genderFilter === "girl" ? "Опросы для неё 👧" : "Опросы для него 👦"}
-</div>
-
-{filteredPolls.map((poll) => {
-
-        const completed = completedPollIds.includes(poll.id);
-
-        return (
-          <div key={poll.id} style={{ ...cardBaseStyle(), padding: 18 }}>
-            <div
-              style={{ display: "flex", justifyContent: "space-between", gap: 12 }}
-            >
-              <div>
-                <div style={{ fontSize: 22, fontWeight: 900, color: "#1f1d3a" }}>
-                  {poll.title}
-                </div>
-                <div style={{ marginTop: 8, color: "#40395f", lineHeight: 1.45 }}>
-                  {poll.description}
-                </div>
-              </div>
-              <div
-                style={{
-                  alignSelf: "flex-start",
-                  padding: "8px 12px",
-                  borderRadius: 14,
-                  background: "rgba(255,255,255,0.28)",
-                  fontWeight: 900,
-                  whiteSpace: "nowrap",
-                }}
-              >
-                +{poll.reward}
-              </div>
-            </div>
-
-            <div style={{ marginTop: 12, color: "#4d466c", fontSize: 14 }}>
-              Вопросов: {poll.questions.length}
-            </div>
-
-            <button
-              onClick={() => startPoll(poll.id)}
-              style={{
-                ...primaryButtonStyle,
-                width: "100%",
-                marginTop: 14,
-                opacity: completed ? 0.92 : 1,
-              }}
-            >
-              {completed ? "Пройти снова" : "Начать"}
-            </button>
+    return (
+      <div style={{ padding: 12, display: "grid", gap: 10 }}>
+        <div style={{ ...cardBaseStyle(), padding: 14 }}>
+          <div style={{ fontSize: 24, fontWeight: 900, color: "#1f1d3a" }}>
+            Опросы
           </div>
-        );
-      })}
+          <div style={{ marginTop: 6, color: "#3a345c", fontSize: 14 }}>
+            {genderFilter === "girl" ? "Опросы для неё 👧" : "Опросы для него 👦"}
+          </div>
+        </div>
 
-      
-      <button onClick={onBack} style={secondaryButtonStyle}>
-        Назад в меню
-      </button>
-    </div>
-  );
-}
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            gap: 10,
+            padding: "0 2px",
+          }}
+        >
+          <div style={{ fontSize: 14, fontWeight: 800, color: "#2c2647" }}>
+            Страница {page} из {totalPages}
+          </div>
+          <div style={{ fontSize: 13, color: "#5a5378" }}>
+            {visiblePolls.length} опросов
+          </div>
+        </div>
+
+        <div style={{ display: "grid", gap: 10 }}>
+          {visiblePolls.map((poll) => {
+            const completed = completedPollIds.includes(poll.id);
+
+            return (
+              <div key={poll.id} style={{ ...cardBaseStyle(), padding: 14 }}>
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    gap: 10,
+                    alignItems: "flex-start",
+                  }}
+                >
+                  <div style={{ minWidth: 0 }}>
+                    <div
+                      style={{
+                        fontSize: 17,
+                        fontWeight: 900,
+                        color: "#1f1d3a",
+                        lineHeight: 1.2,
+                      }}
+                    >
+                      {poll.title}
+                    </div>
+
+                    <div
+                      style={{
+                        marginTop: 5,
+                        color: "#40395f",
+                        lineHeight: 1.35,
+                        fontSize: 13,
+                      }}
+                    >
+                      {poll.description}
+                    </div>
+                  </div>
+
+                  <div
+                    style={{
+                      alignSelf: "flex-start",
+                      padding: "6px 10px",
+                      borderRadius: 12,
+                      background: "rgba(255,255,255,0.28)",
+                      fontWeight: 900,
+                      whiteSpace: "nowrap",
+                      fontSize: 13,
+                    }}
+                  >
+                    +{poll.reward}
+                  </div>
+                </div>
+
+                <div
+                  style={{
+                    marginTop: 8,
+                    display: "flex",
+                    justifyContent: "space-between",
+                    gap: 10,
+                    fontSize: 12,
+                    color: "#5a5378",
+                  }}
+                >
+                  <span>{poll.theme || "Опрос"}</span>
+                  <span>{poll.questions.length} вопросов</span>
+                </div>
+
+                <button
+                  onClick={() => startPoll(poll.id)}
+                  style={{
+                    ...primaryButtonStyle,
+                    width: "100%",
+                    marginTop: 10,
+                    padding: "12px 14px",
+                    fontSize: 15,
+                    opacity: completed ? 0.92 : 1,
+                  }}
+                >
+                  {completed ? "Пройти снова" : "Начать"}
+                </button>
+              </div>
+            );
+          })}
+        </div>
+
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "1fr 1fr",
+            gap: 10,
+          }}
+        >
+          <button
+            onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
+            disabled={page === 1}
+            style={{
+              ...secondaryButtonStyle,
+              marginTop: 0,
+              opacity: page === 1 ? 0.5 : 1,
+              cursor: page === 1 ? "not-allowed" : "pointer",
+            }}
+          >
+            ← Предыдущая
+          </button>
+
+          <button
+            onClick={() => setPage((prev) => Math.min(prev + 1, totalPages))}
+            disabled={page === totalPages}
+            style={{
+              ...secondaryButtonStyle,
+              marginTop: 0,
+              opacity: page === totalPages ? 0.5 : 1,
+              cursor: page === totalPages ? "not-allowed" : "pointer",
+            }}
+          >
+            Следующая →
+          </button>
+        </div>
+
+        <button onClick={onBack} style={{ ...secondaryButtonStyle, marginTop: 0 }}>
+          Назад в меню
+        </button>
+      </div>
+    );
+  }
 
   if (finished && activePoll) {
     return (
-      <div style={{ padding: 16 }}>
-        <div style={{ ...cardBaseStyle(), padding: 20 }}>
-          <div style={{ fontSize: 30, fontWeight: 900, color: "#1f1d3a" }}>
+      <div style={{ padding: 14 }}>
+        <div style={{ ...cardBaseStyle(), padding: 18 }}>
+          <div style={{ fontSize: 28, fontWeight: 900, color: "#1f1d3a" }}>
             Готово 🎉
           </div>
           <div style={{ marginTop: 10, color: "#3a345c", lineHeight: 1.5 }}>
@@ -1921,7 +2473,7 @@ function PollsScreen({
 
           <button
             onClick={handleFinish}
-            style={{ ...primaryButtonStyle, width: "100%", marginTop: 16 }}
+            style={{ ...primaryButtonStyle, width: "100%", marginTop: 14 }}
           >
             Забрать очки
           </button>
@@ -1935,20 +2487,20 @@ function PollsScreen({
   const selected = answers[currentQuestionIndex];
 
   return (
-    <div style={{ padding: 16, display: "grid", gap: 14 }}>
-      <div style={{ ...cardBaseStyle(), padding: 18 }}>
-        <div style={{ fontSize: 24, fontWeight: 900, color: "#1f1d3a" }}>
+    <div style={{ padding: 12, display: "grid", gap: 10 }}>
+      <div style={{ ...cardBaseStyle(), padding: 14 }}>
+        <div style={{ fontSize: 22, fontWeight: 900, color: "#1f1d3a" }}>
           {activePoll.title}
         </div>
-        <div style={{ marginTop: 8, color: "#4b446a" }}>
+        <div style={{ marginTop: 6, color: "#4b446a", fontSize: 14 }}>
           Вопрос {currentQuestionIndex + 1} из {activePoll.questions.length}
         </div>
       </div>
 
-      <div style={{ ...cardBaseStyle(), padding: 18 }}>
+      <div style={{ ...cardBaseStyle(), padding: 14 }}>
         <div
           style={{
-            fontSize: 22,
+            fontSize: 20,
             fontWeight: 800,
             color: "#211b3b",
             lineHeight: 1.35,
@@ -1957,26 +2509,26 @@ function PollsScreen({
           {currentQuestion.text}
         </div>
 
-        <div style={{ display: "grid", gap: 10, marginTop: 16 }}>
+        <div style={{ display: "grid", gap: 9, marginTop: 14 }}>
           {currentQuestion.options.map((option, index) => {
-  const isSelected = selected === index;
+            const isSelected = selected === index;
 
-  return (
-    <button
-      key={option}
-      onClick={() => handleSelect(index)}
+            return (
+              <button
+                key={option}
+                onClick={() => handleSelect(index)}
                 style={{
                   border: isSelected
                     ? "2px solid rgba(108, 58, 255, 0.48)"
                     : "1px solid rgba(255,255,255,0.28)",
-                  borderRadius: 18,
-                  padding: "14px 16px",
+                  borderRadius: 16,
+                  padding: "12px 14px",
                   background: isSelected
                     ? "rgba(255,255,255,0.38)"
                     : "rgba(255,255,255,0.20)",
                   color: "#1f1d3a",
                   textAlign: "left",
-                  fontSize: 16,
+                  fontSize: 15,
                   fontWeight: isSelected ? 900 : 700,
                   cursor: "pointer",
                 }}
@@ -1993,9 +2545,9 @@ function PollsScreen({
           style={{
             ...primaryButtonStyle,
             width: "100%",
-            marginTop: 16,
+            marginTop: 14,
             opacity: selected !== undefined ? 1 : 0.55,
-cursor: selected !== undefined ? "pointer" : "not-allowed",
+            cursor: selected !== undefined ? "pointer" : "not-allowed",
           }}
         >
           {currentQuestionIndex === activePoll.questions.length - 1
@@ -2003,7 +2555,10 @@ cursor: selected !== undefined ? "pointer" : "not-allowed",
             : "Дальше"}
         </button>
 
-        <button onClick={() => setActivePollId(null)} style={secondaryButtonStyle}>
+        <button
+          onClick={() => setActivePollId(null)}
+          style={{ ...secondaryButtonStyle, marginTop: 10 }}
+        >
           Выйти из опроса
         </button>
       </div>
@@ -3368,26 +3923,26 @@ function StatRow({ label, value }: { label: string; value: number }) {
 
 const primaryButtonStyle: CSSProperties = {
   border: "none",
-  borderRadius: 18,
-  padding: "16px 18px",
-  fontSize: 18,
+  borderRadius: 16,
+  padding: "13px 16px",
+  fontSize: 16,
   fontWeight: 900,
   cursor: "pointer",
   color: "white",
   background: "linear-gradient(135deg, #8f6bff, #ff76ba)",
-  boxShadow: "0 14px 30px rgba(126, 75, 255, 0.28)",
+  boxShadow: "0 10px 24px rgba(126, 75, 255, 0.24)",
 };
 
 const secondaryButtonStyle: CSSProperties = {
   border: "1px solid rgba(255,255,255,0.34)",
-  borderRadius: 18,
-  padding: "15px 18px",
-  fontSize: 16,
+  borderRadius: 16,
+  padding: "12px 16px",
+  fontSize: 15,
   fontWeight: 900,
   cursor: "pointer",
   color: "#201b39",
   background: "rgba(255,255,255,0.22)",
-  marginTop: 14,
+  marginTop: 10,
   width: "100%",
 };
 
