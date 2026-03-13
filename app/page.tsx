@@ -125,6 +125,11 @@ type Game = {
   }[];
 };
 
+type LoveQuestion = {
+  id: string;
+  text: string;
+};
+
 type TestKind = "scale" | "love-language" | "personality";
 
 type TestQuestion = {
@@ -1029,7 +1034,16 @@ const GAMES: Game[] = [
     reward: 50,
     questions: [],
   },
+
+    {
+    id: "90-questions",
+    title: "90 вопросов",
+    description: "Случайные глубокие вопросы про любовь, чувства и отношения.",
+    reward: 10,
+    questions: [],
+  },    
 ];
+
 
 const BOTTLE_TASKS: BottleTask[] = [
   { id: "b1", target: "girl", text: "Скажи партнёру самый милый комплимент." },
@@ -1049,6 +1063,107 @@ const BOTTLE_TASKS: BottleTask[] = [
   { id: "b14", target: "boy", text: "Возьми её за руку и не отпускай 20 секунд." },
   { id: "b15", target: "boy", text: "Скажи, что бы ты хотел повторить с вашим лучшим свиданием." },
   { id: "b16", target: "boy", text: "Сделай ей короткое романтичное признание." },
+];
+
+const LOVE_QUESTIONS: LoveQuestion[] = [
+  { id: "lq1", text: "Когда ты в последний раз чувствовал(а) себя по-настоящему любимым(ой)?" },
+  { id: "lq2", text: "Что для тебя значит настоящая близость в отношениях?" },
+  { id: "lq3", text: "Чего тебе иногда не хватает в любви?" },
+  { id: "lq4", text: "Что ты боишься потерять в отношениях сильнее всего?" },
+  { id: "lq5", text: "Как ты обычно показываешь, что человек тебе дорог?" },
+  { id: "lq6", text: "Какие слова ты хотел(а) бы чаще слышать от партнёра?" },
+  { id: "lq7", text: "Какой момент в отношениях ты считаешь самым тёплым?" },
+  { id: "lq8", text: "Что делает человека по-настоящему надёжным для тебя?" },
+  { id: "lq9", text: "Как ты понимаешь, что можешь доверять человеку?" },
+  { id: "lq10", text: "Что в отношениях даёт тебе чувство безопасности?" },
+
+  { id: "lq11", text: "О чём тебе бывает сложно говорить даже с близким человеком?" },
+  { id: "lq12", text: "Как ты ведёшь себя, когда обижаешься?" },
+  { id: "lq13", text: "Что тебе помогает мириться после ссоры?" },
+  { id: "lq14", text: "За что ты можешь долго злиться?" },
+  { id: "lq15", text: "Что бы ты никогда не хотел(а) пережить в отношениях снова?" },
+  { id: "lq16", text: "Какая твоя самая сильная потребность в любви?" },
+  { id: "lq17", text: "Какие поступки ранят тебя сильнее слов?" },
+  { id: "lq18", text: "Как ты понимаешь, что человек тебя слышит?" },
+  { id: "lq19", text: "Что тебе нужно в трудный день от любимого человека?" },
+  { id: "lq20", text: "Как выглядит идеальная эмоциональная поддержка для тебя?" },
+
+  { id: "lq21", text: "Что для тебя важнее: страсть, дружба или спокойствие в отношениях?" },
+  { id: "lq22", text: "Что ты считаешь красным флагом в отношениях?" },
+  { id: "lq23", text: "Что помогает тебе открываться человеку?" },
+  { id: "lq24", text: "В какой момент ты чувствуешь себя особенно уязвимым(ой)?" },
+  { id: "lq25", text: "Как ты реагируешь, когда ревнуешь?" },
+  { id: "lq26", text: "Что для тебя уже считается изменой?" },
+  { id: "lq27", text: "Как ты понимаешь слово «верность»?" },
+  { id: "lq28", text: "Что тебе важно сохранять личным даже в отношениях?" },
+  { id: "lq29", text: "Какой формат свободы в паре тебе кажется здоровым?" },
+  { id: "lq30", text: "Что тебя успокаивает, когда в отношениях появляется тревога?" },
+
+  { id: "lq31", text: "О каком будущем с любимым человеком ты мечтаешь?" },
+  { id: "lq32", text: "Ты больше про стабильность или про яркие эмоции?" },
+  { id: "lq33", text: "Что для тебя значит «быть командой»?" },
+  { id: "lq34", text: "Какие семейные ценности тебе особенно близки?" },
+  { id: "lq35", text: "Как ты представляешь идеальный совместный вечер?" },
+  { id: "lq36", text: "Какой отдых с любимым человеком тебе ближе всего?" },
+  { id: "lq37", text: "Какая мелочь в отношениях делает тебя счастливым(ой)?" },
+  { id: "lq38", text: "Что ты особенно ценишь в заботе?" },
+  { id: "lq39", text: "Какие ритуалы в паре тебе нравятся?" },
+  { id: "lq40", text: "Как ты относишься к сюрпризам в отношениях?" },
+
+  { id: "lq41", text: "Когда ты чувствуешь романтику сильнее всего?" },
+  { id: "lq42", text: "Какие свидания тебе нравятся больше: тихие или яркие?" },
+  { id: "lq43", text: "Что для тебя значит быть желанным(ой)?" },
+  { id: "lq44", text: "Какая твоя любимая форма нежности?" },
+  { id: "lq45", text: "Как ты понимаешь, что тебя по-настоящему принимают?" },
+  { id: "lq46", text: "Что тебе хотелось бы чаще делать вместе с партнёром?" },
+  { id: "lq47", text: "Что бы ты хотел(а) попробовать в отношениях впервые?" },
+  { id: "lq48", text: "Какую мечту ты бы хотел(а) разделить с любимым человеком?" },
+  { id: "lq49", text: "Какой разговор между вами ты считаешь самым важным?" },
+  { id: "lq50", text: "За что тебе сложнее всего просить прощения?" },
+
+  { id: "lq51", text: "Чего ты ждёшь от партнёра в трудные периоды жизни?" },
+  { id: "lq52", text: "Что тебе помогает чувствовать связь после дистанции?" },
+  { id: "lq53", text: "Что для тебя важнее: внимание или действия?" },
+  { id: "lq54", text: "Какой комплимент запоминается тебе надолго?" },
+  { id: "lq55", text: "Что бы ты хотел(а) изменить в своём поведении в отношениях?" },
+  { id: "lq56", text: "Какой урок тебе дали прошлые отношения?" },
+  { id: "lq57", text: "Что ты особенно бережёшь в любви?" },
+  { id: "lq58", text: "Какие обещания в отношениях для тебя священны?" },
+  { id: "lq59", text: "Как ты понимаешь, что вас двоих тянет друг к другу по-настоящему?" },
+  { id: "lq60", text: "Когда тебе бывает особенно важно побыть рядом молча?" },
+
+  { id: "lq61", text: "Что бы ты хотел(а), чтобы партнёр лучше понимал о тебе?" },
+  { id: "lq62", text: "Как ты переживаешь отдаление в отношениях?" },
+  { id: "lq63", text: "Что помогает тебе снова сближаться после напряжения?" },
+  { id: "lq64", text: "Какая твоя слабая сторона чаще всего проявляется в любви?" },
+  { id: "lq65", text: "В чём ты особенно нуждаешься, но редко об этом говоришь?" },
+  { id: "lq66", text: "Что тебе сложнее: довериться или сохранить чувства?" },
+  { id: "lq67", text: "Какой поступок может вернуть тебе веру в отношения?" },
+  { id: "lq68", text: "Что тебе важно слышать после ссоры?" },
+  { id: "lq69", text: "Как ты понимаешь, что отношения становятся серьёзными?" },
+  { id: "lq70", text: "Какие границы для тебя обязательны в любви?" },
+
+  { id: "lq71", text: "Что ты ценишь в человеке сильнее внешности?" },
+  { id: "lq72", text: "Какая черта делает человека особенно привлекательным?" },
+  { id: "lq73", text: "Что тебя вдохновляет любить сильнее?" },
+  { id: "lq74", text: "Как ты относишься к проявлению слабости перед любимым человеком?" },
+  { id: "lq75", text: "Что даёт тебе чувство «мы»?" },
+  { id: "lq76", text: "В каких моментах тебе особенно нужна поддержка?" },
+  { id: "lq77", text: "Как ты представляешь счастливую совместную жизнь?" },
+  { id: "lq78", text: "Что для тебя важнее: совпадение характеров или усилия друг ради друга?" },
+  { id: "lq79", text: "Какие слова любви для тебя звучат наиболее искренне?" },
+  { id: "lq80", text: "Что ты хотел(а) бы чаще делать для любимого человека?" },
+
+  { id: "lq81", text: "О чём ты мечтаешь рассказать партнёру, но всё откладываешь?" },
+  { id: "lq82", text: "Какая общая цель могла бы сделать вашу пару сильнее?" },
+  { id: "lq83", text: "Какой страх в любви тебе хотелось бы отпустить?" },
+  { id: "lq84", text: "Что делает отношения для тебя зрелыми?" },
+  { id: "lq85", text: "Как ты понимаешь, что человека можно назвать «своим»?" },
+  { id: "lq86", text: "Что бы ты хотел(а) сохранить в отношениях на долгие годы?" },
+  { id: "lq87", text: "Как ты относишься к полной честности в любви?" },
+  { id: "lq88", text: "Что бы ты хотел(а) услышать от партнёра прямо сейчас?" },
+  { id: "lq89", text: "Какая мечта о любви у тебя была с детства?" },
+  { id: "lq90", text: "Что для тебя значит любить по-настоящему?" },
 ];
 
 const REWARD_CATEGORIES: RewardCategory[] = [
@@ -2830,6 +2945,11 @@ function GamesScreen({
     setBottleRewardGiven(true);
   }
 
+  function handleLoveQuestionFinish() {
+  if (!activeGame) return;
+  onCompleteGame(activeGame, 1);
+}
+
   if (!activeGameId) {
     return (
       <div style={{ padding: 16, display: "grid", gap: 14 }}>
@@ -2903,6 +3023,16 @@ function GamesScreen({
       />
     );
   }
+
+ if (activeGame?.id === "90-questions") {
+  return (
+    <LoveQuestionsGameScreen
+      reward={activeGame.reward}
+      onBack={() => setActiveGameId(null)}
+      onFinish={handleLoveQuestionFinish}
+    />
+  );
+}
 
   if (finished && activeGame) {
     const total = activeGame.questions.length;
@@ -3271,6 +3401,149 @@ function BottleGameScreen({
           )}
         </div>
       )}
+
+      <button onClick={onBack} style={secondaryButtonStyle}>
+        Назад в игры
+      </button>
+    </div>
+  );
+}
+
+function LoveQuestionsGameScreen({
+  reward,
+  onBack,
+  onFinish,
+}: {
+  reward: number;
+  onBack: () => void;
+  onFinish: () => void;
+}) {
+  const [usedIds, setUsedIds] = useState<string[]>([]);
+  const [currentQuestion, setCurrentQuestion] = useState<LoveQuestion | null>(null);
+  const [answered, setAnswered] = useState(false);
+
+  function pickRandomQuestion(excludedIds: string[]) {
+    const available = LOVE_QUESTIONS.filter((q) => !excludedIds.includes(q.id));
+    if (available.length === 0) return null;
+    return available[Math.floor(Math.random() * available.length)];
+  }
+
+  useEffect(() => {
+    const first = pickRandomQuestion([]);
+    setCurrentQuestion(first);
+  }, []);
+
+  function handleAnswered() {
+    if (!currentQuestion || answered) return;
+    setAnswered(true);
+    onFinish();
+  }
+
+  function handleNextQuestion() {
+    if (!currentQuestion) return;
+
+    const nextUsed = [...usedIds, currentQuestion.id];
+    setUsedIds(nextUsed);
+
+    const nextQuestion = pickRandomQuestion(nextUsed);
+
+    if (!nextQuestion) {
+      setCurrentQuestion(null);
+      setAnswered(false);
+      return;
+    }
+
+    setCurrentQuestion(nextQuestion);
+    setAnswered(false);
+  }
+
+  return (
+    <div style={{ padding: 16, display: "grid", gap: 14 }}>
+      <div style={{ ...cardBaseStyle(), padding: 18 }}>
+        <div style={{ fontSize: 28, fontWeight: 900, color: "#1f1d3a" }}>
+          90 вопросов
+        </div>
+        <div style={{ marginTop: 8, color: "#3a345c", fontSize: 15, lineHeight: 1.45 }}>
+          Откровенные вопросы про любовь, чувства и отношения.
+        </div>
+        <div
+          style={{
+            marginTop: 12,
+            padding: "12px 14px",
+            borderRadius: 16,
+            background: "rgba(255,255,255,0.24)",
+            color: "#2c2647",
+            fontWeight: 800,
+          }}
+        >
+          Награда за ответ: +{reward} очков
+        </div>
+      </div>
+
+      <div style={{ ...cardBaseStyle(), padding: 18 }}>
+        {currentQuestion ? (
+          <>
+            <div
+              style={{
+                fontSize: 22,
+                fontWeight: 800,
+                color: "#211b3b",
+                lineHeight: 1.45,
+              }}
+            >
+              {currentQuestion.text}
+            </div>
+
+            {!answered ? (
+              <button
+                onClick={handleAnswered}
+                style={{ ...primaryButtonStyle, width: "100%", marginTop: 16 }}
+              >
+                Ответил(-а)
+              </button>
+            ) : (
+              <>
+                <div
+                  style={{
+                    marginTop: 14,
+                    padding: "12px 14px",
+                    borderRadius: 16,
+                    background: "rgba(255,255,255,0.24)",
+                    color: "#2c2647",
+                    fontWeight: 800,
+                  }}
+                >
+                  Готово. +{reward} очков начислено ✅
+                </div>
+
+                <button
+                  onClick={handleNextQuestion}
+                  style={{ ...primaryButtonStyle, width: "100%", marginTop: 14 }}
+                >
+                  Следующий вопрос
+                </button>
+              </>
+            )}
+          </>
+        ) : (
+          <>
+            <div
+              style={{
+                fontSize: 22,
+                fontWeight: 800,
+                color: "#211b3b",
+                lineHeight: 1.45,
+              }}
+            >
+              Вопросы закончились 🎉
+            </div>
+
+            <div style={{ marginTop: 10, color: "#4b446a", lineHeight: 1.45 }}>
+              Ты прошёл(а) весь текущий набор вопросов.
+            </div>
+          </>
+        )}
+      </div>
 
       <button onClick={onBack} style={secondaryButtonStyle}>
         Назад в игры
@@ -4590,8 +4863,9 @@ console.log("TG INIT DATA:", tg?.initDataUnsafe);
       };
     });
 
+         if (game.id !== "90-questions") {
       setScreen("menu");
-  };
+    }
 
       const handleCompleteTest = (test: TestDefinition) => {
     setAppState((prev) => {
