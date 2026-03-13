@@ -1279,7 +1279,7 @@ function PairScreen({
   points,
   pollAnswers,
   onBack,
-  
+
   onJoinByCode,
 }: {
   user: TgUser | null;
@@ -4044,7 +4044,7 @@ function ProfileAndStatsScreen({
         </div>
       </div>
 
-       <div
+      <div
   style={{
     marginTop: 16,
     padding: 14,
@@ -4055,7 +4055,7 @@ function ProfileAndStatsScreen({
     color: "#1f1d3a",
   }}
 >
-  Совпадение ответов: {match !== null ? `${match}%` : "—"}
+  Совпадение ответов: —
 </div>
       
 
