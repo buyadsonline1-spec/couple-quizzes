@@ -1027,6 +1027,7 @@ const GAMES: Game[] = [
       },
     ],
   },
+
   {
     id: "bottle",
     title: "Бутылочка",
@@ -1633,21 +1634,7 @@ function PairScreen({
                 </a>
               </div>
 
-              {!pair.partner && (
-                <div
-                  style={{
-                    marginTop: 12,
-                    padding: "12px 14px",
-                    borderRadius: 14,
-                    background: "rgba(255,255,255,0.18)",
-                    color: "#4b446a",
-                    fontSize: 14,
-                    fontWeight: 700,
-                  }}
-                >
-                  Ожидаем подключения партнёра…
-                </div>
-              )}
+
             </div>
           )}
 
@@ -4593,6 +4580,7 @@ export default function Page() {
   function getLiveTelegramUser(): TgUser | null {
   const tgUser = window.Telegram?.WebApp?.initDataUnsafe?.user;
   if (!tgUser?.id) return null;
+  
 
   return {
     id: tgUser.id,
@@ -4602,7 +4590,7 @@ export default function Page() {
     photo_url: tgUser.photo_url,
   };
 }
-  
+
 
 const handleJoinByCode = async (inviteCode: string) => {
   const liveUser = getLiveTelegramUser();
@@ -4865,7 +4853,8 @@ console.log("TG INIT DATA:", tg?.initDataUnsafe);
 
          if (game.id !== "90-questions") {
       setScreen("menu");
-    }
+         }
+    };
 
       const handleCompleteTest = (test: TestDefinition) => {
     setAppState((prev) => {
