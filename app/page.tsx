@@ -1279,7 +1279,7 @@ function PairScreen({
   points,
   pollAnswers,
   onBack,
-
+  
   onJoinByCode,
 }: {
   user: TgUser | null;
@@ -1297,30 +1297,9 @@ function PairScreen({
     ? `https://t.me/testcouple1_bot?startapp=invite_${pair.inviteCode}`
     : "";
 
-      const inviteCode = pair.inviteCode || "";
+  const pairStats = calculatePairStats(pollAnswers);
 
-      <div
-  style={{
-    marginTop: 12,
-    padding: "12px 14px",
-    borderRadius: 16,
-    background: "rgba(255,255,255,0.24)",
-    color: "#241b40",
-    textAlign: "center",
-  }}
->
-  <div style={{ fontSize: 13, color: "#5a5378" }}>Код приглашения</div>
-  <div style={{ marginTop: 4, fontSize: 24, fontWeight: 900, letterSpacing: 1 }}>
-    {inviteCode}
-  </div>
-</div>
-
-  const match = calculateMatch(
-    pollAnswers["girl-romance"],
-    pollAnswers["boy-romance"]
-  );
-
-    const [joinCode, setJoinCode] = useState("");
+  const [joinCode, setJoinCode] = useState("");
   const [joining, setJoining] = useState(false);
 
   async function copyInvite() {
@@ -1334,7 +1313,7 @@ function PairScreen({
     }
   }
 
-    async function handleJoin() {
+  async function handleJoin() {
     const code = joinCode.trim().toUpperCase();
     if (!code) {
       alert("Введите код приглашения");
@@ -1403,11 +1382,11 @@ function PairScreen({
             lineHeight: 1.45,
           }}
         >
-          Здесь можно пригласить партнёра и посмотреть статус вашей пары.
+          Здесь можно посмотреть статус пары и совместимость.
         </div>
       </div>
 
-            {!hasPair ? (
+      {!hasPair ? (
         <>
           <div style={{ ...cardBaseStyle(), padding: 18 }}>
             <div
@@ -1471,7 +1450,14 @@ function PairScreen({
                 </div>
               </div>
 
-              <div style={{ fontSize: 18, fontWeight: 900, color: "#1f1d3a", marginTop: 14 }}>
+              <div
+                style={{
+                  fontSize: 18,
+                  fontWeight: 900,
+                  color: "#1f1d3a",
+                  marginTop: 14,
+                }}
+              >
                 Ссылка-приглашение
               </div>
 
@@ -1717,7 +1703,7 @@ function PairScreen({
                   color: "#6b46ff",
                 }}
               >
-                {match !== null ? `${match}%` : "—"}
+                {pairStats.total !== null ? `${pairStats.total}%` : "—"}
               </div>
 
               <div
@@ -1728,14 +1714,53 @@ function PairScreen({
                   lineHeight: 1.45,
                 }}
               >
-                {match !== null
-                  ? "Процент совпадения по вашим ответам"
-                  : "Совместимость появится, когда вы пройдёте парные опросы"}
+                {pairStats.total !== null
+                  ? `Общая совместимость по ${pairStats.completedThemes} темам`
+                  : "Совместимость появится, когда вы пройдёте общие парные опросы"}
               </div>
             </div>
 
+            {pairStats.total !== null && (
+              <div style={{ display: "grid", gap: 10, marginTop: 14 }}>
+                <div
+                  style={{
+                    padding: "12px 14px",
+                    borderRadius: 16,
+                    background: "rgba(255,255,255,0.24)",
+                  }}
+                >
+                  <div style={{ color: "#2c2647", fontWeight: 700 }}>
+                    Лучше всего совпали
+                  </div>
+                  <div style={{ marginTop: 6, color: "#1c1733", fontWeight: 900 }}>
+                    {pairStats.strongest
+                      .map((item) => `${item.label} (${item.score}%)`)
+                      .join(" • ")}
+                  </div>
+                </div>
+
+                <div
+                  style={{
+                    padding: "12px 14px",
+                    borderRadius: 16,
+                    background: "rgba(255,255,255,0.24)",
+                  }}
+                >
+                  <div style={{ color: "#2c2647", fontWeight: 700 }}>
+                    Есть над чем поработать
+                  </div>
+                  <div style={{ marginTop: 6, color: "#1c1733", fontWeight: 900 }}>
+                    {pairStats.weakest
+                      .map((item) => `${item.label} (${item.score}%)`)
+                      .join(" • ")}
+                  </div>
+                </div>
+              </div>
+            )}
+
             <div style={{ display: "grid", gap: 10, marginTop: 14 }}>
               <StatRow label="Очки" value={points} />
+              <StatRow label="Сравнено тем" value={pairStats.completedThemes} />
             </div>
           </div>
         </>
@@ -1913,6 +1938,70 @@ function calculateMatch(a?: number[], b?: number[]) {
   }
 
   return Math.round((same / len) * 100);
+}
+
+function calculatePairStats(pollAnswers: Record<string, number[]>) {
+  const matchGroups = [
+    { key: "romance", label: "Романтика" },
+    { key: "jealousy", label: "Ревность" },
+    { key: "conflicts", label: "Конфликты" },
+    { key: "boundaries", label: "Границы" },
+    { key: "space", label: "Личное пространство" },
+    { key: "roles", label: "Роли в отношениях" },
+    { key: "future", label: "Будущее" },
+    { key: "trust", label: "Доверие" },
+    { key: "values", label: "Ценности" },
+  ];
+
+  const results = matchGroups
+    .map((group) => {
+      const boyPoll = POLLS.find(
+        (poll) => poll.gender === "boy" && poll.matchGroup === group.key
+      );
+      const girlPoll = POLLS.find(
+        (poll) => poll.gender === "girl" && poll.matchGroup === group.key
+      );
+
+      if (!boyPoll || !girlPoll) return null;
+
+      const score = calculateMatch(
+        pollAnswers[girlPoll.id],
+        pollAnswers[boyPoll.id]
+      );
+
+      if (score === null) return null;
+
+      return {
+        key: group.key,
+        label: group.label,
+        score,
+      };
+    })
+    .filter(Boolean) as { key: string; label: string; score: number }[];
+
+  if (results.length === 0) {
+    return {
+      total: null as number | null,
+      completedThemes: 0,
+      strongest: [] as { key: string; label: string; score: number }[],
+      weakest: [] as { key: string; label: string; score: number }[],
+      all: [] as { key: string; label: string; score: number }[],
+    };
+  }
+
+  const total = Math.round(
+    results.reduce((sum, item) => sum + item.score, 0) / results.length
+  );
+
+  const sorted = [...results].sort((a, b) => b.score - a.score);
+
+  return {
+    total,
+    completedThemes: results.length,
+    strongest: sorted.slice(0, 2),
+    weakest: [...sorted].reverse().slice(0, 2),
+    all: results,
+  };
 }
 
 function loadState(): AppState {
@@ -3877,10 +3966,8 @@ function ProfileAndStatsScreen({
     [user?.first_name, user?.last_name].filter(Boolean).join(" ") ||
     "Пользователь";
   const username = user?.username ? `@${user.username}` : "@telegram_user";
-  const match = calculateMatch(
-  pollAnswers["girl-romance"],
-  pollAnswers["boy-romance"]
-);
+  const pairStats = calculatePairStats(pollAnswers);
+
 
   return (
     <div style={{ padding: 16, display: "grid", gap: 14 }}>
@@ -4291,7 +4378,7 @@ const handleCreateInvite = async () => {
   }
 
   if (appState.pair?.pairId) {
-    
+
     return;
   }
 
