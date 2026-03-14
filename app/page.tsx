@@ -2965,16 +2965,7 @@ const activePoll = POLLS.find((poll) => poll.id === activePollId) || null;
                       {poll.title}
                     </div>
 
-                    <div
-                      style={{
-                        marginTop: 5,
-                        color: "#40395f",
-                        lineHeight: 1.35,
-                        fontSize: 13,
-                      }}
-                    >
-                      {poll.description}
-                    </div>
+                  
                   </div>
 
                   <div
@@ -3240,68 +3231,80 @@ function GamesScreen({
 }
 
   if (!activeGameId) {
-    return (
-      <div style={{ padding: 16, display: "grid", gap: 14 }}>
-        <div style={{ ...cardBaseStyle(), padding: 18 }}>
-          <div style={{ fontSize: 28, fontWeight: 900, color: "#1f1d3a" }}>
-            Игры
-          </div>
-          <div style={{ marginTop: 8, color: "#3a345c", fontSize: 15 }}>
-            Здесь можно играть вдвоём и зарабатывать очки.
-          </div>
+  return (
+    <div style={{ padding: 12, display: "grid", gap: 10 }}>
+      <div style={{ ...cardBaseStyle(), padding: 14 }}>
+        <div style={{ fontSize: 24, fontWeight: 900, color: "#1f1d3a" }}>
+          Игры
         </div>
-
-        {GAMES.map((game) => {
-          const completed = completedGameIds.includes(game.id);
-
-          return (
-            <div key={game.id} style={{ ...cardBaseStyle(), padding: 18 }}>
-              <div style={{ fontSize: 22, fontWeight: 900, color: "#1f1d3a" }}>
-                {game.title}
-              </div>
-              <div style={{ marginTop: 8, color: "#40395f", lineHeight: 1.45 }}>
-                {game.description}
-              </div>
-
-              <div
-                style={{
-                  marginTop: 12,
-                  display: "flex",
-                  justifyContent: "space-between",
-                  gap: 12,
-                  color: "#4d466c",
-                  fontSize: 14,
-                }}
-              >
-                <span>
-                  {game.id === "bottle"
-                    ? "Формат: раунд"
-                    : `Вопросов: ${game.questions.length}`}
-                </span>
-                <span>Награда: +{game.reward}</span>
-              </div>
-
-              <button
-                onClick={() => startGame(game.id)}
-                style={{
-                  ...primaryButtonStyle,
-                  width: "100%",
-                  marginTop: 14,
-                  opacity: completed ? 0.92 : 1,
-                }}
-              >
-                {completed ? "Сыграть снова" : "Начать игру"}
-              </button>
-            </div>
-          );
-        })}
-
-        <button onClick={onBack} style={secondaryButtonStyle}>
-          Назад в меню
-        </button>
+        <div style={{ marginTop: 4, color: "#3a345c", fontSize: 13 }}>
+          Играй и зарабатывай очки
+        </div>
       </div>
-    );
-  }
+
+      {GAMES.map((game) => {
+        const completed = completedGameIds.includes(game.id);
+
+        return (
+          <div key={game.id} style={{ ...cardBaseStyle(), padding: 14 }}>
+            <div style={{ fontSize: 18, fontWeight: 900, color: "#1f1d3a" }}>
+              {game.title}
+            </div>
+
+            <div
+              style={{
+                marginTop: 6,
+                color: "#40395f",
+                lineHeight: 1.35,
+                fontSize: 13,
+              }}
+            >
+              {game.description}
+            </div>
+
+            <div
+              style={{
+                marginTop: 8,
+                display: "flex",
+                justifyContent: "space-between",
+                gap: 10,
+                color: "#4d466c",
+                fontSize: 12,
+              }}
+            >
+              <span>
+                {game.id === "bottle"
+                  ? "Формат: раунд"
+                  : game.id === "90-questions"
+                  ? "Формат: случайный вопрос"
+                  : `Вопросов: ${game.questions.length}`}
+              </span>
+              <span>+{game.reward}</span>
+            </div>
+
+            <button
+              onClick={() => startGame(game.id)}
+              style={{
+                ...primaryButtonStyle,
+                width: "100%",
+                marginTop: 10,
+                padding: "12px 14px",
+                fontSize: 15,
+                opacity: completed ? 0.92 : 1,
+              }}
+            >
+              {completed ? "Сыграть снова" : "Начать"}
+            </button>
+          </div>
+        );
+      })}
+
+      <button onClick={onBack} style={{ ...secondaryButtonStyle, marginTop: 0 }}>
+        Назад в меню
+      </button>
+    </div>
+  );
+}
 
   if (activeGame?.id === "bottle") {
     return (
@@ -3918,64 +3921,74 @@ function TestsScreen({
   }
 
   if (!activeTestId) {
-    return (
-      <div style={{ padding: 16, display: "grid", gap: 14 }}>
-        <div style={{ ...cardBaseStyle(), padding: 18 }}>
-          <div style={{ fontSize: 28, fontWeight: 900, color: "#1f1d3a" }}>
-            Тесты
-          </div>
-          <div style={{ marginTop: 8, color: "#3a345c", fontSize: 15 }}>
-            Пройди тест и узнай о себе и своих отношениях чуть больше.
-          </div>
+  return (
+    <div style={{ padding: 12, display: "grid", gap: 10 }}>
+      <div style={{ ...cardBaseStyle(), padding: 14 }}>
+        <div style={{ fontSize: 24, fontWeight: 900, color: "#1f1d3a" }}>
+          Тесты
         </div>
-
-        {TESTS.map((test) => {
-          const completed = completedTestIds.includes(test.id);
-
-          return (
-            <div key={test.id} style={{ ...cardBaseStyle(), padding: 18 }}>
-              <div style={{ fontSize: 22, fontWeight: 900, color: "#1f1d3a" }}>
-                {test.title}
-              </div>
-              <div style={{ marginTop: 8, color: "#40395f", lineHeight: 1.45 }}>
-                {test.description}
-              </div>
-
-              <div
-                style={{
-                  marginTop: 12,
-                  display: "flex",
-                  justifyContent: "space-between",
-                  gap: 12,
-                  color: "#4d466c",
-                  fontSize: 14,
-                }}
-              >
-                <span>Вопросов: {test.questions.length}</span>
-                <span>Награда: +{test.reward}</span>
-              </div>
-
-              <button
-                onClick={() => startTest(test.id)}
-                style={{
-                  ...primaryButtonStyle,
-                  width: "100%",
-                  marginTop: 14,
-                  opacity: completed ? 0.92 : 1,
-                }}
-              >
-                {completed ? "Пройти снова" : "Начать тест"}
-              </button>
-            </div>
-          );
-        })}
-
-        <button onClick={onBack} style={secondaryButtonStyle}>
-          Назад в меню
-        </button>
+        <div style={{ marginTop: 4, color: "#3a345c", fontSize: 13 }}>
+          Узнай о себе и отношениях больше
+        </div>
       </div>
-    );
-  }
+
+      {TESTS.map((test) => {
+        const completed = completedTestIds.includes(test.id);
+
+        return (
+          <div key={test.id} style={{ ...cardBaseStyle(), padding: 14 }}>
+            <div style={{ fontSize: 18, fontWeight: 900, color: "#1f1d3a" }}>
+              {test.title}
+            </div>
+
+            <div
+              style={{
+                marginTop: 6,
+                color: "#40395f",
+                lineHeight: 1.35,
+                fontSize: 13,
+              }}
+            >
+              {test.description}
+            </div>
+
+            <div
+              style={{
+                marginTop: 8,
+                display: "flex",
+                justifyContent: "space-between",
+                gap: 10,
+                color: "#4d466c",
+                fontSize: 12,
+              }}
+            >
+              <span>{test.questions.length} вопросов</span>
+              <span>+{test.reward}</span>
+            </div>
+
+            <button
+              onClick={() => startTest(test.id)}
+              style={{
+                ...primaryButtonStyle,
+                width: "100%",
+                marginTop: 10,
+                padding: "12px 14px",
+                fontSize: 15,
+                opacity: completed ? 0.92 : 1,
+              }}
+            >
+              {completed ? "Пройти снова" : "Начать"}
+            </button>
+          </div>
+        );
+      })}
+
+      <button onClick={onBack} style={{ ...secondaryButtonStyle, marginTop: 0 }}>
+        Назад в меню
+      </button>
+    </div>
+  );
+}
 
   if (!activeTest || !currentQuestion) return null;
 
@@ -4163,30 +4176,29 @@ function RewardsScreen({
   }
 
   return (
-    <div style={{ padding: 16, display: "grid", gap: 14 }}>
-      <div style={{ ...cardBaseStyle(), padding: 18 }}>
-        <div style={{ fontSize: 28, fontWeight: 900, color: "#1f1d3a" }}>
-          Колесо призов
-        </div>
-        <div style={{ marginTop: 8, color: "#3a345c", fontSize: 15, lineHeight: 1.45 }}>
-          Крути колесо категорий. После остановки выпадет категория, а внутри неё —
-          случайный реальный приз. Одно вращение стоит <b>{WHEEL_SPIN_COST}</b> очков.
-        </div>
+    <div style={{ padding: 12, display: "grid", gap: 10 }}>
+     <div style={{ ...cardBaseStyle(), padding: 14 }}>
+  <div style={{ fontSize: 24, fontWeight: 900, color: "#1f1d3a" }}>
+    Колесо призов
+  </div>
+  <div style={{ marginTop: 4, color: "#3a345c", fontSize: 13, lineHeight: 1.4 }}>
+    Одно вращение стоит <b>{WHEEL_SPIN_COST}</b> очков
+  </div>
 
-        <div
-          style={{
-            marginTop: 14,
-            padding: "14px 16px",
-            borderRadius: 18,
-            background: "rgba(255,255,255,0.26)",
-            fontSize: 20,
-            fontWeight: 900,
-            color: "#241b40",
-          }}
-        >
-          ⭐ Доступно очков: {points}
-        </div>
-      </div>
+  <div
+    style={{
+      marginTop: 10,
+      padding: "12px 14px",
+      borderRadius: 16,
+      background: "rgba(255,255,255,0.26)",
+      fontSize: 17,
+      fontWeight: 900,
+      color: "#241b40",
+    }}
+  >
+    ⭐ Очков: {points}
+  </div>
+</div>
 
       <div style={{ ...cardBaseStyle(), padding: 18 }}>
         <div
@@ -4293,9 +4305,11 @@ function RewardsScreen({
           onClick={handleSpin}
           disabled={isSpinning || points < WHEEL_SPIN_COST}
           style={{
-            ...primaryButtonStyle,
-            width: "100%",
-            marginTop: 18,
+  ...primaryButtonStyle,
+  width: "100%",
+  marginTop: 12,
+  padding: "12px 14px",
+  fontSize: 15,
             opacity: isSpinning || points < WHEEL_SPIN_COST ? 0.6 : 1,
             cursor:
               isSpinning || points < WHEEL_SPIN_COST ? "not-allowed" : "pointer",
