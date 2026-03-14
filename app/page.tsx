@@ -1348,46 +1348,39 @@ const TOP_PLAYERS = [
 
 const DEFAULT_STATE: AppState = {
   points: 0,
-  dailyBonus: {
-    streakDay: 1,
-    lastClaimDate: null,
-    totalPointsEarnedFromBonus: 0,
-  },
-  stats: {
-    pollsCompleted: 0,
-    gamesPlayed: 0,
-    testsCompleted: 0,
-    rewardsRedeemed: 0,
-  },
+  dailyBonus: { ... },
+  stats: { ... },
   completedPollIds: [],
   wonRewards: [],
-  completedGameIds: [],
+  
   completedTestIds: [],
+  completedGameIds: [],
   pollAnswers: {},
+
   pair: {
     pairId: null,
     inviteCode: null,
     partner: null,
     createdByTelegramId: null,
   },
-    profile: {
-  displayName: "",
-  avatar: null,
-},
 
-dailyPair: {
-  boy: {
-    date: null,
-    questionId: null,
-    answerIndex: null,
+  dailyPair: {
+    boy: {
+      date: null,
+      questionId: null,
+      answerIndex: null,
+    },
+    girl: {
+      date: null,
+      questionId: null,
+      answerIndex: null,
+    },
   },
-  girl: {
-    date: null,
-    questionId: null,
-    answerIndex: null,
-  },
-},
 
+  profile: {
+    displayName: "",
+    avatar: null,
+  },
 };
 
 function getScaleResult(totalScore: number, maxScore: number): TestResult {
