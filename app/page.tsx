@@ -2778,31 +2778,32 @@ function MainMenu({
   const firstName = user?.first_name || "Друг";
 
   return (
-    <div style={{ padding: 16, paddingTop: 18 }}>
-      <div style={{ ...cardBaseStyle(), padding: 18, marginBottom: 16 }}>
+    <div style={{ padding: 12, paddingTop: 14 }}>
+      <div style={{ ...cardBaseStyle(), padding: 14, marginBottom: 12 }}>
         <div
           style={{
             display: "flex",
             alignItems: "center",
             justifyContent: "space-between",
-            gap: 12,
+            gap: 10,
           }}
         >
           <div>
-            <div style={{ fontSize: 28, fontWeight: 900, color: "#1f1d3a" }}>
+            <div style={{ fontSize: 24, fontWeight: 900, color: "#1f1d3a" }}>
               Привет, {firstName}
             </div>
-            <div style={{ marginTop: 6, color: "#3a345c", fontSize: 15 }}>
-              Выбирай раздел и начинай игру
+
+            <div style={{ marginTop: 4, color: "#3a345c", fontSize: 13 }}>
+              Выбирай раздел
             </div>
           </div>
 
           <div
             style={{
-              padding: "12px 14px",
-              borderRadius: 16,
+              padding: "8px 10px",
+              borderRadius: 12,
               background: "rgba(255,255,255,0.34)",
-              fontSize: 16,
+              fontSize: 14,
               fontWeight: 900,
               color: "#241b40",
               whiteSpace: "nowrap",
@@ -2813,28 +2814,28 @@ function MainMenu({
         </div>
       </div>
 
-     <div
-  style={{
-    display: "grid",
-    gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
-    gap: 14,
-  }}
->
-  <MenuButton label="Опросы" emoji="🗳️" onClick={() => onNavigate("polls")} />
-  <MenuButton label="Игры" emoji="🎮" onClick={() => onNavigate("games")} />
-  <MenuButton label="Тесты" emoji="🧠" onClick={() => onNavigate("tests")} />
-  <MenuButton label="Очки и призы" emoji="🎡" onClick={() => onNavigate("rewards")} />
-  <MenuButton label="Пара" emoji="💕" onClick={() => onNavigate("pair")} />
-  <MenuButton label="Топ игроков" emoji="🏆" onClick={() => onNavigate("top")} />
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
+          gap: 10,
+        }}
+      >
+        <MenuButton label="Опросы" emoji="🗳️" onClick={() => onNavigate("polls")} />
+        <MenuButton label="Игры" emoji="🎮" onClick={() => onNavigate("games")} />
+        <MenuButton label="Тесты" emoji="🧠" onClick={() => onNavigate("tests")} />
+        <MenuButton label="Очки и призы" emoji="🎡" onClick={() => onNavigate("rewards")} />
+        <MenuButton label="Пара" emoji="💕" onClick={() => onNavigate("pair")} />
+        <MenuButton label="Топ игроков" emoji="🏆" onClick={() => onNavigate("top")} />
 
-  <div style={{ gridColumn: "1 / -1" }}>
-    <MenuButton
-      label="Профиль и статистика"
-      emoji="👤"
-      onClick={() => onNavigate("profile")}
-    />
-  </div>
-</div>
+        <div style={{ gridColumn: "1 / -1" }}>
+          <MenuButton
+            label="Профиль и статистика"
+            emoji="👤"
+            onClick={() => onNavigate("profile")}
+          />
+        </div>
+      </div>
     </div>
   );
 }
