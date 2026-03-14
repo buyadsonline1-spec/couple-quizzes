@@ -2436,7 +2436,7 @@ function loadState(): AppState {
       DEFAULT_STATE.pair.createdByTelegramId,
   },
 
-  dailyPair: {
+dailyPair: {
   boy: {
     date: parsed.dailyPair?.boy?.date ?? DEFAULT_STATE.dailyPair.boy.date,
     questionId:
@@ -2451,14 +2451,15 @@ function loadState(): AppState {
     answerIndex:
       parsed.dailyPair?.girl?.answerIndex ?? DEFAULT_STATE.dailyPair.girl.answerIndex,
   },
+},
 
-  profile: {
-    displayName:
-      parsed.profile?.displayName ?? DEFAULT_STATE.profile.displayName,
-    avatar: parsed.profile?.avatar ?? DEFAULT_STATE.profile.avatar,
-  },
+profile: {
+  displayName:
+    parsed.profile?.displayName ?? DEFAULT_STATE.profile.displayName,
+  avatar: parsed.profile?.avatar ?? DEFAULT_STATE.profile.avatar,
+},
 }
-};
+
 
   } catch {
     return DEFAULT_STATE;
