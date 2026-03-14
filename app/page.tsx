@@ -66,24 +66,40 @@ type WonReward = {
   wonAt: string;
 };
 
+
 type AppState = {
   points: number;
-  dailyBonus: DailyBonusState;
-  stats: AppStats;
+
+  dailyBonus: {
+    streakDay: number;
+    lastClaimDate: string | null;
+    totalPointsEarnedFromBonus: number;
+  };
+
+  stats: {
+    pollsCompleted: number;
+    gamesPlayed: number;
+    testsCompleted: number;
+    rewardsRedeemed: number;
+  };
+
   completedPollIds: string[];
-  wonRewards: WonReward[];
-  completedGameIds: string[];
+  wonRewards: string[];
   completedTestIds: string[];
+  completedGameIds: string[];
   pollAnswers: Record<string, number[]>;
+
   pair: PairState;
-  profile: {
-  displayName: string;
-  avatar: string | null;
+
   dailyPair: {
-  boy: DailyPairAnswerState;
-  girl: DailyPairAnswerState;
-};
-};
+    boy: DailyPairAnswerState;
+    girl: DailyPairAnswerState;
+  };
+
+  profile: {
+    displayName: string;
+    avatar: string | null;
+  };
 };
 
  type Poll = {
@@ -1364,7 +1380,7 @@ const DEFAULT_STATE: AppState = {
 
   completedPollIds: [],
   wonRewards: [],
-  
+
   completedTestIds: [],
   completedGameIds: [],
   pollAnswers: {},
