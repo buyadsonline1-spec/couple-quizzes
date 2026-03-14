@@ -5316,6 +5316,7 @@ console.log("TG INIT DATA:", tg?.initDataUnsafe);
   />
 )}
 
+{screen === "pair" && (
 <PairScreen
   user={user}
   pair={appState.pair}
@@ -5326,6 +5327,7 @@ console.log("TG INIT DATA:", tg?.initDataUnsafe);
   onBack={() => setScreen("menu")}
   onJoinByCode={handleJoinByCode}
 />
+)}
 
 
         {!showDailyBonus && screen === "welcome" && totalActivities > 999999 && <div />}
