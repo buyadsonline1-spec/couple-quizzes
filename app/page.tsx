@@ -84,7 +84,7 @@ type AppState = {
   };
 
   completedPollIds: string[];
-  wonRewards: string[];
+  wonRewards: WonReward[];
   completedTestIds: string[];
   completedGameIds: string[];
   pollAnswers: Record<string, number[]>;
