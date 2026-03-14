@@ -1348,8 +1348,20 @@ const TOP_PLAYERS = [
 
 const DEFAULT_STATE: AppState = {
   points: 0,
-  dailyBonus: { ... },
-  stats: { ... },
+
+  dailyBonus: {
+    streakDay: 1,
+    lastClaimDate: null,
+    totalPointsEarnedFromBonus: 0,
+  },
+
+  stats: {
+    pollsCompleted: 0,
+    gamesPlayed: 0,
+    testsCompleted: 0,
+    rewardsRedeemed: 0,
+  },
+
   completedPollIds: [],
   wonRewards: [],
   
