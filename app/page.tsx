@@ -79,6 +79,10 @@ type AppState = {
   profile: {
   displayName: string;
   avatar: string | null;
+  dailyPair: {
+  boy: DailyPairAnswerState;
+  girl: DailyPairAnswerState;
+};
 };
 };
 
@@ -172,6 +176,18 @@ type PairState = {
   inviteCode: string | null;
   partner: PairMember | null;
   createdByTelegramId: number | null;
+};
+
+type DailyPairQuestion = {
+  id: string;
+  text: string;
+  options: string[];
+};
+
+type DailyPairAnswerState = {
+  date: string | null;
+  questionId: string | null;
+  answerIndex: number | null;
 };
 
 
@@ -1066,6 +1082,7 @@ const BOTTLE_TASKS: BottleTask[] = [
   { id: "b16", target: "boy", text: "Сделай ей короткое романтичное признание." },
 ];
 
+
 const LOVE_QUESTIONS: LoveQuestion[] = [
   { id: "lq1", text: "Когда ты в последний раз чувствовал(а) себя по-настоящему любимым(ой)?" },
   { id: "lq2", text: "Что для тебя значит настоящая близость в отношениях?" },
@@ -1265,6 +1282,44 @@ const REWARD_CATEGORIES: RewardCategory[] = [
   },
 ];
 
+const DAILY_PAIR_QUESTIONS: DailyPairQuestion[] = [
+  {
+    id: "dp1",
+    text: "Что важнее всего для крепких отношений?",
+    options: ["Доверие", "Забота", "Страсть", "Свобода"],
+  },
+  {
+    id: "dp2",
+    text: "Как лучше всего мириться после ссоры?",
+    options: ["Разговором", "Объятием", "Пауза и время", "Шуткой"],
+  },
+  {
+    id: "dp3",
+    text: "Какой идеальный вечер для пары?",
+    options: ["Фильм дома", "Прогулка", "Ужин вне дома", "Поездка"],
+  },
+  {
+    id: "dp4",
+    text: "Что сильнее всего показывает любовь?",
+    options: ["Слова", "Поступки", "Прикосновения", "Время вместе"],
+  },
+  {
+    id: "dp5",
+    text: "Что важнее в отношениях каждый день?",
+    options: ["Поддержка", "Честность", "Нежность", "Внимание"],
+  },
+  {
+    id: "dp6",
+    text: "Как лучше проводить выходные вдвоём?",
+    options: ["Дома", "Активно", "С друзьями", "Спонтанно"],
+  },
+  {
+    id: "dp7",
+    text: "Что сильнее всего разрушает близость?",
+    options: ["Ложь", "Холодность", "Ревность", "Безразличие"],
+  },
+];
+
 const WHEEL_COLORS = [
   "#ff8fb1",
   "#8fb8ff",
@@ -1319,6 +1374,20 @@ const DEFAULT_STATE: AppState = {
   displayName: "",
   avatar: null,
 },
+
+dailyPair: {
+  boy: {
+    date: null,
+    questionId: null,
+    answerIndex: null,
+  },
+  girl: {
+    date: null,
+    questionId: null,
+    answerIndex: null,
+  },
+},
+
 };
 
 function getScaleResult(totalScore: number, maxScore: number): TestResult {
@@ -1394,16 +1463,18 @@ function PairScreen({
   pair,
   points,
   pollAnswers,
+  appState,
+  setAppState,
   onBack,
-
   onJoinByCode,
 }: {
   user: TgUser | null;
   pair: PairState;
   points: number;
   pollAnswers: Record<string, number[]>;
+  appState: AppState;
+  setAppState: React.Dispatch<React.SetStateAction<AppState>>;
   onBack: () => void;
-
   onJoinByCode: (code: string) => Promise<void>;
 }) {
 
@@ -1501,6 +1572,8 @@ function PairScreen({
           Здесь можно посмотреть статус пары и совместимость.
         </div>
       </div>
+
+      <DailyPairQuestionCard appState={appState} setAppState={setAppState} />
 
       {!hasPair ? (
         <>
@@ -1876,6 +1949,187 @@ function PairScreen({
   );
 }
 
+function DailyPairQuestionCard({
+  appState,
+  setAppState,
+}: {
+  appState: AppState;
+  setAppState: React.Dispatch<React.SetStateAction<AppState>>;
+}) {
+  const today = getTodayLocalDateString();
+  const question = getDailyPairQuestionForToday();
+
+  const boyToday =
+    appState.dailyPair.boy.date === today &&
+    appState.dailyPair.boy.questionId === question.id;
+
+  const girlToday =
+    appState.dailyPair.girl.date === today &&
+    appState.dailyPair.girl.questionId === question.id;
+
+  const bothAnswered = boyToday && girlToday;
+  const boyAnswer = appState.dailyPair.boy.answerIndex;
+  const girlAnswer = appState.dailyPair.girl.answerIndex;
+
+  function saveAnswer(target: "boy" | "girl", answerIndex: number) {
+    setAppState((prev) => ({
+      ...prev,
+      dailyPair: {
+        ...prev.dailyPair,
+        [target]: {
+          date: today,
+          questionId: question.id,
+          answerIndex,
+        },
+      },
+      points: prev.points + 15,
+    }));
+  }
+
+  return (
+    <div style={{ ...cardBaseStyle(), padding: 18 }}>
+      <div style={{ fontSize: 22, fontWeight: 900, color: "#1f1d3a" }}>
+        Вопрос дня 💞
+      </div>
+
+      <div
+        style={{
+          marginTop: 10,
+          color: "#3a345c",
+          fontSize: 14,
+          lineHeight: 1.45,
+        }}
+      >
+        Оба отвечают на один вопрос. Когда ответят оба — можно сравнить результат.
+      </div>
+
+      <div
+        style={{
+          marginTop: 14,
+          padding: "14px 16px",
+          borderRadius: 16,
+          background: "rgba(255,255,255,0.24)",
+          color: "#241b40",
+          fontWeight: 800,
+          lineHeight: 1.4,
+          fontSize: 17,
+        }}
+      >
+        {question.text}
+      </div>
+
+      {!boyToday && (
+        <div style={{ marginTop: 14 }}>
+          <div style={{ fontWeight: 800, color: "#2c2647", marginBottom: 8 }}>
+            Ответ парня
+          </div>
+          <div style={{ display: "grid", gap: 8 }}>
+            {question.options.map((option, index) => (
+              <button
+                key={`boy-${index}`}
+                onClick={() => saveAnswer("boy", index)}
+                style={{
+                  border: "1px solid rgba(255,255,255,0.28)",
+                  borderRadius: 16,
+                  padding: "12px 14px",
+                  background: "rgba(255,255,255,0.20)",
+                  color: "#1f1d3a",
+                  textAlign: "left",
+                  fontSize: 15,
+                  fontWeight: 700,
+                  cursor: "pointer",
+                }}
+              >
+                👦 {option}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {!girlToday && (
+        <div style={{ marginTop: 14 }}>
+          <div style={{ fontWeight: 800, color: "#2c2647", marginBottom: 8 }}>
+            Ответ девушки
+          </div>
+          <div style={{ display: "grid", gap: 8 }}>
+            {question.options.map((option, index) => (
+              <button
+                key={`girl-${index}`}
+                onClick={() => saveAnswer("girl", index)}
+                style={{
+                  border: "1px solid rgba(255,255,255,0.28)",
+                  borderRadius: 16,
+                  padding: "12px 14px",
+                  background: "rgba(255,255,255,0.20)",
+                  color: "#1f1d3a",
+                  textAlign: "left",
+                  fontSize: 15,
+                  fontWeight: 700,
+                  cursor: "pointer",
+                }}
+              >
+                👧 {option}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      <div style={{ display: "grid", gap: 8, marginTop: 14 }}>
+        <div
+          style={{
+            padding: "10px 12px",
+            borderRadius: 14,
+            background: "rgba(255,255,255,0.20)",
+            color: "#2c2647",
+            fontWeight: 700,
+          }}
+        >
+          Парень: {boyToday ? "ответил" : "ещё не ответил"}
+        </div>
+        <div
+          style={{
+            padding: "10px 12px",
+            borderRadius: 14,
+            background: "rgba(255,255,255,0.20)",
+            color: "#2c2647",
+            fontWeight: 700,
+          }}
+        >
+          Девушка: {girlToday ? "ответила" : "ещё не ответила"}
+        </div>
+      </div>
+
+      {bothAnswered && (
+        <div
+          style={{
+            marginTop: 14,
+            padding: "14px 16px",
+            borderRadius: 16,
+            background:
+              boyAnswer === girlAnswer
+                ? "rgba(255,255,255,0.34)"
+                : "rgba(255,255,255,0.24)",
+            color: "#241b40",
+          }}
+        >
+          <div style={{ fontWeight: 900, fontSize: 16 }}>
+            {boyAnswer === girlAnswer
+              ? "Вы ответили одинаково 💘"
+              : "Ответы отличаются ✨"}
+          </div>
+          <div style={{ marginTop: 8, fontSize: 14, lineHeight: 1.45 }}>
+            👦 {question.options[boyAnswer ?? 0]}
+            <br />
+            👧 {question.options[girlAnswer ?? 0]}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 
 function getPersonalityResult(answerIndexes: number[]): TestResult {
   const labels = [
@@ -1956,6 +2210,13 @@ function getTodayLocalDateString() {
   const month = String(now.getMonth() + 1).padStart(2, "0");
   const day = String(now.getDate()).padStart(2, "0");
   return `${year}-${month}-${day}`;
+}
+
+function getDailyPairQuestionForToday() {
+  const today = getTodayLocalDateString();
+  const dayNumber = Number(today.replaceAll("-", ""));
+  const index = dayNumber % DAILY_PAIR_QUESTIONS.length;
+  return DAILY_PAIR_QUESTIONS[index];
 }
 
 function getCurrentDateTimeLabel() {
@@ -2153,11 +2414,29 @@ function loadState(): AppState {
       parsed.pair?.createdByTelegramId ??
       DEFAULT_STATE.pair.createdByTelegramId,
   },
+
+  dailyPair: {
+  boy: {
+    date: parsed.dailyPair?.boy?.date ?? DEFAULT_STATE.dailyPair.boy.date,
+    questionId:
+      parsed.dailyPair?.boy?.questionId ?? DEFAULT_STATE.dailyPair.boy.questionId,
+    answerIndex:
+      parsed.dailyPair?.boy?.answerIndex ?? DEFAULT_STATE.dailyPair.boy.answerIndex,
+  },
+  girl: {
+    date: parsed.dailyPair?.girl?.date ?? DEFAULT_STATE.dailyPair.girl.date,
+    questionId:
+      parsed.dailyPair?.girl?.questionId ?? DEFAULT_STATE.dailyPair.girl.questionId,
+    answerIndex:
+      parsed.dailyPair?.girl?.answerIndex ?? DEFAULT_STATE.dailyPair.girl.answerIndex,
+  },
+
   profile: {
     displayName:
       parsed.profile?.displayName ?? DEFAULT_STATE.profile.displayName,
     avatar: parsed.profile?.avatar ?? DEFAULT_STATE.profile.avatar,
   },
+}
 };
 
   } catch {
@@ -5014,17 +5293,16 @@ console.log("TG INIT DATA:", tg?.initDataUnsafe);
   />
 )}
 
-{screen === "pair" && (
-  <PairScreen
-    user={user}
-    pair={appState.pair}
-    points={appState.points}
-    pollAnswers={appState.pollAnswers}
-    onBack={() => setScreen("menu")}
-    
-    onJoinByCode={handleJoinByCode}
-  />
-)}
+<PairScreen
+  user={user}
+  pair={appState.pair}
+  points={appState.points}
+  pollAnswers={appState.pollAnswers}
+  appState={appState}
+  setAppState={setAppState}
+  onBack={() => setScreen("menu")}
+  onJoinByCode={handleJoinByCode}
+/>
 
 
         {!showDailyBonus && screen === "welcome" && totalActivities > 999999 && <div />}
