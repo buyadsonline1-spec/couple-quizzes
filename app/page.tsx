@@ -3117,6 +3117,31 @@ function MainMenu({
   return (
     <div style={{ padding: 12, paddingTop: 14 }}>
       <div style={{ ...cardBaseStyle(), padding: 14, marginBottom: 12 }}>
+  <div
+    style={{
+      display: "flex",
+      alignItems: "flex-start",
+      justifyContent: "space-between",
+      gap: 10,
+    }}
+  >
+    <div style={{ minWidth: 0, flex: 1 }}>
+      <div style={{ fontSize: 24, fontWeight: 900, color: "#1f1d3a" }}>
+        Привет, {firstName}
+      </div>
+
+      <div style={{ marginTop: 4, color: "#3a345c", fontSize: 13 }}>
+        Выбирай раздел
+      </div>
+
+      <div
+        style={{
+          marginTop: 12,
+          padding: "10px 12px",
+          borderRadius: 14,
+          background: "rgba(255,255,255,0.26)",
+        }}
+      >
         <div
           style={{
             display: "flex",
@@ -3126,30 +3151,87 @@ function MainMenu({
           }}
         >
           <div>
-            <div style={{ fontSize: 24, fontWeight: 900, color: "#1f1d3a" }}>
-              Привет, {firstName}
+            <div style={{ fontSize: 12, color: "#5a5378", fontWeight: 700 }}>
+              Уровень пары
             </div>
-
-            <div style={{ marginTop: 4, color: "#3a345c", fontSize: 13 }}>
-              Выбирай раздел
+            <div
+              style={{
+                marginTop: 2,
+                fontSize: 16,
+                fontWeight: 900,
+                color: "#1f1d3a",
+              }}
+            >
+              {pairLevel.title}
             </div>
           </div>
 
           <div
             style={{
-              padding: "8px 10px",
+              padding: "6px 10px",
               borderRadius: 12,
               background: "rgba(255,255,255,0.34)",
-              fontSize: 14,
+              fontSize: 13,
               fontWeight: 900,
-              color: "#241b40",
+              color: "#6b46ff",
               whiteSpace: "nowrap",
             }}
           >
-            ⭐ {points}
+            lvl {pairLevel.level}
           </div>
         </div>
+
+        <div
+          style={{
+            marginTop: 8,
+            height: 8,
+            borderRadius: 999,
+            background: "rgba(255,255,255,0.24)",
+            overflow: "hidden",
+          }}
+        >
+          <div
+            style={{
+              width: `${pairLevel.progress}%`,
+              height: "100%",
+              borderRadius: 999,
+              background: "linear-gradient(135deg,#8f6bff,#ff76ba)",
+              transition: "width 0.35s ease",
+            }}
+          />
+        </div>
+
+        <div
+          style={{
+            marginTop: 6,
+            fontSize: 11,
+            color: "#5a5378",
+            fontWeight: 700,
+          }}
+        >
+          {pairLevel.nextPoints
+            ? `До следующего уровня: ${pairLevel.nextPoints - points}`
+            : "Максимальный уровень"}
+        </div>
       </div>
+    </div>
+
+    <div
+      style={{
+        padding: "8px 10px",
+        borderRadius: 12,
+        background: "rgba(255,255,255,0.34)",
+        fontSize: 14,
+        fontWeight: 900,
+        color: "#241b40",
+        whiteSpace: "nowrap",
+      }}
+    >
+      ⭐ {points}
+    </div>
+  </div>
+</div>
+
 
       <div
         style={{
