@@ -36,7 +36,9 @@ type Screen =
   | "pair"
   | "daily-pair"
   | "profile"
-  | "top";
+  | "top"
+  | "paywall";
+
 
 
 type TgUser = {
@@ -71,6 +73,8 @@ type WonReward = {
 
 type AppState = {
   points: number;
+  isPremium: boolean;
+
 
   referrals: {
   invitedUsers: string[];
@@ -239,7 +243,8 @@ type WeeklyPairLeaderboardRow = {
 
 const DAILY_REWARDS = [25, 50, 75, 100, 150, 200, 300, 400, 500];
 const STORAGE_KEY = "couple-quizzes-miniapp-v6";
-const WHEEL_SPIN_COST = 100;
+const WHEEL_SPIN_COST = 2000;
+
 
 const TESTS: TestDefinition[] = [
   {
@@ -1396,6 +1401,8 @@ const WHEEL_COLORS = [
 
 const DEFAULT_STATE: AppState = {
   points: 0,
+  isPremium: false,
+
 
   referrals: {
   invitedUsers: [],
@@ -1471,30 +1478,14 @@ function getScaleResult(totalScore: number, maxScore: number): TestResult {
     };
   }
 
-  return {
+   return {
     title: "Высокий уровень доверия",
     subtitle: "В отношениях много опоры и безопасности",
     description:
       "Ты чувствуешь рядом с партнёром стабильность, принятие и эмоциональную безопасность. Это сильная основа для близких и зрелых отношений.",
   };
 }
-
-const FREE_POLLS_LIMIT = 3;
-const canPlayPoll = isPremium || stats.pollsCompleted < FREE_POLLS_LIMIT;
-function openPoll(pollId: string) {
-  if (!isPremium && stats.pollsCompleted >= FREE_POLLS_LIMIT) {
-    setScreen("paywall");
-    return;
-  }
-
-  setCurrentPoll(pollId);
-  setScreen("poll");
-}
-
-
-
-
-
+  
 function getLoveLanguageResult(answerIndexes: number[]): TestResult {
   const labels = [
     "Слова поддержки",
@@ -2646,10 +2637,7 @@ function getPairLevelInfo(points: number) {
   };
 }
 
-function buyPremium() {
-  setIsPremium(true);
-  setPoints((p) => p + 500);
-}
+
 
 
 
@@ -2731,6 +2719,8 @@ function loadState(): AppState {
   
    return {
   points: parsed.points ?? DEFAULT_STATE.points,
+  isPremium: parsed.isPremium ?? DEFAULT_STATE.isPremium,
+
 
   referrals: {
   invitedUsers:
@@ -5010,7 +5000,6 @@ function TopPlayersScreen({
 }
 
 
-
 function ProfileAndStatsScreen({
   user,
   points,
@@ -5019,8 +5008,11 @@ function ProfileAndStatsScreen({
   wonRewards,
   pollAnswers,
   referrals,
+  isPremium,
   onBack,
 }: {
+
+
   user: TgUser | null;
   points: number;
   stats: AppStats;
@@ -5030,6 +5022,7 @@ function ProfileAndStatsScreen({
   referrals: {
     invitedUsers: string[];
     totalReward: number;
+      isPremium: boolean;
   };
   onBack: () => void;
 }) {
@@ -5085,6 +5078,25 @@ function ProfileAndStatsScreen({
             <div style={{ marginTop: 4, color: "#4d466c", fontSize: 15 }}>
               {username}
             </div>
+            {isPremium && (
+  <div
+    style={{
+      marginTop: 8,
+      display: "inline-flex",
+      alignItems: "center",
+      gap: 8,
+      padding: "8px 12px",
+      borderRadius: 999,
+      background: "rgba(255,255,255,0.30)",
+      color: "#241b40",
+      fontWeight: 900,
+      fontSize: 13,
+    }}
+  >
+    👑 Premium
+  </div>
+)}
+
             <div
               style={{
                 marginTop: 10,
@@ -5697,6 +5709,7 @@ const handleCreateInvite = async () => {
 
 const [weeklyPairLeaderboard, setWeeklyPairLeaderboard] = useState<WeeklyPairLeaderboardRow[]>([]);
 
+
   const [mounted, setMounted] = useState(false);
   const [screen, setScreen] = useState<Screen>("welcome");
   const [appState, setAppState] = useState<AppState>(DEFAULT_STATE);
@@ -5828,6 +5841,7 @@ setAppState((prev) => ({
 }));
 
 
+const FREE_POLLS_LIMIT = 3;
 
     const weekKey = getCurrentWeekKey();
 const leaderboardRows = await loadWeeklyPairLeaderboard(weekKey);
@@ -5855,6 +5869,23 @@ setWeeklyPairLeaderboard(leaderboardRows);
       appState.stats.testsCompleted
     );
   }, [appState.stats]);
+
+  const handleBuyPremium = () => {
+  setAppState((prev) => {
+    if (prev.isPremium) {
+      return prev;
+    }
+
+    return {
+      ...prev,
+      isPremium: true,
+      points: prev.points + 500,
+    };
+  });
+
+  setScreen("menu");
+};
+
 
   const handleClaimBonus = () => {
     const reward = getRewardForDay(claimableDay);
@@ -6000,13 +6031,15 @@ const handleCompletePoll = (poll: Poll, answers: number[]) => {
 
   return (
     <main
-      style={{
-        minHeight: "100vh",
-        background:
-          "radial-gradient(circle, rgba(238, 174, 202, 1) 0%, rgba(148, 187, 233, 1) 100%)",
-        paddingBottom: 24,
-      }}
-    >
+  style={{
+    minHeight: "100vh",
+    background: appState.isPremium
+      ? "linear-gradient(135deg, #6f5bff 0%, #ff76ba 50%, #8fd3ff 100%)"
+      : "radial-gradient(circle, rgba(238, 174, 202, 1) 0%, rgba(148, 187, 233, 1) 100%)",
+    paddingBottom: 24,
+  }}
+>
+
 
 <style>{`
   @keyframes pairLevelPop {
@@ -6046,14 +6079,27 @@ const handleCompletePoll = (poll: Poll, answers: number[]) => {
 
         {screen === "welcome" && <WelcomeScreen onStart={() => setScreen("menu")} />}
 
-        {screen === "menu" && (
+       {screen === "menu" && (
   <MainMenu
     points={appState.points}
     user={user}
     pairLevel={getPairLevelInfo(appState.points)}
-    onNavigate={(next) => setScreen(next)}
+    onNavigate={(next) => {
+      if (
+        next === "polls" &&
+        !appState.isPremium &&
+        appState.completedPollIds.length >= FREE_POLLS_LIMIT
+
+      ) {
+        setScreen("paywall");
+        return;
+      }
+
+      setScreen(next);
+    }}
   />
 )}
+
 
 
         {screen === "polls" && (
@@ -6128,8 +6174,10 @@ const handleCompletePoll = (poll: Poll, answers: number[]) => {
   wonRewards={appState.wonRewards}
   pollAnswers={appState.pollAnswers}
   referrals={appState.referrals}
+  isPremium={appState.isPremium}
   onBack={() => setScreen("menu")}
 />
+
 
 )}
 
@@ -6154,37 +6202,70 @@ const handleCompletePoll = (poll: Poll, answers: number[]) => {
 )}
 
 {screen === "paywall" && (
-  <div style={{ padding: 24 }}>
-    <div style={{ fontSize: 26, fontWeight: 800 }}>
-      Вы прошли все бесплатные опросы
-    </div>
+  <div style={{ padding: 16 }}>
+    <div style={{ ...cardBaseStyle(), padding: 20 }}>
+      <div style={{ fontSize: 28, fontWeight: 900, color: "#1f1d3a" }}>
+        Полный доступ
+      </div>
 
-    <div style={{ marginTop: 12, opacity: 0.8 }}>
-      Откройте полный доступ к Couple-Quizzes
-    </div>
+      <div
+        style={{
+          marginTop: 10,
+          color: "#3a345c",
+          lineHeight: 1.5,
+          fontSize: 15,
+        }}
+      >
+        Вы прошли все бесплатные опросы. Откройте полный доступ к Couple Quizzes.
+      </div>
 
-    <div style={{ marginTop: 20 }}>
-      🔓 100+ опросов для пар  
-      🎮 Все игры  
-      🧠 Все тесты  
-      🎡 Рулетка призов  
-      🎁 +500 очков  
-      🎨 Специальный дизайн
-    </div>
+      <div
+        style={{
+          marginTop: 16,
+          padding: "14px 16px",
+          borderRadius: 18,
+          background: "rgba(255,255,255,0.24)",
+          color: "#241b40",
+          lineHeight: 1.7,
+          fontWeight: 700,
+        }}
+      >
+        🔓 Все опросы<br />
+        🎮 Все игры<br />
+        🧠 Все тесты<br />
+        🎡 Рулетка призов<br />
+        🎁 +500 очков<br />
+        🎨 Специальный дизайн
+      </div>
 
-    <button
-      style={{
-        marginTop: 24,
-        padding: "16px 20px",
-        fontSize: 18,
-        borderRadius: 12,
-      }}
-      onClick={buyPremium}
-    >
-      Получить полный доступ — 149 ₽
-    </button>
+      <div
+        style={{
+          marginTop: 16,
+          fontSize: 24,
+          fontWeight: 900,
+          color: "#6b46ff",
+        }}
+      >
+        149 ₽
+      </div>
+
+      <button
+        style={{ ...primaryButtonStyle, width: "100%", marginTop: 14 }}
+        onClick={handleBuyPremium}
+      >
+        Получить полный доступ
+      </button>
+
+      <button
+        onClick={() => setScreen("menu")}
+        style={{ ...secondaryButtonStyle, marginTop: 10 }}
+      >
+        Назад
+      </button>
+    </div>
   </div>
 )}
+
 
 
 
