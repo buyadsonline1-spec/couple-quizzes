@@ -88,6 +88,7 @@ type AppState = {
   completedTestIds: string[];
   completedGameIds: string[];
   pollAnswers: Record<string, number[]>;
+  weeklyTopRewardClaimedWeek: string | null;
 
   pair: PairState;
 
@@ -205,6 +206,16 @@ type DailyPairAnswerState = {
   questionId: string | null;
   answerIndex: number | null;
 };
+
+type WeeklyPairLeaderboardRow = {
+  id: string;
+  week_key: string;
+  pair_id: string;
+  pair_title: string;
+  total_points: number;
+  updated_at: string;
+};
+
 
 
 const DAILY_REWARDS = [25, 50, 75, 100, 150, 200, 300, 400, 500];
@@ -1349,18 +1360,7 @@ const WHEEL_COLORS = [
   "#a8e6a1",
 ];
 
-const TOP_PLAYERS = [
-  { id: "1", name: "Аня и Макс", points: 1240 },
-  { id: "2", name: "Лера и Дима", points: 1180 },
-  { id: "3", name: "Соня и Илья", points: 1090 },
-  { id: "4", name: "Катя и Артём", points: 980 },
-  { id: "5", name: "Мила и Егор", points: 910 },
-  { id: "6", name: "Ника и Рома", points: 860 },
-  { id: "7", name: "Юля и Денис", points: 790 },
-  { id: "8", name: "Алина и Тимур", points: 730 },
-  { id: "9", name: "Вика и Саша", points: 690 },
-  { id: "10", name: "Полина и Кирилл", points: 640 },
-];
+
 
 const DEFAULT_STATE: AppState = {
   points: 0,
@@ -1380,6 +1380,7 @@ const DEFAULT_STATE: AppState = {
 
   completedPollIds: [],
   wonRewards: [],
+  weeklyTopRewardClaimedWeek: null,
 
   completedTestIds: [],
   completedGameIds: [],
@@ -2233,6 +2234,15 @@ function getTodayLocalDateString() {
   return `${year}-${month}-${day}`;
 }
 
+function getCurrentWeekKey() {
+  const now = new Date();
+  const start = new Date(now.getFullYear(), 0, 1);
+  const diff = now.getTime() - start.getTime();
+  const dayOfYear = Math.floor(diff / (1000 * 60 * 60 * 24)) + 1;
+  const week = Math.ceil(dayOfYear / 7);
+  return `${now.getFullYear()}-W${week}`;
+}
+
 function getDailyPairQuestionForToday() {
   const today = getTodayLocalDateString();
   const dayNumber = Number(today.replaceAll("-", ""));
@@ -2408,6 +2418,9 @@ function loadState(): AppState {
     totalPointsEarnedFromBonus:
       parsed.dailyBonus?.totalPointsEarnedFromBonus ??
       DEFAULT_STATE.dailyBonus.totalPointsEarnedFromBonus,
+      weeklyTopRewardClaimedWeek:
+  parsed.weeklyTopRewardClaimedWeek ??
+  DEFAULT_STATE.weeklyTopRewardClaimedWeek,
   },
   stats: {
     pollsCompleted:
@@ -4139,6 +4152,19 @@ function RewardsScreen({
   const count = REWARD_CATEGORIES.length;
   const segmentAngle = 360 / count;
 
+  function getPairDisplayTitle(user: TgUser | null, pair: PairState) {
+  const me =
+    [user?.first_name, user?.last_name].filter(Boolean).join(" ") || "Ты";
+
+  const partner =
+    [pair.partner?.firstName, pair.partner?.lastName].filter(Boolean).join(" ") ||
+    pair.partner?.username ||
+    "Партнёр";
+
+  return `${me} + ${partner}`;
+}
+
+
   function handleSpin() {
     if (isSpinning) return;
     if (points < WHEEL_SPIN_COST) {
@@ -4385,139 +4411,193 @@ function RewardsScreen({
 }
 
 function TopPlayersScreen({
-  user,
-  points,
+  pair,
+  leaderboard,
+  weeklyTopRewardClaimedWeek,
   onBack,
+  onClaimWeeklyReward,
 }: {
-  user: TgUser | null;
-  points: number;
+  pair: PairState;
+  leaderboard: WeeklyPairLeaderboardRow[];
+  weeklyTopRewardClaimedWeek: string | null;
   onBack: () => void;
+  onClaimWeeklyReward: () => void;
 }) {
-  const currentPairName =
-    user?.first_name
-      ? `${user.first_name}${user?.last_name ? ` ${user.last_name}` : ""}`
-      : "Вы";
+  const currentWeekKey = getCurrentWeekKey();
 
-  const currentPlayer = {
-    id: "me",
-    name: currentPairName,
-    points,
-  };
+  const allPairs = leaderboard.map((row, index) => ({
+    ...row,
+    place: index + 1,
+    isCurrentPair: row.pair_id === pair.pairId,
+  }));
 
-  const allPlayers = [...TOP_PLAYERS, currentPlayer]
-    .sort((a, b) => b.points - a.points)
-    .map((player, index) => ({
-      ...player,
-      place: index + 1,
-      isCurrentUser: player.id === "me",
-    }));
+  const currentPairRow = allPairs.find((row) => row.isCurrentPair);
+
+  const isTopThree =
+    currentPairRow?.place === 1 ||
+    currentPairRow?.place === 2 ||
+    currentPairRow?.place === 3;
+
+  const canClaimWeeklyReward =
+    isTopThree && weeklyTopRewardClaimedWeek !== currentWeekKey;
 
   return (
-    <div style={{ padding: 16, display: "grid", gap: 14 }}>
-      <div style={{ ...cardBaseStyle(), padding: 18 }}>
-        <div style={{ fontSize: 28, fontWeight: 900, color: "#1f1d3a" }}>
-          🏆 Топ игроков
+    <div style={{ padding: 12, display: "grid", gap: 10 }}>
+      <div style={{ ...cardBaseStyle(), padding: 14 }}>
+        <div style={{ fontSize: 24, fontWeight: 900, color: "#1f1d3a" }}>
+          🏆 Топ пар недели
         </div>
-        <div style={{ marginTop: 8, color: "#3a345c", fontSize: 15, lineHeight: 1.45 }}>
-          Лучшие игроки и пары по количеству набранных очков.
+        <div style={{ marginTop: 4, color: "#3a345c", fontSize: 13, lineHeight: 1.4 }}>
+          Лучшие пары по очкам за эту неделю
         </div>
       </div>
 
-      <div style={{ ...cardBaseStyle(), padding: 18 }}>
-        <div style={{ fontSize: 22, fontWeight: 900, color: "#1f1d3a" }}>
+      <div style={{ ...cardBaseStyle(), padding: 14 }}>
+        <div style={{ fontSize: 18, fontWeight: 900, color: "#1f1d3a" }}>
           Рейтинг
         </div>
 
-        <div style={{ display: "grid", gap: 10, marginTop: 14 }}>
-          {allPlayers.map((player) => {
-            const isTop1 = player.place === 1;
-            const isTop2 = player.place === 2;
-            const isTop3 = player.place === 3;
+        {allPairs.length === 0 ? (
+          <div style={{ marginTop: 10, color: "#4a4468", lineHeight: 1.45, fontSize: 14 }}>
+            Пока в рейтинге пусто. Как только пары начнут набирать очки, здесь появится топ.
+          </div>
+        ) : (
+          <div style={{ display: "grid", gap: 8, marginTop: 12 }}>
+            {allPairs.map((pairRow) => {
+              const isTop1 = pairRow.place === 1;
+              const isTop2 = pairRow.place === 2;
+              const isTop3 = pairRow.place === 3;
 
-            return (
-              <div
-                key={player.id}
-                style={{
-                  padding: "12px 14px",
-                  borderRadius: 18,
-                  background: player.isCurrentUser
-                    ? "rgba(255,255,255,0.34)"
-                    : "rgba(255,255,255,0.24)",
-                  border: player.isCurrentUser
-                    ? "2px solid rgba(108,58,255,0.42)"
-                    : "1px solid transparent",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "space-between",
-                  gap: 12,
-                }}
-              >
-                <div style={{ display: "flex", alignItems: "center", gap: 12, minWidth: 0 }}>
-                  <div
-                    style={{
-                      width: 40,
-                      height: 40,
-                      borderRadius: 999,
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      fontWeight: 900,
-                      fontSize: 16,
-                      color: "#1f1d3a",
-                      background: isTop1
-                        ? "linear-gradient(135deg, #ffd54f, #ffb300)"
-                        : isTop2
-                        ? "linear-gradient(135deg, #f1f1f1, #cfcfcf)"
-                        : isTop3
-                        ? "linear-gradient(135deg, #ffcc80, #ff9e80)"
-                        : "rgba(255,255,255,0.45)",
-                    }}
-                  >
-                    {player.place}
-                  </div>
-
-                  <div style={{ minWidth: 0 }}>
-                    <div
-                      style={{
-                        fontSize: 16,
-                        fontWeight: 900,
-                        color: "#1f1d3a",
-                        whiteSpace: "nowrap",
-                        overflow: "hidden",
-                        textOverflow: "ellipsis",
-                      }}
-                    >
-                      {player.name}
-                      {player.isCurrentUser ? " (Вы)" : ""}
-                    </div>
-                    <div style={{ marginTop: 4, fontSize: 13, color: "#4d466c" }}>
-                      {isTop1 ? "Лидер рейтинга" : `Место #${player.place}`}
-                    </div>
-                  </div>
-                </div>
-
+              return (
                 <div
+                  key={pairRow.id}
                   style={{
-                    whiteSpace: "nowrap",
-                    fontSize: 16,
-                    fontWeight: 900,
-                    color: "#6b46ff",
+                    padding: "10px 12px",
+                    borderRadius: 16,
+                    background: pairRow.isCurrentPair
+                      ? "rgba(255,255,255,0.34)"
+                      : "rgba(255,255,255,0.24)",
+                    border: pairRow.isCurrentPair
+                      ? "2px solid rgba(108,58,255,0.42)"
+                      : "1px solid transparent",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    gap: 10,
                   }}
                 >
-                  ⭐ {player.points}
+                  <div style={{ display: "flex", alignItems: "center", gap: 10, minWidth: 0 }}>
+                    <div
+                      style={{
+                        width: 34,
+                        height: 34,
+                        borderRadius: 999,
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        fontWeight: 900,
+                        fontSize: 14,
+                        color: "#1f1d3a",
+                        background: isTop1
+                          ? "linear-gradient(135deg, #ffd54f, #ffb300)"
+                          : isTop2
+                          ? "linear-gradient(135deg, #f1f1f1, #cfcfcf)"
+                          : isTop3
+                          ? "linear-gradient(135deg, #ffcc80, #ff9e80)"
+                          : "rgba(255,255,255,0.45)",
+                      }}
+                    >
+                      {pairRow.place}
+                    </div>
+
+                    <div style={{ minWidth: 0 }}>
+                      <div
+                        style={{
+                          fontSize: 15,
+                          fontWeight: 900,
+                          color: "#1f1d3a",
+                          whiteSpace: "nowrap",
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                        }}
+                      >
+                        {pairRow.pair_title}
+                        {pairRow.isCurrentPair ? " (Вы)" : ""}
+                      </div>
+                      <div style={{ marginTop: 3, fontSize: 12, color: "#4d466c" }}>
+                        {isTop1 ? "Лидеры недели" : `Место #${pairRow.place}`}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div
+                    style={{
+                      whiteSpace: "nowrap",
+                      fontSize: 15,
+                      fontWeight: 900,
+                      color: "#6b46ff",
+                    }}
+                  >
+                    ⭐ {pairRow.total_points}
+                  </div>
                 </div>
-              </div>
-            );
-          })}
-        </div>
+              );
+            })}
+          </div>
+        )}
       </div>
 
-      <button onClick={onBack} style={secondaryButtonStyle}>
+      <div style={{ ...cardBaseStyle(), padding: 14 }}>
+        <div style={{ fontSize: 18, fontWeight: 900, color: "#1f1d3a" }}>
+          Награда недели
+        </div>
+
+        <div
+          style={{
+            marginTop: 8,
+            color: "#4a4468",
+            lineHeight: 1.45,
+            fontSize: 13,
+          }}
+        >
+          Пары из топ-3 получают <b>+500 очков</b> один раз в неделю.
+        </div>
+
+        <div
+          style={{
+            marginTop: 10,
+            padding: "12px 14px",
+            borderRadius: 16,
+            background: "rgba(255,255,255,0.24)",
+            color: "#241b40",
+            fontWeight: 800,
+            fontSize: 14,
+          }}
+        >
+          {isTopThree
+            ? weeklyTopRewardClaimedWeek === currentWeekKey
+              ? "Награда за эту неделю уже получена ✅"
+              : "Ваша пара в топ-3 недели! Можно забрать награду 🎉"
+            : "Награда доступна только парам из топ-3"}
+        </div>
+
+        {canClaimWeeklyReward && (
+          <button
+            onClick={onClaimWeeklyReward}
+            style={{ ...primaryButtonStyle, width: "100%", marginTop: 12 }}
+          >
+            Забрать +500 очков
+          </button>
+        )}
+      </div>
+
+      <button onClick={onBack} style={{ ...secondaryButtonStyle, marginTop: 0 }}>
         Назад в меню
       </button>
     </div>
   );
 }
+
 
 
 function ProfileAndStatsScreen({
@@ -4746,6 +4826,50 @@ async function upsertTelegramProfile(user: TgUser) {
 
   return data;
 }
+
+async function loadWeeklyPairLeaderboard(weekKey: string): Promise<WeeklyPairLeaderboardRow[]> {
+  const { data, error } = await supabase
+    .from("weekly_pair_leaderboard")
+    .select("*")
+    .eq("week_key", weekKey)
+    .order("total_points", { ascending: false })
+    .limit(20);
+
+  if (error || !data) {
+    console.error("loadWeeklyPairLeaderboard error:", error);
+    return [];
+  }
+
+  return data as WeeklyPairLeaderboardRow[];
+}
+
+async function upsertWeeklyPairLeaderboardEntry(params: {
+  weekKey: string;
+  pairId: string;
+  pairTitle: string;
+  totalPoints: number;
+}) {
+  const { weekKey, pairId, pairTitle, totalPoints } = params;
+
+  const { error } = await supabase
+    .from("weekly_pair_leaderboard")
+    .upsert(
+      {
+        week_key: weekKey,
+        pair_id: pairId,
+        pair_title: pairTitle,
+        total_points: totalPoints,
+        updated_at: new Date().toISOString(),
+      },
+      { onConflict: "week_key,pair_id" }
+    );
+
+  if (error) {
+    console.error("upsertWeeklyPairLeaderboardEntry error:", error);
+  }
+}
+
+
 async function loadPairStateForUser(telegramId: number): Promise<PairState> {
   const emptyState: PairState = {
     pairId: null,
@@ -4907,6 +5031,48 @@ export default function Page() {
   };
 }
 
+const handleClaimWeeklyTopReward = async () => {
+  const currentWeekKey = getCurrentWeekKey();
+  let nextState!: AppState;
+
+  setAppState((prev) => {
+    if (prev.weeklyTopRewardClaimedWeek === currentWeekKey) {
+      nextState = prev;
+      return prev;
+    }
+
+    nextState = {
+      ...prev,
+      points: prev.points + 500,
+      weeklyTopRewardClaimedWeek: currentWeekKey,
+    };
+
+    return nextState;
+  });
+
+  await syncWeeklyPairLeaderboard(nextState, user);
+};
+
+
+const syncWeeklyPairLeaderboard = async (nextState: AppState, currentUser?: TgUser | null) => {
+  const pairId = nextState.pair.pairId;
+  if (!pairId) return;
+
+  const weekKey = getCurrentWeekKey();
+  const pairTitle = getPairDisplayTitle(currentUser ?? user, nextState.pair);
+
+  await upsertWeeklyPairLeaderboardEntry({
+    weekKey,
+    pairId,
+    pairTitle,
+    totalPoints: nextState.points,
+  });
+
+  const rows = await loadWeeklyPairLeaderboard(weekKey);
+  setWeeklyPairLeaderboard(rows);
+};
+
+
 
 const handleJoinByCode = async (inviteCode: string) => {
   const liveUser = getLiveTelegramUser();
@@ -4932,10 +5098,14 @@ const handleJoinByCode = async (inviteCode: string) => {
     return;
   }
 
-  setAppState((prev) => ({
-    ...prev,
-    pair: joinedPair,
-  }));
+  const nextStateAfterPairCreate = {
+  ...appState,
+  pair: nextPairState,
+};
+
+setAppState(nextStateAfterPairCreate);
+await syncWeeklyPairLeaderboard(nextStateAfterPairCreate, actualUser);
+
 
   alert("Пара успешно подключена 💕");
 };
@@ -4998,6 +5168,7 @@ const handleCreateInvite = async () => {
 };
 
 
+const [weeklyPairLeaderboard, setWeeklyPairLeaderboard] = useState<WeeklyPairLeaderboardRow[]>([]);
 
   const [mounted, setMounted] = useState(false);
   const [screen, setScreen] = useState<Screen>("welcome");
@@ -5088,6 +5259,11 @@ console.log("TG INIT DATA:", tg?.initDataUnsafe);
       pair: nextPairState,
     }));
 
+    const weekKey = getCurrentWeekKey();
+const leaderboardRows = await loadWeeklyPairLeaderboard(weekKey);
+setWeeklyPairLeaderboard(leaderboardRows);
+
+
   }
 
   bootstrap();
@@ -5126,11 +5302,13 @@ console.log("TG INIT DATA:", tg?.initDataUnsafe);
     setShowDailyBonus(false);
   };
 
- const handleCompletePoll = (poll: Poll, answers: number[]) => {
+const handleCompletePoll = async (poll: Poll, answers: number[]) => {
+  let nextState!: AppState;
+
   setAppState((prev) => {
     const alreadyCompleted = prev.completedPollIds.includes(poll.id);
 
-    return {
+    nextState = {
       ...prev,
       points: alreadyCompleted ? prev.points : prev.points + poll.reward,
       stats: {
@@ -5145,15 +5323,21 @@ console.log("TG INIT DATA:", tg?.initDataUnsafe);
         [poll.id]: answers,
       },
     };
+
+    return nextState;
   });
 
+  await syncWeeklyPairLeaderboard(nextState, user);
   setScreen("menu");
 };
-const handleCompleteGame = (game: Game, score: number) => {
+
+const handleCompleteGame = async (game: Game, score: number) => {
+  let nextState!: AppState;
+
   setAppState((prev) => {
     const alreadyCompleted = prev.completedGameIds.includes(game.id);
 
-    return {
+    nextState = {
       ...prev,
       points: alreadyCompleted ? prev.points : prev.points + game.reward,
       stats: {
@@ -5164,12 +5348,17 @@ const handleCompleteGame = (game: Game, score: number) => {
         ? prev.completedGameIds
         : [...prev.completedGameIds, game.id],
     };
+
+    return nextState;
   });
+
+  await syncWeeklyPairLeaderboard(nextState, user);
 
   if (game.id !== "90-questions" && game.id !== "bottle") {
     setScreen("menu");
   }
 };
+
 
       const handleCompleteTest = (test: TestDefinition) => {
     setAppState((prev) => {
@@ -5309,13 +5498,16 @@ const handleCompleteGame = (game: Game, score: number) => {
           />
         )}
 
-        {screen === "top" && (
+   {screen === "top" && (
   <TopPlayersScreen
-    user={user}
-    points={appState.points}
+    pair={appState.pair}
+    leaderboard={weeklyPairLeaderboard}
+    weeklyTopRewardClaimedWeek={appState.weeklyTopRewardClaimedWeek}
     onBack={() => setScreen("menu")}
+    onClaimWeeklyReward={handleClaimWeeklyTopReward}
   />
 )}
+
 
         {screen === "profile" && (
         <ProfileAndStatsScreen
