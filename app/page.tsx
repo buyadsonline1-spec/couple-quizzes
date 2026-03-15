@@ -1479,6 +1479,19 @@ function getScaleResult(totalScore: number, maxScore: number): TestResult {
   };
 }
 
+const FREE_POLLS_LIMIT = 3;
+const canPlayPoll = isPremium || stats.pollsCompleted < FREE_POLLS_LIMIT;
+function openPoll(pollId: string) {
+  if (!isPremium && stats.pollsCompleted >= FREE_POLLS_LIMIT) {
+    setScreen("paywall");
+    return;
+  }
+
+  setCurrentPoll(pollId);
+  setScreen("poll");
+}
+
+
 
 
 
@@ -2632,6 +2645,12 @@ function getPairLevelInfo(points: number) {
     progress,
   };
 }
+
+function buyPremium() {
+  setIsPremium(true);
+  setPoints((p) => p + 500);
+}
+
 
 
 
@@ -6133,6 +6152,40 @@ const handleCompletePoll = (poll: Poll, answers: number[]) => {
     onBack={() => setScreen("pair")}
   />
 )}
+
+{screen === "paywall" && (
+  <div style={{ padding: 24 }}>
+    <div style={{ fontSize: 26, fontWeight: 800 }}>
+      Вы прошли все бесплатные опросы
+    </div>
+
+    <div style={{ marginTop: 12, opacity: 0.8 }}>
+      Откройте полный доступ к Couple-Quizzes
+    </div>
+
+    <div style={{ marginTop: 20 }}>
+      🔓 100+ опросов для пар  
+      🎮 Все игры  
+      🧠 Все тесты  
+      🎡 Рулетка призов  
+      🎁 +500 очков  
+      🎨 Специальный дизайн
+    </div>
+
+    <button
+      style={{
+        marginTop: 24,
+        padding: "16px 20px",
+        fontSize: 18,
+        borderRadius: 12,
+      }}
+      onClick={buyPremium}
+    >
+      Получить полный доступ — 149 ₽
+    </button>
+  </div>
+)}
+
 
 
 
