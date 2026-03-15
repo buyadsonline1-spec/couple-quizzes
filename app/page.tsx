@@ -2407,8 +2407,9 @@ function loadState(): AppState {
 
     const parsed = JSON.parse(raw) as Partial<AppState>;
   
-    return {
+   return {
   points: parsed.points ?? DEFAULT_STATE.points,
+
   dailyBonus: {
     streakDay:
       parsed.dailyBonus?.streakDay ?? DEFAULT_STATE.dailyBonus.streakDay,
@@ -2418,10 +2419,12 @@ function loadState(): AppState {
     totalPointsEarnedFromBonus:
       parsed.dailyBonus?.totalPointsEarnedFromBonus ??
       DEFAULT_STATE.dailyBonus.totalPointsEarnedFromBonus,
-      weeklyTopRewardClaimedWeek:
-  parsed.weeklyTopRewardClaimedWeek ??
-  DEFAULT_STATE.weeklyTopRewardClaimedWeek,
   },
+
+  weeklyTopRewardClaimedWeek:
+    parsed.weeklyTopRewardClaimedWeek ??
+    DEFAULT_STATE.weeklyTopRewardClaimedWeek,
+
   stats: {
     pollsCompleted:
       parsed.stats?.pollsCompleted ?? DEFAULT_STATE.stats.pollsCompleted,
@@ -2432,6 +2435,7 @@ function loadState(): AppState {
     rewardsRedeemed:
       parsed.stats?.rewardsRedeemed ?? DEFAULT_STATE.stats.rewardsRedeemed,
   },
+
   completedPollIds:
     parsed.completedPollIds ?? DEFAULT_STATE.completedPollIds,
   wonRewards: parsed.wonRewards ?? DEFAULT_STATE.wonRewards,
@@ -2440,6 +2444,7 @@ function loadState(): AppState {
   completedGameIds:
     parsed.completedGameIds ?? DEFAULT_STATE.completedGameIds,
   pollAnswers: parsed.pollAnswers ?? DEFAULT_STATE.pollAnswers,
+
   pair: {
     pairId: parsed.pair?.pairId ?? DEFAULT_STATE.pair.pairId,
     inviteCode: parsed.pair?.inviteCode ?? DEFAULT_STATE.pair.inviteCode,
@@ -2449,29 +2454,34 @@ function loadState(): AppState {
       DEFAULT_STATE.pair.createdByTelegramId,
   },
 
-dailyPair: {
-  boy: {
-    date: parsed.dailyPair?.boy?.date ?? DEFAULT_STATE.dailyPair.boy.date,
-    questionId:
-      parsed.dailyPair?.boy?.questionId ?? DEFAULT_STATE.dailyPair.boy.questionId,
-    answerIndex:
-      parsed.dailyPair?.boy?.answerIndex ?? DEFAULT_STATE.dailyPair.boy.answerIndex,
+  dailyPair: {
+    boy: {
+      date: parsed.dailyPair?.boy?.date ?? DEFAULT_STATE.dailyPair.boy.date,
+      questionId:
+        parsed.dailyPair?.boy?.questionId ??
+        DEFAULT_STATE.dailyPair.boy.questionId,
+      answerIndex:
+        parsed.dailyPair?.boy?.answerIndex ??
+        DEFAULT_STATE.dailyPair.boy.answerIndex,
+    },
+    girl: {
+      date: parsed.dailyPair?.girl?.date ?? DEFAULT_STATE.dailyPair.girl.date,
+      questionId:
+        parsed.dailyPair?.girl?.questionId ??
+        DEFAULT_STATE.dailyPair.girl.questionId,
+      answerIndex:
+        parsed.dailyPair?.girl?.answerIndex ??
+        DEFAULT_STATE.dailyPair.girl.answerIndex,
+    },
   },
-  girl: {
-    date: parsed.dailyPair?.girl?.date ?? DEFAULT_STATE.dailyPair.girl.date,
-    questionId:
-      parsed.dailyPair?.girl?.questionId ?? DEFAULT_STATE.dailyPair.girl.questionId,
-    answerIndex:
-      parsed.dailyPair?.girl?.answerIndex ?? DEFAULT_STATE.dailyPair.girl.answerIndex,
-  },
-},
 
-profile: {
-  displayName:
-    parsed.profile?.displayName ?? DEFAULT_STATE.profile.displayName,
-  avatar: parsed.profile?.avatar ?? DEFAULT_STATE.profile.avatar,
-},
-}
+  profile: {
+    displayName:
+      parsed.profile?.displayName ?? DEFAULT_STATE.profile.displayName,
+    avatar: parsed.profile?.avatar ?? DEFAULT_STATE.profile.avatar,
+  },
+};
+
 
 
   } catch {
