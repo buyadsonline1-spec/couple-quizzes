@@ -5120,13 +5120,14 @@ const handleJoinByCode = async (inviteCode: string) => {
     return;
   }
 
-  const nextStateAfterPairCreate = {
+  const nextStateAfterJoin = {
   ...appState,
-  pair: nextPairState,
+  pair: joinedPair,
 };
 
-setAppState(nextStateAfterPairCreate);
-await syncWeeklyPairLeaderboard(nextStateAfterPairCreate, actualUser);
+setAppState(nextStateAfterJoin);
+await syncWeeklyPairLeaderboard(nextStateAfterJoin, liveUser ?? user);
+
 
 
   alert("Пара успешно подключена 💕");
