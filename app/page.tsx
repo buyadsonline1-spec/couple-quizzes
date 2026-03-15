@@ -1015,7 +1015,7 @@ const GAMES: Game[] = [
     id: "guess-partner",
     title: "Угадай партнёра",
     description: "Попробуй угадать, что выбрал бы твой партнёр в разных ситуациях.",
-    reward: 70,
+    reward: 10,
     questions: [
       {
         id: "g1",
@@ -1064,7 +1064,7 @@ const GAMES: Game[] = [
     id: "bottle",
     title: "Бутылочка",
     description: "Крути бутылку и получай романтичные и дерзкие задания для пары.",
-    reward: 50,
+    reward: 10,
     questions: [],
   },
 
@@ -5132,7 +5132,7 @@ console.log("TG INIT DATA:", tg?.initDataUnsafe);
 
     return {
       ...prev,
-      points: prev.points + poll.reward,
+      points: alreadyCompleted ? prev.points : prev.points + poll.reward,
       stats: {
         ...prev.stats,
         pollsCompleted: prev.stats.pollsCompleted + 1,
@@ -5149,28 +5149,27 @@ console.log("TG INIT DATA:", tg?.initDataUnsafe);
 
   setScreen("menu");
 };
+const handleCompleteGame = (game: Game, score: number) => {
+  setAppState((prev) => {
+    const alreadyCompleted = prev.completedGameIds.includes(game.id);
 
-  const handleCompleteGame = (game: Game, score: number) => {
-    setAppState((prev) => {
-      const alreadyCompleted = prev.completedGameIds.includes(game.id);
-
-      return {
-        ...prev,
-        points: prev.points + game.reward,
-        stats: {
-          ...prev.stats,
-          gamesPlayed: prev.stats.gamesPlayed + 1,
-        },
-        completedGameIds: alreadyCompleted
-          ? prev.completedGameIds
-          : [...prev.completedGameIds, game.id],
-      };
-    });
-
-        if (game.id !== "90-questions" && game.id !== "bottle") {
-  setScreen("menu");
-}
+    return {
+      ...prev,
+      points: alreadyCompleted ? prev.points : prev.points + game.reward,
+      stats: {
+        ...prev.stats,
+        gamesPlayed: prev.stats.gamesPlayed + 1,
+      },
+      completedGameIds: alreadyCompleted
+        ? prev.completedGameIds
+        : [...prev.completedGameIds, game.id],
     };
+  });
+
+  if (game.id !== "90-questions" && game.id !== "bottle") {
+    setScreen("menu");
+  }
+};
 
       const handleCompleteTest = (test: TestDefinition) => {
     setAppState((prev) => {
