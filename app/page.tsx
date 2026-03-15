@@ -5167,9 +5167,9 @@ console.log("TG INIT DATA:", tg?.initDataUnsafe);
       };
     });
 
-         if (game.id !== "90-questions") {
-      setScreen("menu");
-         }
+        if (game.id !== "90-questions" && game.id !== "bottle") {
+  setScreen("menu");
+}
     };
 
       const handleCompleteTest = (test: TestDefinition) => {
