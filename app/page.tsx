@@ -5589,15 +5589,28 @@ setWeeklyPairLeaderboard(leaderboardRows);
     setShowDailyBonus(false);
   };
 
-const handleCompletePoll = async (poll: Poll, answers: number[]) => {
-  let nextState!: AppState;
+const handleCompletePoll = (poll: Poll, answers: number[]) => {
+  let leveledUpTo: { level: number; title: string } | null = null;
 
   setAppState((prev) => {
     const alreadyCompleted = prev.completedPollIds.includes(poll.id);
+    const rewardToAdd = alreadyCompleted ? 0 : poll.reward;
 
-    nextState = {
+    const newPoints = prev.points + rewardToAdd;
+
+    const oldLevel = getPairLevelInfo(prev.points);
+    const newLevel = getPairLevelInfo(newPoints);
+
+    if (newLevel.level > oldLevel.level) {
+      leveledUpTo = {
+        level: newLevel.level,
+        title: newLevel.title,
+      };
+    }
+
+    return {
       ...prev,
-      points: alreadyCompleted ? prev.points : prev.points + poll.reward,
+      points: newPoints,
       stats: {
         ...prev.stats,
         pollsCompleted: prev.stats.pollsCompleted + 1,
@@ -5610,75 +5623,58 @@ const handleCompletePoll = async (poll: Poll, answers: number[]) => {
         [poll.id]: answers,
       },
     };
-
-    return nextState;
   });
 
-  await syncWeeklyPairLeaderboard(nextState, user);
+  if (leveledUpTo) {
+    setLevelUpData(leveledUpTo);
+    setShowLevelUp(true);
+  }
+
   setScreen("menu");
 };
 
-const handleCompleteGame = async (game: Game, score: number) => {
-  let nextState!: AppState;
+
+
+   const handleCompleteTest = (test: TestDefinition) => {
+  let leveledUpTo: { level: number; title: string } | null = null;
 
   setAppState((prev) => {
-    const alreadyCompleted = prev.completedGameIds.includes(game.id);
+    const alreadyCompleted = prev.completedTestIds.includes(test.id);
+    const rewardToAdd = alreadyCompleted ? 0 : test.reward;
 
-    nextState = {
-      ...prev,
-      points: alreadyCompleted ? prev.points : prev.points + game.reward,
-      stats: {
-        ...prev.stats,
-        gamesPlayed: prev.stats.gamesPlayed + 1,
-      },
-      completedGameIds: alreadyCompleted
-        ? prev.completedGameIds
-        : [...prev.completedGameIds, game.id],
-    };
-
-    return nextState;
-  });
-
-  await syncWeeklyPairLeaderboard(nextState, user);
-
-  if (game.id !== "90-questions" && game.id !== "bottle") {
-    setScreen("menu");
-  }
-};
-
-
-      const handleCompleteTest = (test: TestDefinition) => {
-    setAppState((prev) => {
-      const alreadyCompleted = prev.completedTestIds.includes(test.id);
-
-      return {
-        ...prev,
-        points: prev.points + test.reward,
-        stats: {
-          ...prev.stats,
-          testsCompleted: prev.stats.testsCompleted + 1,
-        },
-        completedTestIds: alreadyCompleted
-          ? prev.completedTestIds
-          : [...prev.completedTestIds, test.id],
-      };
-    });
+    const newPoints = prev.points + rewardToAdd;
 
     const oldLevel = getPairLevelInfo(prev.points);
-const newLevel = getPairLevelInfo(newPoints);
+    const newLevel = getPairLevelInfo(newPoints);
 
-if (newLevel.level > oldLevel.level) {
-  setLevelUpData({
-    level: newLevel.level,
-    title: newLevel.title,
+    if (newLevel.level > oldLevel.level) {
+      leveledUpTo = {
+        level: newLevel.level,
+        title: newLevel.title,
+      };
+    }
+
+    return {
+      ...prev,
+      points: newPoints,
+      stats: {
+        ...prev.stats,
+        testsCompleted: prev.stats.testsCompleted + 1,
+      },
+      completedTestIds: alreadyCompleted
+        ? prev.completedTestIds
+        : [...prev.completedTestIds, test.id],
+    };
   });
-  setShowLevelUp(true);
-}
 
+  if (leveledUpTo) {
+    setLevelUpData(leveledUpTo);
+    setShowLevelUp(true);
+  }
 
+  setScreen("menu");
+};
 
-    setScreen("menu");
-  };
 
   const handleSpinReward = (categoryIndex: number) => {
     let result: WonReward | null = null;
