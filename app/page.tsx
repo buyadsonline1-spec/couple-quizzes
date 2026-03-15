@@ -2486,6 +2486,38 @@ function calculateMatch(a?: number[], b?: number[]) {
   return Math.round((same / len) * 100);
 }
 
+function getPairLevelInfo(points: number) {
+  let current = PAIR_LEVELS[0];
+  let next: { level: number; title: string; points: number } | null = null;
+
+  for (let i = 0; i < PAIR_LEVELS.length; i++) {
+    if (points >= PAIR_LEVELS[i].points) {
+      current = PAIR_LEVELS[i];
+      next = PAIR_LEVELS[i + 1] ?? null;
+    }
+  }
+
+  const progress = next
+    ? Math.max(
+        0,
+        Math.min(
+          100,
+          Math.round(
+            ((points - current.points) / (next.points - current.points)) * 100
+          )
+        )
+      )
+    : 100;
+
+  return {
+    level: current.level,
+    title: current.title,
+    nextPoints: next?.points ?? null,
+    progress,
+  };
+}
+
+
 function calculatePairStats(pollAnswers: Record<string, number[]>) {
   const matchGroups = [
     { key: "romance", label: "Романтика" },
@@ -2498,31 +2530,6 @@ function calculatePairStats(pollAnswers: Record<string, number[]>) {
     { key: "trust", label: "Доверие" },
     { key: "values", label: "Ценности" },
   ];
-
-  function getPairLevelInfo(points: number) {
-  let current = PAIR_LEVELS[0];
-  let next: { level: number; title: string; points: number } | null = null;
-
-  for (let i = 0; i < PAIR_LEVELS.length; i++) {
-    if (points >= PAIR_LEVELS[i].points) {
-      current = PAIR_LEVELS[i];
-      next = PAIR_LEVELS[i + 1] ?? null;
-    }
-  }
-
-  const progress = next
-    ? Math.round(
-        ((points - current.points) / (next.points - current.points)) * 100
-      )
-    : 100;
-
-  return {
-    level: current.level,
-    title: current.title,
-    nextPoints: next?.points ?? null,
-    progress,
-  };
-}
 
 
 
