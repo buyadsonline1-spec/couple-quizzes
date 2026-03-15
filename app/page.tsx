@@ -5011,7 +5011,7 @@ function ProfileAndStatsScreen({
   isPremium,
   onBack,
 }: {
-  
+
   user: TgUser | null;
   points: number;
   stats: AppStats;
@@ -5720,6 +5720,8 @@ const [weeklyPairLeaderboard, setWeeklyPairLeaderboard] = useState<WeeklyPairLea
   const [bonusClaimAvailable, setBonusClaimAvailable] = useState(true);
   const [showLevelUp, setShowLevelUp] = useState(false);
 const [levelUpData, setLevelUpData] = useState<{ level: number; title: string } | null>(null);
+const FREE_POLLS_LIMIT = 3;
+
 
 useEffect(() => {
   const startParam = window.Telegram?.WebApp?.initDataUnsafe?.start_param;
