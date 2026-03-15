@@ -1391,6 +1391,12 @@ const WHEEL_COLORS = [
 const DEFAULT_STATE: AppState = {
   points: 0,
 
+  referrals: {
+  invitedUsers: [],
+  totalReward: 0,
+},
+
+
   dailyBonus: {
     streakDay: 1,
     lastClaimDate: null,
@@ -2427,6 +2433,12 @@ function getPairDisplayTitle(user: TgUser | null, pair: PairState) {
 
   return `${me} + ${partner}`;
 }
+
+function getReferralLink(user: TgUser | null) {
+  if (!user?.id) return "";
+  return `https://t.me/testcouple1_bot?startapp=ref_${user.id}`;
+}
+
 
 function PairLevelUpModal({
   level,
@@ -4980,20 +4992,53 @@ function ProfileAndStatsScreen({
         </div>
       </div>
 
-      <div
-  style={{
-    marginTop: 16,
-    padding: 14,
-    borderRadius: 16,
-    background: "rgba(255,255,255,0.25)",
-    fontWeight: 800,
-    textAlign: "center",
-    color: "#1f1d3a",
-  }}
->
-  Совпадение ответов: —
+      <div style={{ ...cardBaseStyle(), padding: 18 }}>
+  <div style={{ fontSize: 22, fontWeight: 900, color: "#1f1d3a" }}>
+    Пригласи друзей 👥
+  </div>
+
+  <div
+    style={{
+      marginTop: 8,
+      color: "#4b446a",
+      fontSize: 14,
+      lineHeight: 1.45,
+    }}
+  >
+    Получай +200 очков за каждого друга,
+    который откроет приложение по твоей ссылке.
+  </div>
+
+  <div
+    style={{
+      marginTop: 12,
+      padding: "12px 14px",
+      borderRadius: 16,
+      background: "rgba(255,255,255,0.26)",
+      fontWeight: 800,
+      wordBreak: "break-all",
+      fontSize: 13,
+    }}
+  >
+    {getReferralLink(user)}
+  </div>
+
+  <button
+    onClick={() => {
+      const link = getReferralLink(user);
+      navigator.clipboard.writeText(link);
+      alert("Ссылка скопирована");
+    }}
+    style={{ ...primaryButtonStyle, width: "100%", marginTop: 12 }}
+  >
+    Копировать ссылку
+  </button>
 </div>
-      
+
+<StatRow label="Приглашено друзей" value={appState.referrals.invitedUsers.length} />
+<StatRow label="Очков за рефералов" value={appState.referrals.totalReward} />
+
+    
 
       <div style={{ ...cardBaseStyle(), padding: 18 }}>
         <div style={{ fontSize: 22, fontWeight: 900, color: "#1f1d3a" }}>
@@ -5303,6 +5348,8 @@ export default function Page() {
   function getLiveTelegramUser(): TgUser | null {
   const tgUser = window.Telegram?.WebApp?.initDataUnsafe?.user;
   if (!tgUser?.id) return null;
+  const startParam = window.Telegram?.WebApp?.initDataUnsafe?.start_param;
+
   
 
   return {
@@ -5506,6 +5553,28 @@ const [weeklyPairLeaderboard, setWeeklyPairLeaderboard] = useState<WeeklyPairLea
   const [bonusClaimAvailable, setBonusClaimAvailable] = useState(true);
   const [showLevelUp, setShowLevelUp] = useState(false);
 const [levelUpData, setLevelUpData] = useState<{ level: number; title: string } | null>(null);
+
+useEffect(() => {
+  if (!startParam) return;
+
+  if (startParam.startsWith("ref_")) {
+    const referrerId = startParam.replace("ref_", "");
+
+    setAppState((prev) => {
+      if (prev.referrals.invitedUsers.includes(referrerId)) return prev;
+
+      return {
+        ...prev,
+        points: prev.points + 200,
+        referrals: {
+          invitedUsers: [...prev.referrals.invitedUsers, referrerId],
+          totalReward: prev.referrals.totalReward + 200,
+        },
+      };
+    });
+  }
+}, []);
+
 
 
   useEffect(() => {
