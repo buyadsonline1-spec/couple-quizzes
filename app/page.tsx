@@ -3016,22 +3016,18 @@ function WelcomeScreen({ onStart }: { onStart: () => void }) {
             position: "relative",
           }}
         >
-          <div
-            style={{
-              width: 160,
-              height: 160,
-              borderRadius: 999,
-              background: "rgba(255,255,255,0.42)",
-              border: "1px solid rgba(255,255,255,0.4)",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              fontSize: 72,
-              boxShadow: "0 18px 40px rgba(73, 56, 120, 0.16)",
-            }}
-          >
-            💖
-          </div>
+          <img
+  src="/couple.png"
+  alt="Couple"
+  style={{
+    width: 220,
+    height: "auto",
+    objectFit: "contain",
+    marginBottom: 10,
+    filter: "drop-shadow(0 10px 25px rgba(0,0,0,0.15))",
+  }}
+/>
+
 
           <div
             style={{
