@@ -5314,6 +5314,49 @@ export default function Page() {
   };
 }
 
+const handleCompleteGame = (game: Game, score: number) => {
+  let leveledUpTo: { level: number; title: string } | null = null;
+
+  setAppState((prev) => {
+    const alreadyCompleted = prev.completedGameIds.includes(game.id);
+    const rewardToAdd = alreadyCompleted ? 0 : game.reward;
+
+    const newPoints = prev.points + rewardToAdd;
+
+    const oldLevel = getPairLevelInfo(prev.points);
+    const newLevel = getPairLevelInfo(newPoints);
+
+    if (newLevel.level > oldLevel.level) {
+      leveledUpTo = {
+        level: newLevel.level,
+        title: newLevel.title,
+      };
+    }
+
+    return {
+      ...prev,
+      points: newPoints,
+      stats: {
+        ...prev.stats,
+        gamesPlayed: prev.stats.gamesPlayed + 1,
+      },
+      completedGameIds: alreadyCompleted
+        ? prev.completedGameIds
+        : [...prev.completedGameIds, game.id],
+    };
+  });
+
+  if (leveledUpTo) {
+    setLevelUpData(leveledUpTo);
+    setShowLevelUp(true);
+  }
+
+  if (game.id !== "90-questions") {
+    setScreen("menu");
+  }
+};
+
+
 const handleClaimWeeklyTopReward = async () => {
   const currentWeekKey = getCurrentWeekKey();
   let nextState!: AppState;
