@@ -2600,6 +2600,7 @@ function getPairLevelInfo(points: number) {
 }
 
 
+
 function calculatePairStats(pollAnswers: Record<string, number[]>) {
   const matchGroups = [
     { key: "romance", label: "Романтика" },
@@ -5294,115 +5295,7 @@ if (updateProfileError) {
   return loadPairStateForUser(telegramId);
 }
 
-function PairLevelUpModal({
-  level,
-  title,
-  onClose,
-}: {
-  level: number;
-  title: string;
-  onClose: () => void;
-}) {
-  return (
-    <div
-      style={{
-        position: "fixed",
-        inset: 0,
-        background: "rgba(20, 16, 40, 0.42)",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        padding: 16,
-        zIndex: 300,
-        backdropFilter: "blur(6px)",
-      }}
-    >
-      <div
-        style={{
-          width: "100%",
-          maxWidth: 420,
-          borderRadius: 28,
-          padding: 22,
-          background:
-            "linear-gradient(180deg, rgba(255,255,255,0.34), rgba(255,255,255,0.18))",
-          border: "1px solid rgba(255,255,255,0.34)",
-          boxShadow: "0 18px 50px rgba(72, 46, 144, 0.28)",
-          textAlign: "center",
-          animation: "pairLevelPop 0.42s ease",
-        }}
-      >
-        <div
-          style={{
-            width: 92,
-            height: 92,
-            margin: "0 auto",
-            borderRadius: 999,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            fontSize: 42,
-            background: "linear-gradient(135deg, #8f6bff, #ff76ba)",
-            color: "#fff",
-            boxShadow: "0 14px 30px rgba(126, 75, 255, 0.34)",
-          }}
-        >
-          ✨
-        </div>
 
-        <div
-          style={{
-            marginTop: 16,
-            fontSize: 28,
-            fontWeight: 900,
-            color: "#241b40",
-          }}
-        >
-          Новый уровень!
-        </div>
-
-        <div
-          style={{
-            marginTop: 10,
-            fontSize: 18,
-            fontWeight: 800,
-            color: "#4d466c",
-          }}
-        >
-          Уровень {level}
-        </div>
-
-        <div
-          style={{
-            marginTop: 6,
-            fontSize: 26,
-            fontWeight: 900,
-            color: "#1f1d3a",
-          }}
-        >
-          {title}
-        </div>
-
-        <div
-          style={{
-            marginTop: 12,
-            color: "#4b446a",
-            lineHeight: 1.45,
-            fontSize: 15,
-          }}
-        >
-          Ваша пара стала ещё сильнее 💞
-        </div>
-
-        <button
-          onClick={onClose}
-          style={{ ...primaryButtonStyle, width: "100%", marginTop: 18 }}
-        >
-          Класс!
-        </button>
-      </div>
-    </div>
-  );
-}
 
 
 export default function Page() {
