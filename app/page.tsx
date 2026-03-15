@@ -3118,30 +3118,30 @@ function MainMenu({
     <div style={{ padding: 12, paddingTop: 14 }}>
       <div style={{ ...cardBaseStyle(), padding: 14, marginBottom: 12 }}>
   <div
-    style={{
-      display: "flex",
-      alignItems: "flex-start",
-      justifyContent: "space-between",
-      gap: 10,
-    }}
-  >
+  style={{
+    display: "flex",
+    flexDirection: "column",
+    gap: 10,
+  }}
+>
+
     <div style={{ minWidth: 0, flex: 1 }}>
       <div style={{ fontSize: 24, fontWeight: 900, color: "#1f1d3a" }}>
         Привет, {firstName}
       </div>
-
-      <div style={{ marginTop: 4, color: "#3a345c", fontSize: 13 }}>
-        Выбирай раздел
-      </div>
+  
 
       <div
-        style={{
-          marginTop: 12,
-          padding: "10px 12px",
-          borderRadius: 14,
-          background: "rgba(255,255,255,0.26)",
-        }}
-      >
+  style={{
+    marginTop: 14,
+    padding: "14px 14px",
+    borderRadius: 18,
+    background: "rgba(255,255,255,0.26)",
+    width: "100%",
+    boxSizing: "border-box",
+  }}
+>
+
         <div
           style={{
             display: "flex",
