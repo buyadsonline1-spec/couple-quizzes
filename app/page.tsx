@@ -2277,6 +2277,18 @@ function getInitials(name?: string, lastName?: string) {
   return `${a}${b}`.trim();
 }
 
+function getPairDisplayTitle(user: TgUser | null, pair: PairState) {
+  const me =
+    [user?.first_name, user?.last_name].filter(Boolean).join(" ") || "Ты";
+
+  const partner =
+    [pair.partner?.firstName, pair.partner?.lastName].filter(Boolean).join(" ") ||
+    (pair.partner?.username ? `@${pair.partner.username}` : "Партнёр");
+
+  return `${me} + ${partner}`;
+}
+
+
 function polarToCartesian(
   cx: number,
   cy: number,
