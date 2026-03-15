@@ -34,8 +34,10 @@ type Screen =
   | "tests"
   | "rewards"
   | "pair"
+  | "daily-pair"
   | "profile"
   | "top";
+
 
 type TgUser = {
   id?: number;
@@ -1485,20 +1487,21 @@ function PairScreen({
   pair,
   points,
   pollAnswers,
-  appState,
-  setAppState,
+
   onBack,
   onJoinByCode,
+  onOpenDailyQuestion,
 }: {
   user: TgUser | null;
   pair: PairState;
   points: number;
   pollAnswers: Record<string, number[]>;
-  appState: AppState;
-  setAppState: React.Dispatch<React.SetStateAction<AppState>>;
+
   onBack: () => void;
   onJoinByCode: (code: string) => Promise<void>;
+  onOpenDailyQuestion: () => void;
 }) {
+
 
   const hasPair = !!pair.pairId;
 
@@ -1595,7 +1598,15 @@ function PairScreen({
         </div>
       </div>
 
-      <DailyPairQuestionCard appState={appState} setAppState={setAppState} />
+      <button
+  onClick={onOpenDailyQuestion}
+  style={{ ...primaryButtonStyle, width: "100%", marginTop: 0 }}
+>
+  Вопрос дня 💞
+</button>
+
+
+
 
       {!hasPair ? (
         <>
@@ -1971,12 +1982,14 @@ function PairScreen({
   );
 }
 
-function DailyPairQuestionCard({
+function DailyPairQuestionScreen({
   appState,
   setAppState,
+  onBack,
 }: {
   appState: AppState;
   setAppState: React.Dispatch<React.SetStateAction<AppState>>;
+  onBack: () => void;
 }) {
   const today = getTodayLocalDateString();
   const question = getDailyPairQuestionForToday();
@@ -2004,150 +2017,150 @@ function DailyPairQuestionCard({
           answerIndex,
         },
       },
-      points: prev.points + 15,
     }));
   }
 
   return (
-    <div style={{ ...cardBaseStyle(), padding: 18 }}>
-      <div style={{ fontSize: 22, fontWeight: 900, color: "#1f1d3a" }}>
-        Вопрос дня 💞
-      </div>
-
-      <div
-        style={{
-          marginTop: 10,
-          color: "#3a345c",
-          fontSize: 14,
-          lineHeight: 1.45,
-        }}
-      >
-        Оба отвечают на один вопрос. Когда ответят оба — можно сравнить результат.
-      </div>
-
-      <div
-        style={{
-          marginTop: 14,
-          padding: "14px 16px",
-          borderRadius: 16,
-          background: "rgba(255,255,255,0.24)",
-          color: "#241b40",
-          fontWeight: 800,
-          lineHeight: 1.4,
-          fontSize: 17,
-        }}
-      >
-        {question.text}
-      </div>
-
-      {!boyToday && (
-        <div style={{ marginTop: 14 }}>
-          <div style={{ fontWeight: 800, color: "#2c2647", marginBottom: 8 }}>
-            Ответ парня
-          </div>
-          <div style={{ display: "grid", gap: 8 }}>
-            {question.options.map((option, index) => (
-              <button
-                key={`boy-${index}`}
-                onClick={() => saveAnswer("boy", index)}
-                style={{
-                  border: "1px solid rgba(255,255,255,0.28)",
-                  borderRadius: 16,
-                  padding: "12px 14px",
-                  background: "rgba(255,255,255,0.20)",
-                  color: "#1f1d3a",
-                  textAlign: "left",
-                  fontSize: 15,
-                  fontWeight: 700,
-                  cursor: "pointer",
-                }}
-              >
-                👦 {option}
-              </button>
-            ))}
-          </div>
+    <div style={{ padding: 12, display: "grid", gap: 10 }}>
+      <div style={{ ...cardBaseStyle(), padding: 14 }}>
+        <div style={{ fontSize: 24, fontWeight: 900, color: "#1f1d3a" }}>
+          Вопрос дня 💞
         </div>
-      )}
-
-      {!girlToday && (
-        <div style={{ marginTop: 14 }}>
-          <div style={{ fontWeight: 800, color: "#2c2647", marginBottom: 8 }}>
-            Ответ девушки
-          </div>
-          <div style={{ display: "grid", gap: 8 }}>
-            {question.options.map((option, index) => (
-              <button
-                key={`girl-${index}`}
-                onClick={() => saveAnswer("girl", index)}
-                style={{
-                  border: "1px solid rgba(255,255,255,0.28)",
-                  borderRadius: 16,
-                  padding: "12px 14px",
-                  background: "rgba(255,255,255,0.20)",
-                  color: "#1f1d3a",
-                  textAlign: "left",
-                  fontSize: 15,
-                  fontWeight: 700,
-                  cursor: "pointer",
-                }}
-              >
-                👧 {option}
-              </button>
-            ))}
-          </div>
+        <div style={{ marginTop: 4, color: "#3a345c", fontSize: 13, lineHeight: 1.4 }}>
+          Оба отвечают на один и тот же вопрос, а потом можно сравнить ответы.
         </div>
-      )}
+      </div>
 
-      <div style={{ display: "grid", gap: 8, marginTop: 14 }}>
+      <div style={{ ...cardBaseStyle(), padding: 14 }}>
         <div
           style={{
-            padding: "10px 12px",
-            borderRadius: 14,
-            background: "rgba(255,255,255,0.20)",
-            color: "#2c2647",
-            fontWeight: 700,
-          }}
-        >
-          Парень: {boyToday ? "ответил" : "ещё не ответил"}
-        </div>
-        <div
-          style={{
-            padding: "10px 12px",
-            borderRadius: 14,
-            background: "rgba(255,255,255,0.20)",
-            color: "#2c2647",
-            fontWeight: 700,
-          }}
-        >
-          Девушка: {girlToday ? "ответила" : "ещё не ответила"}
-        </div>
-      </div>
-
-      {bothAnswered && (
-        <div
-          style={{
-            marginTop: 14,
             padding: "14px 16px",
             borderRadius: 16,
-            background:
-              boyAnswer === girlAnswer
-                ? "rgba(255,255,255,0.34)"
-                : "rgba(255,255,255,0.24)",
+            background: "rgba(255,255,255,0.24)",
             color: "#241b40",
+            fontWeight: 800,
+            lineHeight: 1.4,
+            fontSize: 18,
           }}
         >
-          <div style={{ fontWeight: 900, fontSize: 16 }}>
-            {boyAnswer === girlAnswer
-              ? "Вы ответили одинаково 💘"
-              : "Ответы отличаются ✨"}
+          {question.text}
+        </div>
+
+        {!boyToday && (
+          <div style={{ marginTop: 12 }}>
+            <div style={{ fontWeight: 800, color: "#2c2647", marginBottom: 8 }}>
+              Ответ парня
+            </div>
+            <div style={{ display: "grid", gap: 8 }}>
+              {question.options.map((option, index) => (
+                <button
+                  key={`boy-${index}`}
+                  onClick={() => saveAnswer("boy", index)}
+                  style={{
+                    border: "1px solid rgba(255,255,255,0.28)",
+                    borderRadius: 16,
+                    padding: "12px 14px",
+                    background: "rgba(255,255,255,0.20)",
+                    color: "#1f1d3a",
+                    textAlign: "left",
+                    fontSize: 15,
+                    fontWeight: 700,
+                    cursor: "pointer",
+                  }}
+                >
+                  👦 {option}
+                </button>
+              ))}
+            </div>
           </div>
-          <div style={{ marginTop: 8, fontSize: 14, lineHeight: 1.45 }}>
-            👦 {question.options[boyAnswer ?? 0]}
-            <br />
-            👧 {question.options[girlAnswer ?? 0]}
+        )}
+
+        {!girlToday && (
+          <div style={{ marginTop: 12 }}>
+            <div style={{ fontWeight: 800, color: "#2c2647", marginBottom: 8 }}>
+              Ответ девушки
+            </div>
+            <div style={{ display: "grid", gap: 8 }}>
+              {question.options.map((option, index) => (
+                <button
+                  key={`girl-${index}`}
+                  onClick={() => saveAnswer("girl", index)}
+                  style={{
+                    border: "1px solid rgba(255,255,255,0.28)",
+                    borderRadius: 16,
+                    padding: "12px 14px",
+                    background: "rgba(255,255,255,0.20)",
+                    color: "#1f1d3a",
+                    textAlign: "left",
+                    fontSize: 15,
+                    fontWeight: 700,
+                    cursor: "pointer",
+                  }}
+                >
+                  👧 {option}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        <div style={{ display: "grid", gap: 8, marginTop: 12 }}>
+          <div
+            style={{
+              padding: "10px 12px",
+              borderRadius: 14,
+              background: "rgba(255,255,255,0.20)",
+              color: "#2c2647",
+              fontWeight: 700,
+            }}
+          >
+            Парень: {boyToday ? "ответил" : "ещё не ответил"}
+          </div>
+
+          <div
+            style={{
+              padding: "10px 12px",
+              borderRadius: 14,
+              background: "rgba(255,255,255,0.20)",
+              color: "#2c2647",
+              fontWeight: 700,
+            }}
+          >
+            Девушка: {girlToday ? "ответила" : "ещё не ответила"}
           </div>
         </div>
-      )}
+
+        {bothAnswered && (
+          <div
+            style={{
+              marginTop: 12,
+              padding: "14px 16px",
+              borderRadius: 16,
+              background:
+                boyAnswer === girlAnswer
+                  ? "rgba(255,255,255,0.34)"
+                  : "rgba(255,255,255,0.24)",
+              color: "#241b40",
+            }}
+          >
+            <div style={{ fontWeight: 900, fontSize: 16 }}>
+              {boyAnswer === girlAnswer
+                ? "Вы ответили одинаково 💘"
+                : "Ответы отличаются ✨"}
+            </div>
+
+            <div style={{ marginTop: 8, fontSize: 14, lineHeight: 1.45 }}>
+              👦 {question.options[boyAnswer ?? 0]}
+              <br />
+              👧 {question.options[girlAnswer ?? 0]}
+            </div>
+          </div>
+        )}
+      </div>
+
+      <button onClick={onBack} style={{ ...secondaryButtonStyle, marginTop: 0 }}>
+        Назад в раздел «Пара»
+      </button>
     </div>
   );
 }
@@ -5545,17 +5558,26 @@ const handleCompleteGame = async (game: Game, score: number) => {
 )}
 
 {screen === "pair" && (
-<PairScreen
-  user={user}
-  pair={appState.pair}
-  points={appState.points}
-  pollAnswers={appState.pollAnswers}
-  appState={appState}
-  setAppState={setAppState}
-  onBack={() => setScreen("menu")}
-  onJoinByCode={handleJoinByCode}
-/>
+  <PairScreen
+    user={user}
+    pair={appState.pair}
+    points={appState.points}
+    pollAnswers={appState.pollAnswers}
+    onBack={() => setScreen("menu")}
+    onJoinByCode={handleJoinByCode}
+    onOpenDailyQuestion={() => setScreen("daily-pair")}
+  />
 )}
+
+{screen === "daily-pair" && (
+  <DailyPairQuestionScreen
+    appState={appState}
+    setAppState={setAppState}
+    onBack={() => setScreen("pair")}
+  />
+)}
+
+
 
 
         {!showDailyBonus && screen === "welcome" && totalActivities > 999999 && <div />}
