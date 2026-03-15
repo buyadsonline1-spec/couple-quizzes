@@ -5011,8 +5011,7 @@ function ProfileAndStatsScreen({
   isPremium,
   onBack,
 }: {
-
-
+  
   user: TgUser | null;
   points: number;
   stats: AppStats;
@@ -5022,10 +5021,12 @@ function ProfileAndStatsScreen({
   referrals: {
     invitedUsers: string[];
     totalReward: number;
-      isPremium: boolean;
+
   };
+  isPremium: boolean;
   onBack: () => void;
 }) {
+
 
   
   const fullName =
