@@ -2697,6 +2697,14 @@ function loadState(): AppState {
    return {
   points: parsed.points ?? DEFAULT_STATE.points,
 
+  referrals: {
+  invitedUsers:
+    parsed.referrals?.invitedUsers ?? DEFAULT_STATE.referrals.invitedUsers,
+  totalReward:
+    parsed.referrals?.totalReward ?? DEFAULT_STATE.referrals.totalReward,
+},
+
+
   dailyBonus: {
     streakDay:
       parsed.dailyBonus?.streakDay ?? DEFAULT_STATE.dailyBonus.streakDay,
@@ -4449,18 +4457,7 @@ function RewardsScreen({
   const center = size / 2;
   const count = REWARD_CATEGORIES.length;
   const segmentAngle = 360 / count;
-
-  function getPairDisplayTitle(user: TgUser | null, pair: PairState) {
-  const me =
-    [user?.first_name, user?.last_name].filter(Boolean).join(" ") || "Ты";
-
-  const partner =
-    [pair.partner?.firstName, pair.partner?.lastName].filter(Boolean).join(" ") ||
-    pair.partner?.username ||
-    "Партнёр";
-
-  return `${me} + ${partner}`;
-}
+  
 
 
   function handleSpin() {
@@ -4905,6 +4902,7 @@ function ProfileAndStatsScreen({
   bonusState,
   wonRewards,
   pollAnswers,
+  referrals,
   onBack,
 }: {
   user: TgUser | null;
@@ -4913,8 +4911,13 @@ function ProfileAndStatsScreen({
   bonusState: DailyBonusState;
   wonRewards: WonReward[];
   pollAnswers: Record<string, number[]>;
+  referrals: {
+    invitedUsers: string[];
+    totalReward: number;
+  };
   onBack: () => void;
 }) {
+
   
   const fullName =
     [user?.first_name, user?.last_name].filter(Boolean).join(" ") ||
@@ -5041,8 +5044,9 @@ function ProfileAndStatsScreen({
   </button>
 </div>
 
-<StatRow label="Приглашено друзей" value={appState.referrals.invitedUsers.length} />
-<StatRow label="Очков за рефералов" value={appState.referrals.totalReward} />
+<StatRow label="Приглашено друзей" value={referrals.invitedUsers.length} />
+<StatRow label="Очков за рефералов" value={referrals.totalReward} />
+
 
     
 
@@ -5354,7 +5358,7 @@ export default function Page() {
   function getLiveTelegramUser(): TgUser | null {
   const tgUser = window.Telegram?.WebApp?.initDataUnsafe?.user;
   if (!tgUser?.id) return null;
-  const startParam = window.Telegram?.WebApp?.initDataUnsafe?.start_param;
+
 
   
 
@@ -5561,6 +5565,7 @@ const [weeklyPairLeaderboard, setWeeklyPairLeaderboard] = useState<WeeklyPairLea
 const [levelUpData, setLevelUpData] = useState<{ level: number; title: string } | null>(null);
 
 useEffect(() => {
+  const startParam = window.Telegram?.WebApp?.initDataUnsafe?.start_param;
   if (!startParam) return;
 
   if (startParam.startsWith("ref_")) {
@@ -5950,15 +5955,17 @@ const handleCompletePoll = (poll: Poll, answers: number[]) => {
 
 
         {screen === "profile" && (
-        <ProfileAndStatsScreen
-          user={user}
-          points={appState.points}
-          stats={appState.stats}
-          bonusState={appState.dailyBonus}
-          wonRewards={appState.wonRewards}
-          pollAnswers={appState.pollAnswers}
-          onBack={() => setScreen("menu")}
-  />
+       <ProfileAndStatsScreen
+  user={user}
+  points={appState.points}
+  stats={appState.stats}
+  bonusState={appState.dailyBonus}
+  wonRewards={appState.wonRewards}
+  pollAnswers={appState.pollAnswers}
+  referrals={appState.referrals}
+  onBack={() => setScreen("menu")}
+/>
+
 )}
 
 {screen === "pair" && (
