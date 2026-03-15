@@ -176,6 +176,17 @@ type TestResult = {
   description: string;
 };
 
+type PairLevelInfo = {
+  level: number;
+  title: string;
+  currentLevelPoints: number;
+  nextLevelPoints: number | null;
+  progressInLevel: number;
+  progressMax: number;
+  progressPercent: number;
+};
+
+
 type BottleTask = {
   id: string;
   target: "boy" | "girl";
@@ -1023,6 +1034,8 @@ const POLLS: Poll[] = [
 ];
 
 
+
+
 const GAMES: Game[] = [
   {
     id: "guess-partner",
@@ -1212,6 +1225,17 @@ const LOVE_QUESTIONS: LoveQuestion[] = [
   { id: "lq89", text: "Какая мечта о любви у тебя была с детства?" },
   { id: "lq90", text: "Что для тебя значит любить по-настоящему?" },
 ];
+
+const PAIR_LEVELS = [
+  { level: 1, title: "Искра", points: 0 },
+  { level: 2, title: "Симпатия", points: 500 },
+  { level: 3, title: "Влюблённые", points: 1200 },
+  { level: 4, title: "Неразлучные", points: 2500 },
+  { level: 5, title: "Идеальная пара", points: 4500 },
+  { level: 6, title: "Love Legends", points: 7000 },
+  { level: 7, title: "Soulmates", points: 10000 },
+];
+
 
 const REWARD_CATEGORIES: RewardCategory[] = [
   {
@@ -1510,6 +1534,8 @@ function PairScreen({
     : "";
 
   const pairStats = calculatePairStats(pollAnswers);
+  const pairLevel = getPairLevelInfo(points);
+
 
   const [joinCode, setJoinCode] = useState("");
   const [joining, setJoining] = useState(false);
@@ -1889,6 +1915,105 @@ function PairScreen({
               </div>
             </div>
           </div>
+
+          <div style={{ ...cardBaseStyle(), padding: 18 }}>
+  <div style={{ fontSize: 22, fontWeight: 900, color: "#1f1d3a" }}>
+    Уровень пары
+  </div>
+
+  <div
+    style={{
+      marginTop: 12,
+      padding: "14px 16px",
+      borderRadius: 18,
+      background: "rgba(255,255,255,0.24)",
+    }}
+  >
+    <div
+      style={{
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "space-between",
+        gap: 12,
+      }}
+    >
+      <div>
+        <div style={{ fontSize: 15, color: "#4d466c", fontWeight: 700 }}>
+          Уровень {pairLevel.level}
+        </div>
+        <div
+          style={{
+            marginTop: 4,
+            fontSize: 22,
+            fontWeight: 900,
+            color: "#1c1733",
+          }}
+        >
+          {pairLevel.title}
+        </div>
+      </div>
+
+      <div
+        style={{
+          padding: "10px 12px",
+          borderRadius: 14,
+          background: "rgba(255,255,255,0.32)",
+          fontWeight: 900,
+          color: "#6b46ff",
+          whiteSpace: "nowrap",
+        }}
+      >
+        ⭐ {points}
+      </div>
+    </div>
+
+    <div
+      style={{
+        marginTop: 14,
+        height: 12,
+        borderRadius: 999,
+        background: "rgba(255,255,255,0.24)",
+        overflow: "hidden",
+      }}
+    >
+      <div
+        style={{
+          width: `${pairLevel.progressPercent}%`,
+          height: "100%",
+          borderRadius: 999,
+          background: "linear-gradient(135deg, #8f6bff, #ff76ba)",
+          transition: "width 0.35s ease",
+        }}
+      />
+    </div>
+
+    <div
+      style={{
+        marginTop: 10,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "space-between",
+        gap: 12,
+        fontSize: 13,
+        color: "#5a5378",
+        fontWeight: 700,
+      }}
+    >
+      <span>
+        {pairLevel.nextLevelPoints !== null
+          ? `${points} / ${pairLevel.nextLevelPoints}`
+          : "Максимальный уровень"}
+      </span>
+
+      <span>
+        {pairLevel.nextLevelPoints !== null
+          ? `До следующего: ${pairLevel.nextLevelPoints - points}`
+          : "Уровень максимум"}
+      </span>
+    </div>
+  </div>
+</div>
+
 
           <div style={{ ...cardBaseStyle(), padding: 18 }}>
             <div style={{ fontSize: 22, fontWeight: 900, color: "#1f1d3a" }}>
@@ -2371,6 +2496,44 @@ function calculatePairStats(pollAnswers: Record<string, number[]>) {
     { key: "trust", label: "Доверие" },
     { key: "values", label: "Ценности" },
   ];
+
+  function getPairLevelInfo(points: number): PairLevelInfo {
+  let current = PAIR_LEVELS[0];
+  let next: (typeof PAIR_LEVELS)[number] | null = null;
+
+  for (let i = 0; i < PAIR_LEVELS.length; i++) {
+    if (points >= PAIR_LEVELS[i].points) {
+      current = PAIR_LEVELS[i];
+      next = PAIR_LEVELS[i + 1] ?? null;
+    }
+  }
+
+  const currentLevelPoints = current.points;
+  const nextLevelPoints = next?.points ?? null;
+
+  const progressInLevel = next
+    ? Math.max(0, points - currentLevelPoints)
+    : 0;
+
+  const progressMax = next
+    ? next.points - currentLevelPoints
+    : 1;
+
+  const progressPercent = next
+    ? Math.max(0, Math.min(100, Math.round((progressInLevel / progressMax) * 100)))
+    : 100;
+
+  return {
+    level: current.level,
+    title: current.title,
+    currentLevelPoints,
+    nextLevelPoints,
+    progressInLevel,
+    progressMax,
+    progressPercent,
+  };
+}
+
 
   const results = matchGroups
     .map((group) => {
