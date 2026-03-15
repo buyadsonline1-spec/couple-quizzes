@@ -72,6 +72,12 @@ type WonReward = {
 type AppState = {
   points: number;
 
+  referrals: {
+  invitedUsers: string[];
+  totalReward: number;
+};
+
+
   dailyBonus: {
     streakDay: number;
     lastClaimDate: string | null;
