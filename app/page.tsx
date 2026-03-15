@@ -2448,6 +2448,19 @@ function getReferralLink(user: TgUser | null) {
   return `https://t.me/testcouple1_bot?startapp=ref_${user.id}`;
 }
 
+function shareReferralLink(user: TgUser | null) {
+  if (!user?.id) return;
+
+  const link = getReferralLink(user);
+  const text = "Заходи в Couple Quizzes 💖 Проходи опросы, играй и получай очки вместе со мной!";
+
+  window.open(
+    `https://t.me/share/url?url=${encodeURIComponent(link)}&text=${encodeURIComponent(text)}`,
+    "_blank"
+  );
+}
+
+
 
 function PairLevelUpModal({
   level,
@@ -5045,6 +5058,14 @@ function ProfileAndStatsScreen({
   >
     Копировать ссылку
   </button>
+
+  <button
+  onClick={() => shareReferralLink(user)}
+  style={{ ...secondaryButtonStyle, marginTop: 10 }}
+>
+  Пригласить друга через Telegram
+</button>
+
 </div>
 
 <StatRow label="Приглашено друзей" value={referrals.invitedUsers.length} />
