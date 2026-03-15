@@ -3103,12 +3103,15 @@ function MenuButton({
 function MainMenu({
   points,
   user,
+  pairLevel,
   onNavigate,
 }: {
   points: number;
   user: TgUser | null;
+  pairLevel: ReturnType<typeof getPairLevelInfo>;
   onNavigate: (screen: Screen) => void;
 }) {
+
   const firstName = user?.first_name || "Друг";
 
   return (
@@ -5947,12 +5950,14 @@ const handleCompletePoll = (poll: Poll, answers: number[]) => {
         {screen === "welcome" && <WelcomeScreen onStart={() => setScreen("menu")} />}
 
         {screen === "menu" && (
-          <MainMenu
-            points={appState.points}
-            user={user}
-            onNavigate={(next) => setScreen(next)}
-          />
-        )}
+  <MainMenu
+    points={appState.points}
+    user={user}
+    pairLevel={getPairLevelInfo(appState.points)}
+    onNavigate={(next) => setScreen(next)}
+  />
+)}
+
 
         {screen === "polls" && (
   <PollsEntryScreen
