@@ -1916,37 +1916,38 @@ function PairScreen({
             </div>
           </div>
 
-          <div style={{ ...cardBaseStyle(), padding: 18 }}>
-  <div style={{ fontSize: 22, fontWeight: 900, color: "#1f1d3a" }}>
-    Уровень пары
+       <div style={{ ...cardBaseStyle(), padding: 16 }}>
+  <div style={{ fontSize: 20, fontWeight: 900, color: "#1f1d3a" }}>
+    Уровень пары 💞
   </div>
 
   <div
     style={{
-      marginTop: 12,
-      padding: "14px 16px",
+      marginTop: 10,
+      padding: "14px 14px",
       borderRadius: 18,
-      background: "rgba(255,255,255,0.24)",
+      background: "rgba(255,255,255,0.26)",
     }}
   >
     <div
       style={{
         display: "flex",
-        alignItems: "center",
+
         justifyContent: "space-between",
-        gap: 12,
+        alignItems: "center",
       }}
     >
       <div>
-        <div style={{ fontSize: 15, color: "#4d466c", fontWeight: 700 }}>
+        <div style={{ fontSize: 14, color: "#4d466c", fontWeight: 700 }}>
           Уровень {pairLevel.level}
         </div>
+
         <div
           style={{
-            marginTop: 4,
-            fontSize: 22,
+            fontSize: 20,
             fontWeight: 900,
             color: "#1c1733",
+            marginTop: 2,
           }}
         >
           {pairLevel.title}
@@ -1955,22 +1956,24 @@ function PairScreen({
 
       <div
         style={{
-          padding: "10px 12px",
+          padding: "8px 10px",
           borderRadius: 14,
-          background: "rgba(255,255,255,0.32)",
+          background: "rgba(255,255,255,0.36)",
           fontWeight: 900,
           color: "#6b46ff",
-          whiteSpace: "nowrap",
+          fontSize: 14,
         }}
       >
         ⭐ {points}
       </div>
     </div>
 
+    {/* Progress bar */}
+
     <div
       style={{
-        marginTop: 14,
-        height: 12,
+        marginTop: 12,
+        height: 10,
         borderRadius: 999,
         background: "rgba(255,255,255,0.24)",
         overflow: "hidden",
@@ -1978,10 +1981,10 @@ function PairScreen({
     >
       <div
         style={{
-          width: `${pairLevel.progressPercent}%`,
+          width: `${pairLevel.progress}%`,
           height: "100%",
           borderRadius: 999,
-          background: "linear-gradient(135deg, #8f6bff, #ff76ba)",
+          background: "linear-gradient(135deg,#8f6bff,#ff76ba)",
           transition: "width 0.35s ease",
         }}
       />
@@ -1989,26 +1992,25 @@ function PairScreen({
 
     <div
       style={{
-        marginTop: 10,
+        marginTop: 8,
         display: "flex",
-        alignItems: "center",
+
         justifyContent: "space-between",
-        gap: 12,
-        fontSize: 13,
+        fontSize: 12,
         color: "#5a5378",
         fontWeight: 700,
       }}
     >
       <span>
-        {pairLevel.nextLevelPoints !== null
-          ? `${points} / ${pairLevel.nextLevelPoints}`
+        {pairLevel.nextPoints
+          ? `${points} / ${pairLevel.nextPoints}`
           : "Максимальный уровень"}
       </span>
 
       <span>
-        {pairLevel.nextLevelPoints !== null
-          ? `До следующего: ${pairLevel.nextLevelPoints - points}`
-          : "Уровень максимум"}
+        {pairLevel.nextPoints
+          ? `До следующего: ${pairLevel.nextPoints - points}`
+          : ""}
       </span>
     </div>
   </div>
@@ -2497,9 +2499,9 @@ function calculatePairStats(pollAnswers: Record<string, number[]>) {
     { key: "values", label: "Ценности" },
   ];
 
-  function getPairLevelInfo(points: number): PairLevelInfo {
+  function getPairLevelInfo(points: number) {
   let current = PAIR_LEVELS[0];
-  let next: (typeof PAIR_LEVELS)[number] | null = null;
+  let next: { level: number; title: string; points: number } | null = null;
 
   for (let i = 0; i < PAIR_LEVELS.length; i++) {
     if (points >= PAIR_LEVELS[i].points) {
@@ -2508,31 +2510,20 @@ function calculatePairStats(pollAnswers: Record<string, number[]>) {
     }
   }
 
-  const currentLevelPoints = current.points;
-  const nextLevelPoints = next?.points ?? null;
-
-  const progressInLevel = next
-    ? Math.max(0, points - currentLevelPoints)
-    : 0;
-
-  const progressMax = next
-    ? next.points - currentLevelPoints
-    : 1;
-
-  const progressPercent = next
-    ? Math.max(0, Math.min(100, Math.round((progressInLevel / progressMax) * 100)))
+  const progress = next
+    ? Math.round(
+        ((points - current.points) / (next.points - current.points)) * 100
+      )
     : 100;
 
   return {
     level: current.level,
     title: current.title,
-    currentLevelPoints,
-    nextLevelPoints,
-    progressInLevel,
-    progressMax,
-    progressPercent,
+    nextPoints: next?.points ?? null,
+    progress,
   };
 }
+
 
 
   const results = matchGroups
