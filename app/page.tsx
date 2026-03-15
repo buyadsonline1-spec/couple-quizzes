@@ -1479,9 +1479,7 @@ function getScaleResult(totalScore: number, maxScore: number): TestResult {
   };
 }
 
-function getReferralLink(userId: number) {
-  return `https://t.me/testcouple1_bot?startapp=ref_${userId}`;
-}
+
 
 
 function getLoveLanguageResult(answerIndexes: number[]): TestResult {
@@ -5665,6 +5663,7 @@ useEffect(() => {
   async function bootstrap() {
     setMounted(true);
 
+
     const tg = window.Telegram?.WebApp;
     tg?.ready?.();
     tg?.expand?.();
@@ -5694,19 +5693,17 @@ console.log("TG INIT DATA:", tg?.initDataUnsafe);
   return;
 }
 
-    const currentUser: TgUser = {
-      id: telegramUser.id,
-      first_name: telegramUser.first_name,
-      last_name: telegramUser.last_name,
-      username: telegramUser.username,
-      photo_url: telegramUser.photo_url,
-    };
+   const currentUser: TgUser = {
+  id: telegramUser.id,
+  first_name: telegramUser.first_name,
+  last_name: telegramUser.last_name,
+  username: telegramUser.username,
+  photo_url: telegramUser.photo_url,
+};
 
-    setUser(currentUser);
+setUser(currentUser);
 
-    await upsertTelegramProfile(currentUser);
-
-    const startParam = tg?.initDataUnsafe?.start_param;
+await upsertTelegramProfile(currentUser);
 
 if (startParam?.startsWith("ref_")) {
   const referrerTelegramId = Number(startParam.replace("ref_", ""));
@@ -5719,31 +5716,33 @@ if (startParam?.startsWith("ref_")) {
   }
 }
 
+const referralStats = await loadReferralStats(currentUser.id!);
 
-    let nextPairState = await loadPairStateForUser(currentUser.id!);
+let nextPairState = await loadPairStateForUser(currentUser.id!);
 
-    if (!nextPairState.pairId && startParam?.startsWith("invite_")) {
-      const inviteCode = startParam.replace("invite_", "");
+if (!nextPairState.pairId && startParam?.startsWith("invite_")) {
+  const inviteCode = startParam.replace("invite_", "");
 
-      console.log("TRY JOIN WITH CODE:", inviteCode);
+  console.log("TRY JOIN WITH CODE:", inviteCode);
 
-      const joinedPair = await joinPairByInviteCode(
-        currentUser.id!,
-        inviteCode
-      );
+  const joinedPair = await joinPairByInviteCode(
+    currentUser.id!,
+    inviteCode
+  );
 
-      if (joinedPair) {
-        nextPairState = joinedPair;
-      }
-    }
+  if (joinedPair) {
+    nextPairState = joinedPair;
+  }
+}
 
-    console.log("PAIR STATE AFTER BOOTSTRAP:", nextPairState);
+console.log("PAIR STATE AFTER BOOTSTRAP:", nextPairState);
 
-   setAppState((prev) => ({
+setAppState((prev) => ({
   ...prev,
   pair: nextPairState,
   referrals: referralStats,
 }));
+
 
 
     const weekKey = getCurrentWeekKey();
@@ -5756,7 +5755,7 @@ setWeeklyPairLeaderboard(leaderboardRows);
   bootstrap();
 }, []);
 
- const referralStats = await loadReferralStats(currentUser.id!);
+
 
 
 
