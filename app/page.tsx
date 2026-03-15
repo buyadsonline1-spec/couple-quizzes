@@ -1479,6 +1479,11 @@ function getScaleResult(totalScore: number, maxScore: number): TestResult {
   };
 }
 
+function getReferralLink(userId: number) {
+  return `https://t.me/testcouple1_bot?startapp=ref_${userId}`;
+}
+
+
 function getLoveLanguageResult(answerIndexes: number[]): TestResult {
   const labels = [
     "Слова поддержки",
@@ -5350,6 +5355,62 @@ if (updateProfileError) {
   return loadPairStateForUser(telegramId);
 }
 
+async function claimReferralReward(params: {
+  referrerTelegramId: number;
+  invitedTelegramId: number;
+}) {
+  const { referrerTelegramId, invitedTelegramId } = params;
+
+  if (referrerTelegramId === invitedTelegramId) {
+    return { ok: false, reason: "self-referral" as const };
+  }
+
+  const { data: existing } = await supabase
+    .from("referrals")
+    .select("id")
+    .eq("invited_telegram_id", invitedTelegramId)
+    .maybeSingle();
+
+  if (existing) {
+    return { ok: false, reason: "already-claimed" as const };
+  }
+
+  const { error } = await supabase.from("referrals").insert({
+    referrer_telegram_id: referrerTelegramId,
+    invited_telegram_id: invitedTelegramId,
+    reward_points: 200,
+  });
+
+  if (error) {
+    console.error("referral insert error", error);
+    return { ok: false, reason: "insert-failed" as const };
+  }
+
+  return { ok: true };
+}
+
+
+async function loadReferralStats(telegramId: number) {
+  const { data, error } = await supabase
+    .from("referrals")
+    .select("invited_telegram_id,reward_points")
+    .eq("referrer_telegram_id", telegramId);
+
+  if (error || !data) {
+    console.error("loadReferralStats error", error);
+    return {
+      invitedUsers: [],
+      totalReward: 0,
+    };
+  }
+
+  return {
+    invitedUsers: data.map((r) => String(r.invited_telegram_id)),
+    totalReward: data.reduce((sum, r) => sum + (r.reward_points ?? 0), 0),
+  };
+}
+
+
 
 
 
@@ -5645,6 +5706,20 @@ console.log("TG INIT DATA:", tg?.initDataUnsafe);
 
     await upsertTelegramProfile(currentUser);
 
+    const startParam = tg?.initDataUnsafe?.start_param;
+
+if (startParam?.startsWith("ref_")) {
+  const referrerTelegramId = Number(startParam.replace("ref_", ""));
+
+  if (Number.isFinite(referrerTelegramId)) {
+    await claimReferralReward({
+      referrerTelegramId,
+      invitedTelegramId: currentUser.id!,
+    });
+  }
+}
+
+
     let nextPairState = await loadPairStateForUser(currentUser.id!);
 
     if (!nextPairState.pairId && startParam?.startsWith("invite_")) {
@@ -5664,10 +5739,12 @@ console.log("TG INIT DATA:", tg?.initDataUnsafe);
 
     console.log("PAIR STATE AFTER BOOTSTRAP:", nextPairState);
 
-    setAppState((prev) => ({
-      ...prev,
-      pair: nextPairState,
-    }));
+   setAppState((prev) => ({
+  ...prev,
+  pair: nextPairState,
+  referrals: referralStats,
+}));
+
 
     const weekKey = getCurrentWeekKey();
 const leaderboardRows = await loadWeeklyPairLeaderboard(weekKey);
@@ -5678,6 +5755,9 @@ setWeeklyPairLeaderboard(leaderboardRows);
 
   bootstrap();
 }, []);
+
+ const referralStats = await loadReferralStats(currentUser.id!);
+
 
 
   useEffect(() => {
