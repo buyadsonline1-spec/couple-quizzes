@@ -5832,6 +5832,21 @@ if (newLevel.level > oldLevel.level) {
         paddingBottom: 24,
       }}
     >
+
+<style>{`
+  @keyframes pairLevelPop {
+    0% {
+      transform: scale(0.85);
+      opacity: 0;
+    }
+    100% {
+      transform: scale(1);
+      opacity: 1;
+    }
+  }
+`}</style>
+
+    
       <div style={{ width: "100%", maxWidth: 520, margin: "0 auto" }}>
 
         {showLevelUp && levelUpData && (
@@ -5966,20 +5981,6 @@ if (newLevel.level > oldLevel.level) {
       </div>
     </main>
 
-    <style>
-{`
-@keyframes pairLevelPop {
-0% {
-transform: scale(0.85);
-opacity: 0;
-}
-100% {
-transform: scale(1);
-opacity: 1;
-}
-}
-`}
-</style>
 
     
   );
