@@ -217,6 +217,7 @@ type PairState = {
   inviteCode: string | null;
   partner: PairMember | null;
   createdByTelegramId: number | null;
+  totalPoints: number;
 };
 
 type DailyPairQuestion = {
@@ -2060,11 +2061,12 @@ const DEFAULT_STATE: AppState = {
   pollAnswers: {},
 
   pair: {
-    pairId: null,
-    inviteCode: null,
-    partner: null,
-    createdByTelegramId: null,
-  },
+  pairId: null,
+  inviteCode: null,
+  partner: null,
+  createdByTelegramId: null,
+  totalPoints: 0,
+},
 
   dailyPair: {
     boy: {
@@ -2178,7 +2180,7 @@ const hasFullPair = hasPairCreated && hasPartnerConnected;
 const isWaitingForPartner = hasPairCreated && !hasPartnerConnected;
 
   const pairStats = calculatePairStats(pollAnswers);
-  const pairLevel = getPairLevelInfo(points);
+  const pairLevel = getPairLevelInfo(pair.totalPoints || 0);
 
   function avatarCircle(name?: string, lastName?: string, photoUrl?: string) {
     if (photoUrl) {
@@ -3493,13 +3495,15 @@ function loadState(): AppState {
   pollAnswers: parsed.pollAnswers ?? DEFAULT_STATE.pollAnswers,
 
   pair: {
-    pairId: parsed.pair?.pairId ?? DEFAULT_STATE.pair.pairId,
-    inviteCode: parsed.pair?.inviteCode ?? DEFAULT_STATE.pair.inviteCode,
-    partner: parsed.pair?.partner ?? DEFAULT_STATE.pair.partner,
-    createdByTelegramId:
-      parsed.pair?.createdByTelegramId ??
-      DEFAULT_STATE.pair.createdByTelegramId,
-  },
+  pairId: parsed.pair?.pairId ?? DEFAULT_STATE.pair.pairId,
+  inviteCode: parsed.pair?.inviteCode ?? DEFAULT_STATE.pair.inviteCode,
+  partner: parsed.pair?.partner ?? DEFAULT_STATE.pair.partner,
+  createdByTelegramId:
+    parsed.pair?.createdByTelegramId ??
+    DEFAULT_STATE.pair.createdByTelegramId,
+  totalPoints:
+    parsed.pair?.totalPoints ?? DEFAULT_STATE.pair.totalPoints,
+},
 
   dailyPair: {
     boy: {
@@ -6084,11 +6088,44 @@ async function upsertWeeklyPairLeaderboardEntry(params: {
 
 async function loadPairStateForUser(telegramId: number): Promise<PairState> {
   const emptyState: PairState = {
-    pairId: null,
-    inviteCode: null,
-    partner: null,
-    createdByTelegramId: null,
-  };
+  pairId: null,
+  inviteCode: null,
+  partner: null,
+  createdByTelegramId: null,
+  totalPoints: 0,
+};
+
+async function updatePairPoints(params: {
+  pairId: string;
+  delta: number;
+}): Promise<number | null> {
+  const { pairId, delta } = params;
+
+  const { data: pair, error: readError } = await supabase
+    .from("pairs")
+    .select("total_points")
+    .eq("id", pairId)
+    .single();
+
+  if (readError || !pair) {
+    console.error("updatePairPoints read error:", readError);
+    return null;
+  }
+
+  const nextPoints = Math.max(0, (pair.total_points ?? 0) + delta);
+
+  const { error: updateError } = await supabase
+    .from("pairs")
+    .update({ total_points: nextPoints })
+    .eq("id", pairId);
+
+  if (updateError) {
+    console.error("updatePairPoints update error:", updateError);
+    return null;
+  }
+
+  return nextPoints;
+}
 
   const { data: profile, error: profileError } = await supabase
     .from("profiles")
@@ -6143,13 +6180,14 @@ async function loadPairStateForUser(telegramId: number): Promise<PairState> {
       };
     }
   }
+return {
+  pairId: pair.id,
+  inviteCode: pair.invite_code,
+  partner,
+  createdByTelegramId,
+  totalPoints: pair.total_points ?? 0,
+};
 
-  return {
-    pairId: pair.id,
-    inviteCode: pair.invite_code,
-    partner,
-    createdByTelegramId,
-  };
 }
 
 
@@ -6367,23 +6405,28 @@ const handleCompleteGame = (game: Game, score: number) => {
 
 const handleClaimWeeklyTopReward = async () => {
   const currentWeekKey = getCurrentWeekKey();
-  let nextState!: AppState;
 
-  setAppState((prev) => {
-    if (prev.weeklyTopRewardClaimedWeek === currentWeekKey) {
-      nextState = prev;
-      return prev;
-    }
+  if (!appState.pair.pairId) return;
+  if (appState.weeklyTopRewardClaimedWeek === currentWeekKey) return;
 
-    nextState = {
-      ...prev,
-      points: prev.points + 500,
-      weeklyTopRewardClaimedWeek: currentWeekKey,
-    };
-
-    return nextState;
+  await updatePairPoints({
+    pairId: appState.pair.pairId,
+    delta: 500,
   });
 
+  let refreshedPair = appState.pair;
+  if (user?.id) {
+    refreshedPair = await loadPairStateForUser(user.id);
+  }
+
+  const nextState = {
+    ...appState,
+    pair: refreshedPair,
+    points: refreshedPair.totalPoints || 0,
+    weeklyTopRewardClaimedWeek: currentWeekKey,
+  };
+
+  setAppState(nextState);
   await syncWeeklyPairLeaderboard(nextState, user);
 };
 
@@ -6426,10 +6469,11 @@ const handleJoinByCode = async (inviteCode: string) => {
     return;
   }
 
-  const nextStateAfterJoin = {
-    ...appState,
-    pair: joinedPair,
-  };
+ const nextStateAfterJoin = {
+  ...appState,
+  pair: joinedPair,
+  points: joinedPair.totalPoints || 0,
+};
 
   setAppState(nextStateAfterJoin);
   alert("Пара успешно подключена 💕");
@@ -6498,9 +6542,10 @@ console.log("CREATE PAIR ERROR:", createPairError);
   const nextPairState = await loadPairStateForUser(actualUser.id);
 
   setAppState((prev) => ({
-    ...prev,
-    pair: nextPairState,
-  }));
+  ...prev,
+  pair: nextPairState,
+  points: nextPairState.totalPoints || 0,
+}));
 };
 
 
@@ -6643,6 +6688,7 @@ console.log("PAIR STATE AFTER BOOTSTRAP:", nextPairState);
 setAppState((prev) => ({
   ...prev,
   pair: nextPairState,
+  points: nextPairState.totalPoints || 0,
   referrals: referralStats,
 }));
 
@@ -6714,17 +6760,27 @@ setWeeklyPairLeaderboard(leaderboardRows);
     setShowDailyBonus(false);
   };
 
-const handleCompletePoll = (poll: Poll, answers: number[]) => {
+ const handleCompletePoll = async (poll: Poll, answers: number[]) => {
+  const alreadyCompleted = appState.completedPollIds.includes(poll.id);
+  const rewardToAdd = alreadyCompleted ? 0 : poll.reward;
+
+  let nextPairState = appState.pair;
   let leveledUpTo: { level: number; title: string } | null = null;
 
+  if (rewardToAdd > 0 && appState.pair.pairId) {
+    await updatePairPoints({
+      pairId: appState.pair.pairId,
+      delta: rewardToAdd,
+    });
+
+    if (user?.id) {
+      nextPairState = await loadPairStateForUser(user.id);
+    }
+  }
+
   setAppState((prev) => {
-    const alreadyCompleted = prev.completedPollIds.includes(poll.id);
-    const rewardToAdd = alreadyCompleted ? 0 : poll.reward;
-
-    const newPoints = prev.points + rewardToAdd;
-
-    const oldLevel = getPairLevelInfo(prev.points);
-    const newLevel = getPairLevelInfo(newPoints);
+    const oldLevel = getPairLevelInfo(prev.pair.totalPoints || 0);
+    const newLevel = getPairLevelInfo(nextPairState.totalPoints || 0);
 
     if (newLevel.level > oldLevel.level) {
       leveledUpTo = {
@@ -6735,7 +6791,8 @@ const handleCompletePoll = (poll: Poll, answers: number[]) => {
 
     return {
       ...prev,
-      points: newPoints,
+      pair: nextPairState,
+      points: nextPairState.totalPoints || 0,
       stats: {
         ...prev.stats,
         pollsCompleted: prev.stats.pollsCompleted + 1,
@@ -6760,17 +6817,27 @@ const handleCompletePoll = (poll: Poll, answers: number[]) => {
 
 
 
-   const handleCompleteTest = (test: TestDefinition) => {
+   const handleCompleteTest = async (test: TestDefinition) => {
+  const alreadyCompleted = appState.completedTestIds.includes(test.id);
+  const rewardToAdd = alreadyCompleted ? 0 : test.reward;
+
+  let nextPairState = appState.pair;
   let leveledUpTo: { level: number; title: string } | null = null;
 
+  if (rewardToAdd > 0 && appState.pair.pairId) {
+    await updatePairPoints({
+      pairId: appState.pair.pairId,
+      delta: rewardToAdd,
+    });
+
+    if (user?.id) {
+      nextPairState = await loadPairStateForUser(user.id);
+    }
+  }
+
   setAppState((prev) => {
-    const alreadyCompleted = prev.completedTestIds.includes(test.id);
-    const rewardToAdd = alreadyCompleted ? 0 : test.reward;
-
-    const newPoints = prev.points + rewardToAdd;
-
-    const oldLevel = getPairLevelInfo(prev.points);
-    const newLevel = getPairLevelInfo(newPoints);
+    const oldLevel = getPairLevelInfo(prev.pair.totalPoints || 0);
+    const newLevel = getPairLevelInfo(nextPairState.totalPoints || 0);
 
     if (newLevel.level > oldLevel.level) {
       leveledUpTo = {
@@ -6781,7 +6848,8 @@ const handleCompletePoll = (poll: Poll, answers: number[]) => {
 
     return {
       ...prev,
-      points: newPoints,
+      pair: nextPairState,
+      points: nextPairState.totalPoints || 0,
       stats: {
         ...prev.stats,
         testsCompleted: prev.stats.testsCompleted + 1,
@@ -6801,39 +6869,55 @@ const handleCompletePoll = (poll: Poll, answers: number[]) => {
 };
 
 
-  const handleSpinReward = (categoryIndex: number) => {
-    let result: WonReward | null = null;
+ const handleSpinReward = async (categoryIndex: number) => {
+  let result: WonReward | null = null;
 
-    setAppState((prev) => {
-      if (prev.points < WHEEL_SPIN_COST) return prev;
+  if (!appState.pair.pairId) {
+    alert("Сначала нужно создать пару");
+    return null;
+  }
 
-      const category = REWARD_CATEGORIES[categoryIndex];
-      const itemIndex = pickWeightedIndex(
-        category.items.map((item) => item.weight ?? 1),
-      );
-      const item = category.items[itemIndex];
+  if ((appState.pair.totalPoints || 0) < WHEEL_SPIN_COST) {
+    return null;
+  }
 
-      result = {
-        id: item.id,
-        title: item.title,
-        categoryId: category.id,
-        categoryTitle: category.title,
-        wonAt: getCurrentDateTimeLabel(),
-      };
+  await updatePairPoints({
+    pairId: appState.pair.pairId,
+    delta: -WHEEL_SPIN_COST,
+  });
 
-      return {
-        ...prev,
-        points: prev.points - WHEEL_SPIN_COST,
-        stats: {
-          ...prev.stats,
-          rewardsRedeemed: prev.stats.rewardsRedeemed + 1,
-        },
-        wonRewards: result ? [...prev.wonRewards, result] : prev.wonRewards,
-      };
-    });
+  let refreshedPair = appState.pair;
+  if (user?.id) {
+    refreshedPair = await loadPairStateForUser(user.id);
+  }
 
-    return result;
+  const category = REWARD_CATEGORIES[categoryIndex];
+  const itemIndex = pickWeightedIndex(
+    category.items.map((item) => item.weight ?? 1),
+  );
+  const item = category.items[itemIndex];
+
+  result = {
+    id: item.id,
+    title: item.title,
+    categoryId: category.id,
+    categoryTitle: category.title,
+    wonAt: getCurrentDateTimeLabel(),
   };
+
+  setAppState((prev) => ({
+    ...prev,
+    pair: refreshedPair,
+    points: refreshedPair.totalPoints || 0,
+    stats: {
+      ...prev.stats,
+      rewardsRedeemed: prev.stats.rewardsRedeemed + 1,
+    },
+    wonRewards: result ? [...prev.wonRewards, result] : prev.wonRewards,
+  }));
+
+  return result;
+};
 
   if (!mounted) return null;
 
@@ -6891,7 +6975,7 @@ const handleCompletePoll = (poll: Poll, answers: number[]) => {
   <MainMenu
     points={appState.points}
     user={user}
-    pairLevel={getPairLevelInfo(appState.points)}
+    pairLevel={getPairLevelInfo(appState.pair.totalPoints || 0)}
     onNavigate={(next) => {
       if (
         next === "polls" &&
