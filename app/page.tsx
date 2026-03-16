@@ -3029,11 +3029,9 @@ function WelcomeScreen({ onStart }: { onStart: () => void }) {
   src="/couple.png"
   alt="Couple"
   style={{
-    width: 220,
-    height: "auto",
-    objectFit: "contain",
-    marginBottom: 10,
-    filter: "drop-shadow(0 10px 25px rgba(0,0,0,0.15))",
+    width: 160,
+    marginBottom: 20,
+    opacity: 0.95,
   }}
 />
 
