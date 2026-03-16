@@ -3080,21 +3080,26 @@ function MenuButton({
       onClick={onClick}
       style={{
         ...cardBaseStyle(),
-        padding: 18,
+        padding: 16,
         textAlign: "left",
-        minHeight: 112,
+        minHeight: 102,
         cursor: "pointer",
         background: "rgba(255,255,255,0.20)",
         width: "100%",
+        display: "flex",
+        flexDirection: "column",
+        justifyContent: "flex-start",
       }}
     >
-      <div style={{ fontSize: 30 }}>{emoji}</div>
+      <div style={{ fontSize: 28, lineHeight: 1 }}>{emoji}</div>
+
       <div
         style={{
-          marginTop: 12,
-          fontSize: 18,
+          marginTop: 8,
+          fontSize: 17,
           fontWeight: 900,
           color: "#1e1a36",
+          lineHeight: 1.15,
         }}
       >
         {label}
@@ -3102,6 +3107,15 @@ function MenuButton({
     </button>
   );
 }
+
+<div
+  style={{
+    display: "grid",
+    gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
+    gap: 8,
+  }}
+>
+</div>
 
 function MainMenu({
   points,
@@ -3118,27 +3132,34 @@ function MainMenu({
   const firstName = user?.first_name || "Друг";
 
   return (
-    <div style={{ padding: 12, paddingTop: 14 }}>
-      <div style={{ ...cardBaseStyle(), padding: 14, marginBottom: 12 }}>
-  <div
+    <div style={{ padding: 10, paddingTop: 8 }}>
+      <div style={{ ...cardBaseStyle(), padding: 12, marginBottom: 10 }}>
+ <div
   style={{
     display: "flex",
     flexDirection: "column",
-    gap: 10,
+    gap: 8,
   }}
 >
 
     <div style={{ minWidth: 0, flex: 1 }}>
-      <div style={{ fontSize: 24, fontWeight: 900, color: "#1f1d3a" }}>
-        Привет, {firstName}
-      </div>
-  
-
       <div
   style={{
-    marginTop: 14,
-    padding: "14px 14px",
-    borderRadius: 18,
+    fontSize: 18,
+    fontWeight: 900,
+    color: "#1f1d3a",
+    lineHeight: 1.1,
+  }}
+>
+  Couple Quizzes
+</div>
+  
+
+  <div
+  style={{
+    marginTop: 10,
+    padding: "12px 12px",
+    borderRadius: 16,
     background: "rgba(255,255,255,0.26)",
     width: "100%",
     boxSizing: "border-box",
@@ -3154,45 +3175,46 @@ function MainMenu({
           }}
         >
           <div>
-            <div style={{ fontSize: 12, color: "#5a5378", fontWeight: 700 }}>
-              Уровень пары
-            </div>
+            <div style={{ fontSize: 11, color: "#5a5378", fontWeight: 700 }}>
+  Уровень пары
+</div>
             <div
-              style={{
-                marginTop: 2,
-                fontSize: 16,
-                fontWeight: 900,
-                color: "#1f1d3a",
-              }}
-            >
-              {pairLevel.title}
-            </div>
+  style={{
+    marginTop: 1,
+    fontSize: 15,
+    fontWeight: 900,
+    color: "#1f1d3a",
+    lineHeight: 1.15,
+  }}
+>
+  {pairLevel.title}
+</div>
           </div>
 
-          <div
-            style={{
-              padding: "6px 10px",
-              borderRadius: 12,
-              background: "rgba(255,255,255,0.34)",
-              fontSize: 13,
-              fontWeight: 900,
-              color: "#6b46ff",
-              whiteSpace: "nowrap",
-            }}
-          >
-            lvl {pairLevel.level}
-          </div>
+         <div
+  style={{
+    padding: "5px 9px",
+    borderRadius: 11,
+    background: "rgba(255,255,255,0.34)",
+    fontSize: 12,
+    fontWeight: 900,
+    color: "#6b46ff",
+    whiteSpace: "nowrap",
+  }}
+>
+  lvl {pairLevel.level}
+</div>
         </div>
 
         <div
-          style={{
-            marginTop: 8,
-            height: 8,
-            borderRadius: 999,
-            background: "rgba(255,255,255,0.24)",
-            overflow: "hidden",
-          }}
-        >
+  style={{
+    marginTop: 7,
+    height: 7,
+    borderRadius: 999,
+    background: "rgba(255,255,255,0.24)",
+    overflow: "hidden",
+  }}
+>
           <div
             style={{
               width: `${pairLevel.progress}%`,
@@ -3205,33 +3227,55 @@ function MainMenu({
         </div>
 
         <div
-          style={{
-            marginTop: 6,
-            fontSize: 11,
-            color: "#5a5378",
-            fontWeight: 700,
-          }}
-        >
-          {pairLevel.nextPoints
-            ? `До следующего уровня: ${pairLevel.nextPoints - points}`
-            : "Максимальный уровень"}
-        </div>
+  style={{
+    marginTop: 5,
+    fontSize: 10,
+    color: "#5a5378",
+    fontWeight: 700,
+    lineHeight: 1.2,
+  }}
+>
+  {pairLevel.nextPoints
+    ? `До следующего уровня: ${pairLevel.nextPoints - points}`
+    : "Максимальный уровень"}
+</div>
       </div>
     </div>
 
     <div
-      style={{
-        padding: "8px 10px",
-        borderRadius: 12,
-        background: "rgba(255,255,255,0.34)",
-        fontSize: 14,
-        fontWeight: 900,
-        color: "#241b40",
-        whiteSpace: "nowrap",
-      }}
-    >
-      ⭐ {points}
-    </div>
+  style={{
+    padding: "10px 12px",
+    borderRadius: 14,
+    background: "rgba(255,255,255,0.34)",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: 12,
+    width: "100%",
+    boxSizing: "border-box",
+  }}
+>
+  <div
+    style={{
+      fontSize: 14,
+      fontWeight: 800,
+      color: "#5a5378",
+    }}
+  >
+    Ваши очки:
+  </div>
+
+  <div
+    style={{
+      fontSize: 15,
+      fontWeight: 900,
+      color: "#241b40",
+      whiteSpace: "nowrap",
+    }}
+  >
+    ⭐ {points}
+  </div>
+</div>
   </div>
 </div>
 
