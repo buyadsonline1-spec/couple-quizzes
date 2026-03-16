@@ -2594,28 +2594,10 @@ function PairInviteScreen({
     ? `https://t.me/testcouple1_bot?startapp=invite_${pair.inviteCode}`
     : "";
 
-  async function handleCreateAndShare() {
+  async function handleCreateInviteClick() {
     try {
       setCreating(true);
-
-      if (!pair.inviteCode) {
-        await onCreateInvite();
-      }
-
-      const latestInviteCode = pair.inviteCode;
-      const link = latestInviteCode
-        ? `https://t.me/testcouple1_bot?startapp=invite_${latestInviteCode}`
-        : inviteLink;
-
-      if (!link) {
-        alert("Не удалось создать ссылку приглашения");
-        return;
-      }
-
-      window.open(
-        `https://t.me/share/url?url=${encodeURIComponent(link)}`,
-        "_blank"
-      );
+      await onCreateInvite();
     } finally {
       setCreating(false);
     }
@@ -2638,6 +2620,32 @@ function PairInviteScreen({
     }
   }
 
+  async function handleCopyLink() {
+    if (!inviteLink) {
+      alert("Сначала создай код приглашения");
+      return;
+    }
+
+    try {
+      await navigator.clipboard.writeText(inviteLink);
+      alert("Ссылка скопирована");
+    } catch {
+      alert("Не удалось скопировать ссылку");
+    }
+  }
+
+  function handleShareLink() {
+    if (!inviteLink) {
+      alert("Сначала создай код приглашения");
+      return;
+    }
+
+    window.open(
+      `https://t.me/share/url?url=${encodeURIComponent(inviteLink)}`,
+      "_blank"
+    );
+  }
+
   return (
     <div style={{ padding: 16, display: "grid", gap: 14 }}>
       <div style={{ ...cardBaseStyle(), padding: 18 }}>
@@ -2652,9 +2660,126 @@ function PairInviteScreen({
             lineHeight: 1.45,
           }}
         >
-          Выбери удобный способ подключения пары.
+          Сначала создай код приглашения, потом отправь ссылку или дай код партнёру.
         </div>
       </div>
+
+      {!pair.inviteCode && (
+        <div style={{ ...cardBaseStyle(), padding: 18 }}>
+          <div style={{ fontSize: 18, fontWeight: 900, color: "#1f1d3a" }}>
+            1. Создать код приглашения
+          </div>
+
+          <div
+            style={{
+              marginTop: 8,
+              color: "#4b446a",
+              lineHeight: 1.45,
+              fontSize: 14,
+            }}
+          >
+            Это создаст твоё приглашение для подключения пары.
+          </div>
+
+          <button
+            onClick={handleCreateInviteClick}
+            disabled={creating}
+            style={{
+              ...primaryButtonStyle,
+              width: "100%",
+              marginTop: 12,
+              opacity: creating ? 0.6 : 1,
+              cursor: creating ? "not-allowed" : "pointer",
+            }}
+          >
+            {creating ? "Создаём..." : "Создать код приглашения"}
+          </button>
+        </div>
+      )}
+
+      {pair.inviteCode && (
+        <div style={{ ...cardBaseStyle(), padding: 18 }}>
+          <div style={{ fontSize: 18, fontWeight: 900, color: "#1f1d3a" }}>
+            Твой код приглашения
+          </div>
+
+          <div
+            style={{
+              marginTop: 12,
+              padding: "12px 14px",
+              borderRadius: 16,
+              background: "rgba(255,255,255,0.24)",
+              color: "#241b40",
+              textAlign: "center",
+            }}
+          >
+            <div style={{ fontSize: 24, fontWeight: 900, letterSpacing: 1 }}>
+              {pair.inviteCode}
+            </div>
+          </div>
+
+          <div
+            style={{
+              fontSize: 18,
+              fontWeight: 900,
+              color: "#1f1d3a",
+              marginTop: 14,
+            }}
+          >
+            Ссылка-приглашение
+          </div>
+
+          <div
+            style={{
+              marginTop: 12,
+              padding: "14px 16px",
+              borderRadius: 16,
+              background: "rgba(255,255,255,0.24)",
+              color: "#241b40",
+              textAlign: "left",
+              fontSize: 14,
+              lineHeight: 1.45,
+              wordBreak: "break-all",
+            }}
+          >
+            {inviteLink}
+          </div>
+
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "1fr 1fr",
+              gap: 10,
+              marginTop: 12,
+            }}
+          >
+            <button
+              onClick={handleCopyLink}
+              style={{
+                ...primaryButtonStyle,
+                width: "100%",
+                marginTop: 0,
+                padding: "14px 16px",
+                fontSize: 16,
+              }}
+            >
+              Копировать
+            </button>
+
+            <button
+              onClick={handleShareLink}
+              style={{
+                ...secondaryButtonStyle,
+                marginTop: 0,
+                width: "100%",
+                padding: "14px 16px",
+              }}
+            >
+              Отправить ссылку
+            </button>
+          </div>
+        </div>
+      )}
 
       <button
         onClick={() => setShowJoinInput((prev) => !prev)}
@@ -2714,42 +2839,8 @@ function PairInviteScreen({
           </button>
         </div>
       )}
+      
 
-      <button
-        onClick={handleCreateAndShare}
-        disabled={creating}
-        style={{
-          ...secondaryButtonStyle,
-          marginTop: 0,
-          opacity: creating ? 0.6 : 1,
-          cursor: creating ? "not-allowed" : "pointer",
-        }}
-      >
-        {creating ? "Готовим ссылку..." : "Отправить ссылку"}
-      </button>
-
-      {pair.inviteCode && (
-        <div style={{ ...cardBaseStyle(), padding: 18 }}>
-          <div style={{ fontSize: 18, fontWeight: 900, color: "#1f1d3a" }}>
-            Твой код приглашения
-          </div>
-
-          <div
-            style={{
-              marginTop: 12,
-              padding: "12px 14px",
-              borderRadius: 16,
-              background: "rgba(255,255,255,0.24)",
-              color: "#241b40",
-              textAlign: "center",
-            }}
-          >
-            <div style={{ fontSize: 24, fontWeight: 900, letterSpacing: 1 }}>
-              {pair.inviteCode}
-            </div>
-          </div>
-        </div>
-      )}
 
       <button onClick={onBack} style={secondaryButtonStyle}>
         Назад
@@ -6358,6 +6449,9 @@ const handleCreateInvite = async () => {
     return;
   }
 
+  console.log("CREATE INVITE state user:", user);
+console.log("CREATE INVITE tg user:", window.Telegram?.WebApp?.initDataUnsafe?.user);
+
   const inviteCode = Math.random().toString(36).slice(2, 8).toUpperCase();
 
   const { data: createdPair, error: createPairError } = await supabase
@@ -6455,6 +6549,10 @@ useEffect(() => {
 
 
     const tg = window.Telegram?.WebApp;
+    console.log("WINDOW TELEGRAM:", window.Telegram);
+console.log("WEBAPP:", window.Telegram?.WebApp);
+console.log("INIT DATA UNSAFE:", window.Telegram?.WebApp?.initDataUnsafe);
+console.log("TG USER:", window.Telegram?.WebApp?.initDataUnsafe?.user);
     tg?.ready?.();
     tg?.expand?.();
 
