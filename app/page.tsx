@@ -3700,7 +3700,7 @@ function GamesScreen({
 
   if (!activeGameId) {
   return (
-    <div style={{ padding: 12, display: "grid", gap: 10 }}>
+    <div style={{ padding: 10, display: "grid", gap: 8 }}>
       <div style={{ ...cardBaseStyle(), padding: 14 }}>
         <div style={{ fontSize: 24, fontWeight: 900, color: "#1f1d3a" }}>
           Игры
@@ -4390,7 +4390,7 @@ function TestsScreen({
 
   if (!activeTestId) {
   return (
-    <div style={{ padding: 12, display: "grid", gap: 10 }}>
+    <div style={{ padding: 10, display: "grid", gap: 8 }}>
       <div style={{ ...cardBaseStyle(), padding: 14 }}>
         <div style={{ fontSize: 24, fontWeight: 900, color: "#1f1d3a" }}>
           Тесты
