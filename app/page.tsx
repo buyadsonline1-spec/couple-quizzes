@@ -3701,7 +3701,7 @@ function GamesScreen({
   if (!activeGameId) {
   return (
     <div style={{ padding: 10, display: "grid", gap: 8 }}>
-      <div style={{ ...cardBaseStyle(), padding: 14 }}>
+      <div style={{ ...cardBaseStyle(), padding: 12 }}>
         <div style={{ fontSize: 24, fontWeight: 900, color: "#1f1d3a" }}>
           Игры
         </div>
@@ -3714,32 +3714,32 @@ function GamesScreen({
         const completed = completedGameIds.includes(game.id);
 
         return (
-          <div key={game.id} style={{ ...cardBaseStyle(), padding: 14 }}>
+          <div key={game.id} style={{ ...cardBaseStyle(), padding: 12 }}>
             <div style={{ fontSize: 18, fontWeight: 900, color: "#1f1d3a" }}>
               {game.title}
             </div>
 
             <div
-              style={{
-                marginTop: 6,
-                color: "#40395f",
-                lineHeight: 1.35,
-                fontSize: 13,
-              }}
-            >
-              {game.description}
-            </div>
+  style={{
+    marginTop: 4,
+    color: "#40395f",
+    lineHeight: 1.3,
+    fontSize: 13,
+  }}
+>
+  {game.description}
+</div>
 
-            <div
-              style={{
-                marginTop: 8,
-                display: "flex",
-                justifyContent: "space-between",
-                gap: 10,
-                color: "#4d466c",
-                fontSize: 12,
-              }}
-            >
+<div
+  style={{
+    marginTop: 6,
+    display: "flex",
+    justifyContent: "space-between",
+    gap: 10,
+    color: "#4d466c",
+    fontSize: 12,
+  }}
+>
               <span>
                 {game.id === "bottle"
                   ? "Формат: раунд"
@@ -3753,13 +3753,13 @@ function GamesScreen({
             <button
               onClick={() => startGame(game.id)}
               style={{
-                ...primaryButtonStyle,
-                width: "100%",
-                marginTop: 10,
-                padding: "12px 14px",
-                fontSize: 15,
-                opacity: completed ? 0.92 : 1,
-              }}
+  ...primaryButtonStyle,
+  width: "100%",
+  marginTop: 8,
+  padding: "11px 14px",
+  fontSize: 15,
+  opacity: completed ? 0.92 : 1,
+}}
             >
               {completed ? "Сыграть снова" : "Начать"}
             </button>
@@ -3767,7 +3767,10 @@ function GamesScreen({
         );
       })}
 
-      <button onClick={onBack} style={{ ...secondaryButtonStyle, marginTop: 0 }}>
+      <button
+  onClick={onBack}
+  style={{ ...secondaryButtonStyle, marginTop: 0, padding: "10px 16px" }}
+>
         Назад в меню
       </button>
     </div>
@@ -4391,7 +4394,7 @@ function TestsScreen({
   if (!activeTestId) {
   return (
     <div style={{ padding: 10, display: "grid", gap: 8 }}>
-      <div style={{ ...cardBaseStyle(), padding: 14 }}>
+      <div style={{ ...cardBaseStyle(), padding: 12 }}>
         <div style={{ fontSize: 24, fontWeight: 900, color: "#1f1d3a" }}>
           Тесты
         </div>
@@ -4404,46 +4407,45 @@ function TestsScreen({
         const completed = completedTestIds.includes(test.id);
 
         return (
-          <div key={test.id} style={{ ...cardBaseStyle(), padding: 14 }}>
+          <div key={test.id} style={{ ...cardBaseStyle(), padding: 12 }}>
             <div style={{ fontSize: 18, fontWeight: 900, color: "#1f1d3a" }}>
               {test.title}
             </div>
 
             <div
-              style={{
-                marginTop: 6,
-                color: "#40395f",
-                lineHeight: 1.35,
-                fontSize: 13,
-              }}
-            >
-              {test.description}
-            </div>
+  style={{
+    marginTop: 4,
+    color: "#40395f",
+    lineHeight: 1.3,
+    fontSize: 13,
+  }}
+>
+  {test.description}
+</div>
 
             <div
-              style={{
-                marginTop: 8,
-                display: "flex",
-                justifyContent: "space-between",
-                gap: 10,
-                color: "#4d466c",
-                fontSize: 12,
-              }}
-            >
+  style={{
+    marginTop: 6,
+    display: "flex",
+    justifyContent: "space-between",
+    gap: 10,
+    color: "#4d466c",
+    fontSize: 12,
+  }}
+>
               <span>{test.questions.length} вопросов</span>
               <span>+{test.reward}</span>
             </div>
 
             <button
-              onClick={() => startTest(test.id)}
-              style={{
-                ...primaryButtonStyle,
-                width: "100%",
-                marginTop: 10,
-                padding: "12px 14px",
-                fontSize: 15,
-                opacity: completed ? 0.92 : 1,
-              }}
+            style={{
+  ...primaryButtonStyle,
+  width: "100%",
+  marginTop: 8,
+  padding: "11px 14px",
+  fontSize: 15,
+  opacity: completed ? 0.92 : 1,
+}}
             >
               {completed ? "Пройти снова" : "Начать"}
             </button>
@@ -4451,7 +4453,10 @@ function TestsScreen({
         );
       })}
 
-      <button onClick={onBack} style={{ ...secondaryButtonStyle, marginTop: 0 }}>
+      <button
+  onClick={onBack}
+  style={{ ...secondaryButtonStyle, marginTop: 0, padding: "10px 16px" }}
+>
         Назад в меню
       </button>
     </div>
