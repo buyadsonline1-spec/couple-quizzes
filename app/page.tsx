@@ -34,6 +34,7 @@ type Screen =
   | "tests"
   | "rewards"
   | "pair"
+  | "pair-invite"
   | "daily-pair"
   | "profile"
   | "top"
@@ -2157,65 +2158,21 @@ function PairScreen({
   pair,
   points,
   pollAnswers,
-
   onBack,
-  onJoinByCode,
-  onCreateInvite,
+  onOpenInvite,
   onOpenDailyQuestion,
 }: {
   user: TgUser | null;
   pair: PairState;
   points: number;
   pollAnswers: Record<string, number[]>;
-
   onBack: () => void;
-  onJoinByCode: (code: string) => Promise<void>;
-  onCreateInvite: () => Promise<void>;
+  onOpenInvite: () => void;
   onOpenDailyQuestion: () => void;
 }) {
-
-
-  const hasInvite = !!pair.inviteCode;
-const hasPartner = !!pair.partner;
-const hasFullPair = !!pair.pairId && !!pair.partner;
-
-  const inviteLink = pair.inviteCode
-    ? `https://t.me/testcouple1_bot?startapp=invite_${pair.inviteCode}`
-    : "";
-
+  const hasFullPair = !!pair.pairId && !!pair.partner;
   const pairStats = calculatePairStats(pollAnswers);
   const pairLevel = getPairLevelInfo(points);
-
-
-  const [joinCode, setJoinCode] = useState("");
-  const [joining, setJoining] = useState(false);
-
-  async function copyInvite() {
-    if (!inviteLink) return;
-
-    try {
-      await navigator.clipboard.writeText(inviteLink);
-      alert("Ссылка скопирована");
-    } catch {
-      alert("Не удалось скопировать ссылку");
-    }
-  }
-
-  async function handleJoin() {
-    const code = joinCode.trim().toUpperCase();
-    if (!code) {
-      alert("Введите код приглашения");
-      return;
-    }
-
-    try {
-      setJoining(true);
-      await onJoinByCode(code);
-      setJoinCode("");
-    } finally {
-      setJoining(false);
-    }
-  }
 
   function avatarCircle(name?: string, lastName?: string, photoUrl?: string) {
     if (photoUrl) {
@@ -2275,14 +2232,11 @@ const hasFullPair = !!pair.pairId && !!pair.partner;
       </div>
 
       <button
-  onClick={onOpenDailyQuestion}
-  style={{ ...primaryButtonStyle, width: "100%", marginTop: 0 }}
->
-  Вопрос дня 💞
-</button>
-
-
-
+        onClick={onOpenDailyQuestion}
+        style={{ ...primaryButtonStyle, width: "100%", marginTop: 0 }}
+      >
+        Вопрос дня 💞
+      </button>
 
       {!hasFullPair ? (
         <>
@@ -2300,7 +2254,7 @@ const hasFullPair = !!pair.pairId && !!pair.partner;
                 fontWeight: 800,
               }}
             >
-              ⏳ Статус: ожидание подключения
+              ⏳ Статус: пара не подключена
             </div>
 
             <div
@@ -2311,150 +2265,7 @@ const hasFullPair = !!pair.pairId && !!pair.partner;
                 color: "#1f1d3a",
               }}
             >
-              Пара ещё не подключена
-            </div>
-
-
-            <div
-              style={{
-                marginTop: 8,
-                color: "#4b446a",
-                lineHeight: 1.45,
-                fontSize: 14,
-              }}
-            >
-              Отправь партнёру свой код или ссылку-приглашение ниже.
-            </div>
-          </div>
-
-          {!pair.inviteCode && (
-  <div style={{ ...cardBaseStyle(), padding: 18 }}>
-    <div style={{ fontSize: 18, fontWeight: 900, color: "#1f1d3a" }}>
-      Создать приглашение
-    </div>
-
-    <div
-      style={{
-        marginTop: 8,
-        color: "#4b446a",
-        lineHeight: 1.45,
-        fontSize: 14,
-      }}
-    >
-      У тебя ещё нет кода приглашения. Создай его и отправь партнёру.
-    </div>
-
-    <button
-      onClick={async () => {
-        await onCreateInvite();
-      }}
-      style={{
-        ...primaryButtonStyle,
-        width: "100%",
-        marginTop: 12,
-      }}
-    >
-      Создать код приглашения
-    </button>
-  </div>
-)}
-
-          {pair.inviteCode && (
-            <div style={{ ...cardBaseStyle(), padding: 18 }}>
-              <div style={{ fontSize: 18, fontWeight: 900, color: "#1f1d3a" }}>
-                Код приглашения
-              </div>
-
-              <div
-                style={{
-                  marginTop: 12,
-                  padding: "12px 14px",
-                  borderRadius: 16,
-                  background: "rgba(255,255,255,0.24)",
-                  color: "#241b40",
-                  textAlign: "center",
-                }}
-              >
-                <div style={{ fontSize: 24, fontWeight: 900, letterSpacing: 1 }}>
-                  {pair.inviteCode}
-                </div>
-              </div>
-
-              <div
-                style={{
-                  fontSize: 18,
-                  fontWeight: 900,
-                  color: "#1f1d3a",
-                  marginTop: 14,
-                }}
-              >
-                Ссылка-приглашение
-              </div>
-
-              <div
-                style={{
-                  marginTop: 12,
-                  padding: "14px 16px",
-                  borderRadius: 16,
-                  background: "rgba(255,255,255,0.24)",
-                  color: "#241b40",
-                  textAlign: "left",
-                  fontSize: 14,
-                  lineHeight: 1.45,
-                  wordBreak: "break-all",
-                }}
-              >
-                {inviteLink}
-              </div>
-
-              <div
-                style={{
-                  display: "grid",
-                  gridTemplateColumns: "1fr 1fr",
-                  gap: 10,
-                  marginTop: 12,
-                }}
-              >
-                <button
-                  onClick={copyInvite}
-                  style={{
-                    ...primaryButtonStyle,
-                    width: "100%",
-                    marginTop: 0,
-                    padding: "14px 16px",
-                    fontSize: 16,
-                  }}
-                >
-                  Копировать
-                </button>
-
-                <a
-                  href={`https://t.me/share/url?url=${encodeURIComponent(inviteLink)}`}
-                  target="_blank"
-                  rel="noreferrer"
-                  style={{
-                    ...secondaryButtonStyle,
-                    marginTop: 0,
-                    width: "100%",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    textAlign: "center",
-                    textDecoration: "none",
-                    padding: "14px 16px",
-                  }}
-                >
-                  Отправить
-                </a>
-              </div>
-
-
-            </div>
-          )}
-
-          <div style={{ ...cardBaseStyle(), padding: 18 }}>
-            <div style={{ fontSize: 18, fontWeight: 900, color: "#1f1d3a" }}>
-              Подключиться по коду
+              Пока вы не в паре
             </div>
 
             <div
@@ -2465,40 +2276,18 @@ const hasFullPair = !!pair.pairId && !!pair.partner;
                 fontSize: 14,
               }}
             >
-              Если тебе отправили код приглашения, введи его здесь.
+              Пригласи партнёра по ссылке или подключи его по коду.
             </div>
-
-            <input
-              value={joinCode}
-              onChange={(e) => setJoinCode(e.target.value.toUpperCase())}
-              placeholder="Например: AB12CD"
-              style={{
-                width: "100%",
-                marginTop: 12,
-                padding: "14px 16px",
-                borderRadius: 16,
-                border: "1px solid rgba(255,255,255,0.30)",
-                background: "rgba(255,255,255,0.24)",
-                outline: "none",
-                fontSize: 16,
-                fontWeight: 800,
-                color: "#1f1d3a",
-                boxSizing: "border-box",
-              }}
-            />
 
             <button
-              onClick={handleJoin}
-              disabled={joining}
+              onClick={onOpenInvite}
               style={{
                 ...primaryButtonStyle,
                 width: "100%",
-                marginTop: 12,
-                opacity: joining ? 0.6 : 1,
-                cursor: joining ? "not-allowed" : "pointer",
+                marginTop: 14,
               }}
             >
-              {joining ? "Подключаем..." : "Подключиться"}
+              Пригласить партнёра
             </button>
           </div>
         </>
@@ -2598,106 +2387,101 @@ const hasFullPair = !!pair.pairId && !!pair.partner;
             </div>
           </div>
 
-       <div style={{ ...cardBaseStyle(), padding: 16 }}>
-  <div style={{ fontSize: 20, fontWeight: 900, color: "#1f1d3a" }}>
-    Уровень пары 💞
-  </div>
+          <div style={{ ...cardBaseStyle(), padding: 16 }}>
+            <div style={{ fontSize: 20, fontWeight: 900, color: "#1f1d3a" }}>
+              Уровень пары 💞
+            </div>
 
-  <div
-    style={{
-      marginTop: 10,
-      padding: "14px 14px",
-      borderRadius: 18,
-      background: "rgba(255,255,255,0.26)",
-    }}
-  >
-    <div
-      style={{
-        display: "flex",
+            <div
+              style={{
+                marginTop: 10,
+                padding: "14px 14px",
+                borderRadius: 18,
+                background: "rgba(255,255,255,0.26)",
+              }}
+            >
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                }}
+              >
+                <div>
+                  <div style={{ fontSize: 14, color: "#4d466c", fontWeight: 700 }}>
+                    Уровень {pairLevel.level}
+                  </div>
 
-        justifyContent: "space-between",
-        alignItems: "center",
-      }}
-    >
-      <div>
-        <div style={{ fontSize: 14, color: "#4d466c", fontWeight: 700 }}>
-          Уровень {pairLevel.level}
-        </div>
+                  <div
+                    style={{
+                      fontSize: 20,
+                      fontWeight: 900,
+                      color: "#1c1733",
+                      marginTop: 2,
+                    }}
+                  >
+                    {pairLevel.title}
+                  </div>
+                </div>
 
-        <div
-          style={{
-            fontSize: 20,
-            fontWeight: 900,
-            color: "#1c1733",
-            marginTop: 2,
-          }}
-        >
-          {pairLevel.title}
-        </div>
-      </div>
+                <div
+                  style={{
+                    padding: "8px 10px",
+                    borderRadius: 14,
+                    background: "rgba(255,255,255,0.36)",
+                    fontWeight: 900,
+                    color: "#6b46ff",
+                    fontSize: 14,
+                  }}
+                >
+                  ⭐ {points}
+                </div>
+              </div>
 
-      <div
-        style={{
-          padding: "8px 10px",
-          borderRadius: 14,
-          background: "rgba(255,255,255,0.36)",
-          fontWeight: 900,
-          color: "#6b46ff",
-          fontSize: 14,
-        }}
-      >
-        ⭐ {points}
-      </div>
-    </div>
+              <div
+                style={{
+                  marginTop: 12,
+                  height: 10,
+                  borderRadius: 999,
+                  background: "rgba(255,255,255,0.24)",
+                  overflow: "hidden",
+                }}
+              >
+                <div
+                  style={{
+                    width: `${pairLevel.progress}%`,
+                    height: "100%",
+                    borderRadius: 999,
+                    background: "linear-gradient(135deg,#8f6bff,#ff76ba)",
+                    transition: "width 0.35s ease",
+                  }}
+                />
+              </div>
 
-    {/* Progress bar */}
+              <div
+                style={{
+                  marginTop: 8,
+                  display: "flex",
+                  justifyContent: "space-between",
+                  fontSize: 12,
+                  color: "#5a5378",
+                  fontWeight: 700,
+                }}
+              >
+                <span>
+                  {pairLevel.nextPoints
+                    ? `${points} / ${pairLevel.nextPoints}`
+                    : "Максимальный уровень"}
+                </span>
 
-    <div
-      style={{
-        marginTop: 12,
-        height: 10,
-        borderRadius: 999,
-        background: "rgba(255,255,255,0.24)",
-        overflow: "hidden",
-      }}
-    >
-      <div
-        style={{
-          width: `${pairLevel.progress}%`,
-          height: "100%",
-          borderRadius: 999,
-          background: "linear-gradient(135deg,#8f6bff,#ff76ba)",
-          transition: "width 0.35s ease",
-        }}
-      />
-    </div>
-
-    <div
-      style={{
-        marginTop: 8,
-        display: "flex",
-
-        justifyContent: "space-between",
-        fontSize: 12,
-        color: "#5a5378",
-        fontWeight: 700,
-      }}
-    >
-      <span>
-        {pairLevel.nextPoints
-          ? `${points} / ${pairLevel.nextPoints}`
-          : "Максимальный уровень"}
-      </span>
-
-      <span>
-        {pairLevel.nextPoints
-          ? `До следующего: ${pairLevel.nextPoints - points}`
-          : ""}
-      </span>
-    </div>
-  </div>
-</div>
-
+                <span>
+                  {pairLevel.nextPoints
+                    ? `До следующего: ${pairLevel.nextPoints - points}`
+                    : ""}
+                </span>
+              </div>
+            </div>
+          </div>
 
           <div style={{ ...cardBaseStyle(), padding: 18 }}>
             <div style={{ fontSize: 22, fontWeight: 900, color: "#1f1d3a" }}>
@@ -2783,9 +2567,192 @@ const hasFullPair = !!pair.pairId && !!pair.partner;
         </>
       )}
 
-
       <button onClick={onBack} style={secondaryButtonStyle}>
         Назад в меню
+      </button>
+    </div>
+  );
+}
+
+function PairInviteScreen({
+  pair,
+  onBack,
+  onCreateInvite,
+  onJoinByCode,
+}: {
+  pair: PairState;
+  onBack: () => void;
+  onCreateInvite: () => Promise<void>;
+  onJoinByCode: (code: string) => Promise<void>;
+}) {
+  const [joinCode, setJoinCode] = useState("");
+  const [joining, setJoining] = useState(false);
+  const [creating, setCreating] = useState(false);
+  const [showJoinInput, setShowJoinInput] = useState(false);
+
+  const inviteLink = pair.inviteCode
+    ? `https://t.me/testcouple1_bot?startapp=invite_${pair.inviteCode}`
+    : "";
+
+  async function handleCreateAndShare() {
+    try {
+      setCreating(true);
+
+      if (!pair.inviteCode) {
+        await onCreateInvite();
+      }
+
+      const latestInviteCode = pair.inviteCode;
+      const link = latestInviteCode
+        ? `https://t.me/testcouple1_bot?startapp=invite_${latestInviteCode}`
+        : inviteLink;
+
+      if (!link) {
+        alert("Не удалось создать ссылку приглашения");
+        return;
+      }
+
+      window.open(
+        `https://t.me/share/url?url=${encodeURIComponent(link)}`,
+        "_blank"
+      );
+    } finally {
+      setCreating(false);
+    }
+  }
+
+  async function handleJoin() {
+    const code = joinCode.trim().toUpperCase();
+
+    if (!code) {
+      alert("Введите код приглашения");
+      return;
+    }
+
+    try {
+      setJoining(true);
+      await onJoinByCode(code);
+      setJoinCode("");
+    } finally {
+      setJoining(false);
+    }
+  }
+
+  return (
+    <div style={{ padding: 16, display: "grid", gap: 14 }}>
+      <div style={{ ...cardBaseStyle(), padding: 18 }}>
+        <div style={{ fontSize: 28, fontWeight: 900, color: "#1f1d3a" }}>
+          Пригласить партнёра
+        </div>
+        <div
+          style={{
+            marginTop: 8,
+            color: "#3a345c",
+            fontSize: 15,
+            lineHeight: 1.45,
+          }}
+        >
+          Выбери удобный способ подключения пары.
+        </div>
+      </div>
+
+      <button
+        onClick={() => setShowJoinInput((prev) => !prev)}
+        style={{ ...primaryButtonStyle, width: "100%", marginTop: 0 }}
+      >
+        Добавить по коду
+      </button>
+
+      {showJoinInput && (
+        <div style={{ ...cardBaseStyle(), padding: 18 }}>
+          <div style={{ fontSize: 18, fontWeight: 900, color: "#1f1d3a" }}>
+            Ввести код приглашения
+          </div>
+
+          <div
+            style={{
+              marginTop: 8,
+              color: "#4b446a",
+              lineHeight: 1.45,
+              fontSize: 14,
+            }}
+          >
+            Если тебе отправили код, введи его здесь.
+          </div>
+
+          <input
+            value={joinCode}
+            onChange={(e) => setJoinCode(e.target.value.toUpperCase())}
+            placeholder="Например: AB12CD"
+            style={{
+              width: "100%",
+              marginTop: 12,
+              padding: "14px 16px",
+              borderRadius: 16,
+              border: "1px solid rgba(255,255,255,0.30)",
+              background: "rgba(255,255,255,0.24)",
+              outline: "none",
+              fontSize: 16,
+              fontWeight: 800,
+              color: "#1f1d3a",
+              boxSizing: "border-box",
+            }}
+          />
+
+          <button
+            onClick={handleJoin}
+            disabled={joining}
+            style={{
+              ...primaryButtonStyle,
+              width: "100%",
+              marginTop: 12,
+              opacity: joining ? 0.6 : 1,
+              cursor: joining ? "not-allowed" : "pointer",
+            }}
+          >
+            {joining ? "Подключаем..." : "Подключиться"}
+          </button>
+        </div>
+      )}
+
+      <button
+        onClick={handleCreateAndShare}
+        disabled={creating}
+        style={{
+          ...secondaryButtonStyle,
+          marginTop: 0,
+          opacity: creating ? 0.6 : 1,
+          cursor: creating ? "not-allowed" : "pointer",
+        }}
+      >
+        {creating ? "Готовим ссылку..." : "Отправить ссылку"}
+      </button>
+
+      {pair.inviteCode && (
+        <div style={{ ...cardBaseStyle(), padding: 18 }}>
+          <div style={{ fontSize: 18, fontWeight: 900, color: "#1f1d3a" }}>
+            Твой код приглашения
+          </div>
+
+          <div
+            style={{
+              marginTop: 12,
+              padding: "12px 14px",
+              borderRadius: 16,
+              background: "rgba(255,255,255,0.24)",
+              color: "#241b40",
+              textAlign: "center",
+            }}
+          >
+            <div style={{ fontSize: 24, fontWeight: 900, letterSpacing: 1 }}>
+              {pair.inviteCode}
+            </div>
+          </div>
+        </div>
+      )}
+
+      <button onClick={onBack} style={secondaryButtonStyle}>
+        Назад
       </button>
     </div>
   );
@@ -5101,15 +5068,17 @@ function TestsScreen({
             </div>
 
             <button
-            style={{
-  ...primaryButtonStyle,
-  width: "100%",
-  marginTop: 8,
-  padding: "11px 14px",
-  fontSize: 15,
-  opacity: completed ? 0.92 : 1,
-}}
-            >
+  onClick={() => startTest(test.id)}
+  style={{
+    ...primaryButtonStyle,
+    width: "100%",
+    marginTop: 8,
+    padding: "11px 14px",
+    fontSize: 15,
+    opacity: completed ? 0.92 : 1,
+  }}
+>
+            
               {completed ? "Пройти снова" : "Начать"}
             </button>
           </div>
@@ -6216,7 +6185,25 @@ async function loadReferralStats(telegramId: number) {
   };
 }
 
+function getTelegramUserSafe(fallbackUser: TgUser | null): TgUser | null {
+  const tgUser = window.Telegram?.WebApp?.initDataUnsafe?.user;
 
+  if (tgUser?.id) {
+    return {
+      id: tgUser.id,
+      first_name: tgUser.first_name,
+      last_name: tgUser.last_name,
+      username: tgUser.username,
+      photo_url: tgUser.photo_url,
+    };
+  }
+
+  if (fallbackUser?.id) {
+    return fallbackUser;
+  }
+
+  return null;
+}
 
 
 
@@ -6325,23 +6312,17 @@ const syncWeeklyPairLeaderboard = async (nextState: AppState, currentUser?: TgUs
 
 
 const handleJoinByCode = async (inviteCode: string) => {
-  const liveUser = getLiveTelegramUser();
-  const telegramId = liveUser?.id ?? user?.id ?? null;
+  const actualUser = getTelegramUserSafe(user);
 
-  console.log("JOIN liveUser:", liveUser);
-  console.log("JOIN state user:", user);
-
-  if (!telegramId) {
-    alert("Telegram не передал ID пользователя. Открой mini app через кнопку бота или startapp-ссылку.");
+  if (!actualUser?.id) {
+    alert("Не удалось получить пользователя Telegram");
     return;
   }
 
-  if (liveUser) {
-    setUser(liveUser);
-    await upsertTelegramProfile(liveUser);
-  }
+  setUser(actualUser);
+  await upsertTelegramProfile(actualUser);
 
-  const joinedPair = await joinPairByInviteCode(telegramId, inviteCode);
+  const joinedPair = await joinPairByInviteCode(actualUser.id, inviteCode.trim().toUpperCase());
 
   if (!joinedPair) {
     alert("Не удалось подключиться. Проверь код приглашения.");
@@ -6349,47 +6330,34 @@ const handleJoinByCode = async (inviteCode: string) => {
   }
 
   const nextStateAfterJoin = {
-  ...appState,
-  pair: joinedPair,
-};
+    ...appState,
+    pair: joinedPair,
+  };
 
-setAppState(nextStateAfterJoin);
-await syncWeeklyPairLeaderboard(nextStateAfterJoin, liveUser ?? user);
-
-
-
+  setAppState(nextStateAfterJoin);
   alert("Пара успешно подключена 💕");
+  setScreen("pair");
 };
 
 const handleCreateInvite = async () => {
-  let liveUser = getLiveTelegramUser();
-  let actualUser = liveUser ?? user;
+  const actualUser = getTelegramUserSafe(user);
 
   if (!actualUser?.id) {
-    await new Promise((resolve) => setTimeout(resolve, 500));
-
-    liveUser = getLiveTelegramUser();
-    actualUser = liveUser ?? user;
-  }
-
-  if (!actualUser?.id) {
-    alert("Не удалось получить пользователя Telegram. Открой mini app именно внутри Telegram через кнопку бота или startapp-ссылку.");
+    alert("Не удалось получить пользователя Telegram");
     return;
   }
 
-  if (liveUser) {
-    setUser(liveUser);
-    await upsertTelegramProfile(liveUser);
-  }
+  setUser(actualUser);
+  await upsertTelegramProfile(actualUser);
 
-  if (appState.pair?.pairId) {
-
+  if (appState.pair?.inviteCode) {
     return;
   }
 
-console.log("CREATE INVITE user from state:", user);
-console.log("CREATE INVITE user from Telegram:", window.Telegram?.WebApp?.initDataUnsafe?.user);
-console.log("CREATE INVITE initDataUnsafe:", window.Telegram?.WebApp?.initDataUnsafe);
+  if (appState.pair?.pairId && !appState.pair?.partner) {
+    return;
+  }
+
   const inviteCode = Math.random().toString(36).slice(2, 8).toUpperCase();
 
   const { data: createdPair, error: createPairError } = await supabase
@@ -6422,14 +6390,13 @@ console.log("CREATE INVITE initDataUnsafe:", window.Telegram?.WebApp?.initDataUn
 
   const nextPairState = await loadPairStateForUser(actualUser.id);
 
-  const nextStateAfterCreate = {
-    ...appState,
+  setAppState((prev) => ({
+    ...prev,
     pair: nextPairState,
-  };
-
-  setAppState(nextStateAfterCreate);
-  await syncWeeklyPairLeaderboard(nextStateAfterCreate, actualUser);
+  }));
 };
+
+
 
 const [weeklyPairLeaderboard, setWeeklyPairLeaderboard] = useState<WeeklyPairLeaderboardRow[]>([]);
 
@@ -6912,16 +6879,24 @@ const handleCompletePoll = (poll: Poll, answers: number[]) => {
 )}
 
 {screen === "pair" && (
- <PairScreen
-  user={user}
-  pair={appState.pair}
-  points={appState.points}
-  pollAnswers={appState.pollAnswers}
-  onBack={() => setScreen("menu")}
-  onJoinByCode={handleJoinByCode}
-  onCreateInvite={handleCreateInvite}
-  onOpenDailyQuestion={() => setScreen("daily-pair")}
-/>
+  <PairScreen
+    user={user}
+    pair={appState.pair}
+    points={appState.points}
+    pollAnswers={appState.pollAnswers}
+    onBack={() => setScreen("menu")}
+    onOpenInvite={() => setScreen("pair-invite")}
+    onOpenDailyQuestion={() => setScreen("daily-pair")}
+  />
+)}
+
+{screen === "pair-invite" && (
+  <PairInviteScreen
+    pair={appState.pair}
+    onBack={() => setScreen("pair")}
+    onCreateInvite={handleCreateInvite}
+    onJoinByCode={handleJoinByCode}
+  />
 )}
 
 {screen === "daily-pair" && (
