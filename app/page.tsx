@@ -448,39 +448,475 @@ const TESTS: TestDefinition[] = [
   },
 ];
 
-function createPollQuestions(_base: string) {
-  return [
-    {
-      id: "q1",
-      text: "Что тебе ближе всего?",
-      options: ["Никогда", "Редко", "Иногда", "Часто"],
-    },
-    {
-      id: "q2",
-      text: "Что раздражает сильнее всего?",
-      options: ["Невнимание", "Холодность", "Грубость", "Ложь"],
-    },
-    {
-      id: "q3",
-      text: "Что важнее всего?",
-      options: ["Честность", "Уважение", "Забота", "Доверие"],
-    },
-    {
-      id: "q4",
-      text: "Как лучше решать это?",
-      options: ["Разговором", "Спокойствием", "Компромиссом", "Временем"],
-    },
-    {
-      id: "q5",
-      text: "Что для тебя норма?",
-      options: ["Полностью ок", "Скорее ок", "Скорее нет", "Нет"],
-    },
-    {
-      id: "q6",
-      text: "Что ты выберешь?",
-      options: ["Мягкость", "Прямоту", "Поддержку", "Свободу"],
-    },
+function createPollQuestions(theme: string): PollQuestion[] {
+  const options = [
+    { text: "Полностью согласен" },
+    { text: "Скорее согласен" },
+    { text: "Скорее не согласен" },
+    { text: "Совсем не согласен" },
   ];
+
+  switch (theme) {
+    case "Быт":
+      return [
+        {
+          text: "Важно ли для тебя, чтобы дома всегда был порядок?",
+          options,
+        },
+        {
+          text: "Должны ли домашние обязанности делиться поровну?",
+          options,
+        },
+        {
+          text: "Насколько для тебя важна уютная атмосфера дома?",
+          options,
+        },
+        {
+          text: "Готов ли ты помогать партнёру по дому регулярно?",
+          options,
+        },
+      ];
+
+    case "Конфликты":
+      return [
+        {
+          text: "Важно ли обсуждать проблемы сразу, а не копить их?",
+          options,
+        },
+        {
+          text: "Считаешь ли ты, что в ссоре нужно искать компромисс?",
+          options,
+        },
+        {
+          text: "Легко ли тебе извиниться первым?",
+          options,
+        },
+        {
+          text: "Можно ли решать конфликты спокойно без криков?",
+          options,
+        },
+      ];
+
+    case "Ревность":
+      return [
+        {
+          text: "Нормально ли ревновать партнёра время от времени?",
+          options,
+        },
+        {
+          text: "Считаешь ли ты ревность проявлением любви?",
+          options,
+        },
+        {
+          text: "Можно ли доверять партнёру полностью?",
+          options,
+        },
+        {
+          text: "Стоит ли ограничивать общение партнёра с другими людьми?",
+          options,
+        },
+      ];
+
+    case "Границы":
+      return [
+        {
+          text: "Должны ли у каждого быть личные границы в отношениях?",
+          options,
+        },
+        {
+          text: "Важно ли уважать личное пространство партнёра?",
+          options,
+        },
+        {
+          text: "Нормально ли иногда проводить время отдельно?",
+          options,
+        },
+        {
+          text: "Стоит ли обсуждать границы заранее?",
+          options,
+        },
+      ];
+
+    case "Понимание":
+      return [
+        {
+          text: "Важно ли уметь понимать настроение партнёра?",
+          options,
+        },
+        {
+          text: "Стоит ли обсуждать переживания открыто?",
+          options,
+        },
+        {
+          text: "Легко ли тебе говорить о своих чувствах?",
+          options,
+        },
+        {
+          text: "Считаешь ли ты, что партнёры должны поддерживать друг друга?",
+          options,
+        },
+      ];
+
+    case "Романтика":
+      return [
+        {
+          text: "Нужны ли в отношениях романтические жесты?",
+          options,
+        },
+        {
+          text: "Важно ли устраивать свидания даже спустя долгое время?",
+          options,
+        },
+        {
+          text: "Нравятся ли тебе неожиданные приятные сюрпризы?",
+          options,
+        },
+        {
+          text: "Стоит ли регулярно говорить партнёру приятные слова?",
+          options,
+        },
+      ];
+
+    case "Личное пространство":
+      return [
+        {
+          text: "Важно ли иметь время только для себя?",
+          options,
+        },
+        {
+          text: "Нормально ли иметь личные интересы вне отношений?",
+          options,
+        },
+        {
+          text: "Стоит ли уважать увлечения партнёра?",
+          options,
+        },
+        {
+          text: "Нужно ли иногда отдыхать друг от друга?",
+          options,
+        },
+      ];
+
+    case "Время вместе":
+      return [
+        {
+          text: "Важно ли проводить много времени вместе?",
+          options,
+        },
+        {
+          text: "Стоит ли планировать совместный отдых?",
+          options,
+        },
+        {
+          text: "Нравится ли тебе совместное хобби?",
+          options,
+        },
+        {
+          text: "Важно ли регулярно проводить свидания?",
+          options,
+        },
+      ];
+
+    case "Роли":
+      return [
+        {
+          text: "Должны ли роли в отношениях распределяться естественно?",
+          options,
+        },
+        {
+          text: "Важно ли поддерживать партнёра в его целях?",
+          options,
+        },
+        {
+          text: "Стоит ли обсуждать ожидания друг от друга?",
+          options,
+        },
+        {
+          text: "Нормально ли делить ответственность в паре?",
+          options,
+        },
+      ];
+
+    case "Внешность":
+      return [
+        {
+          text: "Важно ли следить за своим внешним видом в отношениях?",
+          options,
+        },
+        {
+          text: "Нужно ли стараться нравиться партнёру внешне?",
+          options,
+        },
+        {
+          text: "Стоит ли поддерживать стиль и ухоженность?",
+          options,
+        },
+        {
+          text: "Важна ли для тебя привлекательность партнёра?",
+          options,
+        },
+      ];
+
+    case "Семья":
+      return [
+        {
+          text: "Важно ли поддерживать хорошие отношения с семьёй партнёра?",
+          options,
+        },
+        {
+          text: "Хочешь ли ты в будущем создать семью?",
+          options,
+        },
+        {
+          text: "Важно ли обсуждать планы на детей заранее?",
+          options,
+        },
+        {
+          text: "Стоит ли учитывать мнение семьи в отношениях?",
+          options,
+        },
+      ];
+
+    case "Финансы":
+      return [
+        {
+          text: "Нужно ли обсуждать деньги в отношениях?",
+          options,
+        },
+        {
+          text: "Стоит ли планировать совместный бюджет?",
+          options,
+        },
+        {
+          text: "Важно ли делать подарки партнёру?",
+          options,
+        },
+        {
+          text: "Нормально ли делить расходы?",
+          options,
+        },
+      ];
+
+    case "Доверие":
+      return [
+        {
+          text: "Можно ли строить отношения без доверия?",
+          options,
+        },
+        {
+          text: "Стоит ли говорить правду даже если она неприятная?",
+          options,
+        },
+        {
+          text: "Важно ли быть честным во всём?",
+          options,
+        },
+        {
+          text: "Легко ли тебе доверять партнёру?",
+          options,
+        },
+      ];
+
+    case "Общение":
+      return [
+        {
+          text: "Важно ли регулярно общаться с партнёром?",
+          options,
+        },
+        {
+          text: "Стоит ли обсуждать всё, что беспокоит?",
+          options,
+        },
+        {
+          text: "Нравится ли тебе долгие разговоры по душам?",
+          options,
+        },
+        {
+          text: "Важно ли слушать мнение партнёра?",
+          options,
+        },
+      ];
+
+    case "Мечты":
+      return [
+        {
+          text: "Важно ли делиться своими мечтами с партнёром?",
+          options,
+        },
+        {
+          text: "Стоит ли поддерживать мечты любимого человека?",
+          options,
+        },
+        {
+          text: "Могут ли отношения помогать достигать целей?",
+          options,
+        },
+        {
+          text: "Важно ли иметь совместные мечты?",
+          options,
+        },
+      ];
+
+    case "Еда":
+      return [
+        {
+          text: "Нравится ли тебе готовить для любимого человека?",
+          options,
+        },
+        {
+          text: "Важно ли есть вместе?",
+          options,
+        },
+        {
+          text: "Стоит ли иногда готовить друг для друга?",
+          options,
+        },
+        {
+          text: "Нравится ли тебе пробовать новую кухню вместе?",
+          options,
+        },
+      ];
+
+    case "Отдых":
+      return [
+        {
+          text: "Важно ли путешествовать вместе?",
+          options,
+        },
+        {
+          text: "Нравится ли тебе совместный отдых?",
+          options,
+        },
+        {
+          text: "Стоит ли иногда устраивать спонтанные поездки?",
+          options,
+        },
+        {
+          text: "Любишь ли ты активный отдых с партнёром?",
+          options,
+        },
+      ];
+
+    case "Окружение":
+      return [
+        {
+          text: "Важно ли ладить с друзьями партнёра?",
+          options,
+        },
+        {
+          text: "Стоит ли проводить время в компании друзей?",
+          options,
+        },
+        {
+          text: "Важно ли уважать круг общения партнёра?",
+          options,
+        },
+        {
+          text: "Нужно ли иногда отдыхать вместе с друзьями?",
+          options,
+        },
+      ];
+
+    case "Ценности":
+      return [
+        {
+          text: "Должны ли ценности партнёров совпадать?",
+          options,
+        },
+        {
+          text: "Важно ли уважать взгляды друг друга?",
+          options,
+        },
+        {
+          text: "Стоит ли обсуждать жизненные принципы?",
+          options,
+        },
+        {
+          text: "Можно ли строить отношения без общих ценностей?",
+          options,
+        },
+      ];
+
+    case "Любовь":
+      return [
+        {
+          text: "Важно ли говорить о любви словами?",
+          options,
+        },
+        {
+          text: "Нужны ли проявления заботы каждый день?",
+          options,
+        },
+        {
+          text: "Считаешь ли ты любовь основой отношений?",
+          options,
+        },
+        {
+          text: "Стоит ли показывать чувства открыто?",
+          options,
+        },
+      ];
+
+    case "Будущее":
+      return [
+        {
+          text: "Важно ли обсуждать будущее отношений?",
+          options,
+        },
+        {
+          text: "Стоит ли строить долгосрочные планы вместе?",
+          options,
+        },
+        {
+          text: "Хочешь ли ты стабильных отношений?",
+          options,
+        },
+        {
+          text: "Важно ли видеть совместное будущее?",
+          options,
+        },
+      ];
+
+    case "Идеал":
+      return [
+        {
+          text: "Есть ли у тебя представление об идеальных отношениях?",
+          options,
+        },
+        {
+          text: "Важно ли чувствовать поддержку партнёра?",
+          options,
+        },
+        {
+          text: "Можно ли построить идеальную пару?",
+          options,
+        },
+        {
+          text: "Стоит ли стремиться к гармонии в отношениях?",
+          options,
+        },
+      ];
+
+    default:
+      return [
+        {
+          text: "Важно ли уважение в отношениях?",
+          options,
+        },
+        {
+          text: "Стоит ли поддерживать друг друга?",
+          options,
+        },
+        {
+          text: "Важно ли доверие между партнёрами?",
+          options,
+        },
+        {
+          text: "Нужно ли говорить о чувствах?",
+          options,
+        },
+      ];
+  }
 }
 
 const POLLS: Poll[] = [
@@ -495,7 +931,7 @@ const POLLS: Poll[] = [
     gender: "boy",
     page: 1,
     theme: "Быт",
-    questions: createPollQuestions("Какая хозяйка твоя девушка"),
+    questions: createPollQuestions("Быт"),
   },
   {
     id: "boy-page1-conflicts",
@@ -506,7 +942,7 @@ const POLLS: Poll[] = [
     page: 1,
     theme: "Конфликты",
     matchGroup: "conflicts",
-    questions: createPollQuestions("Решение конфликтов"),
+    questions: createPollQuestions("Конфликты"),
   },
   {
     id: "boy-page1-jealousy",
@@ -517,7 +953,7 @@ const POLLS: Poll[] = [
     page: 1,
     theme: "Ревность",
     matchGroup: "jealousy",
-    questions: createPollQuestions("Будешь ли ты ревновать, если"),
+    questions: createPollQuestions("Ревность"),
   },
   {
     id: "boy-page1-allowed",
@@ -528,7 +964,7 @@ const POLLS: Poll[] = [
     page: 1,
     theme: "Границы",
     matchGroup: "boundaries",
-    questions: createPollQuestions("Можно ли твоей девушке делать это"),
+    questions: createPollQuestions("Границы"),
   },
   {
     id: "boy-page1-nervous",
@@ -537,8 +973,8 @@ const POLLS: Poll[] = [
     reward: 60,
     gender: "boy",
     page: 1,
-    theme: "Характер",
-    questions: createPollQuestions("Насколько нервозна твоя девушка"),
+    theme: "Понимание",
+    questions: createPollQuestions("Понимание"),
   },
 
   // =========================
@@ -553,7 +989,7 @@ const POLLS: Poll[] = [
     page: 2,
     theme: "Романтика",
     matchGroup: "romance",
-    questions: createPollQuestions("Романтика и забота"),
+    questions: createPollQuestions("Романтика"),
   },
   {
     id: "boy-page2-space",
@@ -564,7 +1000,7 @@ const POLLS: Poll[] = [
     page: 2,
     theme: "Личное пространство",
     matchGroup: "space",
-    questions: createPollQuestions("Границы и личное пространство"),
+    questions: createPollQuestions("Личное пространство"),
   },
   {
     id: "boy-page2-time",
@@ -575,7 +1011,7 @@ const POLLS: Poll[] = [
     page: 2,
     theme: "Время вместе",
     matchGroup: "time",
-    questions: createPollQuestions("Совместное время и интересы"),
+    questions: createPollQuestions("Время вместе"),
   },
   {
     id: "boy-page2-role",
@@ -586,7 +1022,7 @@ const POLLS: Poll[] = [
     page: 2,
     theme: "Роли",
     matchGroup: "roles",
-    questions: createPollQuestions("Роль девушки в отношениях"),
+    questions: createPollQuestions("Роли"),
   },
   {
     id: "boy-page2-appearance",
@@ -596,7 +1032,7 @@ const POLLS: Poll[] = [
     gender: "boy",
     page: 2,
     theme: "Внешность",
-    questions: createPollQuestions("Внешность и уход за собой"),
+    questions: createPollQuestions("Внешность"),
   },
 
   // =========================
@@ -611,7 +1047,7 @@ const POLLS: Poll[] = [
     page: 3,
     theme: "Семья",
     matchGroup: "future",
-    questions: createPollQuestions("Семья и дети"),
+    questions: createPollQuestions("Семья"),
   },
   {
     id: "boy-page3-money",
@@ -621,7 +1057,7 @@ const POLLS: Poll[] = [
     gender: "boy",
     page: 3,
     theme: "Финансы",
-    questions: createPollQuestions("Деньги и подарки"),
+    questions: createPollQuestions("Финансы"),
   },
   {
     id: "boy-page3-trust",
@@ -632,7 +1068,7 @@ const POLLS: Poll[] = [
     page: 3,
     theme: "Доверие",
     matchGroup: "trust",
-    questions: createPollQuestions("Честность и доверие"),
+    questions: createPollQuestions("Доверие"),
   },
   {
     id: "boy-page3-habits",
@@ -642,7 +1078,7 @@ const POLLS: Poll[] = [
     gender: "boy",
     page: 3,
     theme: "Быт",
-    questions: createPollQuestions("Привычки в быту"),
+    questions: createPollQuestions("Быт"),
   },
   {
     id: "boy-page3-attention",
@@ -652,7 +1088,7 @@ const POLLS: Poll[] = [
     gender: "boy",
     page: 3,
     theme: "Общение",
-    questions: createPollQuestions("Общение и внимание"),
+    questions: createPollQuestions("Общение"),
   },
 
   // =========================
@@ -666,7 +1102,7 @@ const POLLS: Poll[] = [
     gender: "boy",
     page: 4,
     theme: "Мечты",
-    questions: createPollQuestions("Мечты и цели девушки"),
+    questions: createPollQuestions("Мечты"),
   },
   {
     id: "boy-page4-food",
@@ -676,7 +1112,7 @@ const POLLS: Poll[] = [
     gender: "boy",
     page: 4,
     theme: "Еда",
-    questions: createPollQuestions("Еда и кулинария"),
+    questions: createPollQuestions("Еда"),
   },
   {
     id: "boy-page4-talk",
@@ -686,7 +1122,7 @@ const POLLS: Poll[] = [
     gender: "boy",
     page: 4,
     theme: "Общение",
-    questions: createPollQuestions("Стиль общения"),
+    questions: createPollQuestions("Общение"),
   },
   {
     id: "boy-page4-rest",
@@ -696,7 +1132,7 @@ const POLLS: Poll[] = [
     gender: "boy",
     page: 4,
     theme: "Отдых",
-    questions: createPollQuestions("Отдых и путешествия"),
+    questions: createPollQuestions("Отдых"),
   },
   {
     id: "boy-page4-friends",
@@ -706,7 +1142,7 @@ const POLLS: Poll[] = [
     gender: "boy",
     page: 4,
     theme: "Окружение",
-    questions: createPollQuestions("Подруги и окружение"),
+    questions: createPollQuestions("Окружение"),
   },
 
   // =========================
@@ -721,7 +1157,7 @@ const POLLS: Poll[] = [
     page: 5,
     theme: "Ценности",
     matchGroup: "values",
-    questions: createPollQuestions("Ценности в отношениях"),
+    questions: createPollQuestions("Ценности"),
   },
   {
     id: "boy-page5-love",
@@ -731,7 +1167,7 @@ const POLLS: Poll[] = [
     gender: "boy",
     page: 5,
     theme: "Любовь",
-    questions: createPollQuestions("Любовь и привязанность"),
+    questions: createPollQuestions("Любовь"),
   },
   {
     id: "boy-page5-support",
@@ -741,7 +1177,7 @@ const POLLS: Poll[] = [
     gender: "boy",
     page: 5,
     theme: "Поддержка",
-    questions: createPollQuestions("Поддержка в трудные моменты"),
+    questions: createPollQuestions("Поддержка"),
   },
   {
     id: "boy-page5-ideal-life",
@@ -751,7 +1187,7 @@ const POLLS: Poll[] = [
     gender: "boy",
     page: 5,
     theme: "Будущее",
-    questions: createPollQuestions("Идеальная совместная жизнь"),
+    questions: createPollQuestions("Будущее"),
   },
   {
     id: "boy-page5-the-one",
@@ -761,7 +1197,7 @@ const POLLS: Poll[] = [
     gender: "boy",
     page: 5,
     theme: "Идеал",
-    questions: createPollQuestions("Что делает девушку той самой"),
+    questions: createPollQuestions("Идеал"),
   },
 
   // =========================
@@ -776,7 +1212,7 @@ const POLLS: Poll[] = [
     page: 1,
     theme: "Границы",
     matchGroup: "boundaries",
-    questions: createPollQuestions("Можно ли твоему парню делать это"),
+    questions: createPollQuestions("Границы"),
   },
   {
     id: "girl-page1-jealousy",
@@ -787,7 +1223,7 @@ const POLLS: Poll[] = [
     page: 1,
     theme: "Ревность",
     matchGroup: "jealousy",
-    questions: createPollQuestions("Будешь ли ты ревновать, если"),
+    questions: createPollQuestions("Ревность"),
   },
   {
     id: "girl-page1-cheating",
@@ -797,7 +1233,7 @@ const POLLS: Poll[] = [
     gender: "girl",
     page: 1,
     theme: "Верность",
-    questions: createPollQuestions("Измена ли это для тебя"),
+    questions: createPollQuestions("Верность"),
   },
   {
     id: "girl-page1-know-boy",
@@ -807,7 +1243,7 @@ const POLLS: Poll[] = [
     gender: "girl",
     page: 1,
     theme: "Понимание",
-    questions: createPollQuestions("Как хорошо ты знаешь своего парня"),
+    questions: createPollQuestions("Понимание"),
   },
   {
     id: "girl-page1-future",
@@ -818,7 +1254,7 @@ const POLLS: Poll[] = [
     page: 1,
     theme: "Будущее",
     matchGroup: "future",
-    questions: createPollQuestions("Планы на будущее и совместные цели"),
+    questions: createPollQuestions("Будущее"),
   },
 
   // =========================
@@ -832,7 +1268,7 @@ const POLLS: Poll[] = [
     gender: "girl",
     page: 2,
     theme: "Любовь",
-    questions: createPollQuestions("Как ты показываешь свою любовь"),
+    questions: createPollQuestions("Любовь"),
   },
   {
     id: "girl-page2-conflicts",
@@ -843,7 +1279,7 @@ const POLLS: Poll[] = [
     page: 2,
     theme: "Конфликты",
     matchGroup: "conflicts",
-    questions: createPollQuestions("Как ты ведешь себя во время ссор"),
+    questions: createPollQuestions("Конфликты"),
   },
   {
     id: "girl-page2-space",
@@ -854,7 +1290,7 @@ const POLLS: Poll[] = [
     page: 2,
     theme: "Личное пространство",
     matchGroup: "space",
-    questions: createPollQuestions("Свобода и личное пространство"),
+    questions: createPollQuestions("Личное пространство"),
   },
   {
     id: "girl-page2-duties",
@@ -864,7 +1300,7 @@ const POLLS: Poll[] = [
     gender: "girl",
     page: 2,
     theme: "Обязанности",
-    questions: createPollQuestions("Какие обязанности ты считаешь своими в паре"),
+    questions: createPollQuestions("Обязанности"),
   },
   {
     id: "girl-page2-role",
@@ -875,7 +1311,7 @@ const POLLS: Poll[] = [
     page: 2,
     theme: "Роли",
     matchGroup: "roles",
-    questions: createPollQuestions("Роль мужчины в отношениях"),
+    questions: createPollQuestions("Роли"),
   },
 
   // =========================
@@ -889,7 +1325,7 @@ const POLLS: Poll[] = [
     gender: "girl",
     page: 3,
     theme: "Мечты",
-    questions: createPollQuestions("Мечты и фантазии"),
+    questions: createPollQuestions("Мечты"),
   },
   {
     id: "girl-page3-food",
@@ -899,7 +1335,7 @@ const POLLS: Poll[] = [
     gender: "girl",
     page: 3,
     theme: "Еда",
-    questions: createPollQuestions("Кулинария и еда"),
+    questions: createPollQuestions("Еда"),
   },
   {
     id: "girl-page3-style",
@@ -909,7 +1345,7 @@ const POLLS: Poll[] = [
     gender: "girl",
     page: 3,
     theme: "Стиль",
-    questions: createPollQuestions("Стиль и мода"),
+    questions: createPollQuestions("Стиль"),
   },
   {
     id: "girl-page3-health",
@@ -919,7 +1355,7 @@ const POLLS: Poll[] = [
     gender: "girl",
     page: 3,
     theme: "Уход",
-    questions: createPollQuestions("Здоровье и уход за собой"),
+    questions: createPollQuestions("Уход"),
   },
   {
     id: "girl-page3-hobby",
@@ -929,7 +1365,7 @@ const POLLS: Poll[] = [
     gender: "girl",
     page: 3,
     theme: "Хобби",
-    questions: createPollQuestions("Хобби и увлечения"),
+    questions: createPollQuestions("Хобби"),
   },
 
   // =========================
@@ -943,7 +1379,7 @@ const POLLS: Poll[] = [
     gender: "girl",
     page: 4,
     theme: "Саморазвитие",
-    questions: createPollQuestions("Саморазвитие и мечты"),
+    questions: createPollQuestions("Саморазвитие"),
   },
   {
     id: "girl-page4-family",
@@ -953,7 +1389,7 @@ const POLLS: Poll[] = [
     gender: "girl",
     page: 4,
     theme: "Семья",
-    questions: createPollQuestions("Семья и друзья"),
+    questions: createPollQuestions("Семья"),
   },
   {
     id: "girl-page4-travel",
@@ -963,7 +1399,7 @@ const POLLS: Poll[] = [
     gender: "girl",
     page: 4,
     theme: "Путешествия",
-    questions: createPollQuestions("Путешествия и приключения"),
+    questions: createPollQuestions("Путешествия"),
   },
   {
     id: "girl-page4-art",
@@ -973,7 +1409,7 @@ const POLLS: Poll[] = [
     gender: "girl",
     page: 4,
     theme: "Творчество",
-    questions: createPollQuestions("Творчество и вдохновение"),
+    questions: createPollQuestions("Творчество"),
   },
   {
     id: "girl-page4-values",
@@ -984,7 +1420,7 @@ const POLLS: Poll[] = [
     page: 4,
     theme: "Ценности",
     matchGroup: "values",
-    questions: createPollQuestions("Ценности и убеждения"),
+    questions: createPollQuestions("Ценности"),
   },
 
   // =========================
@@ -999,7 +1435,7 @@ const POLLS: Poll[] = [
     page: 5,
     theme: "Романтика",
     matchGroup: "romance",
-    questions: createPollQuestions("Романтика и забота"),
+    questions: createPollQuestions("Романтика"),
   },
   {
     id: "girl-page5-trust",
@@ -1010,7 +1446,7 @@ const POLLS: Poll[] = [
     page: 5,
     theme: "Доверие",
     matchGroup: "trust",
-    questions: createPollQuestions("Доверие и безопасность"),
+    questions: createPollQuestions("Доверие"),
   },
   {
     id: "girl-page5-home",
@@ -1020,7 +1456,7 @@ const POLLS: Poll[] = [
     gender: "girl",
     page: 5,
     theme: "Быт",
-    questions: createPollQuestions("Быт и порядок"),
+    questions: createPollQuestions("Быт"),
   },
   {
     id: "girl-page5-money",
@@ -1030,7 +1466,7 @@ const POLLS: Poll[] = [
     gender: "girl",
     page: 5,
     theme: "Финансы",
-    questions: createPollQuestions("Деньги и подарки"),
+    questions: createPollQuestions("Финансы"),
   },
   {
     id: "girl-page5-ideal-pair",
@@ -1040,11 +1476,9 @@ const POLLS: Poll[] = [
     gender: "girl",
     page: 5,
     theme: "Идеал",
-    questions: createPollQuestions("Какой ты видишь идеальную пару"),
+    questions: createPollQuestions("Идеал"),
   },
 ];
-
-
 
 
 const GAMES: Game[] = [
