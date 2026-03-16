@@ -5332,7 +5332,7 @@ function RewardsScreen({
   points: number;
   wonRewards: WonReward[];
   onBack: () => void;
-  onSpin: (categoryIndex: number) => WonReward | null;
+  onSpin: (categoryIndex: number) => Promise<WonReward | null>;
 }) {
   const [rotation, setRotation] = useState(0);
   const [isSpinning, setIsSpinning] = useState(false);
@@ -5347,7 +5347,7 @@ function RewardsScreen({
   
 
 
-  function handleSpin() {
+  async function handleSpin() {
     if (isSpinning) return;
     if (points < WHEEL_SPIN_COST) {
       setMessage("Недостаточно очков для вращения колеса.");
@@ -5370,17 +5370,17 @@ function RewardsScreen({
       return prev - normalizedPrev + targetRotation;
     });
 
-    setTimeout(() => {
-      const result = onSpin(targetIndex);
-      setIsSpinning(false);
+   setTimeout(async () => {
+  const result = await onSpin(targetIndex);
+  setIsSpinning(false);
 
-      if (result) {
-        setSelectedRewardId(result.id);
-        setMessage(
-          `Тебе выпал приз: ${result.title} (${result.categoryTitle})`,
-        );
-      }
-    }, 4300);
+  if (result) {
+    setSelectedRewardId(result.id);
+    setMessage(
+      `Тебе выпал приз: ${result.title} (${result.categoryTitle})`,
+    );
+  }
+}, 4300);
   }
 
   return (
