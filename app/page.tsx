@@ -448,472 +448,665 @@ const TESTS: TestDefinition[] = [
   },
 ];
 
-function createPollQuestions(theme: string): PollQuestion[] {
-  const options = [
-    { text: "Полностью согласен" },
-    { text: "Скорее согласен" },
-    { text: "Скорее не согласен" },
-    { text: "Совсем не согласен" },
+function createPollQuestions(theme: string) {
+  const scaleOptions = [
+    "Полностью согласен",
+    "Скорее согласен",
+    "Скорее не согласен",
+    "Совсем не согласен",
   ];
 
   switch (theme) {
     case "Быт":
       return [
         {
+          id: "q1",
           text: "Важно ли для тебя, чтобы дома всегда был порядок?",
-          options,
+          options: scaleOptions,
         },
         {
+          id: "q2",
           text: "Должны ли домашние обязанности делиться поровну?",
-          options,
+          options: scaleOptions,
         },
         {
+          id: "q3",
           text: "Насколько для тебя важна уютная атмосфера дома?",
-          options,
+          options: scaleOptions,
         },
         {
+          id: "q4",
           text: "Готов ли ты помогать партнёру по дому регулярно?",
-          options,
+          options: scaleOptions,
         },
       ];
 
     case "Конфликты":
       return [
         {
+          id: "q1",
           text: "Важно ли обсуждать проблемы сразу, а не копить их?",
-          options,
+          options: scaleOptions,
         },
         {
+          id: "q2",
           text: "Считаешь ли ты, что в ссоре нужно искать компромисс?",
-          options,
+          options: scaleOptions,
         },
         {
+          id: "q3",
           text: "Легко ли тебе извиниться первым?",
-          options,
+          options: scaleOptions,
         },
         {
+          id: "q4",
           text: "Можно ли решать конфликты спокойно без криков?",
-          options,
+          options: scaleOptions,
         },
       ];
 
     case "Ревность":
       return [
         {
+          id: "q1",
           text: "Нормально ли ревновать партнёра время от времени?",
-          options,
+          options: scaleOptions,
         },
         {
+          id: "q2",
           text: "Считаешь ли ты ревность проявлением любви?",
-          options,
+          options: scaleOptions,
         },
         {
+          id: "q3",
           text: "Можно ли доверять партнёру полностью?",
-          options,
+          options: scaleOptions,
         },
         {
+          id: "q4",
           text: "Стоит ли ограничивать общение партнёра с другими людьми?",
-          options,
+          options: scaleOptions,
         },
       ];
 
     case "Границы":
       return [
         {
+          id: "q1",
           text: "Должны ли у каждого быть личные границы в отношениях?",
-          options,
+          options: scaleOptions,
         },
         {
+          id: "q2",
           text: "Важно ли уважать личное пространство партнёра?",
-          options,
+          options: scaleOptions,
         },
         {
+          id: "q3",
           text: "Нормально ли иногда проводить время отдельно?",
-          options,
+          options: scaleOptions,
         },
         {
+          id: "q4",
           text: "Стоит ли обсуждать границы заранее?",
-          options,
+          options: scaleOptions,
         },
       ];
 
     case "Понимание":
       return [
         {
+          id: "q1",
           text: "Важно ли уметь понимать настроение партнёра?",
-          options,
+          options: scaleOptions,
         },
         {
+          id: "q2",
           text: "Стоит ли обсуждать переживания открыто?",
-          options,
+          options: scaleOptions,
         },
         {
+          id: "q3",
           text: "Легко ли тебе говорить о своих чувствах?",
-          options,
+          options: scaleOptions,
         },
         {
+          id: "q4",
           text: "Считаешь ли ты, что партнёры должны поддерживать друг друга?",
-          options,
+          options: scaleOptions,
         },
       ];
 
     case "Романтика":
       return [
         {
+          id: "q1",
           text: "Нужны ли в отношениях романтические жесты?",
-          options,
+          options: scaleOptions,
         },
         {
+          id: "q2",
           text: "Важно ли устраивать свидания даже спустя долгое время?",
-          options,
+          options: scaleOptions,
         },
         {
+          id: "q3",
           text: "Нравятся ли тебе неожиданные приятные сюрпризы?",
-          options,
+          options: scaleOptions,
         },
         {
+          id: "q4",
           text: "Стоит ли регулярно говорить партнёру приятные слова?",
-          options,
+          options: scaleOptions,
         },
       ];
 
     case "Личное пространство":
       return [
         {
+          id: "q1",
           text: "Важно ли иметь время только для себя?",
-          options,
+          options: scaleOptions,
         },
         {
+          id: "q2",
           text: "Нормально ли иметь личные интересы вне отношений?",
-          options,
+          options: scaleOptions,
         },
         {
+          id: "q3",
           text: "Стоит ли уважать увлечения партнёра?",
-          options,
+          options: scaleOptions,
         },
         {
+          id: "q4",
           text: "Нужно ли иногда отдыхать друг от друга?",
-          options,
+          options: scaleOptions,
         },
       ];
 
     case "Время вместе":
       return [
         {
+          id: "q1",
           text: "Важно ли проводить много времени вместе?",
-          options,
+          options: scaleOptions,
         },
         {
+          id: "q2",
           text: "Стоит ли планировать совместный отдых?",
-          options,
+          options: scaleOptions,
         },
         {
+          id: "q3",
           text: "Нравится ли тебе совместное хобби?",
-          options,
+          options: scaleOptions,
         },
         {
+          id: "q4",
           text: "Важно ли регулярно проводить свидания?",
-          options,
+          options: scaleOptions,
         },
       ];
 
     case "Роли":
       return [
         {
+          id: "q1",
           text: "Должны ли роли в отношениях распределяться естественно?",
-          options,
+          options: scaleOptions,
         },
         {
+          id: "q2",
           text: "Важно ли поддерживать партнёра в его целях?",
-          options,
+          options: scaleOptions,
         },
         {
+          id: "q3",
           text: "Стоит ли обсуждать ожидания друг от друга?",
-          options,
+          options: scaleOptions,
         },
         {
+          id: "q4",
           text: "Нормально ли делить ответственность в паре?",
-          options,
+          options: scaleOptions,
         },
       ];
 
     case "Внешность":
+    case "Стиль":
+    case "Уход":
       return [
         {
+          id: "q1",
           text: "Важно ли следить за своим внешним видом в отношениях?",
-          options,
+          options: scaleOptions,
         },
         {
+          id: "q2",
           text: "Нужно ли стараться нравиться партнёру внешне?",
-          options,
+          options: scaleOptions,
         },
         {
+          id: "q3",
           text: "Стоит ли поддерживать стиль и ухоженность?",
-          options,
+          options: scaleOptions,
         },
         {
+          id: "q4",
           text: "Важна ли для тебя привлекательность партнёра?",
-          options,
+          options: scaleOptions,
         },
       ];
 
     case "Семья":
       return [
         {
+          id: "q1",
           text: "Важно ли поддерживать хорошие отношения с семьёй партнёра?",
-          options,
+          options: scaleOptions,
         },
         {
+          id: "q2",
           text: "Хочешь ли ты в будущем создать семью?",
-          options,
+          options: scaleOptions,
         },
         {
+          id: "q3",
           text: "Важно ли обсуждать планы на детей заранее?",
-          options,
+          options: scaleOptions,
         },
         {
+          id: "q4",
           text: "Стоит ли учитывать мнение семьи в отношениях?",
-          options,
+          options: scaleOptions,
         },
       ];
 
     case "Финансы":
       return [
         {
+          id: "q1",
           text: "Нужно ли обсуждать деньги в отношениях?",
-          options,
+          options: scaleOptions,
         },
         {
+          id: "q2",
           text: "Стоит ли планировать совместный бюджет?",
-          options,
+          options: scaleOptions,
         },
         {
+          id: "q3",
           text: "Важно ли делать подарки партнёру?",
-          options,
+          options: scaleOptions,
         },
         {
+          id: "q4",
           text: "Нормально ли делить расходы?",
-          options,
+          options: scaleOptions,
         },
       ];
 
     case "Доверие":
+    case "Верность":
       return [
         {
+          id: "q1",
           text: "Можно ли строить отношения без доверия?",
-          options,
+          options: scaleOptions,
         },
         {
+          id: "q2",
           text: "Стоит ли говорить правду даже если она неприятная?",
-          options,
+          options: scaleOptions,
         },
         {
+          id: "q3",
           text: "Важно ли быть честным во всём?",
-          options,
+          options: scaleOptions,
         },
         {
+          id: "q4",
           text: "Легко ли тебе доверять партнёру?",
-          options,
+          options: scaleOptions,
         },
       ];
 
     case "Общение":
       return [
         {
+          id: "q1",
           text: "Важно ли регулярно общаться с партнёром?",
-          options,
+          options: scaleOptions,
         },
         {
+          id: "q2",
           text: "Стоит ли обсуждать всё, что беспокоит?",
-          options,
+          options: scaleOptions,
         },
         {
-          text: "Нравится ли тебе долгие разговоры по душам?",
-          options,
+          id: "q3",
+          text: "Нравятся ли тебе долгие разговоры по душам?",
+          options: scaleOptions,
         },
         {
+          id: "q4",
           text: "Важно ли слушать мнение партнёра?",
-          options,
+          options: scaleOptions,
         },
       ];
 
     case "Мечты":
+    case "Саморазвитие":
       return [
         {
+          id: "q1",
           text: "Важно ли делиться своими мечтами с партнёром?",
-          options,
+          options: scaleOptions,
         },
         {
+          id: "q2",
           text: "Стоит ли поддерживать мечты любимого человека?",
-          options,
+          options: scaleOptions,
         },
         {
+          id: "q3",
           text: "Могут ли отношения помогать достигать целей?",
-          options,
+          options: scaleOptions,
         },
         {
+          id: "q4",
           text: "Важно ли иметь совместные мечты?",
-          options,
+          options: scaleOptions,
         },
       ];
 
     case "Еда":
       return [
         {
+          id: "q1",
           text: "Нравится ли тебе готовить для любимого человека?",
-          options,
+          options: scaleOptions,
         },
         {
+          id: "q2",
           text: "Важно ли есть вместе?",
-          options,
+          options: scaleOptions,
         },
         {
+          id: "q3",
           text: "Стоит ли иногда готовить друг для друга?",
-          options,
+          options: scaleOptions,
         },
         {
+          id: "q4",
           text: "Нравится ли тебе пробовать новую кухню вместе?",
-          options,
+          options: scaleOptions,
         },
       ];
 
     case "Отдых":
+    case "Путешествия":
       return [
         {
+          id: "q1",
           text: "Важно ли путешествовать вместе?",
-          options,
+          options: scaleOptions,
         },
         {
+          id: "q2",
           text: "Нравится ли тебе совместный отдых?",
-          options,
+          options: scaleOptions,
         },
         {
+          id: "q3",
           text: "Стоит ли иногда устраивать спонтанные поездки?",
-          options,
+          options: scaleOptions,
         },
         {
+          id: "q4",
           text: "Любишь ли ты активный отдых с партнёром?",
-          options,
+          options: scaleOptions,
         },
       ];
 
     case "Окружение":
       return [
         {
+          id: "q1",
           text: "Важно ли ладить с друзьями партнёра?",
-          options,
+          options: scaleOptions,
         },
         {
+          id: "q2",
           text: "Стоит ли проводить время в компании друзей?",
-          options,
+          options: scaleOptions,
         },
         {
+          id: "q3",
           text: "Важно ли уважать круг общения партнёра?",
-          options,
+          options: scaleOptions,
         },
         {
+          id: "q4",
           text: "Нужно ли иногда отдыхать вместе с друзьями?",
-          options,
+          options: scaleOptions,
         },
       ];
 
     case "Ценности":
       return [
         {
+          id: "q1",
           text: "Должны ли ценности партнёров совпадать?",
-          options,
+          options: scaleOptions,
         },
         {
+          id: "q2",
           text: "Важно ли уважать взгляды друг друга?",
-          options,
+          options: scaleOptions,
         },
         {
+          id: "q3",
           text: "Стоит ли обсуждать жизненные принципы?",
-          options,
+          options: scaleOptions,
         },
         {
+          id: "q4",
           text: "Можно ли строить отношения без общих ценностей?",
-          options,
+          options: scaleOptions,
         },
       ];
 
     case "Любовь":
       return [
         {
+          id: "q1",
           text: "Важно ли говорить о любви словами?",
-          options,
+          options: scaleOptions,
         },
         {
+          id: "q2",
           text: "Нужны ли проявления заботы каждый день?",
-          options,
+          options: scaleOptions,
         },
         {
+          id: "q3",
           text: "Считаешь ли ты любовь основой отношений?",
-          options,
+          options: scaleOptions,
         },
         {
+          id: "q4",
           text: "Стоит ли показывать чувства открыто?",
-          options,
+          options: scaleOptions,
+        },
+      ];
+
+    case "Поддержка":
+      return [
+        {
+          id: "q1",
+          text: "Важно ли поддерживать партнёра в трудные моменты?",
+          options: scaleOptions,
+        },
+        {
+          id: "q2",
+          text: "Стоит ли быть рядом, когда любимому человеку тяжело?",
+          options: scaleOptions,
+        },
+        {
+          id: "q3",
+          text: "Важно ли не обесценивать чувства партнёра?",
+          options: scaleOptions,
+        },
+        {
+          id: "q4",
+          text: "Считаешь ли ты поддержку основой крепких отношений?",
+          options: scaleOptions,
         },
       ];
 
     case "Будущее":
       return [
         {
+          id: "q1",
           text: "Важно ли обсуждать будущее отношений?",
-          options,
+          options: scaleOptions,
         },
         {
+          id: "q2",
           text: "Стоит ли строить долгосрочные планы вместе?",
-          options,
+          options: scaleOptions,
         },
         {
+          id: "q3",
           text: "Хочешь ли ты стабильных отношений?",
-          options,
+          options: scaleOptions,
         },
         {
+          id: "q4",
           text: "Важно ли видеть совместное будущее?",
-          options,
+          options: scaleOptions,
         },
       ];
 
     case "Идеал":
       return [
         {
+          id: "q1",
           text: "Есть ли у тебя представление об идеальных отношениях?",
-          options,
+          options: scaleOptions,
         },
         {
+          id: "q2",
           text: "Важно ли чувствовать поддержку партнёра?",
-          options,
+          options: scaleOptions,
         },
         {
+          id: "q3",
           text: "Можно ли построить идеальную пару?",
-          options,
+          options: scaleOptions,
         },
         {
+          id: "q4",
           text: "Стоит ли стремиться к гармонии в отношениях?",
-          options,
+          options: scaleOptions,
+        },
+      ];
+
+    case "Обязанности":
+      return [
+        {
+          id: "q1",
+          text: "Важно ли делить обязанности в паре честно?",
+          options: scaleOptions,
+        },
+        {
+          id: "q2",
+          text: "Стоит ли обсуждать, кто за что отвечает?",
+          options: scaleOptions,
+        },
+        {
+          id: "q3",
+          text: "Нормально ли помогать друг другу в повседневных делах?",
+          options: scaleOptions,
+        },
+        {
+          id: "q4",
+          text: "Считаешь ли ты, что ответственность в паре должна быть общей?",
+          options: scaleOptions,
+        },
+      ];
+
+    case "Хобби":
+      return [
+        {
+          id: "q1",
+          text: "Важно ли иметь свои увлечения в отношениях?",
+          options: scaleOptions,
+        },
+        {
+          id: "q2",
+          text: "Нравится ли тебе делиться хобби с партнёром?",
+          options: scaleOptions,
+        },
+        {
+          id: "q3",
+          text: "Стоит ли уважать интересы друг друга?",
+          options: scaleOptions,
+        },
+        {
+          id: "q4",
+          text: "Могут ли общие увлечения укреплять отношения?",
+          options: scaleOptions,
+        },
+      ];
+
+    case "Творчество":
+      return [
+        {
+          id: "q1",
+          text: "Важно ли вдохновение в отношениях?",
+          options: scaleOptions,
+        },
+        {
+          id: "q2",
+          text: "Нравится ли тебе делать что-то красивое и особенное для партнёра?",
+          options: scaleOptions,
+        },
+        {
+          id: "q3",
+          text: "Может ли романтика быть творческой?",
+          options: scaleOptions,
+        },
+        {
+          id: "q4",
+          text: "Важно ли создавать особенную атмосферу в отношениях?",
+          options: scaleOptions,
         },
       ];
 
     default:
       return [
         {
+          id: "q1",
           text: "Важно ли уважение в отношениях?",
-          options,
+          options: scaleOptions,
         },
         {
+          id: "q2",
           text: "Стоит ли поддерживать друг друга?",
-          options,
+          options: scaleOptions,
         },
         {
+          id: "q3",
           text: "Важно ли доверие между партнёрами?",
-          options,
+          options: scaleOptions,
         },
         {
+          id: "q4",
           text: "Нужно ли говорить о чувствах?",
-          options,
+          options: scaleOptions,
         },
       ];
   }
