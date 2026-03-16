@@ -101,6 +101,7 @@ type AppState = {
   completedTestIds: string[];
   completedGameIds: string[];
   pollAnswers: Record<string, number[]>;
+  pairPollAnswers: Record<string, number[]>;
   weeklyTopRewardClaimedWeek: string | null;
 
   pair: PairState;
@@ -2059,6 +2060,7 @@ const DEFAULT_STATE: AppState = {
   completedTestIds: [],
   completedGameIds: [],
   pollAnswers: {},
+  pairPollAnswers: {},
 
   pair: {
   pairId: null,
@@ -2159,7 +2161,7 @@ function PairScreen({
   user,
   pair,
   points,
-  pollAnswers,
+  pairPollAnswers,
   onBack,
   onOpenInvite,
   onOpenDailyQuestion,
@@ -2167,7 +2169,7 @@ function PairScreen({
   user: TgUser | null;
   pair: PairState;
   points: number;
-  pollAnswers: Record<string, number[]>;
+  pairPollAnswers: Record<string, number[]>;
   onBack: () => void;
   onOpenInvite: () => void;
   onOpenDailyQuestion: () => void;
@@ -2179,7 +2181,7 @@ const hasPartnerConnected = !!pair.partner;
 const hasFullPair = hasPairCreated && hasPartnerConnected;
 const isWaitingForPartner = hasPairCreated && !hasPartnerConnected;
 
-  const pairStats = calculatePairStats(pollAnswers);
+  const pairStats = calculatePairStats(pairPollAnswers);
   const pairLevel = getPairLevelInfo(pair.totalPoints || 0);
 
   function avatarCircle(name?: string, lastName?: string, photoUrl?: string) {
@@ -3493,6 +3495,7 @@ function loadState(): AppState {
   completedGameIds:
     parsed.completedGameIds ?? DEFAULT_STATE.completedGameIds,
   pollAnswers: parsed.pollAnswers ?? DEFAULT_STATE.pollAnswers,
+  pairPollAnswers: parsed.pairPollAnswers ?? DEFAULT_STATE.pairPollAnswers,
 
   pair: {
   pairId: parsed.pair?.pairId ?? DEFAULT_STATE.pair.pairId,
@@ -5787,7 +5790,7 @@ function ProfileAndStatsScreen({
   stats,
   bonusState,
   wonRewards,
-  pollAnswers,
+ pairPollAnswers,
   referrals,
   isPremium,
   onBack,
@@ -5798,7 +5801,8 @@ function ProfileAndStatsScreen({
   stats: AppStats;
   bonusState: DailyBonusState;
   wonRewards: WonReward[];
-  pollAnswers: Record<string, number[]>;
+  pairPollAnswers: Record<string, number[]>;
+
   referrals: {
     invitedUsers: string[];
     totalReward: number;
@@ -5814,7 +5818,7 @@ function ProfileAndStatsScreen({
     [user?.first_name, user?.last_name].filter(Boolean).join(" ") ||
     "Пользователь";
   const username = user?.username ? `@${user.username}` : "@telegram_user";
-  const pairStats = calculatePairStats(pollAnswers);
+ const pairStats = calculatePairStats(pairPollAnswers);
 
 
   return (
@@ -6222,6 +6226,53 @@ async function updatePairPoints(params: {
   return nextPoints;
 }
 
+
+async function savePollSubmission(params: {
+  pairId: string;
+  telegramId: number;
+  pollId: string;
+  answers: number[];
+}) {
+  const { pairId, telegramId, pollId, answers } = params;
+
+  const { error } = await supabase
+    .from("poll_submissions")
+    .upsert(
+      {
+        pair_id: pairId,
+        telegram_id: telegramId,
+        poll_id: pollId,
+        answers,
+      },
+      { onConflict: "telegram_id,poll_id" }
+    );
+
+  if (error) {
+    console.error("savePollSubmission error:", error);
+  }
+}
+
+async function loadPairPollAnswers(pairId: string): Promise<Record<string, number[]>> {
+  const { data, error } = await supabase
+    .from("poll_submissions")
+    .select("poll_id, answers")
+    .eq("pair_id", pairId);
+
+  if (error || !data) {
+    console.error("loadPairPollAnswers error:", error);
+    return {};
+  }
+
+  const result: Record<string, number[]> = {};
+
+  for (const row of data) {
+    if (row?.poll_id && Array.isArray(row.answers)) {
+      result[row.poll_id] = row.answers.map((value: unknown) => Number(value));
+    }
+  }
+
+  return result;
+}
 
 
 async function joinPairByInviteCode(
@@ -6717,11 +6768,18 @@ if (!nextPairState.pairId && startParam?.startsWith("invite_")) {
 
 console.log("PAIR STATE AFTER BOOTSTRAP:", nextPairState);
 
+let pairPollAnswersFromDb: Record<string, number[]> = {};
+
+if (nextPairState.pairId) {
+  pairPollAnswersFromDb = await loadPairPollAnswers(nextPairState.pairId);
+}
+
 setAppState((prev) => ({
   ...prev,
   pair: nextPairState,
   points: nextPairState.totalPoints || 0,
   referrals: referralStats,
+  pairPollAnswers: pairPollAnswersFromDb,
 }));
 
 
@@ -6799,16 +6857,29 @@ setWeeklyPairLeaderboard(leaderboardRows);
   let nextPairState = appState.pair;
   let leveledUpTo: { level: number; title: string } | null = null;
 
-  if (rewardToAdd > 0 && appState.pair.pairId) {
-    await updatePairPoints({
-      pairId: appState.pair.pairId,
-      delta: rewardToAdd,
-    });
+  let pairPollAnswersFromDb = appState.pairPollAnswers;
 
-    if (user?.id) {
-      nextPairState = await loadPairStateForUser(user.id);
-    }
+if (appState.pair.pairId && user?.id) {
+  await savePollSubmission({
+    pairId: appState.pair.pairId,
+    telegramId: user.id,
+    pollId: poll.id,
+    answers,
+  });
+
+  pairPollAnswersFromDb = await loadPairPollAnswers(appState.pair.pairId);
+}
+
+if (rewardToAdd > 0 && appState.pair.pairId) {
+  await updatePairPoints({
+    pairId: appState.pair.pairId,
+    delta: rewardToAdd,
+  });
+
+  if (user?.id) {
+    nextPairState = await loadPairStateForUser(user.id);
   }
+}
 
   setAppState((prev) => {
     const oldLevel = getPairLevelInfo(prev.pair.totalPoints || 0);
@@ -6822,21 +6893,22 @@ setWeeklyPairLeaderboard(leaderboardRows);
     }
 
     return {
-      ...prev,
-      pair: nextPairState,
-      points: nextPairState.totalPoints || 0,
-      stats: {
-        ...prev.stats,
-        pollsCompleted: prev.stats.pollsCompleted + 1,
-      },
-      completedPollIds: alreadyCompleted
-        ? prev.completedPollIds
-        : [...prev.completedPollIds, poll.id],
-      pollAnswers: {
-        ...prev.pollAnswers,
-        [poll.id]: answers,
-      },
-    };
+  ...prev,
+  pair: nextPairState,
+  points: nextPairState.totalPoints || 0,
+  pairPollAnswers: pairPollAnswersFromDb,
+  stats: {
+    ...prev.stats,
+    pollsCompleted: prev.stats.pollsCompleted + 1,
+  },
+  completedPollIds: alreadyCompleted
+    ? prev.completedPollIds
+    : [...prev.completedPollIds, poll.id],
+  pollAnswers: {
+    ...prev.pollAnswers,
+    [poll.id]: answers,
+  },
+};
   });
 
   if (leveledUpTo) {
@@ -7090,13 +7162,13 @@ setWeeklyPairLeaderboard(leaderboardRows);
 
 
         {screen === "profile" && (
-       <ProfileAndStatsScreen
+      <ProfileAndStatsScreen
   user={user}
   points={appState.points}
   stats={appState.stats}
   bonusState={appState.dailyBonus}
   wonRewards={appState.wonRewards}
-  pollAnswers={appState.pollAnswers}
+  pairPollAnswers={appState.pairPollAnswers}
   referrals={appState.referrals}
   isPremium={appState.isPremium}
   onBack={() => setScreen("menu")}
@@ -7110,7 +7182,7 @@ setWeeklyPairLeaderboard(leaderboardRows);
     user={user}
     pair={appState.pair}
     points={appState.points}
-    pollAnswers={appState.pollAnswers}
+    pairPollAnswers={appState.pairPollAnswers}
     onBack={() => setScreen("menu")}
     onOpenInvite={() => setScreen("pair-invite")}
     onOpenDailyQuestion={() => setScreen("daily-pair")}
