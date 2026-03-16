@@ -2170,7 +2170,13 @@ function PairScreen({
   onOpenInvite: () => void;
   onOpenDailyQuestion: () => void;
 }) {
-  const hasFullPair = !!pair.pairId && !!pair.partner;
+
+  const hasPairCreated = !!pair.pairId;
+const hasPartnerConnected = !!pair.partner;
+
+const hasFullPair = hasPairCreated && hasPartnerConnected;
+const isWaitingForPartner = hasPairCreated && !hasPartnerConnected;
+
   const pairStats = calculatePairStats(pollAnswers);
   const pairLevel = getPairLevelInfo(points);
 
@@ -6104,49 +6110,45 @@ async function loadPairStateForUser(telegramId: number): Promise<PairState> {
     return emptyState;
   }
 
+  const currentTelegramId = Number(telegramId);
+  const partner1Id = pair.partner_1_telegram_id != null ? Number(pair.partner_1_telegram_id) : null;
+  const partner2Id = pair.partner_2_telegram_id != null ? Number(pair.partner_2_telegram_id) : null;
+  const createdByTelegramId =
+    pair.created_by_telegram_id != null ? Number(pair.created_by_telegram_id) : null;
+
   const rawPartnerTelegramId =
-  pair.partner_1_telegram_id === telegramId
-    ? pair.partner_2_telegram_id
-    : pair.partner_1_telegram_id;
+    partner1Id === currentTelegramId ? partner2Id : partner1Id;
 
-const partnerTelegramId =
-  rawPartnerTelegramId && rawPartnerTelegramId !== telegramId
-    ? rawPartnerTelegramId
-    : null;
+  const partnerTelegramId =
+    rawPartnerTelegramId && rawPartnerTelegramId !== currentTelegramId
+      ? rawPartnerTelegramId
+      : null;
 
-      console.log("LOAD PAIR:", pair);
-console.log("PARTNER TELEGRAM ID:", partnerTelegramId);
+  let partner: PairMember | null = null;
 
- let partner: PairMember | null = null;
-let partnerProfile: any = null;
+  if (partnerTelegramId) {
+    const { data: partnerProfile } = await supabase
+      .from("profiles")
+      .select("*")
+      .eq("telegram_id", partnerTelegramId)
+      .maybeSingle();
 
-if (partnerTelegramId) {
-  const { data } = await supabase
-    .from("profiles")
-    .select("*")
-    .eq("telegram_id", partnerTelegramId)
-    .maybeSingle();
-
-  partnerProfile = data;
-
-  if (partnerProfile) {
-    partner = {
-      telegramId: partnerProfile.telegram_id,
-      firstName: partnerProfile.first_name ?? undefined,
-      lastName: partnerProfile.last_name ?? undefined,
-      username: partnerProfile.username ?? undefined,
-      photoUrl: partnerProfile.photo_url ?? undefined,
-    };
+    if (partnerProfile) {
+      partner = {
+        telegramId: Number(partnerProfile.telegram_id),
+        firstName: partnerProfile.first_name ?? undefined,
+        lastName: partnerProfile.last_name ?? undefined,
+        username: partnerProfile.username ?? undefined,
+        photoUrl: partnerProfile.photo_url ?? undefined,
+      };
+    }
   }
-}
-
-console.log("PARTNER PROFILE:", partnerProfile);
 
   return {
     pairId: pair.id,
     inviteCode: pair.invite_code,
     partner,
-    createdByTelegramId: pair.created_by_telegram_id,
+    createdByTelegramId,
   };
 }
 
@@ -6157,15 +6159,16 @@ async function joinPairByInviteCode(
   inviteCode: string
 ): Promise<PairState | null> {
   const normalizedCode = inviteCode.trim().toUpperCase();
+  const currentTelegramId = Number(telegramId);
 
   const { data: profile } = await supabase
     .from("profiles")
     .select("pair_id")
-    .eq("telegram_id", telegramId)
+    .eq("telegram_id", currentTelegramId)
     .maybeSingle();
 
   if (profile?.pair_id) {
-    return loadPairStateForUser(telegramId);
+    return loadPairStateForUser(currentTelegramId);
   }
 
   const { data: pair, error: pairError } = await supabase
@@ -6179,25 +6182,30 @@ async function joinPairByInviteCode(
     return null;
   }
 
-  // Нельзя подключать самого себя по своему коду
+  const createdById =
+    pair.created_by_telegram_id != null ? Number(pair.created_by_telegram_id) : null;
+  const partner1Id =
+    pair.partner_1_telegram_id != null ? Number(pair.partner_1_telegram_id) : null;
+  const partner2Id =
+    pair.partner_2_telegram_id != null ? Number(pair.partner_2_telegram_id) : null;
+
   if (
-    pair.created_by_telegram_id === telegramId ||
-    pair.partner_1_telegram_id === telegramId ||
-    pair.partner_2_telegram_id === telegramId
+    createdById === currentTelegramId ||
+    partner1Id === currentTelegramId ||
+    partner2Id === currentTelegramId
   ) {
     alert("Нельзя подключить самого себя по своему приглашению");
     return null;
   }
 
-  // Если пара уже занята — не подключаем
-  if (pair.partner_2_telegram_id) {
+  if (partner2Id) {
     alert("Эта пара уже подключена");
     return null;
   }
 
   const { error: updatePairError } = await supabase
     .from("pairs")
-    .update({ partner_2_telegram_id: telegramId })
+    .update({ partner_2_telegram_id: currentTelegramId })
     .eq("id", pair.id)
     .is("partner_2_telegram_id", null);
 
@@ -6209,14 +6217,14 @@ async function joinPairByInviteCode(
   const { error: updateProfileError } = await supabase
     .from("profiles")
     .update({ pair_id: pair.id })
-    .eq("telegram_id", telegramId);
+    .eq("telegram_id", currentTelegramId);
 
   if (updateProfileError) {
     console.error("joinPairByInviteCode update profile error:", updateProfileError);
     return null;
   }
 
-  return loadPairStateForUser(telegramId);
+  return loadPairStateForUser(currentTelegramId);
 }
 
 async function claimReferralReward(params: {
