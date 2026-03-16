@@ -2160,6 +2160,7 @@ function PairScreen({
 
   onBack,
   onJoinByCode,
+  onCreateInvite,
   onOpenDailyQuestion,
 }: {
   user: TgUser | null;
@@ -2169,11 +2170,14 @@ function PairScreen({
 
   onBack: () => void;
   onJoinByCode: (code: string) => Promise<void>;
+  onCreateInvite: () => Promise<void>;
   onOpenDailyQuestion: () => void;
 }) {
 
 
-  const hasPair = !!pair.pairId;
+  const hasInvite = !!pair.inviteCode;
+const hasPartner = !!pair.partner;
+const hasFullPair = !!pair.pairId && !!pair.partner;
 
   const inviteLink = pair.inviteCode
     ? `https://t.me/testcouple1_bot?startapp=invite_${pair.inviteCode}`
@@ -2280,7 +2284,7 @@ function PairScreen({
 
 
 
-      {!hasPair ? (
+      {!hasFullPair ? (
         <>
           <div style={{ ...cardBaseStyle(), padding: 18 }}>
             <div
@@ -2322,6 +2326,38 @@ function PairScreen({
               Отправь партнёру свой код или ссылку-приглашение ниже.
             </div>
           </div>
+
+          {!pair.inviteCode && (
+  <div style={{ ...cardBaseStyle(), padding: 18 }}>
+    <div style={{ fontSize: 18, fontWeight: 900, color: "#1f1d3a" }}>
+      Создать приглашение
+    </div>
+
+    <div
+      style={{
+        marginTop: 8,
+        color: "#4b446a",
+        lineHeight: 1.45,
+        fontSize: 14,
+      }}
+    >
+      У тебя ещё нет кода приглашения. Создай его и отправь партнёру.
+    </div>
+
+    <button
+      onClick={async () => {
+        await onCreateInvite();
+      }}
+      style={{
+        ...primaryButtonStyle,
+        width: "100%",
+        marginTop: 12,
+      }}
+    >
+      Создать код приглашения
+    </button>
+  </div>
+)}
 
           {pair.inviteCode && (
             <div style={{ ...cardBaseStyle(), padding: 18 }}>
@@ -6860,15 +6896,16 @@ const handleCompletePoll = (poll: Poll, answers: number[]) => {
 )}
 
 {screen === "pair" && (
-  <PairScreen
-    user={user}
-    pair={appState.pair}
-    points={appState.points}
-    pollAnswers={appState.pollAnswers}
-    onBack={() => setScreen("menu")}
-    onJoinByCode={handleJoinByCode}
-    onOpenDailyQuestion={() => setScreen("daily-pair")}
-  />
+ <PairScreen
+  user={user}
+  pair={appState.pair}
+  points={appState.points}
+  pollAnswers={appState.pollAnswers}
+  onBack={() => setScreen("menu")}
+  onJoinByCode={handleJoinByCode}
+  onCreateInvite={handleCreateInvite}
+  onOpenDailyQuestion={() => setScreen("daily-pair")}
+/>
 )}
 
 {screen === "daily-pair" && (
