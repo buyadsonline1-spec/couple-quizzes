@@ -3526,7 +3526,7 @@ const activePoll = POLLS.find((poll) => poll.id === activePollId) || null;
   if (finished && activePoll) {
     return (
       <div style={{ padding: 14 }}>
-        <div style={{ ...cardBaseStyle(), padding: 18 }}>
+        <div style={{ ...cardBaseStyle(), padding: 16 }}>
           <div style={{ fontSize: 28, fontWeight: 900, color: "#1f1d3a" }}>
             Готово 🎉
           </div>
