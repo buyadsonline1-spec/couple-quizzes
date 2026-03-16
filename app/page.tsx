@@ -3025,13 +3025,14 @@ function WelcomeScreen({ onStart }: { onStart: () => void }) {
             position: "relative",
           }}
         >
-          <img
+         <img
   src="/couple.png"
   alt="Couple"
   style={{
-    width: 160,
-    marginBottom: 20,
-    opacity: 0.95,
+    width: 240,
+    marginBottom: 26,
+    opacity: 0.96,
+    filter: "drop-shadow(0 8px 20px rgba(0,0,0,0.08))",
   }}
 />
 
