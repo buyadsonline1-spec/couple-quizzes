@@ -2839,7 +2839,7 @@ function PairInviteScreen({
           </button>
         </div>
       )}
-      
+
 
 
       <button onClick={onBack} style={secondaryButtonStyle}>
@@ -6455,21 +6455,28 @@ console.log("CREATE INVITE tg user:", window.Telegram?.WebApp?.initDataUnsafe?.u
   const inviteCode = Math.random().toString(36).slice(2, 8).toUpperCase();
 
   const { data: createdPair, error: createPairError } = await supabase
-    .from("pairs")
-    .insert({
-      invite_code: inviteCode,
-      created_by_telegram_id: actualUser.id,
-      partner_1_telegram_id: actualUser.id,
-      partner_2_telegram_id: null,
-    })
-    .select()
-    .single();
+  .from("pairs")
+  .insert({
+    invite_code: inviteCode,
+    created_by_telegram_id: actualUser.id,
+    partner_1_telegram_id: actualUser.id,
+    partner_2_telegram_id: null,
+  })
+  .select()
+  .single();
+
+console.log("CREATE PAIR RESULT:", createdPair);
+console.log("CREATE PAIR ERROR:", createPairError);
 
   if (createPairError || !createdPair) {
-    console.error("create pair error:", createPairError);
-    alert("Не удалось создать приглашение");
-    return;
-  }
+  console.error("create pair error:", createPairError);
+  alert(
+    `Не удалось создать приглашение: ${
+      createPairError?.message || "unknown error"
+    }`
+  );
+  return;
+}
 
   const { error: updateProfileError } = await supabase
     .from("profiles")
