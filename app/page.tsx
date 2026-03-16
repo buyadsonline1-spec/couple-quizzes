@@ -6036,9 +6036,9 @@ const handleCompletePoll = (poll: Poll, answers: number[]) => {
     <main
   style={{
     minHeight: "100vh",
-    background: appState.isPremium
-      ? "linear-gradient(135deg, #6f5bff 0%, #ff76ba 50%, #8fd3ff 100%)"
-      : "radial-gradient(circle, rgba(238, 174, 202, 1) 0%, rgba(148, 187, 233, 1) 100%)",
+   background: appState.isPremium
+  ? "linear-gradient(135deg, #a18cd1 0%, #fbc2eb 100%)"
+  : "radial-gradient(circle, rgba(238,174,202,1) 0%, rgba(148,187,233,1) 100%)",
     paddingBottom: 24,
   }}
 >
