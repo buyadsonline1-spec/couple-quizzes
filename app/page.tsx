@@ -6362,11 +6362,18 @@ await syncWeeklyPairLeaderboard(nextStateAfterJoin, liveUser ?? user);
 };
 
 const handleCreateInvite = async () => {
-  const liveUser = getLiveTelegramUser();
-  const actualUser = liveUser ?? user;
+  let liveUser = getLiveTelegramUser();
+  let actualUser = liveUser ?? user;
 
   if (!actualUser?.id) {
-    alert("Telegram не передал пользователя. Открой mini app через бота.");
+    await new Promise((resolve) => setTimeout(resolve, 500));
+
+    liveUser = getLiveTelegramUser();
+    actualUser = liveUser ?? user;
+  }
+
+  if (!actualUser?.id) {
+    alert("Не удалось получить пользователя Telegram. Открой mini app именно внутри Telegram через кнопку бота или startapp-ссылку.");
     return;
   }
 
@@ -6380,6 +6387,9 @@ const handleCreateInvite = async () => {
     return;
   }
 
+console.log("CREATE INVITE user from state:", user);
+console.log("CREATE INVITE user from Telegram:", window.Telegram?.WebApp?.initDataUnsafe?.user);
+console.log("CREATE INVITE initDataUnsafe:", window.Telegram?.WebApp?.initDataUnsafe);
   const inviteCode = Math.random().toString(36).slice(2, 8).toUpperCase();
 
   const { data: createdPair, error: createPairError } = await supabase
@@ -6412,12 +6422,14 @@ const handleCreateInvite = async () => {
 
   const nextPairState = await loadPairStateForUser(actualUser.id);
 
-  setAppState((prev) => ({
-    ...prev,
+  const nextStateAfterCreate = {
+    ...appState,
     pair: nextPairState,
-  }));
-};
+  };
 
+  setAppState(nextStateAfterCreate);
+  await syncWeeklyPairLeaderboard(nextStateAfterCreate, actualUser);
+};
 
 const [weeklyPairLeaderboard, setWeeklyPairLeaderboard] = useState<WeeklyPairLeaderboardRow[]>([]);
 
@@ -6479,28 +6491,30 @@ useEffect(() => {
     tg?.ready?.();
     tg?.expand?.();
 
-    const telegramUser = tg?.initDataUnsafe?.user;
-    console.log("TG USER:", telegramUser);
-console.log("TG INIT DATA:", tg?.initDataUnsafe);
-    const startParam = tg?.initDataUnsafe?.start_param;
-    
+ let telegramUser = tg?.initDataUnsafe?.user;
+let startParam = tg?.initDataUnsafe?.start_param;
 
+const saved = loadState();
+setAppState(saved);
 
-    const saved = loadState();
-    setAppState(saved);
+const alreadyClaimed = hasClaimedToday(saved.dailyBonus.lastClaimDate);
+const nextDay = getNextStreakDay(
+  saved.dailyBonus.lastClaimDate,
+  saved.dailyBonus.streakDay
+);
 
-    const alreadyClaimed = hasClaimedToday(saved.dailyBonus.lastClaimDate);
-    const nextDay = getNextStreakDay(
-      saved.dailyBonus.lastClaimDate,
-      saved.dailyBonus.streakDay
-    );
+setClaimableDay(nextDay);
+setBonusClaimAvailable(!alreadyClaimed);
+setShowDailyBonus(true);
 
-    setClaimableDay(nextDay);
-    setBonusClaimAvailable(!alreadyClaimed);
-    setShowDailyBonus(true);
+if (!telegramUser?.id) {
+  await new Promise((resolve) => setTimeout(resolve, 600));
+  telegramUser = window.Telegram?.WebApp?.initDataUnsafe?.user;
+  startParam = window.Telegram?.WebApp?.initDataUnsafe?.start_param;
+}
 
-    if (!telegramUser?.id) {
-  console.log("Telegram user not ready yet");
+if (!telegramUser?.id) {
+  console.log("Telegram user still not available");
   return;
 }
 
@@ -6566,6 +6580,8 @@ setWeeklyPairLeaderboard(leaderboardRows);
 
   bootstrap();
 }, []);
+
+
 
 
 
