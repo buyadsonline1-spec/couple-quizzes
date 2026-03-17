@@ -2121,6 +2121,10 @@ function getStreakBonus(streak: number): number {
   return reward ? reward.points : 0;
 }
 
+function getNextStreakBonus(streak: number) {
+  return STREAK_BONUSES.find((item) => item.days > streak) ?? null;
+}
+
 function getScaleResult(totalScore: number, maxScore: number): TestResult {
   const ratio = totalScore / maxScore;
 
@@ -3021,6 +3025,8 @@ function DailyPairQuestionScreen({
    
   }
 
+  const nextBonus = getNextStreakBonus(appState.dailyPairStreak.current);
+
   return (
     <div style={{ padding: 12, display: "grid", gap: 10 }}>
       <div style={{ ...cardBaseStyle(), padding: 14 }}>
@@ -3051,15 +3057,43 @@ function DailyPairQuestionScreen({
           </div>
 
           <div
-            style={{
-              marginTop: 4,
-              fontSize: 14,
-              lineHeight: 1.45,
-              color: "#4d466c",
-            }}
-          >
-            Оба отвечали на вопрос дня подряд
-          </div>
+  style={{
+    marginTop: 4,
+    fontSize: 14,
+    lineHeight: 1.45,
+    color: "#4d466c",
+  }}
+>
+  Оба отвечали на вопрос дня подряд
+</div>
+
+{nextBonus && (
+  <div
+    style={{
+      marginTop: 8,
+      fontSize: 13,
+      fontWeight: 800,
+      color: "#6b46ff",
+      lineHeight: 1.4,
+    }}
+  >
+    До следующего бонуса: {nextBonus.days - appState.dailyPairStreak.current} дн. (+{nextBonus.points} очков)
+  </div>
+)}
+
+{!nextBonus && appState.dailyPairStreak.current >= 15 && (
+  <div
+    style={{
+      marginTop: 8,
+      fontSize: 13,
+      fontWeight: 800,
+      color: "#6b46ff",
+      lineHeight: 1.4,
+    }}
+  >
+    Вы достигли максимального бонусного рубежа 👑
+  </div>
+)}
         </div>
       </div>
 
