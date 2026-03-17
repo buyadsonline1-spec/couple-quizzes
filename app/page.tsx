@@ -118,6 +118,11 @@ type AppState = {
   girlAnswerIndex: number | null;
 }>;
 
+dailyPairStreak: {
+  current: number;
+  reachedMilestones: number[];
+};
+
   profile: {
     displayName: string;
     avatar: string | null;
@@ -2092,6 +2097,12 @@ const DEFAULT_STATE: AppState = {
 
   dailyPairHistory: [],
 
+  dailyPairStreak: {
+  current: 0,
+  reachedMilestones: [],
+},
+  
+
   profile: {
     displayName: "",
     avatar: null,
@@ -2957,13 +2968,15 @@ function DailyPairQuestionScreen({
       );
 
       if (pair.pairId) {
-        const history = await loadDailyPairHistory(pair.pairId);
+  const history = await loadDailyPairHistory(pair.pairId);
+  const streak = calculateDailyPairStreak(history);
 
-        setAppState((prev) => ({
-          ...prev,
-          dailyPairHistory: history,
-        }));
-      }
+  setAppState((prev) => ({
+    ...prev,
+    dailyPairHistory: history,
+    dailyPairStreak: streak,
+  }));
+}
     } finally {
       setSaving(false);
     }
@@ -2979,6 +2992,107 @@ function DailyPairQuestionScreen({
           Вы оба отвечаете на один и тот же вопрос. Когда ответят оба — можно сравнить результат.
         </div>
       </div>
+
+      <div style={{ ...cardBaseStyle(), padding: 14 }}>
+  <div style={{ fontSize: 18, fontWeight: 900, color: "#1f1d3a" }}>
+    🔥 Серия пары
+  </div>
+
+  <div
+    style={{
+      marginTop: 8,
+      padding: "14px 16px",
+      borderRadius: 16,
+      background: "rgba(255,255,255,0.24)",
+      color: "#241b40",
+    }}
+  >
+    <div style={{ fontSize: 24, fontWeight: 900 }}>
+      {appState.dailyPairStreak.current} дн.
+    </div>
+
+    <div
+      style={{
+        marginTop: 4,
+        fontSize: 14,
+        lineHeight: 1.45,
+        color: "#4d466c",
+      }}
+    >
+      Оба отвечали на вопрос дня подряд
+    </div>
+  </div>
+</div>
+
+<div style={{ ...cardBaseStyle(), padding: 14 }}>
+  <div style={{ fontSize: 18, fontWeight: 900, color: "#1f1d3a" }}>
+    🏆 Рубежи серии
+  </div>
+
+  <div
+    style={{
+      display: "grid",
+      gridTemplateColumns: "repeat(4, 1fr)",
+      gap: 8,
+      marginTop: 12,
+    }}
+  >
+    {[3, 5, 10, 15].map((milestone) => {
+      const reached = appState.dailyPairStreak.reachedMilestones.includes(milestone);
+
+      return (
+        <div
+          key={milestone}
+          style={{
+            padding: "12px 10px",
+            borderRadius: 16,
+            textAlign: "center",
+            background: reached
+              ? "linear-gradient(135deg, rgba(255,230,240,0.95), rgba(255,255,255,0.9))"
+              : "rgba(255,255,255,0.18)",
+            border: reached
+              ? "2px solid rgba(255,120,190,0.35)"
+              : "1px solid rgba(255,255,255,0.20)",
+            color: "#241b40",
+          }}
+        >
+          <div style={{ fontSize: 20 }}>
+            {reached
+              ? milestone === 3
+                ? "🔥"
+                : milestone === 5
+                ? "🏆"
+                : milestone === 10
+                ? "💎"
+                : "👑"
+              : "▫️"}
+          </div>
+
+          <div
+            style={{
+              marginTop: 6,
+              fontSize: 14,
+              fontWeight: 900,
+            }}
+          >
+            {milestone}
+          </div>
+
+          <div
+            style={{
+              marginTop: 2,
+              fontSize: 11,
+              color: "#5a5378",
+              fontWeight: 700,
+            }}
+          >
+            дней
+          </div>
+        </div>
+      );
+    })}
+  </div>
+</div>
 
       <div style={{ ...cardBaseStyle(), padding: 14 }}>
         <div
@@ -3054,33 +3168,98 @@ function DailyPairQuestionScreen({
           </div>
         </div>
 
-        {bothAnswered && (
-          <div
-            style={{
-              marginTop: 12,
-              padding: "14px 16px",
-              borderRadius: 16,
-              background:
-                myAnswer.answer_index === partnerAnswer.answer_index
-                  ? "rgba(255,255,255,0.34)"
-                  : "rgba(255,255,255,0.24)",
-              color: "#241b40",
-            }}
-          >
-            <div style={{ fontWeight: 900, fontSize: 16 }}>
-              {myAnswer.answer_index === partnerAnswer.answer_index
-                ? "Вы ответили одинаково 💘"
-                : "Ответы отличаются ✨"}
-            </div>
+       {bothAnswered && (
+  <div
+    style={{
+      marginTop: 12,
+      padding: "16px 18px",
+      borderRadius: 18,
+      background:
+        myAnswer.answer_index === partnerAnswer.answer_index
+          ? "linear-gradient(135deg, rgba(255,220,240,0.9), rgba(255,255,255,0.8))"
+          : "rgba(255,255,255,0.28)",
+      color: "#241b40",
+      animation: "matchPop 0.35s ease",
+      textAlign: "center",
+    }}
+  >
+    <div style={{ fontSize: 22, fontWeight: 900 }}>
+      {myAnswer.answer_index === partnerAnswer.answer_index
+        ? "💘 Совпадение!"
+        : "✨ Разные ответы"}
+    </div>
 
-            <div style={{ marginTop: 8, fontSize: 14, lineHeight: 1.45 }}>
-              Ты: {question.options[myAnswer.answer_index]}
-              <br />
-              Партнёр: {question.options[partnerAnswer.answer_index]}
-            </div>
-          </div>
-        )}
+    <div
+      style={{
+        marginTop: 6,
+        fontSize: 14,
+        lineHeight: 1.5,
+      }}
+    >
+      {myAnswer.answer_index === partnerAnswer.answer_index
+        ? "Вы выбрали один и тот же вариант"
+        : "Ваши ответы отличаются — обсудите это 💬"}
+    </div>
+
+    <div
+      style={{
+        marginTop: 10,
+        fontSize: 13,
+        opacity: 0.9,
+      }}
+    >
+      Ты: {question.options[myAnswer.answer_index]}
+      <br />
+      Партнёр: {question.options[partnerAnswer.answer_index]}
+    </div>
+  </div>
+  </div>
+)}
+
+{appState.dailyPairStreak.current > 0 &&
+  [3, 5, 10, 15].includes(appState.dailyPairStreak.current) && (
+    <div
+      style={{
+        ...cardBaseStyle(),
+        padding: 16,
+        background:
+          "linear-gradient(135deg, rgba(255,240,245,0.95), rgba(255,255,255,0.9))",
+        textAlign: "center",
+      }}
+    >
+      <div style={{ fontSize: 26 }}>
+        {appState.dailyPairStreak.current === 3
+          ? "🔥"
+          : appState.dailyPairStreak.current === 5
+          ? "🏆"
+          : appState.dailyPairStreak.current === 10
+          ? "💎"
+          : "👑"}
       </div>
+
+      <div
+        style={{
+          marginTop: 8,
+          fontSize: 20,
+          fontWeight: 900,
+          color: "#1f1d3a",
+        }}
+      >
+        Рубеж достигнут!
+      </div>
+
+      <div
+        style={{
+          marginTop: 6,
+          fontSize: 14,
+          color: "#4d466c",
+          lineHeight: 1.45,
+        }}
+      >
+        Вы отвечаете вместе уже {appState.dailyPairStreak.current} дней подряд 💞
+      </div>
+    </div>
+  )}
 
       {appState.dailyPairHistory.length > 0 && (
         <div style={{ ...cardBaseStyle(), padding: 14 }}>
@@ -3630,6 +3809,9 @@ function loadState(): AppState {
 
   dailyPairHistory:
   parsed.dailyPairHistory ?? DEFAULT_STATE.dailyPairHistory,
+
+  dailyPairStreak:
+  parsed.dailyPairStreak ?? DEFAULT_STATE.dailyPairStreak,
 
   profile: {
     displayName:
@@ -6478,6 +6660,71 @@ async function loadDailyPairHistory(pairId: string): Promise<
   return Array.from(grouped.values());
 }
 
+function getPreviousDateString(dateString: string) {
+  const date = new Date(`${dateString}T00:00:00`);
+  date.setDate(date.getDate() - 1);
+
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+
+  return `${year}-${month}-${day}`;
+}
+
+function calculateDailyPairStreak(
+  history: Array<{
+    date: string;
+    questionId: string;
+    boyAnswerIndex: number | null;
+    girlAnswerIndex: number | null;
+  }>
+) {
+  if (!history.length) {
+    return {
+      current: 0,
+      reachedMilestones: [] as number[],
+    };
+  }
+
+  const completedDates = history
+    .filter(
+      (item) =>
+        item.boyAnswerIndex !== null &&
+        item.girlAnswerIndex !== null
+    )
+    .map((item) => item.date)
+    .sort((a, b) => b.localeCompare(a));
+
+  if (!completedDates.length) {
+    return {
+      current: 0,
+      reachedMilestones: [] as number[],
+    };
+  }
+
+  let streak = 1;
+
+  for (let i = 0; i < completedDates.length - 1; i++) {
+    const currentDate = completedDates[i];
+    const nextExpected = getPreviousDateString(currentDate);
+    const nextDate = completedDates[i + 1];
+
+    if (nextDate === nextExpected) {
+      streak += 1;
+    } else {
+      break;
+    }
+  }
+
+  const milestones = [3, 5, 10, 15];
+  const reachedMilestones = milestones.filter((m) => streak >= m);
+
+  return {
+    current: streak,
+    reachedMilestones,
+  };
+}
+
 async function refreshPairData(params: {
   user: TgUser | null;
   setAppState: React.Dispatch<React.SetStateAction<AppState>>;
@@ -6496,9 +6743,15 @@ let dailyPairHistoryFromDb: Array<{
   girlAnswerIndex: number | null;
 }> = [];
 
+let dailyPairStreakFromDb = {
+  current: 0,
+  reachedMilestones: [] as number[],
+};
+
 if (nextPairState.pairId) {
   pairPollAnswersFromDb = await loadPairPollAnswers(nextPairState.pairId);
   dailyPairHistoryFromDb = await loadDailyPairHistory(nextPairState.pairId);
+  dailyPairStreakFromDb = calculateDailyPairStreak(dailyPairHistoryFromDb);
 }
 
 const referralStats = await loadReferralStats(user.id);
@@ -6509,9 +6762,9 @@ setAppState((prev) => ({
   points: nextPairState.totalPoints || 0,
   pairPollAnswers: pairPollAnswersFromDb,
   dailyPairHistory: dailyPairHistoryFromDb,
+  dailyPairStreak: dailyPairStreakFromDb,
   referrals: referralStats,
 }));
-}
 
 
 async function joinPairByInviteCode(
@@ -7341,16 +7594,19 @@ if (rewardToAdd > 0 && appState.pair.pairId) {
 
 
 <style>{`
-  @keyframes pairLevelPop {
-    0% {
-      transform: scale(0.85);
-      opacity: 0;
-    }
-    100% {
-      transform: scale(1);
-      opacity: 1;
-    }
+  @keyframes matchPop {
+  0% {
+    transform: scale(0.9);
+    opacity: 0;
   }
+  60% {
+    transform: scale(1.05);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
 `}</style>
 
     
