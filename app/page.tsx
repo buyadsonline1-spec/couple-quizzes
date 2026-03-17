@@ -4970,6 +4970,12 @@ if (activeGame?.id === "never-have-i-ever") {
       reward={activeGame.reward}
       onBack={() => setActiveGameId(null)}
       onFinish={handleLoveQuestionFinish}
+      onBonus={(points) => {
+        setAppState((prev) => ({
+          ...prev,
+          points: prev.points + points,
+        }));
+      }}
     />
   );
 }
@@ -5496,10 +5502,12 @@ function NeverHaveIEverGameScreen({
   reward,
   onBack,
   onFinish,
+  onBonus,
 }: {
   reward: number;
   onBack: () => void;
   onFinish: () => void;
+  onBonus: (points: number) => void;
 }) {
 
   const [flipped, setFlipped] = useState(false);
@@ -5896,10 +5904,7 @@ const [shuffledCards, setShuffledCards] = useState<typeof cards>([]);
   <button
     onClick={() => {
       setRewardClaimed(true);
-      setAppState((prev) => ({
-        ...prev,
-        points: prev.points + 10,
-      }));
+      onBonus(10);
     }}
     style={{ ...primaryButtonStyle, width: "100%", marginTop: 12 }}
   >
