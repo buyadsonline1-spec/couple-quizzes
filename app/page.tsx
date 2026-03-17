@@ -5771,10 +5771,29 @@ useEffect(() => {
 }, []);
 
   const [index, setIndex] = useState(0);
-const [shuffledCards, setShuffledCards] = useState<typeof cards>([]);
+const [shuffledCards, setShuffledCards] = useState(() => shuffle(cards));
   const [done, setDone] = useState(false);
 
-  const card = shuffledCards[index];
+  const card = shuffledCards[index] ?? null;
+
+  if (!card) {
+  return (
+    <div style={{ padding: 16, display: "grid", gap: 14 }}>
+      <div style={{ ...cardBaseStyle(), padding: 18 }}>
+        <div style={{ fontSize: 24, fontWeight: 900, color: "#1f1d3a" }}>
+          Я никогда не...
+        </div>
+        <div style={{ marginTop: 8, color: "#3a345c", fontSize: 15 }}>
+          Загружаем карточки...
+        </div>
+      </div>
+
+      <button onClick={onBack} style={secondaryButtonStyle}>
+        Назад в игры
+      </button>
+    </div>
+  );
+}
 
   function handleComplete() {
     if (done) return;
