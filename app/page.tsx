@@ -82,6 +82,8 @@ type AppState = {
   totalReward: number;
 };
 
+dailyPairMatchBonusClaimedDates: string[];
+
 
   dailyBonus: {
     streakDay: number;
