@@ -227,9 +227,10 @@ type PairMember = {
 
 type PairState = {
   pairId: string | null;
-  partnerId: number | null;
-  level: number;
-  streak: number;
+  inviteCode: string | null;
+  partner: PairMember | null;
+  createdByTelegramId: number | null;
+  totalPoints: number;
 };
 
 type DailyPairQuestion = {
