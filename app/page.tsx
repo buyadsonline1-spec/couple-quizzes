@@ -7391,7 +7391,7 @@ useEffect(() => {
     appState.dailyBonus.lastClaimDate !== today;
 
   if (!alreadyOpenedToday && bonusNotClaimedToday) {
-    setScreen("daily-bonus");
+    setShowDailyBonus(true);
 
     setAppState((prev) => ({
       ...prev,
@@ -7465,9 +7465,12 @@ const nextDay = getNextStreakDay(
   saved.dailyBonus.streakDay
 );
 
+const today = getTodayLocalDateString();
+const alreadyOpenedToday = saved.lastDailyBonusPopupDate === today;
+
 setClaimableDay(nextDay);
 setBonusClaimAvailable(!alreadyClaimed);
-setShowDailyBonus(true);
+setShowDailyBonus(!alreadyClaimed && !alreadyOpenedToday);
 
 if (!telegramUser?.id) {
   await new Promise((resolve) => setTimeout(resolve, 600));
