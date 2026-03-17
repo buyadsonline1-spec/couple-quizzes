@@ -2239,6 +2239,7 @@ function PairScreen({
   user,
   pair,
   points,
+  pairLevel,
   pairPollAnswers,
   onBack,
   onOpenInvite,
@@ -2247,6 +2248,7 @@ function PairScreen({
   user: TgUser | null;
   pair: PairState;
   points: number;
+  pairLevel: ReturnType<typeof getPairLevelInfo>;
   pairPollAnswers: Record<string, number[]>;
   onBack: () => void;
   onOpenInvite: () => void;
@@ -2260,7 +2262,7 @@ const hasFullPair = hasPairCreated && hasPartnerConnected;
 const isWaitingForPartner = hasPairCreated && !hasPartnerConnected;
 
   const pairStats = calculatePairStats(pairPollAnswers);
-  const pairLevel = getPairLevelInfo(pair.totalPoints || 0);
+
 
   function avatarCircle(name?: string, lastName?: string, photoUrl?: string) {
     if (photoUrl) {
@@ -2677,6 +2679,7 @@ function PairInviteScreen({
   const [joining, setJoining] = useState(false);
   const [creating, setCreating] = useState(false);
   const [showJoinInput, setShowJoinInput] = useState(false);
+ 
 
   const inviteLink = pair.inviteCode
     ? `https://t.me/testcouple1_bot?startapp=invite_${pair.inviteCode}`
@@ -7085,6 +7088,25 @@ export default function Page() {
   };
 }
 
+function animatePairPoints(from: number, to: number) {
+  const duration = 900;
+  const start = performance.now();
+
+  function frame(now: number) {
+    const progress = Math.min((now - start) / duration, 1);
+    const eased = 1 - Math.pow(1 - progress, 3);
+    const value = Math.round(from + (to - from) * eased);
+
+    setAnimatedPairPoints(value);
+
+    if (progress < 1) {
+      requestAnimationFrame(frame);
+    }
+  }
+
+  requestAnimationFrame(frame);
+}
+
 const handleCompleteGame = async (game: Game, score: number) => {
   const alreadyCompleted = appState.completedGameIds.includes(game.id);
   const rewardToAdd = alreadyCompleted ? 0 : game.reward;
@@ -7102,6 +7124,14 @@ const handleCompleteGame = async (game: Game, score: number) => {
       nextPairState = await loadPairStateForUser(user.id);
     }
   }
+
+  const previousPoints = appState.pair.totalPoints || 0;
+const nextPoints = nextPairState.totalPoints || 0;
+
+if (nextPoints > previousPoints) {
+  setAnimatedPairPoints(previousPoints);
+  animatePairPoints(previousPoints, nextPoints);
+}
 
   setAppState((prev) => {
     const oldLevel = getPairLevelInfo(prev.pair.totalPoints || 0);
@@ -7159,6 +7189,14 @@ const handleClaimWeeklyTopReward = async () => {
   if (user?.id) {
     refreshedPair = await loadPairStateForUser(user.id);
   }
+
+  const previousPoints = appState.pair.totalPoints || 0;
+const nextPoints = refreshedPair.totalPoints || 0;
+
+if (nextPoints > previousPoints) {
+  setAnimatedPairPoints(previousPoints);
+  animatePairPoints(previousPoints, nextPoints);
+}
 
   const nextState = {
     ...appState,
@@ -7323,6 +7361,11 @@ const [weeklyPairLeaderboard, setWeeklyPairLeaderboard] = useState<WeeklyPairLea
   const [claimableDay, setClaimableDay] = useState(1);
   const [bonusClaimAvailable, setBonusClaimAvailable] = useState(true);
   const [showLevelUp, setShowLevelUp] = useState(false);
+   const [animatedPairPoints, setAnimatedPairPoints] = useState(0);
+  useEffect(() => {
+  if (!mounted) return;
+  setAnimatedPairPoints(appState.pair.totalPoints || 0);
+}, [mounted]);
 
   useEffect(() => {
   if (showLevelUp) {
@@ -7579,6 +7622,14 @@ if (rewardToAdd > 0 && appState.pair.pairId) {
   }
 }
 
+const previousPoints = appState.pair.totalPoints || 0;
+const nextPoints = nextPairState.totalPoints || 0;
+
+if (nextPoints > previousPoints) {
+  setAnimatedPairPoints(previousPoints);
+  animatePairPoints(previousPoints, nextPoints);
+}
+
   setAppState((prev) => {
     const oldLevel = getPairLevelInfo(prev.pair.totalPoints || 0);
     const newLevel = getPairLevelInfo(nextPairState.totalPoints || 0);
@@ -7641,6 +7692,14 @@ if (rewardToAdd > 0 && appState.pair.pairId) {
       nextPairState = await loadPairStateForUser(user.id);
     }
   }
+
+  const previousPoints = appState.pair.totalPoints || 0;
+const nextPoints = nextPairState.totalPoints || 0;
+
+if (nextPoints > previousPoints) {
+  setAnimatedPairPoints(previousPoints);
+  animatePairPoints(previousPoints, nextPoints);
+}
 
   setAppState((prev) => {
     const oldLevel = getPairLevelInfo(prev.pair.totalPoints || 0);
@@ -7793,9 +7852,9 @@ if (rewardToAdd > 0 && appState.pair.pairId) {
 
        {screen === "menu" && (
   <MainMenu
-    points={appState.points}
-    user={user}
-    pairLevel={getPairLevelInfo(appState.pair.totalPoints || 0)}
+  points={appState.points}
+  user={user}
+  pairLevel={getPairLevelInfo(animatedPairPoints)}
     onNavigate={(next) => {
       if (
         next === "polls" &&
@@ -7898,6 +7957,7 @@ if (rewardToAdd > 0 && appState.pair.pairId) {
     user={user}
     pair={appState.pair}
     points={appState.points}
+    pairLevel={getPairLevelInfo(animatedPairPoints)}
     pairPollAnswers={appState.pairPollAnswers}
     onBack={() => setScreen("menu")}
     onOpenInvite={() => setScreen("pair-invite")}
