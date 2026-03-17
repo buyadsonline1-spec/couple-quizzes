@@ -3924,7 +3924,9 @@ function loadState(): AppState {
 },
 
 
-
+lastDailyBonusPopupDate:
+  parsed.lastDailyBonusPopupDate ??
+  DEFAULT_STATE.lastDailyBonusPopupDate,
 
 
   dailyBonus: {
