@@ -6769,9 +6769,10 @@ const handleClaimWeeklyTopReward = async () => {
 };
 
 await refreshPairData({
-  user,
-  setAppState,
-})
+    user,
+    setAppState,
+  });
+};
 
 
 const syncWeeklyPairLeaderboard = async (nextState: AppState, currentUser?: TgUser | null) => {
