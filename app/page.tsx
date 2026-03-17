@@ -2,6 +2,7 @@
 
 import { CSSProperties, useEffect, useMemo, useState } from "react";
 import { supabase } from "@/lib/supabase";
+import confetti from "canvas-confetti";
 
 declare global {
   interface Window {
@@ -464,6 +465,41 @@ const TESTS: TestDefinition[] = [
     ],
   },
 ];
+
+function launchLevelConfetti() {
+  confetti({
+  particleCount: 120,
+  spread: 90,
+  origin: { y: 0.6 },
+});
+
+  const duration = 1800;
+  const end = Date.now() + duration;
+
+  const colors = ["#ff6ec7", "#6b46ff", "#ffd166", "#5ddcff"];
+
+  (function frame() {
+    confetti({
+      particleCount: 6,
+      angle: 60,
+      spread: 70,
+      origin: { x: 0 },
+      colors,
+    });
+
+    confetti({
+      particleCount: 6,
+      angle: 120,
+      spread: 70,
+      origin: { x: 1 },
+      colors,
+    });
+
+    if (Date.now() < end) {
+      requestAnimationFrame(frame);
+    }
+  })();
+}
 
 function createPollQuestions(theme: string) {
   const scaleOptions = [
@@ -7287,6 +7323,13 @@ const [weeklyPairLeaderboard, setWeeklyPairLeaderboard] = useState<WeeklyPairLea
   const [claimableDay, setClaimableDay] = useState(1);
   const [bonusClaimAvailable, setBonusClaimAvailable] = useState(true);
   const [showLevelUp, setShowLevelUp] = useState(false);
+
+  useEffect(() => {
+  if (showLevelUp) {
+    launchLevelConfetti();
+  }
+}, [showLevelUp]);
+
 const [levelUpData, setLevelUpData] = useState<{ level: number; title: string } | null>(null);
 const FREE_POLLS_LIMIT = 3;
 
