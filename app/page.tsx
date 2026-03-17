@@ -227,10 +227,9 @@ type PairMember = {
 
 type PairState = {
   pairId: string | null;
-  inviteCode: string | null;
-  partner: PairMember | null;
-  createdByTelegramId: number | null;
-  totalPoints: number;
+  partnerId: number | null;
+  level: number;
+  streak: number;
 };
 
 type DailyPairQuestion = {
@@ -1889,6 +1888,13 @@ const PAIR_LEVELS = [
   { level: 7, title: "Soulmates", points: 10000 },
 ];
 
+const STREAK_BONUSES = [
+  { days: 3, points: 100 },
+  { days: 5, points: 200 },
+  { days: 10, points: 500 },
+  { days: 15, points: 750 },
+];
+
 
 const REWARD_CATEGORIES: RewardCategory[] = [
   {
@@ -2108,6 +2114,11 @@ const DEFAULT_STATE: AppState = {
     avatar: null,
   },
 };
+
+function getStreakBonus(streak: number): number {
+  const reward = STREAK_BONUSES.find((b) => b.days === streak);
+  return reward ? reward.points : 0;
+}
 
 function getScaleResult(totalScore: number, maxScore: number): TestResult {
   const ratio = totalScore / maxScore;
@@ -2943,43 +2954,70 @@ function DailyPairQuestionScreen({
       return;
     }
 
-    try {
-      setSaving(true);
+   try {
+  setSaving(true);
 
-      await saveDailyPairAnswer({
+  await saveDailyPairAnswer({
+    pairId: pair.pairId,
+    date: today,
+    questionId: question.id,
+    telegramId: user.id,
+    answerIndex,
+  });
+
+  const rows = await loadDailyPairAnswersForDate({
+    pairId: pair.pairId,
+    date: today,
+  });
+
+  setTodayAnswers(
+    rows.map((row: any) => ({
+      telegram_id: Number(row.telegram_id),
+      question_id: String(row.question_id),
+      answer_index: Number(row.answer_index),
+    }))
+  );
+
+  if (rows.length >= 2) {
+    const history = await loadDailyPairHistory(pair.pairId);
+    const streakData = calculateDailyPairStreak(history);
+
+    const previousMilestones = appState.dailyPairStreak.reachedMilestones;
+    const newMilestone = streakData.reachedMilestones.find(
+      (m) => !previousMilestones.includes(m)
+    );
+
+    const bonus = newMilestone ? getStreakBonus(newMilestone) : 0;
+
+    let nextPairState = pair;
+
+    if (bonus > 0) {
+      await updatePairPoints({
         pairId: pair.pairId,
-        date: today,
-        questionId: question.id,
-        telegramId: user.id,
-        answerIndex,
+        delta: bonus,
       });
 
-      const rows = await loadDailyPairAnswersForDate({
-        pairId: pair.pairId,
-        date: today,
-      });
-
-      setTodayAnswers(
-        rows.map((row: any) => ({
-          telegram_id: Number(row.telegram_id),
-          question_id: String(row.question_id),
-          answer_index: Number(row.answer_index),
-        }))
-      );
-
-      if (pair.pairId) {
-        const history = await loadDailyPairHistory(pair.pairId);
-        const streak = calculateDailyPairStreak(history);
-
-        setAppState((prev) => ({
-          ...prev,
-          dailyPairHistory: history,
-          dailyPairStreak: streak,
-        }));
+      if (user?.id) {
+        nextPairState = await loadPairStateForUser(user.id);
       }
-    } finally {
-      setSaving(false);
     }
+
+    setAppState((prev) => ({
+      ...prev,
+      pair: nextPairState,
+      points: nextPairState.totalPoints || 0,
+      dailyPairHistory: history,
+      dailyPairStreak: streakData,
+    }));
+
+    if (bonus > 0 && newMilestone) {
+      alert(`🔥 Серия ${newMilestone} дней!\n+${bonus} очков`);
+    }
+  }
+} finally {
+  setSaving(false);
+}
+   
   }
 
   return (
@@ -3037,60 +3075,76 @@ function DailyPairQuestionScreen({
             marginTop: 12,
           }}
         >
-          {[3, 5, 10, 15].map((milestone) => {
-            const reached = appState.dailyPairStreak.reachedMilestones.includes(milestone);
+          {[
+  { days: 3, points: 100 },
+  { days: 5, points: 200 },
+  { days: 10, points: 500 },
+  { days: 15, points: 750 },
+].map(({ days, points }) => {
+  const reached = appState.dailyPairStreak.reachedMilestones.includes(days);
 
-            return (
-              <div
-                key={milestone}
-                style={{
-                  padding: "12px 10px",
-                  borderRadius: 16,
-                  textAlign: "center",
-                  background: reached
-                    ? "linear-gradient(135deg, rgba(255,230,240,0.95), rgba(255,255,255,0.9))"
-                    : "rgba(255,255,255,0.18)",
-                  border: reached
-                    ? "2px solid rgba(255,120,190,0.35)"
-                    : "1px solid rgba(255,255,255,0.20)",
-                  color: "#241b40",
-                }}
-              >
-                <div style={{ fontSize: 20 }}>
-                  {reached
-                    ? milestone === 3
-                      ? "🔥"
-                      : milestone === 5
-                      ? "🏆"
-                      : milestone === 10
-                      ? "💎"
-                      : "👑"
-                    : "▫️"}
-                </div>
+  return (
+    <div
+      key={days}
+      style={{
+        padding: "12px 10px",
+        borderRadius: 16,
+        textAlign: "center",
+        background: reached
+          ? "linear-gradient(135deg, rgba(255,230,240,0.95), rgba(255,255,255,0.9))"
+          : "rgba(255,255,255,0.18)",
+        border: reached
+          ? "2px solid rgba(255,120,190,0.35)"
+          : "1px solid rgba(255,255,255,0.20)",
+        color: "#241b40",
+      }}
+    >
+      <div style={{ fontSize: 20 }}>
+        {reached
+          ? days === 3
+            ? "🔥"
+            : days === 5
+            ? "🏆"
+            : days === 10
+            ? "💎"
+            : "👑"
+          : "▫️"}
+      </div>
 
-                <div
-                  style={{
-                    marginTop: 6,
-                    fontSize: 14,
-                    fontWeight: 900,
-                  }}
-                >
-                  {milestone}
-                </div>
+      <div
+        style={{
+          marginTop: 6,
+          fontSize: 14,
+          fontWeight: 900,
+        }}
+      >
+        {days}
+      </div>
 
-                <div
-                  style={{
-                    marginTop: 2,
-                    fontSize: 11,
-                    color: "#5a5378",
-                    fontWeight: 700,
-                  }}
-                >
-                  дней
-                </div>
-              </div>
-            );
-          })}
+      <div
+        style={{
+          marginTop: 2,
+          fontSize: 11,
+          color: "#5a5378",
+          fontWeight: 700,
+        }}
+      >
+        дней
+      </div>
+
+      <div
+        style={{
+          marginTop: 4,
+          fontSize: 11,
+          color: "#6b46ff",
+          fontWeight: 900,
+        }}
+      >
+        +{points}
+      </div>
+    </div>
+  );
+})}
         </div>
       </div>
 
@@ -3248,15 +3302,26 @@ function DailyPairQuestionScreen({
             </div>
 
             <div
-              style={{
-                marginTop: 6,
-                fontSize: 14,
-                color: "#4d466c",
-                lineHeight: 1.45,
-              }}
-            >
-              Вы отвечаете вместе уже {appState.dailyPairStreak.current} дней подряд 💞
-            </div>
+  style={{
+    marginTop: 6,
+    fontSize: 14,
+    color: "#4d466c",
+    lineHeight: 1.45,
+  }}
+>
+  Вы отвечаете вместе уже {appState.dailyPairStreak.current} дней подряд 💞
+</div>
+
+<div
+  style={{
+    marginTop: 8,
+    fontSize: 18,
+    fontWeight: 900,
+    color: "#6b46ff",
+  }}
+>
+  +{getStreakBonus(appState.dailyPairStreak.current)} очков
+</div>
           </div>
         )}
 
