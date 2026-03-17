@@ -4126,14 +4126,7 @@ function MenuButton({
   );
 }
 
-<div
-  style={{
-    display: "grid",
-    gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
-    gap: 8,
-  }}
->
-</div>
+
 
 function MainMenu({
   points,
@@ -6382,37 +6375,7 @@ async function loadPairStateForUser(telegramId: number): Promise<PairState> {
   totalPoints: 0,
 };
 
-async function updatePairPoints(params: {
-  pairId: string;
-  delta: number;
-}): Promise<number | null> {
-  const { pairId, delta } = params;
 
-  const { data: pair, error: readError } = await supabase
-    .from("pairs")
-    .select("total_points")
-    .eq("id", pairId)
-    .single();
-
-  if (readError || !pair) {
-    console.error("updatePairPoints read error:", readError);
-    return null;
-  }
-
-  const nextPoints = Math.max(0, (pair.total_points ?? 0) + delta);
-
-  const { error: updateError } = await supabase
-    .from("pairs")
-    .update({ total_points: nextPoints })
-    .eq("id", pairId);
-
-  if (updateError) {
-    console.error("updatePairPoints update error:", updateError);
-    return null;
-  }
-
-  return nextPoints;
-}
 
   const { data: profile, error: profileError } = await supabase
     .from("profiles")
@@ -6764,6 +6727,7 @@ setAppState((prev) => ({
   dailyPairStreak: dailyPairStreakFromDb,
   referrals: referralStats,
 }));
+}
 
 
 async function joinPairByInviteCode(
