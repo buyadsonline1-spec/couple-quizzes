@@ -4802,10 +4802,12 @@ function GamesScreen({
   completedGameIds,
   onBack,
   onCompleteGame,
+  onBonusPoints,
 }: {
   completedGameIds: string[];
   onBack: () => void;
   onCompleteGame: (game: Game, score: number) => void;
+  onBonusPoints: (points: number) => void;
 }) {
   const [activeGameId, setActiveGameId] = useState<string | null>(null);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
@@ -4970,12 +4972,7 @@ if (activeGame?.id === "never-have-i-ever") {
       reward={activeGame.reward}
       onBack={() => setActiveGameId(null)}
       onFinish={handleLoveQuestionFinish}
-      onBonus={(points) => {
-        setAppState((prev) => ({
-          ...prev,
-          points: prev.points + points,
-        }));
-      }}
+      onBonus={onBonusPoints}
     />
   );
 }
@@ -8361,13 +8358,19 @@ if (nextPoints > previousPoints) {
   />
 )}
 
-        {screen === "games" && (
-          <GamesScreen
-            completedGameIds={appState.completedGameIds}
-            onBack={() => setScreen("menu")}
-            onCompleteGame={handleCompleteGame}
-          />
-        )}
+       {screen === "games" && (
+  <GamesScreen
+    completedGameIds={appState.completedGameIds}
+    onBack={() => setScreen("menu")}
+    onCompleteGame={handleCompleteGame}
+    onBonusPoints={(points) => {
+      setAppState((prev) => ({
+        ...prev,
+        points: prev.points + points,
+      }));
+    }}
+  />
+)}
 
               {screen === "tests" && (
           <TestsScreen
