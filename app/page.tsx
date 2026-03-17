@@ -111,6 +111,13 @@ type AppState = {
     girl: DailyPairAnswerState;
   };
 
+  dailyPairHistory: Array<{
+  date: string;
+  questionId: string;
+  boyAnswerIndex: number | null;
+  girlAnswerIndex: number | null;
+}>;
+
   profile: {
     displayName: string;
     avatar: string | null;
@@ -2083,6 +2090,8 @@ const DEFAULT_STATE: AppState = {
     },
   },
 
+  dailyPairHistory: [],
+
   profile: {
     displayName: "",
     avatar: null,
@@ -2860,10 +2869,14 @@ function PairInviteScreen({
 }
 
 function DailyPairQuestionScreen({
+  user,
+  pair,
   appState,
   setAppState,
   onBack,
 }: {
+  user: TgUser | null;
+  pair: PairState;
   appState: AppState;
   setAppState: React.Dispatch<React.SetStateAction<AppState>>;
   onBack: () => void;
@@ -2871,30 +2884,89 @@ function DailyPairQuestionScreen({
   const today = getTodayLocalDateString();
   const question = getDailyPairQuestionForToday();
 
-  const boyToday =
-    appState.dailyPair.boy.date === today &&
-    appState.dailyPair.boy.questionId === question.id;
+  const [saving, setSaving] = useState(false);
+  const [todayAnswers, setTodayAnswers] = useState<
+    Array<{
+      telegram_id: number;
+      question_id: string;
+      answer_index: number;
+    }>
+  >([]);
 
-  const girlToday =
-    appState.dailyPair.girl.date === today &&
-    appState.dailyPair.girl.questionId === question.id;
+  useEffect(() => {
+    async function loadTodayAnswers() {
+      if (!pair.pairId) return;
 
-  const bothAnswered = boyToday && girlToday;
-  const boyAnswer = appState.dailyPair.boy.answerIndex;
-  const girlAnswer = appState.dailyPair.girl.answerIndex;
+      const rows = await loadDailyPairAnswersForDate({
+        pairId: pair.pairId,
+        date: today,
+      });
 
-  function saveAnswer(target: "boy" | "girl", answerIndex: number) {
-    setAppState((prev) => ({
-      ...prev,
-      dailyPair: {
-        ...prev.dailyPair,
-        [target]: {
-          date: today,
-          questionId: question.id,
-          answerIndex,
-        },
-      },
-    }));
+      setTodayAnswers(
+        rows.map((row: any) => ({
+          telegram_id: Number(row.telegram_id),
+          question_id: String(row.question_id),
+          answer_index: Number(row.answer_index),
+        }))
+      );
+    }
+
+    loadTodayAnswers();
+  }, [pair.pairId, today]);
+
+  const currentUserId = user?.id ?? null;
+  const myAnswer = todayAnswers.find((row) => row.telegram_id === currentUserId) ?? null;
+  const partnerAnswer =
+    todayAnswers.find((row) => row.telegram_id !== currentUserId) ?? null;
+
+  const bothAnswered = !!myAnswer && !!partnerAnswer;
+
+  async function saveAnswer(answerIndex: number) {
+    if (!pair.pairId || !user?.id) {
+      alert("Сначала нужно подключить пару");
+      return;
+    }
+
+    if (myAnswer) {
+      alert("Ты уже ответил(а) на вопрос дня");
+      return;
+    }
+
+    try {
+      setSaving(true);
+
+      await saveDailyPairAnswer({
+        pairId: pair.pairId,
+        date: today,
+        questionId: question.id,
+        telegramId: user.id,
+        answerIndex,
+      });
+
+      const rows = await loadDailyPairAnswersForDate({
+        pairId: pair.pairId,
+        date: today,
+      });
+
+      setTodayAnswers(
+        rows.map((row: any) => ({
+          telegram_id: Number(row.telegram_id),
+          question_id: String(row.question_id),
+          answer_index: Number(row.answer_index),
+        }))
+      );
+
+      if (pair.pairId) {
+        const history = await loadDailyPairHistory(pair.pairId);
+
+        setAppState((prev) => ({
+          ...prev,
+          dailyPairHistory: history,
+        }));
+      }
+    } finally {
+      setSaving(false);
+    }
   }
 
   return (
@@ -2904,7 +2976,7 @@ function DailyPairQuestionScreen({
           Вопрос дня 💞
         </div>
         <div style={{ marginTop: 4, color: "#3a345c", fontSize: 13, lineHeight: 1.4 }}>
-          Оба отвечают на один и тот же вопрос, а потом можно сравнить ответы.
+          Вы оба отвечаете на один и тот же вопрос. Когда ответят оба — можно сравнить результат.
         </div>
       </div>
 
@@ -2923,16 +2995,17 @@ function DailyPairQuestionScreen({
           {question.text}
         </div>
 
-        {!boyToday && (
+        {!myAnswer ? (
           <div style={{ marginTop: 12 }}>
             <div style={{ fontWeight: 800, color: "#2c2647", marginBottom: 8 }}>
-              Ответ парня
+              Твой ответ
             </div>
             <div style={{ display: "grid", gap: 8 }}>
               {question.options.map((option, index) => (
                 <button
-                  key={`boy-${index}`}
-                  onClick={() => saveAnswer("boy", index)}
+                  key={index}
+                  onClick={() => saveAnswer(index)}
+                  disabled={saving}
                   style={{
                     border: "1px solid rgba(255,255,255,0.28)",
                     borderRadius: 16,
@@ -2942,42 +3015,27 @@ function DailyPairQuestionScreen({
                     textAlign: "left",
                     fontSize: 15,
                     fontWeight: 700,
-                    cursor: "pointer",
+                    cursor: saving ? "not-allowed" : "pointer",
+                    opacity: saving ? 0.6 : 1,
                   }}
                 >
-                  👦 {option}
+                  {option}
                 </button>
               ))}
             </div>
           </div>
-        )}
-
-        {!girlToday && (
-          <div style={{ marginTop: 12 }}>
-            <div style={{ fontWeight: 800, color: "#2c2647", marginBottom: 8 }}>
-              Ответ девушки
-            </div>
-            <div style={{ display: "grid", gap: 8 }}>
-              {question.options.map((option, index) => (
-                <button
-                  key={`girl-${index}`}
-                  onClick={() => saveAnswer("girl", index)}
-                  style={{
-                    border: "1px solid rgba(255,255,255,0.28)",
-                    borderRadius: 16,
-                    padding: "12px 14px",
-                    background: "rgba(255,255,255,0.20)",
-                    color: "#1f1d3a",
-                    textAlign: "left",
-                    fontSize: 15,
-                    fontWeight: 700,
-                    cursor: "pointer",
-                  }}
-                >
-                  👧 {option}
-                </button>
-              ))}
-            </div>
+        ) : (
+          <div
+            style={{
+              marginTop: 12,
+              padding: "12px 14px",
+              borderRadius: 14,
+              background: "rgba(255,255,255,0.20)",
+              color: "#2c2647",
+              fontWeight: 700,
+            }}
+          >
+            Ты уже ответил(а): {question.options[myAnswer.answer_index]}
           </div>
         )}
 
@@ -2991,7 +3049,7 @@ function DailyPairQuestionScreen({
               fontWeight: 700,
             }}
           >
-            Парень: {boyToday ? "ответил" : "ещё не ответил"}
+            Ты: {myAnswer ? "ответил(а)" : "ещё не ответил(а)"}
           </div>
 
           <div
@@ -3003,7 +3061,7 @@ function DailyPairQuestionScreen({
               fontWeight: 700,
             }}
           >
-            Девушка: {girlToday ? "ответила" : "ещё не ответила"}
+            Партнёр: {partnerAnswer ? "ответил(а)" : "ещё не ответил(а)"}
           </div>
         </div>
 
@@ -3014,26 +3072,77 @@ function DailyPairQuestionScreen({
               padding: "14px 16px",
               borderRadius: 16,
               background:
-                boyAnswer === girlAnswer
+                myAnswer.answer_index === partnerAnswer.answer_index
                   ? "rgba(255,255,255,0.34)"
                   : "rgba(255,255,255,0.24)",
               color: "#241b40",
             }}
           >
             <div style={{ fontWeight: 900, fontSize: 16 }}>
-              {boyAnswer === girlAnswer
+              {myAnswer.answer_index === partnerAnswer.answer_index
                 ? "Вы ответили одинаково 💘"
                 : "Ответы отличаются ✨"}
             </div>
 
             <div style={{ marginTop: 8, fontSize: 14, lineHeight: 1.45 }}>
-              👦 {question.options[boyAnswer ?? 0]}
+              Ты: {question.options[myAnswer.answer_index]}
               <br />
-              👧 {question.options[girlAnswer ?? 0]}
+              Партнёр: {question.options[partnerAnswer.answer_index]}
             </div>
           </div>
         )}
       </div>
+
+      {appState.dailyPairHistory.length > 0 && (
+        <div style={{ ...cardBaseStyle(), padding: 14 }}>
+          <div style={{ fontSize: 18, fontWeight: 900, color: "#1f1d3a" }}>
+            История
+          </div>
+
+          <div style={{ display: "grid", gap: 8, marginTop: 12 }}>
+            {appState.dailyPairHistory.slice(0, 7).map((item) => {
+              const historyQuestion =
+                DAILY_PAIR_QUESTIONS.find((q) => q.id === item.questionId) || null;
+
+              const same =
+                item.boyAnswerIndex !== null &&
+                item.girlAnswerIndex !== null &&
+                item.boyAnswerIndex === item.girlAnswerIndex;
+
+              return (
+                <div
+                  key={`${item.date}-${item.questionId}`}
+                  style={{
+                    padding: "12px 14px",
+                    borderRadius: 14,
+                    background: "rgba(255,255,255,0.22)",
+                  }}
+                >
+                  <div style={{ fontSize: 12, color: "#5a5378", fontWeight: 700 }}>
+                    {item.date}
+                  </div>
+
+                  <div
+                    style={{
+                      marginTop: 4,
+                      fontSize: 14,
+                      fontWeight: 800,
+                      color: "#1f1d3a",
+                      lineHeight: 1.35,
+                    }}
+                  >
+                    {historyQuestion?.text || item.questionId}
+                  </div>
+
+                  <div style={{ marginTop: 6, fontSize: 13, color: "#4d466c" }}>
+                    {same ? "Совпали 💘" : "Разные ответы ✨"}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       <button onClick={onBack} style={{ ...secondaryButtonStyle, marginTop: 0 }}>
         Назад в раздел «Пара»
@@ -3041,6 +3150,7 @@ function DailyPairQuestionScreen({
     </div>
   );
 }
+
 
 
 function getPersonalityResult(answerIndexes: number[]): TestResult {
@@ -3528,6 +3638,9 @@ function loadState(): AppState {
         DEFAULT_STATE.dailyPair.girl.answerIndex,
     },
   },
+
+  dailyPairHistory:
+  parsed.dailyPairHistory ?? DEFAULT_STATE.dailyPairHistory,
 
   profile: {
     displayName:
@@ -6274,6 +6387,143 @@ async function loadPairPollAnswers(pairId: string): Promise<Record<string, numbe
   return result;
 }
 
+async function saveDailyPairAnswer(params: {
+  pairId: string;
+  date: string;
+  questionId: string;
+  telegramId: number;
+  answerIndex: number;
+}) {
+  const { pairId, date, questionId, telegramId, answerIndex } = params;
+
+  const { error } = await supabase
+    .from("daily_pair_answers")
+    .upsert(
+      {
+        pair_id: pairId,
+        answer_date: date,
+        question_id: questionId,
+        telegram_id: telegramId,
+        answer_index: answerIndex,
+      },
+      { onConflict: "answer_date,telegram_id" }
+    );
+
+  if (error) {
+    console.error("saveDailyPairAnswer error:", error);
+  }
+}
+
+async function loadDailyPairAnswersForDate(params: {
+  pairId: string;
+  date: string;
+}) {
+  const { pairId, date } = params;
+
+  const { data, error } = await supabase
+    .from("daily_pair_answers")
+    .select("telegram_id, question_id, answer_index, created_at")
+    .eq("pair_id", pairId)
+    .eq("answer_date", date)
+    .order("created_at", { ascending: true });
+
+  if (error || !data) {
+    console.error("loadDailyPairAnswersForDate error:", error);
+    return [];
+  }
+
+  return data;
+}
+
+async function loadDailyPairHistory(pairId: string): Promise<
+  Array<{
+    date: string;
+    questionId: string;
+    boyAnswerIndex: number | null;
+    girlAnswerIndex: number | null;
+  }>
+> {
+  const { data, error } = await supabase
+    .from("daily_pair_answers")
+    .select("answer_date, question_id, telegram_id, answer_index, created_at")
+    .eq("pair_id", pairId)
+    .order("answer_date", { ascending: false })
+    .order("created_at", { ascending: true });
+
+  if (error || !data) {
+    console.error("loadDailyPairHistory error:", error);
+    return [];
+  }
+
+  const grouped = new Map<
+    string,
+    {
+      date: string;
+      questionId: string;
+      boyAnswerIndex: number | null;
+      girlAnswerIndex: number | null;
+    }
+  >();
+
+  for (const row of data) {
+    const key = String(row.answer_date);
+
+    if (!grouped.has(key)) {
+      grouped.set(key, {
+        date: String(row.answer_date),
+        questionId: String(row.question_id),
+        boyAnswerIndex: null,
+        girlAnswerIndex: null,
+      });
+    }
+
+    const item = grouped.get(key)!;
+
+    if (item.boyAnswerIndex === null) {
+      item.boyAnswerIndex = Number(row.answer_index);
+    } else if (item.girlAnswerIndex === null) {
+      item.girlAnswerIndex = Number(row.answer_index);
+    }
+  }
+
+  return Array.from(grouped.values());
+}
+
+async function refreshPairData(params: {
+  user: TgUser | null;
+  setAppState: React.Dispatch<React.SetStateAction<AppState>>;
+}) {
+  const { user, setAppState } = params;
+
+  if (!user?.id) return;
+
+  const nextPairState = await loadPairStateForUser(user.id);
+
+  let pairPollAnswersFromDb: Record<string, number[]> = {};
+let dailyPairHistoryFromDb: Array<{
+  date: string;
+  questionId: string;
+  boyAnswerIndex: number | null;
+  girlAnswerIndex: number | null;
+}> = [];
+
+if (nextPairState.pairId) {
+  pairPollAnswersFromDb = await loadPairPollAnswers(nextPairState.pairId);
+  dailyPairHistoryFromDb = await loadDailyPairHistory(nextPairState.pairId);
+}
+
+const referralStats = await loadReferralStats(user.id);
+
+setAppState((prev) => ({
+  ...prev,
+  pair: nextPairState,
+  points: nextPairState.totalPoints || 0,
+  pairPollAnswers: pairPollAnswersFromDb,
+  dailyPairHistory: dailyPairHistoryFromDb,
+  referrals: referralStats,
+}));
+}
+
 
 async function joinPairByInviteCode(
   telegramId: number,
@@ -6480,6 +6730,11 @@ const handleCompleteGame = (game: Game, score: number) => {
     setShowLevelUp(true);
   }
 
+  await refreshPairData({
+  user,
+  setAppState,
+});
+
   if (game.id !== "90-questions") {
     setScreen("menu");
   }
@@ -6512,6 +6767,11 @@ const handleClaimWeeklyTopReward = async () => {
   setAppState(nextState);
   await syncWeeklyPairLeaderboard(nextState, user);
 };
+
+await refreshPairData({
+  user,
+  setAppState,
+})
 
 
 const syncWeeklyPairLeaderboard = async (nextState: AppState, currentUser?: TgUser | null) => {
@@ -6559,9 +6819,17 @@ const handleJoinByCode = async (inviteCode: string) => {
 };
 
   setAppState(nextStateAfterJoin);
-  alert("Пара успешно подключена 💕");
-  setScreen("pair");
+
+await refreshPairData({
+  user: actualUser,
+  setAppState,
+});
+
+alert("Пара успешно подключена 💕");
+setScreen("pair");
 };
+
+
 
 const handleCreateInvite = async () => {
   const actualUser = getTelegramUserSafe(user);
@@ -6624,11 +6892,16 @@ console.log("CREATE PAIR ERROR:", createPairError);
 
   const nextPairState = await loadPairStateForUser(actualUser.id);
 
-  setAppState((prev) => ({
+ setAppState((prev) => ({
   ...prev,
   pair: nextPairState,
   points: nextPairState.totalPoints || 0,
 }));
+
+await refreshPairData({
+  user: actualUser,
+  setAppState,
+});
 };
 
 
@@ -6746,6 +7019,18 @@ if (startParam?.startsWith("ref_")) {
     });
   }
 }
+
+useEffect(() => {
+  const screensToRefresh: Screen[] = ["menu", "pair", "profile", "rewards", "top"];
+
+  if (!user?.id) return;
+  if (!screensToRefresh.includes(screen)) return;
+
+  refreshPairData({
+    user,
+    setAppState,
+  });
+}, [screen, user]);
 
 const referralStats = await loadReferralStats(currentUser.id!);
 
@@ -6916,6 +7201,11 @@ if (rewardToAdd > 0 && appState.pair.pairId) {
     setShowLevelUp(true);
   }
 
+  await refreshPairData({
+  user,
+  setAppState,
+});
+
   setScreen("menu");
 };
 
@@ -6969,6 +7259,11 @@ if (rewardToAdd > 0 && appState.pair.pairId) {
     setShowLevelUp(true);
   }
 
+  await refreshPairData({
+  user,
+  setAppState,
+});
+
   setScreen("menu");
 };
 
@@ -7019,6 +7314,11 @@ if (rewardToAdd > 0 && appState.pair.pairId) {
     },
     wonRewards: result ? [...prev.wonRewards, result] : prev.wonRewards,
   }));
+
+  await refreshPairData({
+  user,
+  setAppState,
+});
 
   return result;
 };
@@ -7200,6 +7500,8 @@ if (rewardToAdd > 0 && appState.pair.pairId) {
 
 {screen === "daily-pair" && (
   <DailyPairQuestionScreen
+    user={user}
+    pair={appState.pair}
     appState={appState}
     setAppState={setAppState}
     onBack={() => setScreen("pair")}
