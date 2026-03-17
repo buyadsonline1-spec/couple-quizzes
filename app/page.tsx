@@ -3109,38 +3109,37 @@ function DailyPairQuestionScreen({
           {question.text}
         </div>
 
-        {!myAnswer ? (
-          <div style={{ marginTop: 12 }}>
-            <div style={{ fontWeight: 800, color: "#2c2647", marginBottom: 8 }}>
-              Твой ответ
-            </div>
-            <div style={{ display: "grid", gap: 8 }}>
-              {question.options.map((option, index) => (
-                <button
-                  key={index}
-                  onClick={() => saveAnswer(index)}
-                  disabled={saving}
-                  style={{
-                    border: "1px solid rgba(255,255,255,0.28)",
-                    borderRadius: 16,
-                    padding: "12px 14px",
-                    background: "rgba(255,255,255,0.20)",
-                    color: "#1f1d3a",
-                    textAlign: "left",
-                    fontSize: 15,
-                    fontWeight: 700,
-                    cursor: saving ? "not-allowed" : "pointer",
-                    opacity: saving ? 0.6 : 1,
-                  }}
-                >
-                  {option}
-                </button>
-              ))}
-            </div>
-          </div>
-        ) : (
-          
-        )}
+        {!myAnswer && (
+  <div style={{ marginTop: 12 }}>
+    <div style={{ fontWeight: 800, color: "#2c2647", marginBottom: 8 }}>
+      Твой ответ
+    </div>
+
+    <div style={{ display: "grid", gap: 8 }}>
+      {question.options.map((option, index) => (
+        <button
+          key={index}
+          onClick={() => saveAnswer(index)}
+          disabled={saving}
+          style={{
+            border: "1px solid rgba(255,255,255,0.28)",
+            borderRadius: 16,
+            padding: "12px 14px",
+            background: "rgba(255,255,255,0.20)",
+            color: "#1f1d3a",
+            textAlign: "left",
+            fontSize: 15,
+            fontWeight: 700,
+            cursor: saving ? "not-allowed" : "pointer",
+            opacity: saving ? 0.6 : 1,
+          }}
+        >
+          {option}
+        </button>
+      ))}
+    </div>
+  </div>
+)}
 
         <div style={{ display: "grid", gap: 8, marginTop: 12 }}>
           <div
@@ -3212,7 +3211,6 @@ function DailyPairQuestionScreen({
       <br />
       Партнёр: {question.options[partnerAnswer.answer_index]}
     </div>
-  </div>
   </div>
 )}
 
