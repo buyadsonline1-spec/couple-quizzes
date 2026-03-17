@@ -1730,54 +1730,15 @@ const POLLS: Poll[] = [
 
 
 const GAMES: Game[] = [
-  {
-    id: "guess-partner",
-    title: "Угадай партнёра",
-    description: "Попробуй угадать, что выбрал бы твой партнёр в разных ситуациях.",
-    reward: 10,
-    questions: [
-      {
-        id: "g1",
-        text: "Что партнёр, скорее всего, выберет на вечер?",
-        options: [
-          "Фильм дома",
-          "Прогулку вдвоём",
-          "Ресторан",
-          "Сон и отдых",
-        ],
-        correctIndex: 1,
-      },
-      {
-        id: "g2",
-        text: "Какой подарок партнёру понравится больше?",
-        options: [
-          "Сюрприз своими руками",
-          "Практичная вещь",
-          "Сладости",
-          "Сертификат",
-        ],
-        correctIndex: 0,
-      },
-      {
-        id: "g3",
-        text: "Что партнёр выберет из еды?",
-        options: ["Роллы", "Бургер", "Пиццу", "Пасту"],
-        correctIndex: 0,
-      },
-      {
-        id: "g4",
-        text: "Какой формат отдыха ближе партнёру?",
-        options: ["Домашний уют", "Поездка", "Вечеринка", "Спорт"],
-        correctIndex: 1,
-      },
-      {
-        id: "g5",
-        text: "Что партнёр ценит сильнее всего?",
-        options: ["Внимание", "Юмор", "Заботу", "Честность"],
-        correctIndex: 2,
-      },
-    ],
-  },
+
+{
+  id: "never-have-i-ever",
+  title: "Я никогда не...",
+  description:
+    "Правила просты: скажите что-то, чего вы никогда в жизни не делали, и если ваш партнёр делал это, он выполняет задание, написанное на карточке!",
+  reward: 50,
+  questions: [],
+},
 
   {
     id: "bottle",
@@ -5003,6 +4964,16 @@ function GamesScreen({
   );
 }
 
+if (activeGame?.id === "never-have-i-ever") {
+  return (
+    <NeverHaveIEverGameScreen
+      reward={activeGame.reward}
+      onBack={() => setActiveGameId(null)}
+      onFinish={handleLoveQuestionFinish}
+    />
+  );
+}
+
   if (finished && activeGame) {
     const total = activeGame.questions.length;
     const percent = Math.round((correctAnswers / total) * 100);
@@ -5510,6 +5481,143 @@ function LoveQuestionsGameScreen({
             <div style={{ marginTop: 10, color: "#4b446a", lineHeight: 1.45 }}>
               Ты прошёл(а) весь текущий набор вопросов.
             </div>
+          </>
+        )}
+      </div>
+
+      <button onClick={onBack} style={secondaryButtonStyle}>
+        Назад в игры
+      </button>
+    </div>
+  );
+}
+
+function NeverHaveIEverGameScreen({
+  reward,
+  onBack,
+  onFinish,
+}: {
+  reward: number;
+  onBack: () => void;
+  onFinish: () => void;
+}) {
+  const cards = [
+    {
+      text: "Я ни разу не играл(а) в карты на раздевание",
+      task: "если партнёр делал это — ему пора пыхтеть 😏",
+    },
+    {
+      text: "Я никогда не писал(а) бывшему первым(ой)",
+      task: "если партнёр делал это — пусть расскажет неловкую историю",
+    },
+    {
+      text: "Я никогда не ревновал(а) без причины",
+      task: "если партнёр делал это — обнимает тебя 20 секунд",
+    },
+    {
+      text: "Я никогда не влюблялся(ась) с первого взгляда",
+      task: "если партнёр делал это — делает тебе комплимент",
+    },
+    {
+      text: "Я никогда не флиртовал(а) ради шутки",
+      task: "если партнёр делал это — выполняет твоё мини-желание",
+    },
+  ];
+
+  const [index, setIndex] = useState(0);
+  const [done, setDone] = useState(false);
+
+  const card = cards[index];
+
+  function handleComplete() {
+    if (done) return;
+    setDone(true);
+    onFinish();
+  }
+
+  function handleNext() {
+    setIndex((prev) => (prev + 1) % cards.length);
+    setDone(false);
+  }
+
+  return (
+    <div style={{ padding: 16, display: "grid", gap: 14 }}>
+      <div style={{ ...cardBaseStyle(), padding: 18 }}>
+        <div style={{ fontSize: 28, fontWeight: 900, color: "#1f1d3a" }}>
+          Я никогда не...
+        </div>
+        <div style={{ marginTop: 8, color: "#3a345c", fontSize: 15, lineHeight: 1.45 }}>
+          Правила просты: скажите что-то, чего вы никогда в жизни не делали, и если ваш партнёр делал это, он выполняет задание, написанное на карточке.
+        </div>
+        <div
+          style={{
+            marginTop: 12,
+            padding: "12px 14px",
+            borderRadius: 16,
+            background: "rgba(255,255,255,0.24)",
+            color: "#2c2647",
+            fontWeight: 800,
+          }}
+        >
+          Награда за карточку: +{reward} очков
+        </div>
+      </div>
+
+      <div style={{ ...cardBaseStyle(), padding: 18 }}>
+        <div
+          style={{
+            fontSize: 22,
+            fontWeight: 800,
+            color: "#211b3b",
+            lineHeight: 1.45,
+          }}
+        >
+          {card.text}
+        </div>
+
+        <div
+          style={{
+            marginTop: 16,
+            padding: "14px 16px",
+            borderRadius: 18,
+            background: "rgba(255,255,255,0.26)",
+            color: "#241b40",
+            fontSize: 17,
+            fontWeight: 800,
+            lineHeight: 1.45,
+          }}
+        >
+          {card.task}
+        </div>
+
+        {!done ? (
+          <button
+            onClick={handleComplete}
+            style={{ ...primaryButtonStyle, width: "100%", marginTop: 16 }}
+          >
+            Карточка сыграна
+          </button>
+        ) : (
+          <>
+            <div
+              style={{
+                marginTop: 14,
+                padding: "12px 14px",
+                borderRadius: 16,
+                background: "rgba(255,255,255,0.24)",
+                color: "#2c2647",
+                fontWeight: 800,
+              }}
+            >
+              Готово. +{reward} очков начислено ✅
+            </div>
+
+            <button
+              onClick={handleNext}
+              style={{ ...primaryButtonStyle, width: "100%", marginTop: 14 }}
+            >
+              Следующая карточка
+            </button>
           </>
         )}
       </div>
