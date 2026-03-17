@@ -6826,6 +6826,7 @@ await refreshPairData({
   setAppState,
 });
 
+
 alert("Пара успешно подключена 💕");
 setScreen("pair");
 };
@@ -7021,17 +7022,7 @@ if (startParam?.startsWith("ref_")) {
   }
 }
 
-useEffect(() => {
-  const screensToRefresh: Screen[] = ["menu", "pair", "profile", "rewards", "top"];
 
-  if (!user?.id) return;
-  if (!screensToRefresh.includes(screen)) return;
-
-  refreshPairData({
-    user,
-    setAppState,
-  });
-}, [screen, user]);
 
 const referralStats = await loadReferralStats(currentUser.id!);
 
@@ -7069,7 +7060,7 @@ setAppState((prev) => ({
 }));
 
 
-const FREE_POLLS_LIMIT = 3;
+
 
     const weekKey = getCurrentWeekKey();
 const leaderboardRows = await loadWeeklyPairLeaderboard(weekKey);
@@ -7083,7 +7074,17 @@ setWeeklyPairLeaderboard(leaderboardRows);
 
 
 
+useEffect(() => {
+  const screensToRefresh: Screen[] = ["menu", "pair", "profile", "rewards", "top"];
 
+  if (!user?.id) return;
+  if (!screensToRefresh.includes(screen)) return;
+
+  refreshPairData({
+    user,
+    setAppState,
+  });
+}, [screen, user]);
 
 
 
