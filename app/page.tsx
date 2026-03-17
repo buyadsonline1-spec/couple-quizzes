@@ -5501,6 +5501,10 @@ function NeverHaveIEverGameScreen({
   onBack: () => void;
   onFinish: () => void;
 }) {
+
+  const [flipped, setFlipped] = useState(false);
+const [rewardClaimed, setRewardClaimed] = useState(false);
+
   const cards = [
   {
     text: "Я никогда не играл(а) в карты на раздевание",
@@ -5773,7 +5777,7 @@ const [shuffledCards, setShuffledCards] = useState<typeof cards>([]);
     onFinish();
   }
 
-  function handleNext() {
+ function handleNext() {
   if (index + 1 >= shuffledCards.length) {
     const newShuffle = shuffle(cards);
     setShuffledCards(newShuffle);
@@ -5781,7 +5785,17 @@ const [shuffledCards, setShuffledCards] = useState<typeof cards>([]);
   } else {
     setIndex((prev) => prev + 1);
   }
+
+  setFlipped(false);
+  setRewardClaimed(false);
 }
+
+<button
+  onClick={handleNext}
+  style={{ ...secondaryButtonStyle, width: "100%", marginTop: 12 }}
+>
+  Следующая карточка
+</button>
 
   return (
     <div style={{ padding: 16, display: "grid", gap: 14 }}>
@@ -5807,31 +5821,92 @@ const [shuffledCards, setShuffledCards] = useState<typeof cards>([]);
       </div>
 
       <div style={{ ...cardBaseStyle(), padding: 18 }}>
-        <div
-          style={{
-            fontSize: 22,
-            fontWeight: 800,
-            color: "#211b3b",
-            lineHeight: 1.45,
-          }}
-        >
-          {card.text}
-        </div>
+       <div
+  style={{
+    perspective: 1000,
+    marginTop: 16,
+  }}
+>
+  <div
+    style={{
+      position: "relative",
+      width: "100%",
+      height: 200,
+      transformStyle: "preserve-3d",
+      transition: "transform 0.6s",
+      transform: flipped ? "rotateY(180deg)" : "rotateY(0deg)",
+    }}
+  >
 
-        <div
-          style={{
-            marginTop: 16,
-            padding: "14px 16px",
-            borderRadius: 18,
-            background: "rgba(255,255,255,0.26)",
-            color: "#241b40",
-            fontSize: 17,
-            fontWeight: 800,
-            lineHeight: 1.45,
-          }}
-        >
-          {card.task}
-        </div>
+    {/* FRONT */}
+    <div
+      style={{
+        position: "absolute",
+        width: "100%",
+        height: "100%",
+        backfaceVisibility: "hidden",
+        borderRadius: 18,
+        padding: 18,
+        background: "white",
+        boxShadow: "0 10px 30px rgba(0,0,0,0.08)",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        textAlign: "center",
+        fontSize: 20,
+        fontWeight: 800,
+      }}
+    >
+      {card.text}
+    </div>
+
+    {/* BACK */}
+    <div
+      style={{
+        position: "absolute",
+        width: "100%",
+        height: "100%",
+        backfaceVisibility: "hidden",
+        transform: "rotateY(180deg)",
+        borderRadius: 18,
+        padding: 18,
+        background: "#f4f2ff",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        textAlign: "center",
+        fontSize: 18,
+        fontWeight: 700,
+      }}
+    >
+      {card.task}
+    </div>
+
+  </div>
+</div>
+
+<button
+  onClick={() => setFlipped(true)}
+  style={{ ...primaryButtonStyle, width: "100%", marginTop: 16 }}
+>
+  Перевернуть карточку
+</button>
+
+{flipped && !rewardClaimed && (
+  <button
+    onClick={() => {
+      setRewardClaimed(true);
+      setAppState((prev) => ({
+        ...prev,
+        points: prev.points + 10,
+      }));
+    }}
+    style={{ ...primaryButtonStyle, width: "100%", marginTop: 12 }}
+  >
+    Выполнено (+10 очков)
+  </button>
+)}
+       
 
         {!done ? (
           <button
