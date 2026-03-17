@@ -3025,18 +3025,7 @@ function DailyPairQuestionScreen({
             </div>
           </div>
         ) : (
-          <div
-            style={{
-              marginTop: 12,
-              padding: "12px 14px",
-              borderRadius: 14,
-              background: "rgba(255,255,255,0.20)",
-              color: "#2c2647",
-              fontWeight: 700,
-            }}
-          >
-            Ты уже ответил(а): {question.options[myAnswer.answer_index]}
-          </div>
+          
         )}
 
         <div style={{ display: "grid", gap: 8, marginTop: 12 }}>
