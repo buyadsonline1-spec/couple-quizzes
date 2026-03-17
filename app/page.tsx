@@ -6693,17 +6693,27 @@ export default function Page() {
   };
 }
 
-const handleCompleteGame = (game: Game, score: number) => {
+const handleCompleteGame = async (game: Game, score: number) => {
+  const alreadyCompleted = appState.completedGameIds.includes(game.id);
+  const rewardToAdd = alreadyCompleted ? 0 : game.reward;
+
+  let nextPairState = appState.pair;
   let leveledUpTo: { level: number; title: string } | null = null;
 
+  if (rewardToAdd > 0 && appState.pair.pairId) {
+    await updatePairPoints({
+      pairId: appState.pair.pairId,
+      delta: rewardToAdd,
+    });
+
+    if (user?.id) {
+      nextPairState = await loadPairStateForUser(user.id);
+    }
+  }
+
   setAppState((prev) => {
-    const alreadyCompleted = prev.completedGameIds.includes(game.id);
-    const rewardToAdd = alreadyCompleted ? 0 : game.reward;
-
-    const newPoints = prev.points + rewardToAdd;
-
-    const oldLevel = getPairLevelInfo(prev.points);
-    const newLevel = getPairLevelInfo(newPoints);
+    const oldLevel = getPairLevelInfo(prev.pair.totalPoints || 0);
+    const newLevel = getPairLevelInfo(nextPairState.totalPoints || 0);
 
     if (newLevel.level > oldLevel.level) {
       leveledUpTo = {
@@ -6714,7 +6724,8 @@ const handleCompleteGame = (game: Game, score: number) => {
 
     return {
       ...prev,
-      points: newPoints,
+      pair: nextPairState,
+      points: nextPairState.totalPoints || 0,
       stats: {
         ...prev.stats,
         gamesPlayed: prev.stats.gamesPlayed + 1,
@@ -6731,9 +6742,9 @@ const handleCompleteGame = (game: Game, score: number) => {
   }
 
   await refreshPairData({
-  user,
-  setAppState,
-});
+    user,
+    setAppState,
+  });
 
   if (game.id !== "90-questions") {
     setScreen("menu");
@@ -6766,13 +6777,14 @@ const handleClaimWeeklyTopReward = async () => {
 
   setAppState(nextState);
   await syncWeeklyPairLeaderboard(nextState, user);
-};
 
-await refreshPairData({
+  await refreshPairData({
     user,
     setAppState,
   });
 };
+
+
 
 
 const syncWeeklyPairLeaderboard = async (nextState: AppState, currentUser?: TgUser | null) => {
