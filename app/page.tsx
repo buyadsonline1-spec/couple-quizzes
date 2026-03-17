@@ -6428,7 +6428,7 @@ function ProfileAndStatsScreen({
 
 </div>
 
-<StatRow label="Приглашено друзей" value={referrals.invitedUsers.length} />
+
 <StatRow label="Очков за рефералов" value={referrals.totalReward} />
 
 
