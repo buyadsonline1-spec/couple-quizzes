@@ -83,6 +83,8 @@ type AppState = {
   totalReward: number;
 };
 
+lastDailyBonusPopupDate: string | null;
+
 dailyPairMatchBonusClaimedDates: string[];
 
 
@@ -2104,6 +2106,8 @@ const DEFAULT_STATE: AppState = {
     lastClaimDate: null,
     totalPointsEarnedFromBonus: 0,
   },
+
+  lastDailyBonusPopupDate: null,
 
   stats: {
     pollsCompleted: 0,
@@ -7372,6 +7376,27 @@ const [weeklyPairLeaderboard, setWeeklyPairLeaderboard] = useState<WeeklyPairLea
     launchLevelConfetti();
   }
 }, [showLevelUp]);
+
+useEffect(() => {
+  if (!mounted) return;
+
+  const today = getTodayLocalDateString();
+
+  const alreadyOpenedToday =
+    appState.lastDailyBonusPopupDate === today;
+
+  const bonusNotClaimedToday =
+    appState.dailyBonus.lastClaimDate !== today;
+
+  if (!alreadyOpenedToday && bonusNotClaimedToday) {
+    setScreen("daily-bonus");
+
+    setAppState((prev) => ({
+      ...prev,
+      lastDailyBonusPopupDate: today,
+    }));
+  }
+}, [mounted, appState.dailyBonus.lastClaimDate]);
 
 const [levelUpData, setLevelUpData] = useState<{ level: number; title: string } | null>(null);
 const FREE_POLLS_LIMIT = 3;
