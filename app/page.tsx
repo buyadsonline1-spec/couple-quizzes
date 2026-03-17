@@ -1896,6 +1896,8 @@ const STREAK_BONUSES = [
   { days: 15, points: 750 },
 ];
 
+const DAILY_PAIR_MATCH_BONUS = 25;
+
 
 const REWARD_CATEGORIES: RewardCategory[] = [
   {
@@ -2103,6 +2105,8 @@ const DEFAULT_STATE: AppState = {
   },
 
   dailyPairHistory: [],
+
+  dailyPairMatchBonusClaimedDates: [],
 
   dailyPairStreak: {
   current: 0,
@@ -2962,6 +2966,7 @@ function DailyPairQuestionScreen({
    try {
   setSaving(true);
 
+
   await saveDailyPairAnswer({
     pairId: pair.pairId,
     date: today,
@@ -2984,41 +2989,63 @@ function DailyPairQuestionScreen({
   );
 
   if (rows.length >= 2) {
-    const history = await loadDailyPairHistory(pair.pairId);
-    const streakData = calculateDailyPairStreak(history);
+  const history = await loadDailyPairHistory(pair.pairId);
+  const streakData = calculateDailyPairStreak(history);
 
-    const previousMilestones = appState.dailyPairStreak.reachedMilestones;
-    const newMilestone = streakData.reachedMilestones.find(
-      (m) => !previousMilestones.includes(m)
-    );
+  const previousMilestones = appState.dailyPairStreak.reachedMilestones;
+  const newMilestone = streakData.reachedMilestones.find(
+    (m) => !previousMilestones.includes(m)
+  );
 
-    const bonus = newMilestone ? getStreakBonus(newMilestone) : 0;
+  const streakBonus = newMilestone ? getStreakBonus(newMilestone) : 0;
 
-    let nextPairState = pair;
+  const sameAnswer =
+    Number(rows[0]?.answer_index) === Number(rows[1]?.answer_index);
 
-    if (bonus > 0) {
-      await updatePairPoints({
-        pairId: pair.pairId,
-        delta: bonus,
-      });
+  const alreadyClaimedMatchBonus =
+    appState.dailyPairMatchBonusClaimedDates.includes(today);
 
-      if (user?.id) {
-        nextPairState = await loadPairStateForUser(user.id);
-      }
-    }
+  const matchBonus =
+    sameAnswer && !alreadyClaimedMatchBonus ? DAILY_PAIR_MATCH_BONUS : 0;
 
-    setAppState((prev) => ({
-      ...prev,
-      pair: nextPairState,
-      points: nextPairState.totalPoints || 0,
-      dailyPairHistory: history,
-      dailyPairStreak: streakData,
-    }));
+  const totalBonus = streakBonus + matchBonus;
 
-    if (bonus > 0 && newMilestone) {
-      alert(`🔥 Серия ${newMilestone} дней!\n+${bonus} очков`);
+  let nextPairState = pair;
+
+  if (totalBonus > 0) {
+    await updatePairPoints({
+      pairId: pair.pairId,
+      delta: totalBonus,
+    });
+
+    if (user?.id) {
+      nextPairState = await loadPairStateForUser(user.id);
     }
   }
+
+  setAppState((prev) => ({
+    ...prev,
+    pair: nextPairState,
+    points: nextPairState.totalPoints || 0,
+    dailyPairHistory: history,
+    dailyPairStreak: streakData,
+    dailyPairMatchBonusClaimedDates:
+      matchBonus > 0
+        ? [...prev.dailyPairMatchBonusClaimedDates, today]
+        : prev.dailyPairMatchBonusClaimedDates,
+  }));
+
+  if (streakBonus > 0 && matchBonus > 0 && newMilestone) {
+    alert(
+      `🔥 Серия ${newMilestone} дней!\n+${streakBonus} очков\n💘 Совпадение ответов!\n+${matchBonus} очков`
+    );
+  } else if (streakBonus > 0 && newMilestone) {
+    alert(`🔥 Серия ${newMilestone} дней!\n+${streakBonus} очков`);
+  } else if (matchBonus > 0) {
+    alert(`💘 Вы совпали!\n+${matchBonus} очков`);
+  }
+}
+
 } finally {
   setSaving(false);
 }
@@ -3288,6 +3315,19 @@ function DailyPairQuestionScreen({
                 ? "Вы выбрали один и тот же вариант"
                 : "Ваши ответы отличаются — обсудите это 💬"}
             </div>
+
+            {myAnswer.answer_index === partnerAnswer.answer_index && (
+  <div
+    style={{
+      marginTop: 10,
+      fontSize: 16,
+      fontWeight: 900,
+      color: "#6b46ff",
+    }}
+  >
+    +{DAILY_PAIR_MATCH_BONUS} очков паре
+  </div>
+)}
 
             <div
               style={{
@@ -3838,6 +3878,9 @@ function loadState(): AppState {
 },
 
 
+
+
+
   dailyBonus: {
     streakDay:
       parsed.dailyBonus?.streakDay ?? DEFAULT_STATE.dailyBonus.streakDay,
@@ -3917,6 +3960,11 @@ function loadState(): AppState {
       parsed.profile?.displayName ?? DEFAULT_STATE.profile.displayName,
     avatar: parsed.profile?.avatar ?? DEFAULT_STATE.profile.avatar,
   },
+
+  dailyPairMatchBonusClaimedDates:
+  parsed.dailyPairMatchBonusClaimedDates ??
+  DEFAULT_STATE.dailyPairMatchBonusClaimedDates,
+
 };
 
 
