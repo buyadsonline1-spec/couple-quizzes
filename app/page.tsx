@@ -2878,37 +2878,43 @@ function calculateMatch(a?: number[], b?: number[]) {
   return Math.round((same / len) * 100);
 }
 
-function getPairLevelInfo(points: number) {
-  let current = PAIR_LEVELS[0];
-  let next: { level: number; title: string; points: number } | null = null;
+function getPairLevelInfo(points: number): PairLevelInfo {
+  const levels = [
+    { level: 1, title: "Новички", min: 0, max: 999 },
+    { level: 2, title: "Тёплая связь", min: 1000, max: 2499 },
+    { level: 3, title: "Сильная пара", min: 2500, max: 4999 },
+    { level: 4, title: "Идеальный союз", min: 5000, max: null },
+  ];
 
-  for (let i = 0; i < PAIR_LEVELS.length; i++) {
-    if (points >= PAIR_LEVELS[i].points) {
-      current = PAIR_LEVELS[i];
-      next = PAIR_LEVELS[i + 1] ?? null;
-    }
-  }
+  const current =
+    levels.find((lvl) => lvl.max === null || points <= lvl.max) ?? levels[levels.length - 1];
 
-  const progress = next
-    ? Math.max(
-        0,
-        Math.min(
-          100,
-          Math.round(
-            ((points - current.points) / (next.points - current.points)) * 100
-          )
-        )
-      )
-    : 100;
+  const currentLevelPoints = current.min;
+  const nextLevelPoints = current.max === null ? null : current.max + 1;
+  const nextPoints = nextLevelPoints;
+
+  const progressInLevel = points - currentLevelPoints;
+  const progressMax =
+    current.max === null ? 100 : current.max - current.min + 1;
+
+  const progressPercent =
+    current.max === null
+      ? 100
+      : Math.max(0, Math.min(100, (progressInLevel / progressMax) * 100));
 
   return {
     level: current.level,
     title: current.title,
-    nextPoints: next?.points ?? null,
-    progress,
+    nextPoints,
+    progress: progressPercent,
+
+    currentLevelPoints,
+    nextLevelPoints,
+    progressInLevel,
+    progressMax,
+    progressPercent,
   };
 }
-
 
 
 
