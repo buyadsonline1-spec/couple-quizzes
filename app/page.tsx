@@ -7724,6 +7724,34 @@ function animatePairPoints(from: number, to: number) {
   requestAnimationFrame(frame);
 }
 
+const claimGameStepReward = async (rewardKey: string) => {
+  if (appState.playedGameRewardKeys.includes(rewardKey)) {
+    return false;
+  }
+
+  let nextPairState = appState.pair;
+
+  if (appState.pair.pairId) {
+    await updatePairPoints({
+      pairId: appState.pair.pairId,
+      delta: 10,
+    });
+
+    if (user?.id) {
+      nextPairState = await loadPairStateForUser(user.id);
+    }
+  }
+
+  setAppState((prev) => ({
+    ...prev,
+    pair: nextPairState,
+    points: nextPairState.totalPoints || prev.points + 10,
+    playedGameRewardKeys: [...prev.playedGameRewardKeys, rewardKey],
+  }));
+
+  return true;
+};
+
 const handleCompleteGame = async (game: Game, score: number) => {
   const alreadyCompleted = appState.completedGameIds.includes(game.id);
   const rewardToAdd = alreadyCompleted ? 0 : game.reward;
