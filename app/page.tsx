@@ -7808,23 +7808,6 @@ export default function Page() {
 
 const [premiumLoading, setPremiumLoading] = useState(false);
 
-async function loadPremiumStatus(telegramId: number) {
-  const { data, error } = await supabase
-    .from("subscriptions")
-    .select("status, expires_at")
-    .eq("telegram_id", telegramId)
-    .eq("status", "active")
-    .gt("expires_at", new Date().toISOString())
-    .maybeSingle();
-
-  if (error) {
-    console.error("LOAD PREMIUM STATUS ERROR:", error);
-    return false;
-  }
-
-  return !!data;
-}
-
 const handleBuyPremium = async () => {
   try {
     setPremiumLoading(true);
@@ -8570,21 +8553,7 @@ useEffect(() => {
     );
   }, [appState.stats]);
 
-  const handleBuyPremium = () => {
-  setAppState((prev) => {
-    if (prev.isPremium) {
-      return prev;
-    }
 
-    return {
-      ...prev,
-      isPremium: true,
-      points: prev.points + 500,
-    };
-  });
-
-  setScreen("menu");
-};
 
 
   const handleClaimBonus = () => {
