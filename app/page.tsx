@@ -656,567 +656,108 @@ function createPollQuestions(theme: string) {
   }
 }
 
-const POLLS: Poll[] = [
-  // =========================
-  // BOY — PAGE 1
-  // =========================
+
+  const POLL_THEMES = [
   {
-    id: "boy-page1-housewife",
-    title: "Какая хозяйка твоя девушка?",
-    description: "Какой ты видишь её в быту и домашних делах.",
-    reward: 60,
-    gender: "boy",
-    page: 1,
-    theme: "Быт",
-    questions: createPollQuestions("Быт"),
+    key: "communication",
+    title: "Общение",
+    description: "Как вам комфортнее разговаривать и решать важные вопросы.",
+    theme: "Общение",
+    matchGroup: "communication",
   },
   {
-    id: "boy-page1-conflicts",
-    title: "Решение конфликтов",
-    description: "Как твоя девушка ведёт себя в ссорах и после них.",
-    reward: 60,
-    gender: "boy",
-    page: 1,
+    key: "love",
+    title: "Любовь и внимание",
+    description: "Что для тебя значит любовь, забота и проявление чувств.",
+    theme: "Любовь",
+    matchGroup: "love",
+  },
+  {
+    key: "conflicts",
+    title: "Конфликты",
+    description: "Как ты относишься к ссорам, примирению и компромиссам.",
     theme: "Конфликты",
     matchGroup: "conflicts",
-    questions: createPollQuestions("Конфликты"),
   },
   {
-    id: "boy-page1-jealousy",
-    title: "Будешь ли ты ревновать, если...?",
-    description: "О ревности, границах и доверии в отношениях.",
-    reward: 60,
-    gender: "boy",
-    page: 1,
-    theme: "Ревность",
-    matchGroup: "jealousy",
-    questions: createPollQuestions("Ревность"),
-  },
-  {
-    id: "boy-page1-allowed",
-    title: "Можно ли твоей девушке делать это?",
-    description: "Что для тебя допустимо, а что уже нет.",
-    reward: 60,
-    gender: "boy",
-    page: 1,
-    theme: "Границы",
-    matchGroup: "boundaries",
-    questions: createPollQuestions("Границы"),
-  },
-  {
-    id: "boy-page1-nervous",
-    title: "Насколько нервозна твоя девушка?",
-    description: "Как ты воспринимаешь её характер и эмоциональность.",
-    reward: 60,
-    gender: "boy",
-    page: 1,
-    theme: "Понимание",
-    questions: createPollQuestions("Понимание"),
-  },
-
-  // =========================
-  // BOY — PAGE 2
-  // =========================
-  {
-    id: "boy-page2-romance",
-    title: "Романтика и забота",
-    description: "Что важно для тебя в проявлении любви.",
-    reward: 60,
-    gender: "boy",
-    page: 2,
-    theme: "Романтика",
-    matchGroup: "romance",
-    questions: createPollQuestions("Романтика"),
-  },
-  {
-    id: "boy-page2-space",
-    title: "Границы и личное пространство",
-    description: "Сколько свободы должно быть у каждого в паре.",
-    reward: 60,
-    gender: "boy",
-    page: 2,
-    theme: "Личное пространство",
-    matchGroup: "space",
-    questions: createPollQuestions("Личное пространство"),
-  },
-  {
-    id: "boy-page2-time",
-    title: "Совместное время и интересы",
-    description: "Как вы должны проводить время вместе.",
-    reward: 60,
-    gender: "boy",
-    page: 2,
-    theme: "Время вместе",
-    matchGroup: "time",
-    questions: createPollQuestions("Время вместе"),
-  },
-  {
-    id: "boy-page2-role",
-    title: "Роль девушки в отношениях",
-    description: "Что ты ожидаешь от девушки в паре.",
-    reward: 60,
-    gender: "boy",
-    page: 2,
-    theme: "Роли",
-    matchGroup: "roles",
-    questions: createPollQuestions("Роли"),
-  },
-  {
-    id: "boy-page2-appearance",
-    title: "Внешность и уход за собой",
-    description: "Насколько для тебя важны стиль и уход.",
-    reward: 60,
-    gender: "boy",
-    page: 2,
-    theme: "Внешность",
-    questions: createPollQuestions("Внешность"),
-  },
-
-  // =========================
-  // BOY — PAGE 3
-  // =========================
-  {
-    id: "boy-page3-family",
-    title: "Семья и дети",
-    description: "Как ты смотришь на семью, детей и серьёзность отношений.",
-    reward: 60,
-    gender: "boy",
-    page: 3,
-    theme: "Семья",
-    matchGroup: "future",
-    questions: createPollQuestions("Семья"),
-  },
-  {
-    id: "boy-page3-money",
-    title: "Деньги и подарки",
-    description: "Про траты, подарки и материальную сторону отношений.",
-    reward: 60,
-    gender: "boy",
-    page: 3,
-    theme: "Финансы",
-    questions: createPollQuestions("Финансы"),
-  },
-  {
-    id: "boy-page3-trust",
-    title: "Честность и доверие",
-    description: "Что для тебя значит верность и открытость.",
-    reward: 60,
-    gender: "boy",
-    page: 3,
+    key: "trust",
+    title: "Доверие",
+    description: "Насколько для тебя важны честность, спокойствие и надёжность.",
     theme: "Доверие",
     matchGroup: "trust",
-    questions: createPollQuestions("Доверие"),
   },
   {
-    id: "boy-page3-habits",
-    title: "Привычки в быту",
-    description: "Что в повседневной жизни тебя устраивает или раздражает.",
-    reward: 60,
-    gender: "boy",
-    page: 3,
-    theme: "Быт",
-    questions: createPollQuestions("Быт"),
-  },
-  {
-    id: "boy-page3-attention",
-    title: "Общение и внимание",
-    description: "Как часто нужно общаться и быть на связи.",
-    reward: 60,
-    gender: "boy",
-    page: 3,
-    theme: "Общение",
-    questions: createPollQuestions("Общение"),
-  },
-
-  // =========================
-  // BOY — PAGE 4
-  // =========================
-  {
-    id: "boy-page4-dreams",
-    title: "Мечты и цели девушки",
-    description: "Как ты относишься к её амбициям и мечтам.",
-    reward: 60,
-    gender: "boy",
-    page: 4,
-    theme: "Мечты",
-    questions: createPollQuestions("Мечты"),
-  },
-  {
-    id: "boy-page4-food",
-    title: "Еда и кулинария",
-    description: "Про вкусы, готовку и общие гастро-привычки.",
-    reward: 60,
-    gender: "boy",
-    page: 4,
-    theme: "Еда",
-    questions: createPollQuestions("Еда"),
-  },
-  {
-    id: "boy-page4-talk",
-    title: "Стиль общения",
-    description: "Как тебе комфортнее общаться в паре.",
-    reward: 60,
-    gender: "boy",
-    page: 4,
-    theme: "Общение",
-    questions: createPollQuestions("Общение"),
-  },
-  {
-    id: "boy-page4-rest",
-    title: "Отдых и путешествия",
-    description: "Как вы должны отдыхать и проводить выходные.",
-    reward: 60,
-    gender: "boy",
-    page: 4,
-    theme: "Отдых",
-    questions: createPollQuestions("Отдых"),
-  },
-  {
-    id: "boy-page4-friends",
-    title: "Подруги и окружение",
-    description: "Как ты относишься к её друзьям и кругу общения.",
-    reward: 60,
-    gender: "boy",
-    page: 4,
-    theme: "Окружение",
-    questions: createPollQuestions("Окружение"),
-  },
-
-  // =========================
-  // BOY — PAGE 5
-  // =========================
-  {
-    id: "boy-page5-values",
-    title: "Ценности в отношениях",
-    description: "Что для тебя главное в крепкой паре.",
-    reward: 60,
-    gender: "boy",
-    page: 5,
-    theme: "Ценности",
-    matchGroup: "values",
-    questions: createPollQuestions("Ценности"),
-  },
-  {
-    id: "boy-page5-love",
-    title: "Любовь и привязанность",
-    description: "Как ты понимаешь настоящую любовь.",
-    reward: 60,
-    gender: "boy",
-    page: 5,
-    theme: "Любовь",
-    questions: createPollQuestions("Любовь"),
-  },
-  {
-    id: "boy-page5-support",
-    title: "Поддержка в трудные моменты",
-    description: "Какой должна быть девушка, когда тебе тяжело.",
-    reward: 60,
-    gender: "boy",
-    page: 5,
-    theme: "Поддержка",
-    questions: createPollQuestions("Поддержка"),
-  },
-  {
-    id: "boy-page5-ideal-life",
-    title: "Идеальная совместная жизнь",
-    description: "Как ты представляешь счастливую жизнь вдвоём.",
-    reward: 60,
-    gender: "boy",
-    page: 5,
-    theme: "Будущее",
-    questions: createPollQuestions("Будущее"),
-  },
-  {
-    id: "boy-page5-the-one",
-    title: "Что делает девушку той самой?",
-    description: "Какие качества для тебя самые важные.",
-    reward: 60,
-    gender: "boy",
-    page: 5,
-    theme: "Идеал",
-    questions: createPollQuestions("Идеал"),
-  },
-
-  // =========================
-  // GIRL — PAGE 1
-  // =========================
-  {
-    id: "girl-page1-allowed",
-    title: "Можно ли твоему парню делать это..?",
-    description: "Что для тебя допустимо, а что уже нарушение границ.",
-    reward: 60,
-    gender: "girl",
-    page: 1,
-    theme: "Границы",
-    matchGroup: "boundaries",
-    questions: createPollQuestions("Границы"),
-  },
-  {
-    id: "girl-page1-jealousy",
-    title: "Будешь ли ты ревновать, если..?",
-    description: "О ревности, тревоге и доверии в отношениях.",
-    reward: 60,
-    gender: "girl",
-    page: 1,
-    theme: "Ревность",
-    matchGroup: "jealousy",
-    questions: createPollQuestions("Ревность"),
-  },
-  {
-    id: "girl-page1-cheating",
-    title: "Измена ли это для тебя?",
-    description: "Где проходит твоя личная граница измены.",
-    reward: 60,
-    gender: "girl",
-    page: 1,
-    theme: "Верность",
-    questions: createPollQuestions("Верность"),
-  },
-  {
-    id: "girl-page1-know-boy",
-    title: "Как хорошо ты знаешь своего парня?",
-    description: "Насколько ты чувствуешь и понимаешь его.",
-    reward: 60,
-    gender: "girl",
-    page: 1,
+    key: "understanding",
+    title: "Понимание",
+    description: "Насколько тебе важны эмпатия и эмоциональная близость.",
     theme: "Понимание",
-    questions: createPollQuestions("Понимание"),
+    matchGroup: "understanding",
   },
   {
-    id: "girl-page1-future",
-    title: "Планы на будущее и совместные цели",
-    description: "Как ты видишь ваше будущее вместе.",
-    reward: 60,
-    gender: "girl",
-    page: 1,
-    theme: "Будущее",
-    matchGroup: "future",
-    questions: createPollQuestions("Будущее"),
-  },
-
-  // =========================
-  // GIRL — PAGE 2
-  // =========================
-  {
-    id: "girl-page2-love",
-    title: "Как ты показываешь свою любовь?",
-    description: "О твоём стиле любви и заботы.",
-    reward: 60,
-    gender: "girl",
-    page: 2,
-    theme: "Любовь",
-    questions: createPollQuestions("Любовь"),
-  },
-  {
-    id: "girl-page2-conflicts",
-    title: "Как ты ведешь себя во время ссор?",
-    description: "Как ты реагируешь на конфликты и напряжение.",
-    reward: 60,
-    gender: "girl",
-    page: 2,
-    theme: "Конфликты",
-    matchGroup: "conflicts",
-    questions: createPollQuestions("Конфликты"),
-  },
-  {
-    id: "girl-page2-space",
-    title: "Свобода и личное пространство",
-    description: "Сколько свободы должно быть у вас обоих.",
-    reward: 60,
-    gender: "girl",
-    page: 2,
-    theme: "Личное пространство",
-    matchGroup: "space",
-    questions: createPollQuestions("Личное пространство"),
-  },
-  {
-    id: "girl-page2-duties",
-    title: "Какие обязанности ты считаешь своими в паре?",
-    description: "Как ты видишь свой вклад в отношения.",
-    reward: 60,
-    gender: "girl",
-    page: 2,
-    theme: "Обязанности",
-    questions: createPollQuestions("Обязанности"),
-  },
-  {
-    id: "girl-page2-role",
-    title: "Роль мужчины в отношениях",
-    description: "Что ты ожидаешь от мужчины рядом с собой.",
-    reward: 60,
-    gender: "girl",
-    page: 2,
-    theme: "Роли",
-    matchGroup: "roles",
-    questions: createPollQuestions("Роли"),
-  },
-
-  // =========================
-  // GIRL — PAGE 3
-  // =========================
-  {
-    id: "girl-page3-dreams",
-    title: "Мечты и фантазии",
-    description: "О желаниях, романтике и внутреннем мире.",
-    reward: 60,
-    gender: "girl",
-    page: 3,
-    theme: "Мечты",
-    questions: createPollQuestions("Мечты"),
-  },
-  {
-    id: "girl-page3-food",
-    title: "Кулинария и еда",
-    description: "Про вкусы, комфорт и еду в отношениях.",
-    reward: 60,
-    gender: "girl",
-    page: 3,
-    theme: "Еда",
-    questions: createPollQuestions("Еда"),
-  },
-  {
-    id: "girl-page3-style",
-    title: "Стиль и мода",
-    description: "О внешности, стиле и самовыражении.",
-    reward: 60,
-    gender: "girl",
-    page: 3,
-    theme: "Стиль",
-    questions: createPollQuestions("Стиль"),
-  },
-  {
-    id: "girl-page3-health",
-    title: "Здоровье и уход за собой",
-    description: "Насколько для тебя важны уход и самочувствие.",
-    reward: 60,
-    gender: "girl",
-    page: 3,
-    theme: "Уход",
-    questions: createPollQuestions("Уход"),
-  },
-  {
-    id: "girl-page3-hobby",
-    title: "Хобби и увлечения",
-    description: "Чем ты любишь заниматься и как хочешь делиться этим.",
-    reward: 60,
-    gender: "girl",
-    page: 3,
-    theme: "Хобби",
-    questions: createPollQuestions("Хобби"),
-  },
-
-  // =========================
-  // GIRL — PAGE 4
-  // =========================
-  {
-    id: "girl-page4-self",
-    title: "Саморазвитие и мечты",
-    description: "О целях, росте и жизненном направлении.",
-    reward: 60,
-    gender: "girl",
-    page: 4,
-    theme: "Саморазвитие",
-    questions: createPollQuestions("Саморазвитие"),
-  },
-  {
-    id: "girl-page4-family",
-    title: "Семья и друзья",
-    description: "Какую роль в твоей жизни играет окружение.",
-    reward: 60,
-    gender: "girl",
-    page: 4,
-    theme: "Семья",
-    questions: createPollQuestions("Семья"),
-  },
-  {
-    id: "girl-page4-travel",
-    title: "Путешествия и приключения",
-    description: "Как ты любишь отдыхать и открывать новое.",
-    reward: 60,
-    gender: "girl",
-    page: 4,
-    theme: "Путешествия",
-    questions: createPollQuestions("Путешествия"),
-  },
-  {
-    id: "girl-page4-art",
-    title: "Творчество и вдохновение",
-    description: "О том, что тебя вдохновляет и наполняет.",
-    reward: 60,
-    gender: "girl",
-    page: 4,
-    theme: "Творчество",
-    questions: createPollQuestions("Творчество"),
-  },
-  {
-    id: "girl-page4-values",
-    title: "Ценности и убеждения",
-    description: "Что для тебя по-настоящему важно в жизни и любви.",
-    reward: 60,
-    gender: "girl",
-    page: 4,
-    theme: "Ценности",
-    matchGroup: "values",
-    questions: createPollQuestions("Ценности"),
-  },
-
-  // =========================
-  // GIRL — PAGE 5
-  // =========================
-  {
-    id: "girl-page5-romance",
-    title: "Романтика и забота",
-    description: "Какие проявления любви для тебя самые важные.",
-    reward: 60,
-    gender: "girl",
-    page: 5,
+    key: "romance",
+    title: "Романтика",
+    description: "Про свидания, сюрпризы, страсть и атмосферу в отношениях.",
     theme: "Романтика",
     matchGroup: "romance",
-    questions: createPollQuestions("Романтика"),
   },
   {
-    id: "girl-page5-trust",
-    title: "Доверие и безопасность",
-    description: "Когда ты чувствуешь себя спокойно рядом с мужчиной.",
-    reward: 60,
-    gender: "girl",
-    page: 5,
-    theme: "Доверие",
-    matchGroup: "trust",
-    questions: createPollQuestions("Доверие"),
+    key: "space",
+    title: "Личное пространство",
+    description: "Сколько свободы, независимости и личного времени тебе нужно.",
+    theme: "Личное пространство",
+    matchGroup: "space",
   },
   {
-    id: "girl-page5-home",
-    title: "Быт и порядок",
-    description: "Как ты представляешь домашнюю жизнь вдвоём.",
-    reward: 60,
-    gender: "girl",
-    page: 5,
+    key: "future",
+    title: "Будущее",
+    description: "Про серьёзность отношений, планы и общие цели.",
+    theme: "Будущее",
+    matchGroup: "future",
+  },
+  {
+    key: "life",
+    title: "Быт",
+    description: "Как ты видишь совместную жизнь, обязанности и повседневность.",
     theme: "Быт",
-    questions: createPollQuestions("Быт"),
+    matchGroup: "life",
   },
   {
-    id: "girl-page5-money",
-    title: "Деньги и подарки",
-    description: "О тратах, внимании и материальной стороне любви.",
-    reward: 60,
-    gender: "girl",
-    page: 5,
-    theme: "Финансы",
-    questions: createPollQuestions("Финансы"),
+    key: "jealousy",
+    title: "Ревность",
+    description: "Как ты относишься к ревности, границам и вниманию к другим людям.",
+    theme: "Ревность",
+    matchGroup: "jealousy",
   },
-  {
-    id: "girl-page5-ideal-pair",
-    title: "Какой ты видишь идеальную пару?",
-    description: "О твоём представлении счастливых отношений.",
-    reward: 60,
-    gender: "girl",
-    page: 5,
-    theme: "Идеал",
-    questions: createPollQuestions("Идеал"),
-  },
-];
+] as const;
 
+const POLLS: Poll[] = POLL_THEMES.flatMap((item, index) => {
+  const page = Math.floor(index / 2) + 1;
+
+  return [
+    {
+      id: `boy-${item.key}`,
+      title: item.title,
+      description: item.description,
+      reward: 60,
+      gender: "boy" as const,
+      page,
+      theme: item.theme,
+      matchGroup: item.matchGroup,
+      questions: createPollQuestions(item.theme),
+    },
+    {
+      id: `girl-${item.key}`,
+      title: item.title,
+      description: item.description,
+      reward: 60,
+      gender: "girl" as const,
+      page,
+      theme: item.theme,
+      matchGroup: item.matchGroup,
+      questions: createPollQuestions(item.theme),
+    },
+  ];
+});
 
 const GAMES: Game[] = [
 
@@ -4046,7 +3587,18 @@ function MainMenu({
           gap: 10,
         }}
       >
-        <MenuButton label="Опросы" emoji="🗳️" onClick={() => onNavigate("polls")} />
+        <MenuButton
+  label="Опросы"
+  emoji="💌"
+  onClick={() => {
+    if (!appState.profile.gender) {
+      onNavigate("gender-select");
+      return;
+    }
+
+    onNavigate(appState.profile.gender === "boy" ? "polls-boy" : "polls-girl");
+  }}
+/>
         <MenuButton label="Игры" emoji="🎮" onClick={() => onNavigate("games")} />
         <MenuButton label="Тесты" emoji="🧠" onClick={() => onNavigate("tests")} />
         <MenuButton label="Очки и призы" emoji="🎡" onClick={() => onNavigate("rewards")} />
@@ -4144,7 +3696,7 @@ const activePoll = POLLS.find((poll) => poll.id === activePollId) || null;
             Опросы
           </div>
           <div style={{ marginTop: 6, color: "#3a345c", fontSize: 14 }}>
-            {genderFilter === "girl" ? "Опросы для неё 👧" : "Опросы для него 👦"}
+           {genderFilter === "girl" ? "Твои опросы 👧" : "Твои опросы 👦"}
           </div>
         </div>
 
@@ -6263,19 +5815,20 @@ function RewardsScreen({
   );
 }
 
-function GenderSelectScreen({
+ function GenderSelectScreen({
   onSelect,
 }: {
   onSelect: (gender: "boy" | "girl") => void;
 }) {
   return (
     <div style={{ padding: 16 }}>
-      <div style={{ ...cardBaseStyle(), padding: 20, textAlign: "center" }}>
+      <div style={{ ...cardBaseStyle(), padding: 20 }}>
         <div
           style={{
             fontSize: 24,
             fontWeight: 900,
             color: "#1f1d3a",
+            textAlign: "center",
           }}
         >
           Выбери свой пол
@@ -6287,9 +5840,11 @@ function GenderSelectScreen({
             fontSize: 14,
             lineHeight: 1.5,
             color: "#5f5a7a",
+            textAlign: "center",
           }}
         >
-          Это нужно только один раз, чтобы показывать тебе подходящие опросы и тесты.
+          Это нужно только один раз, чтобы показывать тебе подходящие опросы
+          и не начислять очки за обе ветки сразу.
         </div>
 
         <button
@@ -7495,6 +7050,14 @@ const handleSelectGender = (gender: "boy" | "girl") => {
   setScreen("menu");
 };
 
+useEffect(() => {
+  if (!mounted) return;
+
+  if (screen === "menu" && !appState.profile.gender) {
+    setScreen("gender-select");
+  }
+}, [mounted, screen, appState.profile.gender]);
+
 function animatePairPoints(from: number, to: number) {
   const duration = 900;
   const start = performance.now();
@@ -8532,7 +8095,13 @@ if (finishedAllTests && !appState.completionBonusesClaimed.tests) {
           />
         )}
 
-        {screen === "welcome" && <WelcomeScreen onStart={() => setScreen("menu")} />}
+        {screen === "welcome" && (
+  <WelcomeScreen
+    onStart={() =>
+      setScreen(appState.profile.gender ? "menu" : "gender-select")
+    }
+  />
+)}
 
           {screen === "gender-select" && (
   <GenderSelectScreen onSelect={handleSelectGender} />
