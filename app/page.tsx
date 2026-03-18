@@ -7040,20 +7040,7 @@ function ReferralsScreen({
     Пригласить друзей
   </div>
 
-  <button
-    onClick={onBack}
-    style={{
-      padding: "8px 14px",
-      borderRadius: 12,
-      border: "none",
-      background: "rgba(255,255,255,0.4)",
-      fontWeight: 700,
-      fontSize: 13,
-      cursor: "pointer",
-    }}
-  >
-    Назад
-  </button>
+  
 </div>
 
       <div style={{ ...cardBaseStyle(), padding: 18 }}>
@@ -7114,7 +7101,16 @@ function ReferralsScreen({
         </button>
       </div>
 
-     
+     <button
+  onClick={onBack}
+  style={{
+    ...secondaryButtonStyle,
+    width: "100%",
+    marginTop: 16,
+  }}
+>
+  Назад
+</button>
     </div>
   );
 }
