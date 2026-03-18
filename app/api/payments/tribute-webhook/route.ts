@@ -2,27 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 import crypto from "crypto";
 import { createClient } from "@supabase/supabase-js";
 
-const TRIBUTE_API_KEY = process.env.TRIBUTE_API_KEY;
-const SUPABASE_URL = process.env.SUPABASE_URL;
-const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
-
-if (!TRIBUTE_API_KEY) {
-  throw new Error("TRIBUTE_API_KEY is not set");
-}
-
-if (!SUPABASE_URL) {
-  throw new Error("SUPABASE_URL is not set");
-}
-
-if (!SUPABASE_SERVICE_ROLE_KEY) {
-  throw new Error("SUPABASE_SERVICE_ROLE_KEY is not set");
-}
-
-const supabaseAdmin = createClient(
-  SUPABASE_URL,
-  SUPABASE_SERVICE_ROLE_KEY
-);
-
 type TributeWebhook = {
   name: string;
   created_at?: string;
@@ -40,9 +19,13 @@ type TributeWebhook = {
   };
 };
 
-function verifyTributeSignature(rawBody: string, signature: string) {
+function verifyTributeSignature(
+  rawBody: string,
+  signature: string,
+  apiKey: string
+) {
   const expected = crypto
-    .createHmac("sha256", TRIBUTE_API_KEY as string)
+    .createHmac("sha256", apiKey)
     .update(rawBody)
     .digest("hex");
 
@@ -58,6 +41,36 @@ function verifyTributeSignature(rawBody: string, signature: string) {
 
 export async function POST(req: NextRequest) {
   try {
+    const TRIBUTE_API_KEY = process.env.TRIBUTE_API_KEY;
+    const SUPABASE_URL = process.env.SUPABASE_URL;
+    const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+    if (!TRIBUTE_API_KEY) {
+      return NextResponse.json(
+        { error: "TRIBUTE_API_KEY is not set" },
+        { status: 500 }
+      );
+    }
+
+    if (!SUPABASE_URL) {
+      return NextResponse.json(
+        { error: "SUPABASE_URL is not set" },
+        { status: 500 }
+      );
+    }
+
+    if (!SUPABASE_SERVICE_ROLE_KEY) {
+      return NextResponse.json(
+        { error: "SUPABASE_SERVICE_ROLE_KEY is not set" },
+        { status: 500 }
+      );
+    }
+
+    const supabaseAdmin = createClient(
+      SUPABASE_URL,
+      SUPABASE_SERVICE_ROLE_KEY
+    );
+
     const rawBody = await req.text();
     const signature = req.headers.get("trbt-signature");
 
@@ -68,7 +81,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    if (!verifyTributeSignature(rawBody, signature)) {
+    if (!verifyTributeSignature(rawBody, signature, TRIBUTE_API_KEY)) {
       return NextResponse.json(
         { error: "Invalid webhook signature" },
         { status: 401 }
@@ -88,7 +101,10 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    if (eventName === "new_subscription" || eventName === "renewed_subscription") {
+    if (
+      eventName === "new_subscription" ||
+      eventName === "renewed_subscription"
+    ) {
       if (!expiresAt) {
         return NextResponse.json(
           { error: "Missing expires_at for subscription event" },
