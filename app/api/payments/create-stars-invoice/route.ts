@@ -4,12 +4,19 @@ const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
 
 export async function POST(req: NextRequest) {
   try {
+    if (!BOT_TOKEN) {
+      return NextResponse.json(
+        { error: "TELEGRAM_BOT_TOKEN is missing" },
+        { status: 500 }
+      );
+    }
+
     const body = await req.json();
+    console.log("CREATE INVOICE BODY:", body);
+    console.log("BOT TOKEN EXISTS:", !!BOT_TOKEN);
+
     const telegramId = body?.telegramId;
     const plan = body?.plan;
-
-    console.log("CREATE INVOICE BODY:", body);
-console.log("BOT TOKEN EXISTS:", !!BOT_TOKEN);
 
     if (!telegramId) {
       return NextResponse.json(
@@ -18,19 +25,10 @@ console.log("BOT TOKEN EXISTS:", !!BOT_TOKEN);
       );
     }
 
-    console.log("TELEGRAM CREATE INVOICE RESPONSE:", tgData);
-
     if (plan !== "premium_month") {
       return NextResponse.json(
         { error: "Unknown plan" },
         { status: 400 }
-      );
-    }
-
-    if (!BOT_TOKEN) {
-      return NextResponse.json(
-        { error: "TELEGRAM_BOT_TOKEN is missing" },
-        { status: 500 }
       );
     }
 
@@ -63,6 +61,7 @@ console.log("BOT TOKEN EXISTS:", !!BOT_TOKEN);
     );
 
     const tgData = await tgRes.json();
+    console.log("TELEGRAM CREATE INVOICE RESPONSE:", tgData);
 
     if (!tgData.ok) {
       return NextResponse.json(
