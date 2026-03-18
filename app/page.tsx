@@ -2905,7 +2905,7 @@ function getPairLevelInfo(points: number): PairLevelInfo {
       return {
     level: current.level,
     title: current.title,
-    
+
     currentLevelPoints,
     nextLevelPoints,
     progressInLevel,
@@ -6964,8 +6964,6 @@ async function loadReferralStats(telegramId: number) {
   };
 }
 
-const [appState, setAppState] = useState<AppState>(DEFAULT_STATE);
-
 function getTelegramUserSafe(fallbackUser: TgUser | null): TgUser | null {
   const tgUser = window.Telegram?.WebApp?.initDataUnsafe?.user;
 
@@ -6989,6 +6987,8 @@ function getTelegramUserSafe(fallbackUser: TgUser | null): TgUser | null {
 
 
 export default function Page() {
+
+  const [appState, setAppState] = useState<AppState>(DEFAULT_STATE);
 
   function getLiveTelegramUser(): TgUser | null {
   const tgUser = window.Telegram?.WebApp?.initDataUnsafe?.user;
