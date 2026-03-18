@@ -1620,10 +1620,7 @@ playedGameRewardKeys: [],
 },
   
 
-  profile: {
-    displayName: "",
-    avatar: null,
-  },
+
 };
 
 function getStreakBonus(streak: number): number {
@@ -3557,11 +3554,12 @@ lastDailyBonusPopupDate:
   dailyPairStreak:
   parsed.dailyPairStreak ?? DEFAULT_STATE.dailyPairStreak,
 
-  profile: {
-    displayName:
-      parsed.profile?.displayName ?? DEFAULT_STATE.profile.displayName,
-    avatar: parsed.profile?.avatar ?? DEFAULT_STATE.profile.avatar,
-  },
+ profile: {
+  displayName:
+    parsed.profile?.displayName ?? DEFAULT_STATE.profile.displayName,
+  avatar: parsed.profile?.avatar ?? DEFAULT_STATE.profile.avatar,
+  gender: parsed.profile?.gender ?? DEFAULT_STATE.profile.gender,
+},
 
   dailyPairMatchBonusClaimedDates:
   parsed.dailyPairMatchBonusClaimedDates ??
