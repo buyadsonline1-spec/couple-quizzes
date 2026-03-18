@@ -7022,14 +7022,39 @@ function ReferralsScreen({
 
   return (
     <div style={{ padding: 16 }}>
-      <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14 }}>
-        <button onClick={onBack} style={secondaryButtonStyle}>
-          Назад
-        </button>
-        <div style={{ fontSize: 24, fontWeight: 900, color: "#1f1d3a" }}>
-          Приглашай друзей
-        </div>
-      </div>
+      <div
+  style={{
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginBottom: 16,
+  }}
+>
+  <div
+    style={{
+      fontSize: 20,
+      fontWeight: 900,
+      color: "#1f1d3a",
+    }}
+  >
+    Пригласить друзей
+  </div>
+
+  <button
+    onClick={onBack}
+    style={{
+      padding: "8px 14px",
+      borderRadius: 12,
+      border: "none",
+      background: "rgba(255,255,255,0.4)",
+      fontWeight: 700,
+      fontSize: 13,
+      cursor: "pointer",
+    }}
+  >
+    Назад
+  </button>
+</div>
 
       <div style={{ ...cardBaseStyle(), padding: 18 }}>
         <div style={{ fontSize: 18, fontWeight: 900, color: "#1f1d3a" }}>
