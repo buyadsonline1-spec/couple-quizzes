@@ -4579,7 +4579,7 @@ const activePoll = POLLS.find((poll) => poll.id === activePollId) || null;
             const completed = completedPollIds.includes(poll.id);
 
             return (
-              <div key={poll.id} style={{ ...cardBaseStyle(), padding: 14 }}>
+              <div key={poll.id} style={{ ...cardBaseStyle(), padding: 12 }}>
                 <div
                   style={{
                     display: "flex",
@@ -4631,17 +4631,18 @@ const activePoll = POLLS.find((poll) => poll.id === activePollId) || null;
   <span>{poll.questions.length} вопросов</span>
 </div>
 
+                
                 <button
-                  onClick={() => startPoll(poll.id)}
-                  style={{
-                    ...primaryButtonStyle,
-                    width: "100%",
-                    marginTop: 10,
-                    padding: "12px 14px",
-                    fontSize: 15,
-                    opacity: completed ? 0.92 : 1,
-                  }}
-                >
+  onClick={() => startPoll(poll.id)}
+  style={{
+    ...primaryButtonStyle,
+    width: "100%",
+    marginTop: 8,
+    padding: "11px 14px",
+    fontSize: 15,
+    opacity: completed ? 0.92 : 1,
+  }}
+>
                   {completed ? "Пройти снова" : "Начать"}
                 </button>
               </div>
