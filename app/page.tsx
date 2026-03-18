@@ -4580,72 +4580,56 @@ const activePoll = POLLS.find((poll) => poll.id === activePollId) || null;
 
             return (
               <div key={poll.id} style={{ ...cardBaseStyle(), padding: 12 }}>
-                <div
-                  style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    gap: 10,
-                    alignItems: "flex-start",
-                  }}
-                >
-                  <div style={{ minWidth: 0 }}>
-                    <div
-                      style={{
-                        fontSize: 17,
-                        fontWeight: 900,
-                        color: "#1f1d3a",
-                        lineHeight: 1.2,
-                      }}
-                    >
-                      {poll.title}
-                    </div>
+  <div
+    style={{
+      display: "flex",
+      justifyContent: "space-between",
+      gap: 10,
+      alignItems: "flex-start",
+    }}
+  >
+    <div style={{ minWidth: 0 }}>
+      <div
+        style={{
+          fontSize: 17,
+          fontWeight: 900,
+          color: "#1f1d3a",
+          lineHeight: 1.2,
+        }}
+      >
+        {poll.title}
+      </div>
+    </div>
 
-                  
-                  </div>
+    <div
+      style={{
+        alignSelf: "flex-start",
+        padding: "6px 10px",
+        borderRadius: 12,
+        background: "rgba(255,255,255,0.28)",
+        fontWeight: 900,
+        whiteSpace: "nowrap",
+        fontSize: 13,
+      }}
+    >
+      +{poll.reward}
+    </div>
+  </div>
 
-                  <div
-                    style={{
-                      alignSelf: "flex-start",
-                      padding: "6px 10px",
-                      borderRadius: 12,
-                      background: "rgba(255,255,255,0.28)",
-                      fontWeight: 900,
-                      whiteSpace: "nowrap",
-                      fontSize: 13,
-                    }}
-                  >
-                    +{poll.reward}
-                  </div>
-                </div>
-
-               <div
-  style={{
-    marginTop: 8,
-    display: "flex",
-    justifyContent: "flex-end",
-    gap: 10,
-    fontSize: 12,
-    color: "#5a5378",
-  }}
->
-  <span>{poll.questions.length} вопросов</span>
+  <button
+    onClick={() => startPoll(poll.id)}
+    style={{
+      ...primaryButtonStyle,
+      width: "100%",
+      marginTop: 8,
+      padding: "11px 14px",
+      fontSize: 15,
+      opacity: completed ? 0.92 : 1,
+    }}
+  >
+    {completed ? "Пройти снова" : "Начать"}
+  </button>
 </div>
-
-                
-                <button
-  onClick={() => startPoll(poll.id)}
-  style={{
-    ...primaryButtonStyle,
-    width: "100%",
-    marginTop: 8,
-    padding: "11px 14px",
-    fontSize: 15,
-    opacity: completed ? 0.92 : 1,
-  }}
->
-                  {completed ? "Пройти снова" : "Начать"}
-                </button>
-              </div>
             );
           })}
         </div>
