@@ -4961,6 +4961,7 @@ function GamesScreen({
 
 if (activeGame?.id === "never-have-i-ever") {
   return (
+    
     <NeverHaveIEverGameScreen
       reward={10}
       playedGameRewardKeys={playedGameRewardKeys}
@@ -4970,6 +4971,7 @@ if (activeGame?.id === "never-have-i-ever") {
     />
   );
 }
+
 
   if (finished && activeGame) {
     const total = activeGame.questions.length;
@@ -5001,6 +5003,7 @@ if (activeGame?.id === "never-have-i-ever") {
       </div>
     );
   }
+  
 
   if (!activeGame || !currentQuestion) return null;
 
@@ -5889,6 +5892,18 @@ function NeverHaveIEverGameScreen({
   } else {
     setRewardClaimed(true);
   }
+}
+
+function handleNext() {
+  if (index + 1 >= shuffledCards.length) {
+    setShuffledCards(shuffle(cards));
+    setIndex(0);
+  } else {
+    setIndex((prev) => prev + 1);
+  }
+
+  setFlipped(false);
+  setRewardClaimed(false);
 }
   
 
