@@ -7768,9 +7768,13 @@ if (nextPoints > previousPoints) {
     setAppState,
   });
 
-  if (game.id !== "90-questions") {
-    setScreen("menu");
-  }
+  if (
+  game.id !== "90-questions" &&
+  game.id !== "bottle" &&
+  game.id !== "never-have-i-ever"
+) {
+  setScreen("menu");
+}
 };
 
 
