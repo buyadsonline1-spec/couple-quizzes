@@ -3634,7 +3634,83 @@ function shareReferralLink(user: TgUser | null) {
   );
 }
 
+function CompletionBonusModal({
+  title,
+  points,
+  emoji,
+  onClose,
+}: {
+  title: string;
+  points: number;
+  emoji: string;
+  onClose: () => void;
+}) {
+  return (
+    <div
+      style={{
+        position: "fixed",
+        inset: 0,
+        background: "rgba(20,16,40,0.58)",
+        backdropFilter: "blur(6px)",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: 16,
+        zIndex: 220,
+      }}
+    >
+      <div
+        style={{
+          width: "100%",
+          maxWidth: 420,
+          borderRadius: 28,
+          padding: 24,
+          textAlign: "center",
+          background:
+            "linear-gradient(180deg, rgba(255,255,255,0.35), rgba(255,255,255,0.18))",
+          boxShadow: "0 20px 60px rgba(72,46,144,0.35)",
+          animation: "pairLevelPop 0.4s ease",
+        }}
+      >
+        <div style={{ fontSize: 46, marginBottom: 12 }}>{emoji}</div>
 
+        <div style={{ fontSize: 28, fontWeight: 900, color: "#1f1d3a" }}>
+          Раздел пройден!
+        </div>
+
+        <div
+          style={{
+            marginTop: 10,
+            fontSize: 18,
+            fontWeight: 800,
+            color: "#4d466c",
+            lineHeight: 1.35,
+          }}
+        >
+          {title}
+        </div>
+
+        <div
+          style={{
+            marginTop: 12,
+            fontSize: 30,
+            fontWeight: 900,
+            color: "#6b46ff",
+          }}
+        >
+          +{points} очков
+        </div>
+
+        <button
+          onClick={onClose}
+          style={{ ...primaryButtonStyle, width: "100%", marginTop: 18 }}
+        >
+          Класс!
+        </button>
+      </div>
+    </div>
+  );
+}
 
 function PairLevelUpModal({
   level,
@@ -7769,6 +7845,13 @@ const claimCompletionBonus = async (
     }
   }
 
+  const bonusData =
+    type === "polls"
+      ? { title: "Пройдены все опросы", emoji: "🗳️" }
+      : type === "tests"
+      ? { title: "Пройдены все тесты", emoji: "🧠" }
+      : { title: "Пройден весь игровой раздел", emoji: "🎮" };
+
   setAppState((prev) => ({
     ...prev,
     pair: nextPairState,
@@ -7779,7 +7862,12 @@ const claimCompletionBonus = async (
     },
   }));
 
-  alert(`🎉 Бонус за полное прохождение раздела!\n+200 очков`);
+  setCompletionBonusData({
+    title: bonusData.title,
+    points: 200,
+    emoji: bonusData.emoji,
+  });
+  setShowCompletionBonus(true);
 
   return true;
 };
@@ -7830,33 +7918,6 @@ const handleCompleteGame = async (game: Game, score: number) => {
     }
   }
 
-  const claimGameStepReward = async (rewardKey: string) => {
-  if (appState.playedGameRewardKeys.includes(rewardKey)) {
-    return false;
-  }
-
-  let nextPairState = appState.pair;
-
-  if (appState.pair.pairId) {
-    await updatePairPoints({
-      pairId: appState.pair.pairId,
-      delta: 10,
-    });
-
-    if (user?.id) {
-      nextPairState = await loadPairStateForUser(user.id);
-    }
-  }
-
-  setAppState((prev) => ({
-    ...prev,
-    pair: nextPairState,
-    points: nextPairState.totalPoints || prev.points + 10,
-    playedGameRewardKeys: [...prev.playedGameRewardKeys, rewardKey],
-  }));
-
-  return true;
-};
 
   const previousPoints = appState.pair.totalPoints || 0;
 const nextPoints = nextPairState.totalPoints || 0;
@@ -7901,22 +7962,7 @@ if (nextPoints > previousPoints) {
     setAppState,
   });
 
-  const specialGameIds = ["bottle", "90-questions", "never-have-i-ever"];
-const normalGameIds = GAMES.filter(
-  (g) => !specialGameIds.includes(g.id)
-).map((g) => g.id);
 
-const nextCompletedGameIds = alreadyCompleted
-  ? appState.completedGameIds
-  : [...appState.completedGameIds, game.id];
-
-const finishedAllNormalGames = normalGameIds.every((id) =>
-  nextCompletedGameIds.includes(id)
-);
-
-if (finishedAllNormalGames && !appState.completionBonusesClaimed.games) {
-  await claimCompletionBonus("games");
-}
 
   if (
   game.id !== "90-questions" &&
@@ -8126,6 +8172,19 @@ const [weeklyPairLeaderboard, setWeeklyPairLeaderboard] = useState<WeeklyPairLea
     launchLevelConfetti();
   }
 }, [showLevelUp]);
+
+useEffect(() => {
+  if (showCompletionBonus) {
+    launchLevelConfetti();
+  }
+}, [showCompletionBonus]);
+
+const [showCompletionBonus, setShowCompletionBonus] = useState(false);
+const [completionBonusData, setCompletionBonusData] = useState<{
+  title: string;
+  points: number;
+  emoji: string;
+} | null>(null);
 
 useEffect(() => {
   if (!mounted) return;
@@ -8639,6 +8698,18 @@ if (finishedAllTests && !appState.completionBonusesClaimed.tests) {
     onClose={() => {
       setShowLevelUp(false);
       setLevelUpData(null);
+    }}
+  />
+)}
+
+{showCompletionBonus && completionBonusData && (
+  <CompletionBonusModal
+    title={completionBonusData.title}
+    points={completionBonusData.points}
+    emoji={completionBonusData.emoji}
+    onClose={() => {
+      setShowCompletionBonus(false);
+      setCompletionBonusData(null);
     }}
   />
 )}
