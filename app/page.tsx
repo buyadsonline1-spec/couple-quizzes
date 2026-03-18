@@ -7271,10 +7271,10 @@ function ProfileAndStatsScreen({
 </div>
 
 
-<StatRow label="Очков за рефералов" value={referrals.totalReward} />
 
 
-    
+
+
 
      
 
@@ -9115,7 +9115,15 @@ if (finishedAllTests && !appState.completionBonusesClaimed.tests) {
   onBack={() => setScreen("menu")}
 />
 
+)}
 
+
+{screen === "referrals" && (
+  <ReferralsScreen
+    user={user}
+    appState={appState}
+    onBack={() => setScreen("profile")}
+  />
 )}
 
 {screen === "pair" && (
