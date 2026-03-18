@@ -1545,7 +1545,7 @@ const isWaitingForPartner = hasPairCreated && !hasPartnerConnected;
               >
                 <div
                   style={{
-                    width: `${pairLevel.progressPercent}%`,
+                    width: `${pairLevel.progress}%`,
                     height: "100%",
                     borderRadius: 999,
                     background: "linear-gradient(135deg,#8f6bff,#ff76ba)",
