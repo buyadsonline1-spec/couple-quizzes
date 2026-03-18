@@ -7865,7 +7865,7 @@ const claimCompletionBonus = async (
  setCompletionBonusData({
   title: bonusData.title,
   points: 200,
-  section: bonusData.section,
+  section: type,
   emoji: bonusData.emoji,
 });
   setShowCompletionBonus(true);
