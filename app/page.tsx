@@ -1545,7 +1545,7 @@ const isWaitingForPartner = hasPairCreated && !hasPartnerConnected;
               >
                 <div
                   style={{
-                    width: `${pairLevel.progress}%`,
+                    width: `${pairLevel.progressPercent}%`,
                     height: "100%",
                     borderRadius: 999,
                     background: "linear-gradient(135deg,#8f6bff,#ff76ba)",
@@ -1565,14 +1565,14 @@ const isWaitingForPartner = hasPairCreated && !hasPartnerConnected;
                 }}
               >
                 <span>
-                  {pairLevel.nextPoints
-                    ? `${points} / ${pairLevel.nextPoints}`
+                  {pairLevel.nextLevelPoints
+                    ? `${points} / ${pairLevel.nextLevelPoints}`
                     : "Максимальный уровень"}
                 </span>
 
                 <span>
-                  {pairLevel.nextPoints
-                    ? `До следующего: ${pairLevel.nextPoints - points}`
+                  {pairLevel.nextLevelPoints
+                    ? `До следующего: ${pairLevel.nextLevelPoints - points}`
                     : ""}
                 </span>
               </div>
@@ -2902,12 +2902,10 @@ function getPairLevelInfo(points: number): PairLevelInfo {
       ? 100
       : Math.max(0, Math.min(100, (progressInLevel / progressMax) * 100));
 
-  return {
+      return {
     level: current.level,
     title: current.title,
-    nextPoints,
-    progress: progressPercent,
-
+    
     currentLevelPoints,
     nextLevelPoints,
     progressInLevel,
@@ -2915,6 +2913,9 @@ function getPairLevelInfo(points: number): PairLevelInfo {
     progressPercent,
   };
 }
+
+  
+
 
 
 
