@@ -83,6 +83,8 @@ type AppState = {
   totalReward: number;
 };
 
+playedGameRewardKeys: string[];
+
 lastDailyBonusPopupDate: string | null;
 
 dailyPairMatchBonusClaimedDates: string[];
@@ -2061,6 +2063,8 @@ const DEFAULT_STATE: AppState = {
   totalReward: 0,
 },
 
+playedGameRewardKeys: [],
+
 
   dailyBonus: {
     streakDay: 1,
@@ -3875,6 +3879,8 @@ function loadState(): AppState {
    return {
   points: parsed.points ?? DEFAULT_STATE.points,
   isPremium: parsed.isPremium ?? DEFAULT_STATE.isPremium,
+  playedGameRewardKeys:
+  parsed.playedGameRewardKeys ?? DEFAULT_STATE.playedGameRewardKeys,
 
 
   referrals: {
@@ -4785,14 +4791,16 @@ const activePoll = POLLS.find((poll) => poll.id === activePollId) || null;
 
 function GamesScreen({
   completedGameIds,
+  playedGameRewardKeys,
   onBack,
   onCompleteGame,
-  onBonusPoints,
+  onClaimStepReward,
 }: {
   completedGameIds: string[];
+  playedGameRewardKeys: string[];
   onBack: () => void;
   onCompleteGame: (game: Game, score: number) => void;
-  onBonusPoints: (points: number) => void;
+  onClaimStepReward: (rewardKey: string) => Promise<boolean>;
 }) {
   const [activeGameId, setActiveGameId] = useState<string | null>(null);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
@@ -4954,10 +4962,11 @@ function GamesScreen({
 if (activeGame?.id === "never-have-i-ever") {
   return (
     <NeverHaveIEverGameScreen
-      reward={activeGame.reward}
+      reward={10}
+      playedGameRewardKeys={playedGameRewardKeys}
       onBack={() => setActiveGameId(null)}
       onFinish={handleLoveQuestionFinish}
-      onBonus={onBonusPoints}
+      onClaimReward={onClaimStepReward}
     />
   );
 }
@@ -5482,14 +5491,16 @@ function LoveQuestionsGameScreen({
 
 function NeverHaveIEverGameScreen({
   reward,
+  playedGameRewardKeys,
   onBack,
   onFinish,
-  onBonus,
+  onClaimReward,
 }: {
   reward: number;
+  playedGameRewardKeys: string[];
   onBack: () => void;
   onFinish: () => void;
-  onBonus: (points: number) => void;
+  onClaimReward: (rewardKey: string) => Promise<boolean>;
 }) {
   const cards = [
     {
@@ -5864,51 +5875,24 @@ function NeverHaveIEverGameScreen({
 
   const card = shuffledCards[index] ?? null;
 
-  function handleComplete() {
-    if (rewardClaimed) return;
+  async function handleComplete() {
+  if (rewardClaimed) return;
+
+  const rewardKey = `never-have:${index}:${card.text}`;
+  const claimed = await onClaimReward(rewardKey);
+
+  if (claimed) {
     setRewardClaimed(true);
-    onBonus(reward);
+
+
     onFinish();
+  } else {
+    setRewardClaimed(true);
   }
-
-  function handleNext() {
-    if (index + 1 >= shuffledCards.length) {
-      setShuffledCards(shuffle(cards));
-      setIndex(0);
-    } else {
-      setIndex((prev) => prev + 1);
-    }
-
-    setFlipped(false);
-    setRewardClaimed(false);
-  }
+}
+  
 
   if (!card) {
-    return (
-      <div style={{ padding: 16, display: "grid", gap: 14 }}>
-        <div style={{ ...cardBaseStyle(), padding: 18 }}>
-          <div style={{ fontSize: 28, fontWeight: 900, color: "#1f1d3a" }}>
-            Я никогда не...
-          </div>
-          <div style={{ marginTop: 8, color: "#3a345c", fontSize: 15 }}>
-            Загружаем карточки...
-          </div>
-        </div>
-
-        <button onClick={onBack} style={secondaryButtonStyle}>
-          Назад в игры
-        </button>
-      </div>
-    );
-  }
-
-  const categoryLabel =
-    card.type === "romantic"
-      ? "Романтика"
-      : card.type === "spicy"
-      ? "Провокация"
-      : "Смешное";
-
   return (
     <div style={{ padding: 16, display: "grid", gap: 14 }}>
       <div style={{ ...cardBaseStyle(), padding: 18 }}>
@@ -5916,179 +5900,9 @@ function NeverHaveIEverGameScreen({
           Я никогда не...
         </div>
 
-        <div
-          style={{
-            marginTop: 8,
-            color: "#3a345c",
-            fontSize: 15,
-            lineHeight: 1.45,
-          }}
-        >
-          Скажите что-то, чего вы никогда в жизни не делали, и если ваш партнёр
-          делал это, он выполняет задание с карточки.
+        <div style={{ marginTop: 8, color: "#3a345c", fontSize: 15 }}>
+          Загружаем карточки...
         </div>
-
-        <div
-          style={{
-            marginTop: 10,
-            color: "#4d466c",
-            fontSize: 14,
-            lineHeight: 1.45,
-          }}
-        >
-          Например: «Я ни разу не играл в карты на раздевание» — если партнёр
-          хотя бы раз делал это, ему пора выполнять задание.
-        </div>
-
-        <div
-          style={{
-            marginTop: 12,
-            padding: "12px 14px",
-            borderRadius: 16,
-            background: "rgba(255,255,255,0.24)",
-            color: "#2c2647",
-            fontWeight: 800,
-          }}
-        >
-          Награда за карточку: +{reward} очков
-        </div>
-      </div>
-
-      <div style={{ ...cardBaseStyle(), padding: 18 }}>
-        <div
-          style={{
-            perspective: 1000,
-            marginTop: 4,
-          }}
-        >
-          <div
-            style={{
-              position: "relative",
-              width: "100%",
-              height: 240,
-              transformStyle: "preserve-3d",
-              transition: "transform 0.6s",
-              transform: flipped ? "rotateY(180deg)" : "rotateY(0deg)",
-            }}
-          >
-            <div
-              style={{
-                position: "absolute",
-                inset: 0,
-                backfaceVisibility: "hidden",
-                borderRadius: 22,
-                padding: 22,
-                background: "rgba(255,255,255,0.92)",
-                boxShadow: "0 10px 30px rgba(0,0,0,0.08)",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                textAlign: "center",
-              }}
-            >
-              <div
-                style={{
-                  position: "absolute",
-                  top: 14,
-                  left: 14,
-                  padding: "6px 10px",
-                  borderRadius: 999,
-                  background: "rgba(0,0,0,0.06)",
-                  fontSize: 13,
-                  fontWeight: 900,
-                  color: "#241b40",
-                }}
-              >
-                {card.emoji} {categoryLabel}
-              </div>
-
-              <div
-                style={{
-                  fontSize: 20,
-                  fontWeight: 800,
-                  color: "#211b3b",
-                  lineHeight: 1.45,
-                }}
-              >
-                {card.text}
-              </div>
-            </div>
-
-            <div
-              style={{
-                position: "absolute",
-                inset: 0,
-                backfaceVisibility: "hidden",
-                transform: "rotateY(180deg)",
-                borderRadius: 22,
-                padding: 22,
-                background: "linear-gradient(135deg, rgba(255,255,255,0.98), rgba(244,242,255,0.98))",
-                boxShadow: "0 10px 30px rgba(0,0,0,0.08)",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                textAlign: "center",
-              }}
-            >
-              <div
-                style={{
-                  position: "absolute",
-                  top: 14,
-                  left: 14,
-                  padding: "6px 10px",
-                  borderRadius: 999,
-                  background: "rgba(0,0,0,0.06)",
-                  fontSize: 13,
-                  fontWeight: 900,
-                  color: "#241b40",
-                }}
-              >
-                {card.emoji} Задание
-              </div>
-
-              <div
-                style={{
-                  fontSize: 18,
-                  fontWeight: 800,
-                  color: "#241b40",
-                  lineHeight: 1.5,
-                }}
-              >
-                {card.task}
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <button
-          onClick={() => setFlipped((prev) => !prev)}
-          style={{ ...primaryButtonStyle, width: "100%", marginTop: 16 }}
-        >
-          {flipped ? "Показать вопрос" : "Перевернуть карточку"}
-        </button>
-
-        <button
-          onClick={handleComplete}
-          disabled={rewardClaimed}
-          style={{
-            ...primaryButtonStyle,
-            width: "100%",
-            marginTop: 12,
-            opacity: rewardClaimed ? 0.6 : 1,
-            cursor: rewardClaimed ? "not-allowed" : "pointer",
-          }}
-        >
-          {rewardClaimed
-            ? `Карточка сыграна (+${reward} очков)`
-            : `Карточка сыграна (+${reward} очков)`}
-        </button>
-
-        <button
-          onClick={handleNext}
-          style={{ ...secondaryButtonStyle, marginTop: 12 }}
-        >
-          Следующая карточка
-        </button>
       </div>
 
       <button onClick={onBack} style={secondaryButtonStyle}>
@@ -6098,6 +5912,208 @@ function NeverHaveIEverGameScreen({
   );
 }
 
+const rewardKey = `never-have:${index}:${card.text}`;
+const alreadyPlayed = playedGameRewardKeys.includes(rewardKey);
+
+const categoryLabel =
+  card.type === "romantic"
+    ? "Романтика"
+    : card.type === "spicy"
+    ? "Провокация"
+    : "Смешное";
+
+return (
+  <div style={{ padding: 16, display: "grid", gap: 14 }}>
+    <div style={{ ...cardBaseStyle(), padding: 18 }}>
+      <div style={{ fontSize: 28, fontWeight: 900, color: "#1f1d3a" }}>
+        Я никогда не...
+      </div>
+
+      <div
+        style={{
+          marginTop: 8,
+          color: "#3a345c",
+          fontSize: 15,
+          lineHeight: 1.45,
+        }}
+      >
+        Скажите что-то, чего вы никогда в жизни не делали, и если ваш партнёр
+        делал это, он выполняет задание с карточки.
+      </div>
+
+      <div
+        style={{
+          marginTop: 10,
+          color: "#4d466c",
+          fontSize: 14,
+          lineHeight: 1.45,
+        }}
+      >
+        Например: «Я ни разу не играл в карты на раздевание» — если партнёр
+        хотя бы раз делал это, ему пора выполнять задание.
+      </div>
+
+      <div
+        style={{
+          marginTop: 12,
+          padding: "12px 14px",
+          borderRadius: 16,
+          background: "rgba(255,255,255,0.24)",
+          color: "#2c2647",
+          fontWeight: 800,
+        }}
+      >
+        Награда за карточку: +{reward} очков
+      </div>
+    </div>
+
+    <div style={{ ...cardBaseStyle(), padding: 18 }}>
+      <div
+        style={{
+          perspective: 1000,
+          marginTop: 4,
+        }}
+      >
+        <div
+          style={{
+            position: "relative",
+            width: "100%",
+            height: 240,
+            transformStyle: "preserve-3d",
+            transition: "transform 0.6s",
+            transform: flipped ? "rotateY(180deg)" : "rotateY(0deg)",
+          }}
+        >
+          {/* FRONT */}
+          <div
+            style={{
+              position: "absolute",
+              inset: 0,
+              backfaceVisibility: "hidden",
+              borderRadius: 22,
+              padding: 22,
+              background: "rgba(255,255,255,0.92)",
+              boxShadow: "0 10px 30px rgba(0,0,0,0.08)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              textAlign: "center",
+            }}
+          >
+            <div
+              style={{
+                position: "absolute",
+                top: 14,
+                left: 14,
+                padding: "6px 10px",
+                borderRadius: 999,
+                background: "rgba(0,0,0,0.06)",
+                fontSize: 13,
+                fontWeight: 900,
+                color: "#241b40",
+              }}
+            >
+              {card.emoji} {categoryLabel}
+            </div>
+
+            <div
+              style={{
+                fontSize: 20,
+                fontWeight: 800,
+                color: "#211b3b",
+                lineHeight: 1.45,
+              }}
+            >
+              {card.text}
+            </div>
+          </div>
+
+          {/* BACK */}
+          <div
+            style={{
+              position: "absolute",
+              inset: 0,
+              backfaceVisibility: "hidden",
+              transform: "rotateY(180deg)",
+              borderRadius: 22,
+              padding: 22,
+              background:
+                "linear-gradient(135deg, rgba(255,255,255,0.98), rgba(244,242,255,0.98))",
+              boxShadow: "0 10px 30px rgba(0,0,0,0.08)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              textAlign: "center",
+            }}
+          >
+            <div
+              style={{
+                position: "absolute",
+                top: 14,
+                left: 14,
+                padding: "6px 10px",
+                borderRadius: 999,
+                background: "rgba(0,0,0,0.06)",
+                fontSize: 13,
+                fontWeight: 900,
+                color: "#241b40",
+              }}
+            >
+              {card.emoji} Задание
+            </div>
+
+            <div
+              style={{
+                fontSize: 18,
+                fontWeight: 800,
+                color: "#241b40",
+                lineHeight: 1.5,
+              }}
+            >
+              {card.task}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <button
+        onClick={() => setFlipped((prev) => !prev)}
+        style={{ ...primaryButtonStyle, width: "100%", marginTop: 16 }}
+      >
+        {flipped ? "Показать вопрос" : "Перевернуть карточку"}
+      </button>
+
+      <button
+        onClick={handleComplete}
+        disabled={rewardClaimed || alreadyPlayed}
+        style={{
+          ...primaryButtonStyle,
+          width: "100%",
+          marginTop: 12,
+          opacity: rewardClaimed || alreadyPlayed ? 0.6 : 1,
+          cursor: rewardClaimed || alreadyPlayed ? "not-allowed" : "pointer",
+        }}
+      >
+        {alreadyPlayed
+          ? "Карточка уже сыграна (+10 уже получено)"
+          : rewardClaimed
+          ? `Карточка сыграна (+${reward} очков)`
+          : `Карточка сыграна (+${reward} очков)`}
+      </button>
+
+      <button
+        onClick={handleNext}
+        style={{ ...secondaryButtonStyle, marginTop: 12 }}
+      >
+        Следующая карточка
+      </button>
+    </div>
+
+    <button onClick={onBack} style={secondaryButtonStyle}>
+      Назад в игры
+    </button>
+  </div>
+);
 
 
 function TestsScreen({
@@ -7710,6 +7726,34 @@ const handleCompleteGame = async (game: Game, score: number) => {
     }
   }
 
+  const claimGameStepReward = async (rewardKey: string) => {
+  if (appState.playedGameRewardKeys.includes(rewardKey)) {
+    return false;
+  }
+
+  let nextPairState = appState.pair;
+
+  if (appState.pair.pairId) {
+    await updatePairPoints({
+      pairId: appState.pair.pairId,
+      delta: 10,
+    });
+
+    if (user?.id) {
+      nextPairState = await loadPairStateForUser(user.id);
+    }
+  }
+
+  setAppState((prev) => ({
+    ...prev,
+    pair: nextPairState,
+    points: nextPairState.totalPoints || prev.points + 10,
+    playedGameRewardKeys: [...prev.playedGameRewardKeys, rewardKey],
+  }));
+
+  return true;
+};
+
   const previousPoints = appState.pair.totalPoints || 0;
 const nextPoints = nextPairState.totalPoints || 0;
 
@@ -8513,17 +8557,13 @@ if (nextPoints > previousPoints) {
   />
 )}
 
-       {screen === "games" && (
+     {screen === "games" && (
   <GamesScreen
     completedGameIds={appState.completedGameIds}
+    playedGameRewardKeys={appState.playedGameRewardKeys}
     onBack={() => setScreen("menu")}
     onCompleteGame={handleCompleteGame}
-    onBonusPoints={(points) => {
-      setAppState((prev) => ({
-        ...prev,
-        points: prev.points + points,
-      }));
-    }}
+    onClaimStepReward={claimGameStepReward}
   />
 )}
 
