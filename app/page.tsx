@@ -3421,11 +3421,13 @@ function MainMenu({
   points,
   user,
   pairLevel,
+  appState,
   onNavigate,
 }: {
   points: number;
   user: TgUser | null;
-  pairLevel: ReturnType<typeof getPairLevelInfo>;
+  pairLevel: PairLevelInfo;
+  appState: AppState;
   onNavigate: (screen: Screen) => void;
 }) {
 
@@ -8107,11 +8109,12 @@ if (finishedAllTests && !appState.completionBonusesClaimed.tests) {
   <GenderSelectScreen onSelect={handleSelectGender} />
 )}
 
-       {screen === "menu" && (
+{screen === "menu" && (
   <MainMenu
-  points={appState.points}
-  user={user}
-  pairLevel={getPairLevelInfo(animatedPairPoints)}
+    points={appState.points}
+    user={user}
+    pairLevel={getPairLevelInfo(animatedPairPoints)}
+    appState={appState}
     onNavigate={(next) => {
       if (
         next === "polls" &&
@@ -8130,14 +8133,7 @@ if (finishedAllTests && !appState.completionBonusesClaimed.tests) {
 
 
 
-        {screen === "polls" && (
-  <PollsEntryScreen
-    onBack={() => setScreen("menu")}
-    onSelect={(target) =>
-      setScreen(target === "boy" ? "polls-boy" : "polls-girl")
-    }
-  />
-)}
+      
 
 {screen === "polls-boy" && (
   <PollsScreen
