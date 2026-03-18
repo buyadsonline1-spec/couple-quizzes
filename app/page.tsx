@@ -3537,9 +3537,11 @@ function MainMenu({
     lineHeight: 1.2,
   }}
 >
-  {pairLevel.nextPoints
-    ? `До следующего уровня: ${pairLevel.nextPoints - points}`
-    : "Максимальный уровень"}
+  
+    ? {pairLevel.nextLevelPoints
+  ? `До следующего уровня: ${pairLevel.nextLevelPoints - points}`
+  : "Максимальный уровень"}
+    : "Максимальный уровень"
 </div>
       </div>
     </div>
@@ -7039,6 +7041,8 @@ const handleBuyPremium = async () => {
   }
 };
 
+const [mounted, setMounted] = useState(false);
+
 
 const handleSelectGender = (gender: "boy" | "girl") => {
   setAppState((prev) => ({
@@ -7517,7 +7521,7 @@ const [weeklyPairLeaderboard, setWeeklyPairLeaderboard] = useState<WeeklyPairLea
 const [showPaymentChoice, setShowPaymentChoice] = useState(false);
 
 const TRIBUTE_LINK = "https://t.me/tribute/app?startapp=sMuC";
-  const [mounted, setMounted] = useState(false);
+  
   const [screen, setScreen] = useState<Screen>("welcome");
   const [appState, setAppState] = useState<AppState>(DEFAULT_STATE);
   const [user, setUser] = useState<TgUser | null>(null);
