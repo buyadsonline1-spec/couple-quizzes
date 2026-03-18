@@ -77,6 +77,12 @@ type AppState = {
   points: number;
   isPremium: boolean;
 
+  completionBonusesClaimed: {
+  polls: boolean;
+  tests: boolean;
+  games: boolean;
+};
+
 
   referrals: {
   invitedUsers: string[];
@@ -1738,7 +1744,7 @@ const GAMES: Game[] = [
   title: "Я никогда не...",
   description:
     "Скажите что-то, чего вы никогда в жизни не делали, и если ваш партнёр делал это, он выполняет задание с карточки.",
-  reward: 10,
+  reward: 0,
   questions: [],
 },
 
@@ -1746,7 +1752,7 @@ const GAMES: Game[] = [
     id: "bottle",
     title: "Бутылочка",
     description: "Крути бутылку и получай романтичные и дерзкие задания для пары.",
-    reward: 10,
+    reward: 0,
     questions: [],
   },
 
@@ -1754,7 +1760,7 @@ const GAMES: Game[] = [
     id: "90-questions",
     title: "90 вопросов",
     description: "Случайные глубокие вопросы про любовь, чувства и отношения.",
-    reward: 10,
+    reward: 0,
     questions: [],
   },    
 ];
@@ -2061,6 +2067,12 @@ const DEFAULT_STATE: AppState = {
   referrals: {
   invitedUsers: [],
   totalReward: 0,
+},
+
+completionBonusesClaimed: {
+  polls: false,
+  tests: false,
+  games: false,
 },
 
 playedGameRewardKeys: [],
@@ -3881,6 +3893,18 @@ function loadState(): AppState {
   isPremium: parsed.isPremium ?? DEFAULT_STATE.isPremium,
   playedGameRewardKeys:
   parsed.playedGameRewardKeys ?? DEFAULT_STATE.playedGameRewardKeys,
+
+  completionBonusesClaimed: {
+  polls:
+    parsed.completionBonusesClaimed?.polls ??
+    DEFAULT_STATE.completionBonusesClaimed.polls,
+  tests:
+    parsed.completionBonusesClaimed?.tests ??
+    DEFAULT_STATE.completionBonusesClaimed.tests,
+  games:
+    parsed.completionBonusesClaimed?.games ??
+    DEFAULT_STATE.completionBonusesClaimed.games,
+},
 
 
   referrals: {
@@ -5881,7 +5905,7 @@ function NeverHaveIEverGameScreen({
   async function handleComplete() {
   if (rewardClaimed) return;
 
-  const rewardKey = `never-have:${index}:${card.text}`;
+  const rewardKey = `never-have:${card.text}`;
   const claimed = await onClaimReward(rewardKey);
 
   if (claimed) {
@@ -5927,7 +5951,7 @@ function handleNext() {
   );
 }
 
-const rewardKey = `never-have:${index}:${card.text}`;
+const rewardKey = `never-have:${card.text}`;
 const alreadyPlayed = playedGameRewardKeys.includes(rewardKey);
 
 const categoryLabel =
@@ -7724,6 +7748,42 @@ function animatePairPoints(from: number, to: number) {
   requestAnimationFrame(frame);
 }
 
+
+const claimCompletionBonus = async (
+  type: "polls" | "tests" | "games"
+) => {
+  if (appState.completionBonusesClaimed[type]) {
+    return false;
+  }
+
+  let nextPairState = appState.pair;
+
+  if (appState.pair.pairId) {
+    await updatePairPoints({
+      pairId: appState.pair.pairId,
+      delta: 200,
+    });
+
+    if (user?.id) {
+      nextPairState = await loadPairStateForUser(user.id);
+    }
+  }
+
+  setAppState((prev) => ({
+    ...prev,
+    pair: nextPairState,
+    points: nextPairState.totalPoints || prev.points + 200,
+    completionBonusesClaimed: {
+      ...prev.completionBonusesClaimed,
+      [type]: true,
+    },
+  }));
+
+  alert(`🎉 Бонус за полное прохождение раздела!\n+200 очков`);
+
+  return true;
+};
+
 const claimGameStepReward = async (rewardKey: string) => {
   if (appState.playedGameRewardKeys.includes(rewardKey)) {
     return false;
@@ -7840,6 +7900,23 @@ if (nextPoints > previousPoints) {
     user,
     setAppState,
   });
+
+  const specialGameIds = ["bottle", "90-questions", "never-have-i-ever"];
+const normalGameIds = GAMES.filter(
+  (g) => !specialGameIds.includes(g.id)
+).map((g) => g.id);
+
+const nextCompletedGameIds = alreadyCompleted
+  ? appState.completedGameIds
+  : [...appState.completedGameIds, game.id];
+
+const finishedAllNormalGames = normalGameIds.every((id) =>
+  nextCompletedGameIds.includes(id)
+);
+
+if (finishedAllNormalGames && !appState.completionBonusesClaimed.games) {
+  await claimCompletionBonus("games");
+}
 
   if (
   game.id !== "90-questions" &&
@@ -8371,6 +8448,19 @@ if (nextPoints > previousPoints) {
   setAppState,
 });
 
+const allPollIds = POLLS.map((item) => item.id);
+const nextCompletedPollIds = alreadyCompleted
+  ? appState.completedPollIds
+  : [...appState.completedPollIds, poll.id];
+
+const finishedAllPolls = allPollIds.every((id) =>
+  nextCompletedPollIds.includes(id)
+);
+
+if (finishedAllPolls && !appState.completionBonusesClaimed.polls) {
+  await claimCompletionBonus("polls");
+}
+
   setScreen("menu");
 };
 
@@ -8436,6 +8526,19 @@ if (nextPoints > previousPoints) {
   user,
   setAppState,
 });
+
+const allTestIds = TESTS.map((item) => item.id);
+const nextCompletedTestIds = alreadyCompleted
+  ? appState.completedTestIds
+  : [...appState.completedTestIds, test.id];
+
+const finishedAllTests = allTestIds.every((id) =>
+  nextCompletedTestIds.includes(id)
+);
+
+if (finishedAllTests && !appState.completionBonusesClaimed.tests) {
+  await claimCompletionBonus("tests");
+}
 
   setScreen("menu");
 };
