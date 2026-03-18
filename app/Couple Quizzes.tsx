@@ -7824,112 +7824,6 @@ function animatePairPoints(from: number, to: number) {
   requestAnimationFrame(frame);
 }
 
-const completionOverlayStyle: CSSProperties = {
-  position: "fixed",
-  inset: 0,
-  zIndex: 9999,
-  background:
-    "radial-gradient(circle at top, rgba(255,255,255,0.18), rgba(107,70,255,0.96) 35%, rgba(31,29,58,0.98) 100%)",
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",
-  padding: 20,
-};
-
-const completionCardStyle: CSSProperties = {
-  width: "100%",
-  maxWidth: 420,
-  borderRadius: 28,
-  padding: "28px 22px",
-  background:
-    "linear-gradient(180deg, rgba(255,255,255,0.98) 0%, rgba(245,240,255,0.98) 100%)",
-  boxShadow: "0 24px 80px rgba(0,0,0,0.28)",
-  textAlign: "center",
-  position: "relative",
-  overflow: "hidden",
-};
-
-const completionGlowStyle: CSSProperties = {
-  position: "absolute",
-  top: -80,
-  left: "50%",
-  transform: "translateX(-50%)",
-  width: 220,
-  height: 220,
-  borderRadius: "50%",
-  background: "rgba(255, 215, 120, 0.35)",
-  filter: "blur(30px)",
-  pointerEvents: "none",
-};
-
-const completionEmojiStyle: CSSProperties = {
-  fontSize: 64,
-  lineHeight: 1,
-  marginBottom: 12,
-};
-
-const completionTitleStyle: CSSProperties = {
-  fontSize: 28,
-  fontWeight: 900,
-  color: "#241b4b",
-  lineHeight: 1.15,
-};
-
-const completionSubtitleStyle: CSSProperties = {
-  marginTop: 10,
-  fontSize: 15,
-  lineHeight: 1.45,
-  color: "#5b5675",
-};
-
-const completionPointsStyle: CSSProperties = {
-  marginTop: 22,
-  fontSize: 42,
-  fontWeight: 900,
-  color: "#6b46ff",
-  lineHeight: 1,
-};
-
-const completionPointsLabelStyle: CSSProperties = {
-  marginTop: 8,
-  fontSize: 14,
-  fontWeight: 700,
-  color: "#7b7698",
-  textTransform: "uppercase",
-  letterSpacing: 0.8,
-};
-
-const completionBadgeRowStyle: CSSProperties = {
-  display: "flex",
-  gap: 10,
-  justifyContent: "center",
-  flexWrap: "wrap",
-  marginTop: 18,
-};
-
-const completionBadgeStyle: CSSProperties = {
-  padding: "8px 12px",
-  borderRadius: 999,
-  background: "rgba(107,70,255,0.10)",
-  color: "#5a35eb",
-  fontWeight: 800,
-  fontSize: 13,
-};
-
-const completionButtonStyle: CSSProperties = {
-  marginTop: 24,
-  width: "100%",
-  border: "none",
-  borderRadius: 18,
-  padding: "16px 18px",
-  fontSize: 16,
-  fontWeight: 900,
-  color: "#fff",
-  background: "linear-gradient(135deg, #7c4dff 0%, #ff5db1 100%)",
-  boxShadow: "0 14px 30px rgba(124,77,255,0.35)",
-  cursor: "pointer",
-};
-
 
 const claimCompletionBonus = async (
   type: "polls" | "tests" | "games"
@@ -7971,10 +7865,10 @@ const claimCompletionBonus = async (
  setCompletionBonusData({
   title: bonusData.title,
   points: 200,
-  section: type,
+  section: bonusData.section,
   emoji: bonusData.emoji,
 });
-setShowCompletionBonus(true);
+  setShowCompletionBonus(true);
 
   return true;
 };
@@ -9041,52 +8935,9 @@ if (finishedAllTests && !appState.completionBonusesClaimed.tests) {
 
 
 
-
         {!showDailyBonus && screen === "welcome" && totalActivities > 999999 && <div />}
       </div>
-
-      {showCompletionBonus && completionBonusData && (
-  <div style={completionOverlayStyle}>
-    <div style={completionCardStyle}>
-      <div style={completionGlowStyle} />
-
-      <div style={{ position: "relative", zIndex: 1 }}>
-        <div style={completionEmojiStyle}>
-          {completionBonusData.emoji ?? "🎉"}
-        </div>
-
-        <div style={completionTitleStyle}>
-          {completionBonusData.title}
-        </div>
-
-        <div style={completionSubtitleStyle}>
-          Ты полностью завершил{completionBonusData.section === "polls" ? " опросы" : completionBonusData.section === "tests" ? " тесты" : " раздел"} и получил праздничный бонус
-        </div>
-
-        <div style={completionPointsStyle}>+{completionBonusData.points}</div>
-        <div style={completionPointsLabelStyle}>очков пары</div>
-
-        <div style={completionBadgeRowStyle}>
-          <div style={completionBadgeStyle}>Полный раздел пройден</div>
-          <div style={completionBadgeStyle}>Бонус начислен</div>
-        </div>
-
-        <button
-          style={completionButtonStyle}
-          onClick={() => {
-            setShowCompletionBonus(false);
-            setCompletionBonusData(null);
-          }}
-        >
-          Забрать награду
-        </button>
-      </div>
-    </div>
-  </div>
-)}
-
     </main>
-  
 
 
     
