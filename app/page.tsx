@@ -6998,7 +6998,7 @@ function ReferralsScreen({
   onBack: () => void;
 }) {
   const inviteLink = user?.id
-    ? `https://t.me/${window.Telegram?.WebApp ? "YOUR_BOT_USERNAME" : "YOUR_BOT_USERNAME"}?startapp=ref_${user.id}`
+    ? `https://t.me/${window.Telegram?.WebApp ? "testcouple1_bot" : "testcouple1_bot"}?startapp=ref_${user.id}`
     : "";
 
   const handleInvite = () => {
