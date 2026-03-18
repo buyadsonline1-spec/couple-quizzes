@@ -6957,6 +6957,8 @@ async function loadReferralStats(telegramId: number) {
   };
 }
 
+const [appState, setAppState] = useState<AppState>(DEFAULT_STATE);
+
 function getTelegramUserSafe(fallbackUser: TgUser | null): TgUser | null {
   const tgUser = window.Telegram?.WebApp?.initDataUnsafe?.user;
 
@@ -7521,7 +7523,7 @@ const [showPaymentChoice, setShowPaymentChoice] = useState(false);
 const TRIBUTE_LINK = "https://t.me/tribute/app?startapp=sMuC";
   
   const [screen, setScreen] = useState<Screen>("welcome");
-  const [appState, setAppState] = useState<AppState>(DEFAULT_STATE);
+  
   const [user, setUser] = useState<TgUser | null>(null);
   const [showDailyBonus, setShowDailyBonus] = useState(true);
   const [claimableDay, setClaimableDay] = useState(1);
