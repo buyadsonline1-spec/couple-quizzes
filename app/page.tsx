@@ -40,6 +40,7 @@ type Screen =
   | "pair-invite"
   | "daily-pair"
   | "profile"
+  | "referrals"
   | "top"
   | "paywall";
 
@@ -6987,6 +6988,128 @@ function TopPlayersScreen({
   );
 }
 
+function ReferralsScreen({
+  user,
+  appState,
+  onBack,
+}: {
+  user: TgUser | null;
+  appState: AppState;
+  onBack: () => void;
+}) {
+  const inviteLink = user?.id
+    ? `https://t.me/${window.Telegram?.WebApp ? "YOUR_BOT_USERNAME" : "YOUR_BOT_USERNAME"}?startapp=ref_${user.id}`
+    : "";
+
+  const handleInvite = () => {
+    if (!user?.id) return;
+
+    const text =
+      `💖 Присоединяйся к Couple Quizzes!\n\n` +
+      `Проходите тесты, опросы и игры для пары вместе.\n\n` +
+      `Вот моя ссылка-приглашение:\n${inviteLink}`;
+
+    if (window.Telegram?.WebApp?.openTelegramLink) {
+      window.Telegram.WebApp.openTelegramLink(
+        `https://t.me/share/url?url=${encodeURIComponent(inviteLink)}&text=${encodeURIComponent(text)}`
+      );
+      return;
+    }
+
+    navigator.clipboard?.writeText(inviteLink);
+    alert("Ссылка приглашения скопирована");
+  };
+
+  return (
+    <div style={{ padding: 16 }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14 }}>
+        <button onClick={onBack} style={secondaryButtonStyle}>
+          Назад
+        </button>
+        <div style={{ fontSize: 24, fontWeight: 900, color: "#1f1d3a" }}>
+          Приглашай друзей
+        </div>
+      </div>
+
+      <div style={{ ...cardBaseStyle(), padding: 18 }}>
+        <div style={{ fontSize: 18, fontWeight: 900, color: "#1f1d3a" }}>
+          Твоя реферальная программа
+        </div>
+
+        <div style={{ marginTop: 10, fontSize: 14, lineHeight: 1.5, color: "#5f5a7a" }}>
+          Приглашай друзей в Couple Quizzes и получай очки за каждого нового пользователя,
+          который зашел по твоей ссылке.
+        </div>
+
+        <div style={{ display: "grid", gap: 10, marginTop: 16 }}>
+          <div style={{ ...cardBaseStyle(), padding: 14 }}>
+            <div style={{ fontSize: 13, color: "#7b7698", fontWeight: 700 }}>
+              Приглашено друзей
+            </div>
+            <div style={{ marginTop: 6, fontSize: 28, fontWeight: 900, color: "#1f1d3a" }}>
+              {appState.referrals.invitedUsers.length}
+            </div>
+          </div>
+
+          <div style={{ ...cardBaseStyle(), padding: 14 }}>
+            <div style={{ fontSize: 13, color: "#7b7698", fontWeight: 700 }}>
+              Заработано очков
+            </div>
+            <div style={{ marginTop: 6, fontSize: 28, fontWeight: 900, color: "#6b46ff" }}>
+              +{appState.referrals.totalReward}
+            </div>
+          </div>
+        </div>
+
+        <div style={{ marginTop: 16 }}>
+          <div style={{ fontSize: 13, color: "#7b7698", fontWeight: 700, marginBottom: 8 }}>
+            Твоя ссылка
+          </div>
+
+          <div
+            style={{
+              background: "#f6f3ff",
+              borderRadius: 16,
+              padding: 12,
+              fontSize: 13,
+              lineHeight: 1.45,
+              color: "#1f1d3a",
+              wordBreak: "break-word",
+            }}
+          >
+            {inviteLink || "Ссылка появится после загрузки профиля"}
+          </div>
+        </div>
+
+        <button
+          style={{ ...primaryButtonStyle, width: "100%", marginTop: 16 }}
+          onClick={handleInvite}
+        >
+          Пригласить друзей
+        </button>
+      </div>
+
+      <div style={{ ...cardBaseStyle(), padding: 18, marginTop: 14 }}>
+        <div style={{ fontSize: 17, fontWeight: 900, color: "#1f1d3a" }}>
+          Как это работает
+        </div>
+
+        <div style={{ marginTop: 10, display: "grid", gap: 10 }}>
+          <div style={{ fontSize: 14, color: "#5f5a7a", lineHeight: 1.45 }}>
+            1. Ты отправляешь другу ссылку
+          </div>
+          <div style={{ fontSize: 14, color: "#5f5a7a", lineHeight: 1.45 }}>
+            2. Друг открывает Couple Quizzes по ней
+          </div>
+          <div style={{ fontSize: 14, color: "#5f5a7a", lineHeight: 1.45 }}>
+            3. Ты получаешь +200 очков за нового пользователя
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 
 function ProfileAndStatsScreen({
   user,
@@ -6998,6 +7121,7 @@ function ProfileAndStatsScreen({
   referrals,
   isPremium,
   onBack,
+  onNavigate,
 }: {
 
   user: TgUser | null;
@@ -7005,6 +7129,7 @@ function ProfileAndStatsScreen({
   stats: AppStats;
   bonusState: DailyBonusState;
   wonRewards: WonReward[];
+    onNavigate: (screen: Screen) => void;
   pairPollAnswers: Record<string, number[]>;
 
   referrals: {
@@ -7132,37 +7257,16 @@ function ProfileAndStatsScreen({
     который откроет приложение по твоей ссылке.
   </div>
 
-  <div
-    style={{
-      marginTop: 12,
-      padding: "12px 14px",
-      borderRadius: 16,
-      background: "rgba(255,255,255,0.26)",
-      fontWeight: 800,
-      wordBreak: "break-all",
-      fontSize: 13,
-    }}
-  >
-    {getReferralLink(user)}
-  </div>
+
 
   <button
-    onClick={() => {
-      const link = getReferralLink(user);
-      navigator.clipboard.writeText(link);
-      alert("Ссылка скопирована");
-    }}
-    style={{ ...primaryButtonStyle, width: "100%", marginTop: 12 }}
-  >
-    Копировать ссылку
-  </button>
-
-  <button
-  onClick={() => shareReferralLink(user)}
-  style={{ ...secondaryButtonStyle, marginTop: 10 }}
+  onClick={() => onNavigate("referrals")}
+  style={{ ...primaryButtonStyle, width: "100%", marginTop: 12 }}
 >
-  Пригласить друга через Telegram
+  Пригласить друзей
 </button>
+  
+
 
 </div>
 
@@ -9007,6 +9111,7 @@ if (finishedAllTests && !appState.completionBonusesClaimed.tests) {
   pairPollAnswers={appState.pairPollAnswers}
   referrals={appState.referrals}
   isPremium={appState.isPremium}
+  onNavigate={setScreen}
   onBack={() => setScreen("menu")}
 />
 
