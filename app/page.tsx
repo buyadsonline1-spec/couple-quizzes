@@ -8,6 +8,7 @@ declare global {
   interface Window {
     Telegram?: {
       WebApp?: {
+        openInvoice?: (url: string, callback?: (status: string) => void) => void;
         openTelegramLink?: (url: string) => void;
         ready?: () => void;
         expand?: () => void;
@@ -528,6 +529,8 @@ async function loadPremiumStatus(telegramId: number) {
 
   return !!data;
 }
+
+
 
 function createPollQuestions(theme: string) {
   const scaleOptions = [
@@ -7851,11 +7854,11 @@ const handleBuyPremium = async () => {
       throw new Error("Ссылка на оплату не получена");
     }
 
-    if (window.Telegram?.WebApp?.openTelegramLink) {
-      window.Telegram.WebApp.openTelegramLink(invoiceLink);
-    } else {
-      window.location.href = invoiceLink;
-    }
+    if (window.Telegram?.WebApp?.openInvoice) {
+  window.Telegram.WebApp.openInvoice(invoiceLink);
+} else {
+  window.location.href = invoiceLink;
+}
   } catch (error) {
     console.error("BUY PREMIUM ERROR:", error);
     alert("Не удалось открыть оплату. Попробуй ещё раз.");
