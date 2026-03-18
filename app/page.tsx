@@ -7968,7 +7968,7 @@ const claimCompletionBonus = async (
     },
   }));
 
- setCompletionBonusData({
+setCompletionBonusData({
   title: bonusData.title,
   points: 200,
   section: type,
