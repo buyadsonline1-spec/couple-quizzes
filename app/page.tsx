@@ -271,7 +271,7 @@ const WHEEL_SPIN_COST = 2000;
 const TESTS: TestDefinition[] = [
   {
     id: "trust-level",
-    title: "Уровень доверия к партнёру",
+    title: "Уровень доверия к партнёру!",
     description: "Покажет, насколько спокойно и уверенно ты чувствуешь себя в отношениях.",
     reward: 50,
     kind: "scale",
