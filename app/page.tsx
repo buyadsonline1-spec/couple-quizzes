@@ -271,7 +271,7 @@ const TESTS: TestDefinition[] = [
     id: "trust-level",
     title: "Уровень доверия к партнёру",
     description: "Покажет, насколько спокойно и уверенно ты чувствуешь себя в отношениях.",
-    reward: 80,
+    reward: 50,
     kind: "scale",
     questions: [
       {
@@ -320,7 +320,7 @@ const TESTS: TestDefinition[] = [
     id: "love-language",
     title: "Язык любви",
     description: "Определит, как тебе приятнее всего чувствовать любовь и заботу.",
-    reward: 90,
+    reward: 60,
     kind: "love-language",
     questions: [
       {
@@ -395,7 +395,7 @@ const TESTS: TestDefinition[] = [
     id: "personality-strengths",
     title: "Сильные стороны личности",
     description: "Покажет, какая твоя энергия сильнее всего проявляется в жизни и отношениях.",
-    reward: 85,
+    reward: 60,
     kind: "personality",
     questions: [
       {
