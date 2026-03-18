@@ -7844,6 +7844,7 @@ const handleBuyPremium = async () => {
     });
 
     const data = await res.json();
+    console.log("BUY PREMIUM RESPONSE:", data);
 
     if (!res.ok) {
       throw new Error(data?.error || "Не удалось создать оплату");
@@ -7855,13 +7856,15 @@ const handleBuyPremium = async () => {
     }
 
     if (window.Telegram?.WebApp?.openInvoice) {
-  window.Telegram.WebApp.openInvoice(invoiceLink);
-} else {
-  window.location.href = invoiceLink;
-}
+      window.Telegram.WebApp.openInvoice(invoiceLink, (status) => {
+        console.log("INVOICE STATUS:", status);
+      });
+    } else {
+      throw new Error("Telegram WebApp openInvoice недоступен");
+    }
   } catch (error) {
     console.error("BUY PREMIUM ERROR:", error);
-    alert("Не удалось открыть оплату. Попробуй ещё раз.");
+    alert(error instanceof Error ? error.message : "Не удалось открыть оплату");
   } finally {
     setPremiumLoading(false);
   }
@@ -8321,7 +8324,9 @@ await refreshPairData({
 
 const [weeklyPairLeaderboard, setWeeklyPairLeaderboard] = useState<WeeklyPairLeaderboardRow[]>([]);
 
+const [showPaymentChoice, setShowPaymentChoice] = useState(false);
 
+const TRIBUTE_LINK = "https://t.me/tribute/app?startapp=sMuC";
   const [mounted, setMounted] = useState(false);
   const [screen, setScreen] = useState<Screen>("welcome");
   const [appState, setAppState] = useState<AppState>(DEFAULT_STATE);
@@ -9089,11 +9094,11 @@ if (finishedAllTests && !appState.completionBonusesClaimed.tests) {
       </div>
 
       <button
-        style={{ ...primaryButtonStyle, width: "100%", marginTop: 14 }}
-        onClick={handleBuyPremium}
-      >
-        Получить полный доступ
-      </button>
+  style={{ ...primaryButtonStyle, width: "100%", marginTop: 14 }}
+  onClick={() => setShowPaymentChoice(true)}
+>
+  Получить полный доступ
+</button>
 
       <button
         onClick={() => setScreen("menu")}
@@ -9156,6 +9161,113 @@ if (finishedAllTests && !appState.completionBonusesClaimed.tests) {
           Забрать награду
         </button>
       </div>
+    </div>
+  </div>
+)}
+
+{showPaymentChoice && (
+  <div
+    style={{
+      position: "fixed",
+      inset: 0,
+      zIndex: 9999,
+      background: "rgba(12, 10, 24, 0.72)",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      padding: 20,
+    }}
+  >
+    <div
+      style={{
+        width: "100%",
+        maxWidth: 420,
+        borderRadius: 24,
+        background: "#fff",
+        padding: 22,
+        boxShadow: "0 24px 80px rgba(0,0,0,0.28)",
+      }}
+    >
+      <div
+        style={{
+          fontSize: 26,
+          fontWeight: 900,
+          color: "#1f1d3a",
+          textAlign: "center",
+        }}
+      >
+        Полный доступ
+      </div>
+
+      <div
+        style={{
+          marginTop: 10,
+          fontSize: 15,
+          lineHeight: 1.5,
+          color: "#5f5a7a",
+          textAlign: "center",
+        }}
+      >
+        Выбери удобный способ оплаты
+      </div>
+
+      <button
+        style={{
+          ...primaryButtonStyle,
+          width: "100%",
+          marginTop: 18,
+          opacity: premiumLoading ? 0.7 : 1,
+        }}
+        disabled={premiumLoading}
+        onClick={() => {
+          setShowPaymentChoice(false);
+          handleBuyPremium();
+        }}
+      >
+        {premiumLoading ? "Открываем оплату..." : "⭐ Оплатить через Stars"}
+      </button>
+
+      <button
+        style={{
+          width: "100%",
+          marginTop: 10,
+          border: "1px solid rgba(31,29,58,0.12)",
+          background: "#fff",
+          color: "#1f1d3a",
+          borderRadius: 16,
+          padding: "14px 16px",
+          fontSize: 16,
+          fontWeight: 800,
+          cursor: "pointer",
+        }}
+        onClick={() => {
+          if (window.Telegram?.WebApp?.openTelegramLink) {
+            window.Telegram.WebApp.openTelegramLink(TRIBUTE_LINK);
+          } else {
+            window.location.href = TRIBUTE_LINK;
+          }
+        }}
+      >
+        💎 Оплатить через Tribute
+      </button>
+
+      <button
+        style={{
+          width: "100%",
+          marginTop: 10,
+          border: "none",
+          background: "transparent",
+          color: "#6b46ff",
+          borderRadius: 16,
+          padding: "12px 16px",
+          fontSize: 15,
+          fontWeight: 800,
+          cursor: "pointer",
+        }}
+        onClick={() => setShowPaymentChoice(false)}
+      >
+        Отмена
+      </button>
     </div>
   </div>
 )}

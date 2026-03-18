@@ -8,12 +8,17 @@ export async function POST(req: NextRequest) {
     const telegramId = body?.telegramId;
     const plan = body?.plan;
 
+    console.log("CREATE INVOICE BODY:", body);
+console.log("BOT TOKEN EXISTS:", !!BOT_TOKEN);
+
     if (!telegramId) {
       return NextResponse.json(
         { error: "telegramId is required" },
         { status: 400 }
       );
     }
+
+    console.log("TELEGRAM CREATE INVOICE RESPONSE:", tgData);
 
     if (plan !== "premium_month") {
       return NextResponse.json(
