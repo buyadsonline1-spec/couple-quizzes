@@ -7062,7 +7062,7 @@ function ReferralsScreen({
         </div>
 
         <div style={{ marginTop: 10, fontSize: 14, lineHeight: 1.5, color: "#5f5a7a" }}>
-          Приглашай друзей в Couple Quizzes и получай очки за каждого нового пользователя,
+          Приглашай друзей в Couple Quizzes и получай +200 очков за каждого нового пользователя,
           который зашел по твоей ссылке.
         </div>
 
@@ -7114,23 +7114,7 @@ function ReferralsScreen({
         </button>
       </div>
 
-      <div style={{ ...cardBaseStyle(), padding: 18, marginTop: 14 }}>
-        <div style={{ fontSize: 17, fontWeight: 900, color: "#1f1d3a" }}>
-          Как это работает
-        </div>
-
-        <div style={{ marginTop: 10, display: "grid", gap: 10 }}>
-          <div style={{ fontSize: 14, color: "#5f5a7a", lineHeight: 1.45 }}>
-            1. Ты отправляешь другу ссылку
-          </div>
-          <div style={{ fontSize: 14, color: "#5f5a7a", lineHeight: 1.45 }}>
-            2. Друг открывает Couple Quizzes по ней
-          </div>
-          <div style={{ fontSize: 14, color: "#5f5a7a", lineHeight: 1.45 }}>
-            3. Ты получаешь +200 очков за нового пользователя
-          </div>
-        </div>
-      </div>
+     
     </div>
   );
 }
@@ -7291,21 +7275,19 @@ function ProfileAndStatsScreen({
   Пригласить друзей
 </button>
   
-
-
 </div>
 
-
-
-
-
-
-
-     
-
-      <button onClick={onBack} style={secondaryButtonStyle}>
-        Назад в меню
-      </button>
+<button
+  onClick={onBack}
+  style={{
+    ...secondaryButtonStyle,
+    width: "100%",
+    marginTop: 16,
+  }}
+>
+  Назад
+</button>
+  
     </div>
   );
 }
