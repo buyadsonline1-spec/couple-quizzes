@@ -29,6 +29,7 @@ declare global {
 
 type Screen =
   | "welcome"
+  | "gender-select"
   | "menu"
   | "polls"
   | "polls-boy"
@@ -140,9 +141,10 @@ dailyPairStreak: {
 };
 
   profile: {
-    displayName: string;
-    avatar: string | null;
-  };
+  displayName: string;
+  avatar: string | null;
+  gender: "boy" | "girl" | null;
+};
 };
 
  type Poll = {
@@ -542,7 +544,7 @@ function createPollQuestions(theme: string) {
   ];
 
   switch (theme) {
-    
+
 
     case "Ревность":
   return [
@@ -1546,6 +1548,12 @@ const DEFAULT_STATE: AppState = {
   referrals: {
   invitedUsers: [],
   totalReward: 0,
+},
+
+profile: {
+  displayName: "",
+  avatar: null,
+  gender: null,
 },
 
 completionBonusesClaimed: {
@@ -6257,6 +6265,53 @@ function RewardsScreen({
   );
 }
 
+function GenderSelectScreen({
+  onSelect,
+}: {
+  onSelect: (gender: "boy" | "girl") => void;
+}) {
+  return (
+    <div style={{ padding: 16 }}>
+      <div style={{ ...cardBaseStyle(), padding: 20, textAlign: "center" }}>
+        <div
+          style={{
+            fontSize: 24,
+            fontWeight: 900,
+            color: "#1f1d3a",
+          }}
+        >
+          Выбери свой пол
+        </div>
+
+        <div
+          style={{
+            marginTop: 10,
+            fontSize: 14,
+            lineHeight: 1.5,
+            color: "#5f5a7a",
+          }}
+        >
+          Это нужно только один раз, чтобы показывать тебе подходящие опросы и тесты.
+        </div>
+
+        <button
+          style={{ ...primaryButtonStyle, width: "100%", marginTop: 18 }}
+          onClick={() => onSelect("boy")}
+        >
+          Я парень
+        </button>
+
+        <button
+          style={{ ...secondaryButtonStyle, width: "100%", marginTop: 10 }}
+          onClick={() => onSelect("girl")}
+        >
+          Я девушка
+        </button>
+      </div>
+    </div>
+  );
+}
+
 function TopPlayersScreen({
   pair,
   leaderboard,
@@ -7429,6 +7484,19 @@ const handleBuyPremium = async () => {
   }
 };
 
+
+const handleSelectGender = (gender: "boy" | "girl") => {
+  setAppState((prev) => ({
+    ...prev,
+    profile: {
+      ...prev.profile,
+      gender,
+    },
+  }));
+
+  setScreen("menu");
+};
+
 function animatePairPoints(from: number, to: number) {
   const duration = 900;
   const start = performance.now();
@@ -8468,6 +8536,10 @@ if (finishedAllTests && !appState.completionBonusesClaimed.tests) {
 
         {screen === "welcome" && <WelcomeScreen onStart={() => setScreen("menu")} />}
 
+          {screen === "gender-select" && (
+  <GenderSelectScreen onSelect={handleSelectGender} />
+)}
+
        {screen === "menu" && (
   <MainMenu
   points={appState.points}
@@ -8669,7 +8741,9 @@ if (finishedAllTests && !appState.completionBonusesClaimed.tests) {
 </button>
 
       <button
-        onClick={() => setScreen("menu")}
+        onClick={() =>
+  setScreen(appState.profile.gender ? "menu" : "gender-select")
+}
         style={{ ...secondaryButtonStyle, marginTop: 10 }}
       >
         Назад
