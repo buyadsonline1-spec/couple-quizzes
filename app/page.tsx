@@ -8,6 +8,7 @@ declare global {
   interface Window {
     Telegram?: {
       WebApp?: {
+        openTelegramLink?: (url: string) => void;
         ready?: () => void;
         expand?: () => void;
         initDataUnsafe?: {
@@ -7805,6 +7806,64 @@ export default function Page() {
   };
 }
 
+const [premiumLoading, setPremiumLoading] = useState(false);
+
+async function loadPremiumStatus(telegramId: number) {
+  const { data, error } = await supabase
+    .from("subscriptions")
+    .select("status, expires_at")
+    .eq("telegram_id", telegramId)
+    .eq("status", "active")
+    .gt("expires_at", new Date().toISOString())
+    .maybeSingle();
+
+  if (error) {
+    console.error("LOAD PREMIUM STATUS ERROR:", error);
+    return false;
+  }
+
+  return !!data;
+}
+
+const handleBuyPremium = async () => {
+  try {
+    setPremiumLoading(true);
+
+    const res = await fetch("/api/payments/create-stars-invoice", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        telegramId: user?.id,
+        plan: "premium_month",
+      }),
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      throw new Error(data?.error || "Не удалось создать оплату");
+    }
+
+    const invoiceLink = data?.invoiceLink;
+    if (!invoiceLink) {
+      throw new Error("Ссылка на оплату не получена");
+    }
+
+    if (window.Telegram?.WebApp?.openTelegramLink) {
+      window.Telegram.WebApp.openTelegramLink(invoiceLink);
+    } else {
+      window.location.href = invoiceLink;
+    }
+  } catch (error) {
+    console.error("BUY PREMIUM ERROR:", error);
+    alert("Не удалось открыть оплату. Попробуй ещё раз.");
+  } finally {
+    setPremiumLoading(false);
+  }
+};
+
 function animatePairPoints(from: number, to: number) {
   const duration = 900;
   const start = performance.now();
@@ -8382,6 +8441,8 @@ const nextDay = getNextStreakDay(
   saved.dailyBonus.streakDay
 );
 
+
+
 const today = getTodayLocalDateString();
 const alreadyOpenedToday = saved.lastDailyBonusPopupDate === today;
 
@@ -8399,6 +8460,13 @@ if (!telegramUser?.id) {
   console.log("Telegram user still not available");
   return;
 }
+
+const hasPremium = await loadPremiumStatus(telegramUser.id);
+
+setAppState((prev) => ({
+  ...prev,
+  isPremium: hasPremium || prev.isPremium,
+}));
 
    const currentUser: TgUser = {
   id: telegramUser.id,
