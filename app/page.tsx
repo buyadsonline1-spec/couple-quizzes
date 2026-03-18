@@ -8173,18 +8173,20 @@ const [weeklyPairLeaderboard, setWeeklyPairLeaderboard] = useState<WeeklyPairLea
   }
 }, [showLevelUp]);
 
+const [showCompletionBonus, setShowCompletionBonus] = useState(false);
+const [completionBonusData, setCompletionBonusData] = useState<{
+  title: string;
+  points: number;
+  section: string;
+} | null>(null);
+
 useEffect(() => {
   if (showCompletionBonus) {
     launchLevelConfetti();
   }
 }, [showCompletionBonus]);
 
-const [showCompletionBonus, setShowCompletionBonus] = useState(false);
-const [completionBonusData, setCompletionBonusData] = useState<{
-  title: string;
-  points: number;
-  emoji: string;
-} | null>(null);
+
 
 useEffect(() => {
   if (!mounted) return;
