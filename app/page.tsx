@@ -3519,7 +3519,7 @@ function MainMenu({
 >
           <div
             style={{
-              width: `${pairLevel.progressPercent}%`,
+              
               height: "100%",
               borderRadius: 999,
               background: "linear-gradient(135deg,#8f6bff,#ff76ba)",
@@ -7057,12 +7057,10 @@ const handleSelectGender = (gender: "boy" | "girl") => {
 };
 
 useEffect(() => {
-  if (!mounted) return;
-
-  if (screen === "menu" && !appState.profile.gender) {
+  if (mounted && !appState.profile.gender) {
     setScreen("gender-select");
   }
-}, [mounted, screen, appState.profile.gender]);
+}, [mounted, appState.profile.gender]);
 
 function animatePairPoints(from: number, to: number) {
   const duration = 900;
