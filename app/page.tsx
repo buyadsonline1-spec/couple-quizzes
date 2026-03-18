@@ -512,6 +512,23 @@ function launchLevelConfetti() {
   })();
 }
 
+async function loadPremiumStatus(telegramId: number) {
+  const { data, error } = await supabase
+    .from("subscriptions")
+    .select("status, expires_at")
+    .eq("telegram_id", telegramId)
+    .eq("status", "active")
+    .gt("expires_at", new Date().toISOString())
+    .maybeSingle();
+
+  if (error) {
+    console.error("LOAD PREMIUM STATUS ERROR:", error);
+    return false;
+  }
+
+  return !!data;
+}
+
 function createPollQuestions(theme: string) {
   const scaleOptions = [
     "Полностью согласен",
@@ -8444,7 +8461,19 @@ if (!telegramUser?.id) {
   return;
 }
 
-const hasPremium = await loadPremiumStatus(telegramUser.id);
+const telegramId = telegramUser.id;
+
+if (!telegramId) {
+  console.log("Telegram user id is missing");
+  return;
+}
+
+const hasPremium = await loadPremiumStatus(telegramId);
+
+setAppState((prev) => ({
+  ...prev,
+  isPremium: hasPremium || prev.isPremium,
+}));
 
 setAppState((prev) => ({
   ...prev,
