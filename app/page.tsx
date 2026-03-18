@@ -8814,9 +8814,9 @@ if (finishedAllTests && !appState.completionBonusesClaimed.tests) {
 
 {showCompletionBonus && completionBonusData && (
   <CompletionBonusModal
-    title={completionBonusData.title}
+    title={completionBonusData?.title}
     points={completionBonusData.points}
-    emoji={completionBonusData.emoji}
+    emoji={completionBonusData.emoji ?? "🎉"}
     onClose={() => {
       setShowCompletionBonus(false);
       setCompletionBonusData(null);
@@ -9045,30 +9045,36 @@ if (finishedAllTests && !appState.completionBonusesClaimed.tests) {
         {!showDailyBonus && screen === "welcome" && totalActivities > 999999 && <div />}
       </div>
 
-      {showCompletionBonus && completionBonusData && (
+     {showCompletionBonus && completionBonusData && (
   <div style={completionOverlayStyle}>
     <div style={completionCardStyle}>
       <div style={completionGlowStyle} />
 
       <div style={{ position: "relative", zIndex: 1 }}>
         <div style={completionEmojiStyle}>
-          {completionBonusData.emoji ?? "🎉"}
+          {completionBonusData?.emoji ?? "🎉"}
         </div>
 
         <div style={completionTitleStyle}>
-          {completionBonusData.title}
+          {completionBonusData?.title}
         </div>
 
         <div style={completionSubtitleStyle}>
-          Ты полностью завершил{completionBonusData.section === "polls" ? " опросы" : completionBonusData.section === "tests" ? " тесты" : " раздел"} и получил праздничный бонус
+          Ты полностью завершил
+          {completionBonusData?.section === "polls"
+            ? " опросы"
+            : completionBonusData?.section === "tests"
+            ? " тесты"
+            : " раздел"}
+          {" "}и получил праздничный бонус
         </div>
 
-        <div style={completionPointsStyle}>+{completionBonusData.points}</div>
-        <div style={completionPointsLabelStyle}>очков пары</div>
+        <div style={completionPointsStyle}>
+          +{completionBonusData?.points ?? 0}
+        </div>
 
-        <div style={completionBadgeRowStyle}>
-          <div style={completionBadgeStyle}>Полный раздел пройден</div>
-          <div style={completionBadgeStyle}>Бонус начислен</div>
+        <div style={completionPointsLabelStyle}>
+          очков пары
         </div>
 
         <button
