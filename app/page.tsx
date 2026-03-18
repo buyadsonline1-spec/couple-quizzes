@@ -7020,30 +7020,25 @@ function ReferralsScreen({
     alert("Ссылка приглашения скопирована");
   };
 
-  return (
-    <div style={{ padding: 16 }}>
+return (
+  <div style={{ padding: 16 }}>
+    
+    {/* Заголовок */}
+    <div style={{ ...cardBaseStyle(), padding: 16, marginBottom: 14 }}>
       <div
-  style={{
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "space-between",
-    marginBottom: 16,
-  }}
->
-  <div
-    style={{
-      fontSize: 20,
-      fontWeight: 900,
-      color: "#1f1d3a",
-    }}
-  >
-    Пригласить друзей
-  </div>
+        style={{
+          fontSize: 22,
+          fontWeight: 900,
+          color: "#1f1d3a",
+          textAlign: "center",
+        }}
+      >
+        👥 Пригласить друзей
+      </div>
+    </div>
 
-  
-</div>
-
-      <div style={{ ...cardBaseStyle(), padding: 18 }}>
+    {/* Основная карточка */}
+    <div style={{ ...cardBaseStyle(), padding: 18 }}>
         <div style={{ fontSize: 18, fontWeight: 900, color: "#1f1d3a" }}>
           Твоя реферальная программа
         </div>
