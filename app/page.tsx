@@ -147,6 +147,12 @@ dailyPairStreak: {
 };
 };
 
+type PollQuestion = {
+  id: string;
+  text: string;
+  options: string[];
+};
+
  type Poll = {
   id: string;
   title: string;
@@ -762,7 +768,7 @@ function createPollQuestions(
             { id: "q6", text: "Я считаю, что крепкие отношения строятся на любви и взаимном уважении.", options },
           ];
   }
-  
+}
 
   const POLL_THEMES = [
   {
