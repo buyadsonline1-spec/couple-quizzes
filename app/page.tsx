@@ -2110,53 +2110,173 @@ function PairStreakInfoScreen({
   onBack: () => void;
 }) {
   const milestones = [
-    { days: 3, reward: 100 },
-    { days: 5, reward: 200 },
-    { days: 10, reward: 500 },
-    { days: 15, reward: 750 },
+    { days: 3, reward: 100, icon: "🔥" },
+    { days: 5, reward: 200, icon: "🏆" },
+    { days: 10, reward: 500, icon: "💎" },
+    { days: 15, reward: 750, icon: "👑" },
   ];
 
   const current = appState.dailyPairStreak.current;
   const reachedMilestones = appState.dailyPairStreak.reachedMilestones;
 
+  const nextMilestone = milestones.find((item) => item.days > current);
+
   return (
     <div style={{ padding: 16, display: "grid", gap: 14 }}>
-      <button
-        onClick={onBack}
+      <div
         style={{
-          border: "none",
-          background: "rgba(255,255,255,0.78)",
-          borderRadius: 999,
-          padding: "10px 14px",
-          fontWeight: 800,
-          cursor: "pointer",
-          color: "#1f1d3a",
-          width: "fit-content",
+          display: "flex",
+          alignItems: "center",
+          gap: 10,
         }}
       >
-        ← Назад
-      </button>
+        <button
+          onClick={onBack}
+          style={{
+            border: "none",
+            background: "rgba(255,255,255,0.72)",
+            borderRadius: 999,
+            padding: "10px 14px",
+            fontWeight: 800,
+            fontSize: 16,
+            cursor: "pointer",
+            color: "#2a2143",
+            boxShadow: "0 8px 22px rgba(80, 45, 140, 0.08)",
+          }}
+        >
+          ← Назад
+        </button>
+      </div>
 
-      <div style={{ ...cardBaseStyle(), padding: 18 }}>
-        <div style={{ fontSize: 18, fontWeight: 900, color: "#1f1d3a" }}>
-          🔥 Серия пары
+      <div
+        style={{
+          ...cardBaseStyle(),
+          padding: 18,
+          background:
+            "linear-gradient(135deg, rgba(255,255,255,0.38), rgba(255,255,255,0.22))",
+        }}
+      >
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            gap: 12,
+          }}
+        >
+          <div>
+            <div
+              style={{
+                fontSize: 16,
+                fontWeight: 900,
+                color: "#2b2148",
+              }}
+            >
+              🔥 Серия пары
+            </div>
+
+            <div
+              style={{
+                marginTop: 10,
+                fontSize: 36,
+                fontWeight: 900,
+                color: "#1f1d3a",
+                lineHeight: 1,
+              }}
+            >
+              {current} дн.
+            </div>
+
+            <div
+              style={{
+                marginTop: 8,
+                fontSize: 14,
+                lineHeight: 1.5,
+                color: "rgba(43,33,72,0.72)",
+                maxWidth: 240,
+              }}
+            >
+              Вы оба отвечаете на вопрос дня подряд и прокачиваете серию пары.
+            </div>
+          </div>
+
+          <div
+            style={{
+              minWidth: 86,
+              height: 86,
+              borderRadius: 24,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              background:
+                "linear-gradient(135deg, rgba(255,255,255,0.82), rgba(255,240,248,0.72))",
+              fontSize: 34,
+              boxShadow: "inset 0 1px 0 rgba(255,255,255,0.65)",
+            }}
+          >
+            🔥
+          </div>
         </div>
 
         <div
           style={{
-            marginTop: 10,
-            fontSize: 15,
-            lineHeight: 1.5,
-            color: "rgba(31,29,58,0.78)",
+            marginTop: 14,
+            padding: "12px 14px",
+            borderRadius: 16,
+            background: "rgba(255,255,255,0.36)",
+            border: "1px solid rgba(255,255,255,0.35)",
           }}
         >
-          Сейчас у вашей пары серия: <b>{current} дн.</b>
+          <div
+            style={{
+              fontSize: 13,
+              fontWeight: 700,
+              color: "#6c6487",
+            }}
+          >
+            Следующий бонус
+          </div>
+
+          <div
+            style={{
+              marginTop: 4,
+              fontSize: 16,
+              fontWeight: 900,
+              color: "#6f54ff",
+            }}
+          >
+            {nextMilestone
+              ? `${nextMilestone.days} дн. · +${nextMilestone.reward} очков`
+              : "Максимальный рубеж достигнут"}
+          </div>
         </div>
       </div>
 
-      <div style={{ ...cardBaseStyle(), padding: 18 }}>
-        <div style={{ fontSize: 18, fontWeight: 900, color: "#1f1d3a" }}>
+      <div
+        style={{
+          ...cardBaseStyle(),
+          padding: 18,
+        }}
+      >
+        <div
+          style={{
+            fontSize: 18,
+            fontWeight: 900,
+            color: "#1f1d3a",
+          }}
+        >
           🏆 Рубежи серии
+        </div>
+
+        <div
+          style={{
+            marginTop: 8,
+            fontSize: 14,
+            lineHeight: 1.45,
+            color: "rgba(43,33,72,0.72)",
+          }}
+        >
+          Чем длиннее серия, тем больше бонусных очков получает ваша пара.
         </div>
 
         <div
@@ -2164,11 +2284,12 @@ function PairStreakInfoScreen({
             display: "grid",
             gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
             gap: 12,
-            marginTop: 14,
+            marginTop: 16,
           }}
         >
-          {milestones.map(({ days, reward }) => {
+          {milestones.map(({ days, reward, icon }) => {
             const reached = reachedMilestones.includes(days);
+            const isNext = !reached && nextMilestone?.days === days;
 
             return (
               <div
@@ -2177,25 +2298,80 @@ function PairStreakInfoScreen({
                   borderRadius: 22,
                   padding: 16,
                   background: reached
-                    ? "linear-gradient(135deg, rgba(255,230,240,0.95), rgba(255,255,255,0.9))"
-                    : "rgba(255,255,255,0.55)",
+                    ? "linear-gradient(135deg, rgba(255,236,244,0.98), rgba(255,255,255,0.92))"
+                    : isNext
+                    ? "linear-gradient(135deg, rgba(255,255,255,0.82), rgba(245,240,255,0.74))"
+                    : "rgba(255,255,255,0.42)",
                   border: reached
-                    ? "2px solid rgba(255,120,190,0.35)"
-                    : "1px solid rgba(255,255,255,0.6)",
-                  textAlign: "center",
+                    ? "2px solid rgba(255,118,186,0.28)"
+                    : isNext
+                    ? "2px solid rgba(111,84,255,0.18)"
+                    : "1px solid rgba(255,255,255,0.45)",
+                  boxShadow: reached
+                    ? "0 10px 24px rgba(255,120,170,0.10)"
+                    : "none",
                 }}
               >
-                <div style={{ fontSize: 22 }}>
-                  {reached ? "🔥" : "▫️"}
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                  }}
+                >
+                  <div
+                    style={{
+                      width: 34,
+                      height: 34,
+                      borderRadius: 999,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      background: "rgba(255,255,255,0.72)",
+                      fontSize: 18,
+                    }}
+                  >
+                    {reached ? icon : "▫️"}
+                  </div>
+
+                  {reached && (
+                    <div
+                      style={{
+                        fontSize: 11,
+                        fontWeight: 800,
+                        color: "#ff5ea8",
+                        background: "rgba(255,255,255,0.82)",
+                        padding: "5px 8px",
+                        borderRadius: 999,
+                      }}
+                    >
+                      получено
+                    </div>
+                  )}
+
+                  {!reached && isNext && (
+                    <div
+                      style={{
+                        fontSize: 11,
+                        fontWeight: 800,
+                        color: "#6f54ff",
+                        background: "rgba(255,255,255,0.82)",
+                        padding: "5px 8px",
+                        borderRadius: 999,
+                      }}
+                    >
+                      следующий
+                    </div>
+                  )}
                 </div>
 
                 <div
                   style={{
-                    fontSize: 28,
+                    marginTop: 16,
+                    fontSize: 34,
                     fontWeight: 900,
                     color: "#1f1d3a",
                     lineHeight: 1,
-                    marginTop: 8,
                   }}
                 >
                   {days}
@@ -2206,18 +2382,18 @@ function PairStreakInfoScreen({
                     marginTop: 6,
                     fontSize: 15,
                     fontWeight: 700,
-                    color: "rgba(31,29,58,0.78)",
+                    color: "#6c6487",
                   }}
                 >
-                  дней
+                  дней подряд
                 </div>
 
                 <div
                   style={{
-                    marginTop: 8,
-                    fontSize: 18,
+                    marginTop: 12,
+                    fontSize: 22,
                     fontWeight: 900,
-                    color: "#7c5cff",
+                    color: "#6f54ff",
                   }}
                 >
                   +{reward}
