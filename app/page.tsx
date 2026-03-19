@@ -3806,9 +3806,9 @@ const activePoll = POLLS.find((poll) => poll.id === activePollId) || null;
     if (!activePoll) return;
     onCompletePoll(activePoll, answers);
     setActivePollId(null);
-    setCurrentQuestionIndex(0);
-    setAnswers([]);
-    setFinished(false);
+setCurrentQuestionIndex(0);
+setAnswers([]);
+setFinished(false);
   }
 
   if (!activePollId) {
@@ -6611,7 +6611,9 @@ async function loadPairStateForUser(telegramId: number): Promise<PairState> {
   totalPoints: 0,
 };
 
-
+const FREE_POLLS_LIMIT = 3;
+const FREE_TESTS_LIMIT = 1;
+const FREE_GAME_STEPS_LIMIT = 3;
 
   const { data: profile, error: profileError } = await supabase
     .from("profiles")
@@ -7194,6 +7196,11 @@ const handleSelectGender = (gender: "boy" | "girl") => {
 
   setScreen("menu");
 };
+
+const freeAccessExhausted =
+  appState.completedPollIds.length >= FREE_POLLS_LIMIT &&
+  appState.completedTestIds.length >= FREE_TESTS_LIMIT &&
+  appState.playedGameRewardKeys.length >= FREE_GAME_STEPS_LIMIT;
 
 
 
@@ -8031,7 +8038,7 @@ if (finishedAllPolls && !appState.completionBonusesClaimed.polls) {
   await claimCompletionBonus("polls");
 }
 
-  setScreen("menu");
+ 
 };
 
 
@@ -8253,11 +8260,10 @@ if (finishedAllTests && !appState.completionBonusesClaimed.tests) {
     pairLevel={getPairLevelInfo(animatedPairPoints)}
     appState={appState}
    onNavigate={(next) => {
-  if (
-    next === "polls" &&
-    !appState.isPremium &&
-    appState.completedPollIds.length >= FREE_POLLS_LIMIT
-  ) {
+  const wantsContent =
+    next === "polls" || next === "tests" || next === "games";
+
+  if (!appState.isPremium && freeAccessExhausted && wantsContent) {
     setPaywallBackScreen(screen);
     setScreen("paywall");
     return;
