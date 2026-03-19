@@ -82,9 +82,7 @@ type WonReward = {
 type AppState = {
   points: number;
   isPremium: boolean;
-  loveQuestionsProgress: {
-  currentIndex: number;
-};
+ 
 
   completionBonusesClaimed: {
   polls: boolean;
@@ -143,6 +141,10 @@ dailyPairMatchBonusClaimedDates: string[];
 dailyPairStreak: {
   current: number;
   reachedMilestones: number[];
+};
+
+loveQuestionsProgress: {
+  currentIndex: number;
 };
 
   profile: {
@@ -1322,6 +1324,11 @@ playedGameRewardKeys: [],
   current: 0,
   reachedMilestones: [],
 },
+
+loveQuestionsProgress: {
+  currentIndex: 0,
+},
+
   
 
 
@@ -3347,8 +3354,11 @@ function loadState(): AppState {
     DEFAULT_STATE.completionBonusesClaimed.games,
 },
 
+
 loveQuestionsProgress: {
-  currentIndex: 0,
+  currentIndex:
+    parsed.loveQuestionsProgress?.currentIndex ??
+    DEFAULT_STATE.loveQuestionsProgress.currentIndex,
 },
 
 
@@ -4437,6 +4447,7 @@ function GamesScreen({
   return (
     <LoveQuestionsGameScreen
       reward={activeGame.reward}
+    
       appState={appState}
       setAppState={setAppState}
       onBack={() => setActiveGameId(null)}
@@ -4888,11 +4899,13 @@ function LoveQuestionsGameScreen({
 
   const questionIndex = appState.loveQuestionsProgress.currentIndex ?? 0;
   const currentQuestion = LOVE_QUESTIONS[questionIndex] ?? null;
+  
+  
 
-  const progressLabel = `${Math.min(
-    questionIndex + 1,
-    LOVE_QUESTIONS.length
-  )} / ${LOVE_QUESTIONS.length}`;
+ const progressLabel = `${Math.min(
+  questionIndex + 1,
+  LOVE_QUESTIONS.length
+)} / ${LOVE_QUESTIONS.length}`;
 
   async function handleAnswered() {
     if (!currentQuestion || animating) return;
