@@ -911,14 +911,54 @@ const LOVE_QUESTIONS: LoveQuestion[] = [
 ];
 
 const PAIR_LEVELS = [
-  { level: 1, title: "Искра", points: 0 },
-  { level: 2, title: "Симпатия", points: 500 },
-  { level: 3, title: "Влюблённые", points: 1200 },
-  { level: 4, title: "Неразлучные", points: 2500 },
-  { level: 5, title: "Идеальная пара", points: 4500 },
-  { level: 6, title: "Love Legends", points: 7000 },
-  { level: 7, title: "Soulmates", points: 10000 },
-];
+  { level: 1, title: "Новички", points: 0 },
+  { level: 2, title: "Искра", points: 300 },
+  { level: 3, title: "Сближение", points: 700 },
+  { level: 4, title: "Тёплая связь", points: 1200 },
+  { level: 5, title: "На одной волне", points: 1800 },
+  { level: 6, title: "Сильная пара", points: 2500 },
+  { level: 7, title: "Идеальный союз", points: 3500 },
+  { level: 8, title: "Легенды любви", points: 5000 },
+] as const;
+
+function getPairLevelInfo(points: number): PairLevelInfo {
+  const safePoints = Math.max(0, points);
+
+  let current: (typeof PAIR_LEVELS)[number] = PAIR_LEVELS[0];
+  let next: (typeof PAIR_LEVELS)[number] | null = null;
+
+  for (let i = 0; i < PAIR_LEVELS.length; i++) {
+    const level = PAIR_LEVELS[i];
+    const following = PAIR_LEVELS[i + 1] ?? null;
+
+    if (safePoints >= level.points) {
+      current = level;
+      next = following;
+    } else {
+      break;
+    }
+  }
+
+  const currentLevelPoints = current.points;
+  const nextLevelPoints = next ? next.points : null;
+  const progressInLevel = safePoints - currentLevelPoints;
+  const progressMax = next ? next.points - current.points : 0;
+
+  const progressPercent =
+    next && progressMax > 0
+      ? Math.max(0, Math.min(100, (progressInLevel / progressMax) * 100))
+      : 100;
+
+  return {
+    level: current.level,
+    title: current.title,
+    currentLevelPoints,
+    nextLevelPoints,
+    progressInLevel,
+    progressMax,
+    progressPercent,
+  };
+}
 
 const STREAK_BONUSES = [
   { days: 3, points: 100 },
@@ -2878,41 +2918,6 @@ function calculateMatch(a?: number[], b?: number[]) {
   return Math.round((same / len) * 100);
 }
 
-function getPairLevelInfo(points: number): PairLevelInfo {
-  const levels = [
-    { level: 1, title: "Новички", min: 0, max: 999 },
-    { level: 2, title: "Тёплая связь", min: 1000, max: 2499 },
-    { level: 3, title: "Сильная пара", min: 2500, max: 4999 },
-    { level: 4, title: "Идеальный союз", min: 5000, max: null },
-  ];
-
-  const current =
-    levels.find((lvl) => lvl.max === null || points <= lvl.max) ?? levels[levels.length - 1];
-
-  const currentLevelPoints = current.min;
-  const nextLevelPoints = current.max === null ? null : current.max + 1;
-  const nextPoints = nextLevelPoints;
-
-  const progressInLevel = points - currentLevelPoints;
-  const progressMax =
-    current.max === null ? 100 : current.max - current.min + 1;
-
-  const progressPercent =
-    current.max === null
-      ? 100
-      : Math.max(0, Math.min(100, (progressInLevel / progressMax) * 100));
-
-      return {
-    level: current.level,
-    title: current.title,
-
-    currentLevelPoints,
-    nextLevelPoints,
-    progressInLevel,
-    progressMax,
-    progressPercent,
-  };
-}
 
   
 
@@ -3546,8 +3551,8 @@ function MainMenu({
   }}
 >
   {pairLevel.nextLevelPoints
-    ? `До следующего уровня: ${Math.max(0, pairLevel.nextLevelPoints - points)}`
-    : "Максимальный уровень"}
+  ? `До следующего уровня: ${Math.max(0, pairLevel.nextLevelPoints - points)}`
+  : "Максимальный уровень"}
 </div>
       </div>
     </div>
