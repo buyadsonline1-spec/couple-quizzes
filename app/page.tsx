@@ -2241,6 +2241,18 @@ function PairStreakInfoScreen({
             marginTop: 16,
           }}
         >
+
+          <button
+  onClick={onBack}
+  style={{
+    ...secondaryButtonStyle,
+    width: "100%",
+    marginTop: 4,
+  }}
+>
+  Назад
+</button>
+
           {milestones.map(({ days, reward, icon }) => {
             const reached = reachedMilestones.includes(days);
             const isNext = !reached && nextMilestone?.days === days;
@@ -2352,16 +2364,7 @@ function PairStreakInfoScreen({
                 >
                   +{reward}
 
-                   <button
-  onClick={onBack}
-  style={{
-    ...secondaryButtonStyle,
-    width: "100%",
-    marginTop: 4,
-  }}
->
-  Назад
-</button>
+                  
                 </div>
               </div>
             );
