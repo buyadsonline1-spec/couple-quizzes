@@ -4640,6 +4640,7 @@ function LoveQuestionsGameScreen({
     setAnswered(true);
     onFinish();
   }
+  
 
   function handleNextQuestion() {
     if (!currentQuestion) return;
@@ -5132,6 +5133,7 @@ function NeverHaveIEverGameScreen({
     }
     return copy;
   }
+  
 
   const [index, setIndex] = useState(0);
   const [shuffledCards, setShuffledCards] = useState(() => shuffle(cards));
@@ -5139,6 +5141,8 @@ function NeverHaveIEverGameScreen({
   const [rewardClaimed, setRewardClaimed] = useState(false);
 
   const card = shuffledCards[index] ?? null;
+
+  
 
 async function handleComplete() {
   if (rewardClaimed || !card) return;
@@ -5357,6 +5361,7 @@ return (
       >
         {flipped ? "Показать вопрос" : "Перевернуть карточку"}
       </button>
+
 
      <button
   onClick={handleComplete}
