@@ -2382,132 +2382,8 @@ function DailyPairQuestionScreen({
         </div>
       </div>
 
-      <div style={{ ...cardBaseStyle(), padding: 14 }}>
-        <div
-  style={{
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "space-between",
-    marginBottom: 10,
-  }}
->
-  <div style={{ fontSize: 18, fontWeight: 900, color: "#1f1d3a" }}>
-    🔥 Серия пары
-  </div>
-
-  <button
-    onClick={() => setScreen("pair-streak-info")}
-    style={{
-      width: 28,
-      height: 28,
-      borderRadius: 999,
-      border: "1px solid rgba(143,107,255,0.25)",
-      background: "rgba(255,255,255,0.7)",
-      color: "#7c5cff",
-      fontSize: 14,
-      fontWeight: 800,
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
-      cursor: "pointer",
-    }}
-  >
-    i
-  </button>
-</div>
-
-        <div
-          style={{
-            marginTop: 8,
-            padding: "14px 16px",
-            borderRadius: 16,
-            background: "rgba(255,255,255,0.24)",
-            color: "#241b40",
-          }}
-        >
-          <div style={{ fontSize: 24, fontWeight: 900 }}>
-            {appState.dailyPairStreak.current} дн.
-          </div>
-
-          <div
-  style={{
-    marginTop: 4,
-    fontSize: 14,
-    lineHeight: 1.45,
-    color: "#4d466c",
-  }}
->
-  Оба отвечали на вопрос дня подряд
-</div>
-
-{nextBonus && (
-  <div
-    style={{
-      marginTop: 8,
-      fontSize: 13,
-      fontWeight: 800,
-      color: "#6b46ff",
-      lineHeight: 1.4,
-    }}
-  >
-    До следующего бонуса: {nextBonus.days - appState.dailyPairStreak.current} дн. (+{nextBonus.points} очков)
-  </div>
-)}
-
-{!nextBonus && appState.dailyPairStreak.current >= 15 && (
-  <div
-    style={{
-      marginTop: 8,
-      fontSize: 13,
-      fontWeight: 800,
-      color: "#6b46ff",
-      lineHeight: 1.4,
-    }}
-  >
-    Вы достигли максимального бонусного рубежа 👑
-  </div>
-)}
-        </div>
-      </div>
-
-    
-
-      <div
-        style={{
-          marginTop: 6,
-          fontSize: 14,
-          fontWeight: 900,
-        }}
-      >
-        {days}
-      </div>
-
-      <div
-        style={{
-          marginTop: 2,
-          fontSize: 11,
-          color: "#5a5378",
-          fontWeight: 700,
-        }}
-      >
-        дней
-      </div>
-
-      <div
-        style={{
-          marginTop: 4,
-          fontSize: 11,
-          color: "#6b46ff",
-          fontWeight: 900,
-        }}
-      >
-        +{points}
-      </div>
-    </div>
-  );
-})}
-        </div>
-      </div>
+      
+        
 
       <div style={{ ...cardBaseStyle(), padding: 14 }}>
         <div
@@ -8544,7 +8420,10 @@ if (finishedAllTests && !appState.completionBonusesClaimed.tests) {
 )}
 
 {screen === "pair-streak-info" && (
-  <PairStreakInfoScreen onBack={() => setScreen("daily-pair-question")} />
+  <PairStreakInfoScreen
+    appState={appState}
+    onBack={() => setScreen("daily-pair-question")}
+  />
 )}
 
 {screen === "paywall" && (
