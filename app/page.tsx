@@ -4661,6 +4661,8 @@ function LoveQuestionsGameScreen({
     shuffle(LOVE_QUESTIONS)
   );
 
+  const progressLabel = `${Math.min(questionIndex + 1, shuffledQuestions.length)} / ${shuffledQuestions.length}`;
+
   const currentQuestion = shuffledQuestions[questionIndex] ?? null;
 
   async function handleAnswered() {
@@ -4725,19 +4727,43 @@ function LoveQuestionsGameScreen({
         {currentQuestion ? (
           <>
             <div>
-              <div
-                style={{
-                  display: "inline-flex",
-                  padding: "8px 12px",
-                  borderRadius: 999,
-                  background: "rgba(107,70,255,0.10)",
-                  color: "#6b46ff",
-                  fontWeight: 800,
-                  fontSize: 13,
-                }}
-              >
-                90 вопросов 💞
-              </div>
+             <div
+  style={{
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: 12,
+    flexWrap: "wrap",
+  }}
+>
+  <div
+    style={{
+      display: "inline-flex",
+      padding: "8px 12px",
+      borderRadius: 999,
+      background: "rgba(107,70,255,0.10)",
+      color: "#6b46ff",
+      fontWeight: 800,
+      fontSize: 13,
+    }}
+  >
+    90 вопросов 💞
+  </div>
+
+  <div
+    style={{
+      display: "inline-flex",
+      padding: "8px 12px",
+      borderRadius: 999,
+      background: "rgba(255,255,255,0.24)",
+      color: "#4b446a",
+      fontWeight: 800,
+      fontSize: 13,
+    }}
+  >
+    {progressLabel}
+  </div>
+</div>
 
               <div
                 style={{
