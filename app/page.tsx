@@ -4204,7 +4204,9 @@ function GamesScreen({
       <BottleGameScreen
         reward={activeGame.reward}
         onBack={() => setActiveGameId(null)}
+        onClaimStepReward={onClaimStepReward}
         onFinish={handleBottleFinish}
+        
       />
     );
   }
@@ -4348,395 +4350,289 @@ function BottleGameScreen({
   reward,
   onBack,
   onFinish,
+  onClaimStepReward,
 }: {
   reward: number;
   onBack: () => void;
   onFinish: () => void;
+  onClaimStepReward: (key: string) => Promise<boolean>;
 }) {
   const [rotation, setRotation] = useState(0);
   const [isSpinning, setIsSpinning] = useState(false);
-  const [selectedTarget, setSelectedTarget] = useState<"boy" | "girl" | null>(null);
-  const [selectedTask, setSelectedTask] = useState<BottleTask | null>(null);
-  const [completed, setCompleted] = useState(false);
-
   const [activeTask, setActiveTask] = useState<BottleTask | null>(null);
 
-function pickRandomTask() {
-  const pool = BOTTLE_TASKS;
-  if (!pool.length) return null;
-  return pool[Math.floor(Math.random() * pool.length)];
-}
-
-function openBottleTask() {
-  const nextTask = pickRandomTask();
-  if (!nextTask) return;
-  setActiveTask(nextTask);
-}
-
-async function handleCompleteBottleTask() {
-  if (!activeTask) return;
-
-  const rewardKey = `bottle:${activeTask.id}`;
-  await onClaimReward(rewardKey);
-
-  setActiveTask(null);
-}
-
-function handleAnotherBottleTask() {
-  const currentId = activeTask?.id ?? null;
-  const pool =
-    BOTTLE_TASKS.filter((task) => task.id !== currentId);
-
-  if (!pool.length) {
-    setActiveTask(pickRandomTask());
-    return;
+  function normalizeDeg(deg: number) {
+    return ((deg % 360) + 360) % 360;
   }
 
-  const nextTask = pool[Math.floor(Math.random() * pool.length)];
-  setActiveTask(nextTask);
-}
+  function getBottleTargetByAngle(finalDeg: number): "boy" | "girl" {
+    const normalized = normalizeDeg(finalDeg);
 
-  function spinBottle() {
+    // Подстрой под твою картинку бутылки:
+    // здесь считаем, что:
+    // 0deg = горлышко вверх
+    // 180deg = горлышко вниз
+    // если после остановки горлышко смотрит вверх -> girl
+    // если вниз -> boy
+    return normalized < 180 ? "girl" : "boy";
+  }
+
+  function pickTaskForTarget(target: "boy" | "girl") {
+    const pool = BOTTLE_TASKS.filter((task) => task.target === target);
+    if (!pool.length) return null;
+    return pool[Math.floor(Math.random() * pool.length)];
+  }
+
+  function handleSpin() {
     if (isSpinning) return;
 
-    window.navigator.vibrate?.(80);
-    setCompleted(false);
-    setSelectedTask(null);
-    setSelectedTarget(null);
+    setActiveTask(null);
     setIsSpinning(true);
 
-    const targets: Array<"boy" | "girl"> = ["boy", "girl"];
-    const chosenTarget = targets[Math.floor(Math.random() * targets.length)];
+    const extraSpins = 5 + Math.floor(Math.random() * 3); // 5–7 полных оборотов
+    const randomOffset = Math.floor(Math.random() * 360);
+    const finalRotation = rotation + extraSpins * 360 + randomOffset;
 
-    const extraTurns = 5 * 360;
-    const targetAngle = chosenTarget === "boy" ? 90 : 270;
-    const randomOffset = Math.floor(Math.random() * 30) - 15;
-    const finalRotation = extraTurns + targetAngle + randomOffset;
-
-    setRotation((prev) => {
-      const normalizedPrev = ((prev % 360) + 360) % 360;
-      return prev - normalizedPrev + finalRotation;
-    });
+    setRotation(finalRotation);
 
     setTimeout(() => {
-      const tasks = BOTTLE_TASKS.filter((task) => task.target === chosenTarget);
-      const task = tasks[Math.floor(Math.random() * tasks.length)];
+      const target = getBottleTargetByAngle(finalRotation);
+      const task = pickTaskForTarget(target);
 
-      window.navigator.vibrate?.([120, 60, 120]);
-      setSelectedTarget(chosenTarget);
-      setSelectedTask(task);
       setIsSpinning(false);
-    }, 3200);
+      setActiveTask(task);
+    }, 3200); // должно совпадать с transition
   }
 
-  function handleDone() {
-    setCompleted(true);
+  async function handleCompleteBottleTask() {
+    if (!activeTask) return;
+
+    const rewardKey = `bottle:${activeTask.id}`;
+    await onClaimStepReward(rewardKey);
+
+    setActiveTask(null);
     onFinish();
   }
 
-  function handleNewTask() {
-    if (!selectedTarget) return;
-    const tasks = BOTTLE_TASKS.filter((task) => task.target === selectedTarget);
-    const task = tasks[Math.floor(Math.random() * tasks.length)];
-    setSelectedTask(task);
-    setCompleted(false);
+  function handleAnotherBottleTask() {
+    if (!activeTask) return;
+
+    const sameTargetTasks = BOTTLE_TASKS.filter(
+      (task) => task.target === activeTask.target && task.id !== activeTask.id
+    );
+
+    if (!sameTargetTasks.length) return;
+
+    const nextTask =
+      sameTargetTasks[Math.floor(Math.random() * sameTargetTasks.length)];
+
+    setActiveTask(nextTask);
   }
 
   return (
     <div style={{ padding: 16, display: "grid", gap: 14 }}>
       <div style={{ ...cardBaseStyle(), padding: 18 }}>
-        <div style={{ fontSize: 28, fontWeight: 900, color: "#1f1d3a" }}>
+        <div style={{ fontSize: 26, fontWeight: 900, color: "#1f1d3a" }}>
           Бутылочка
         </div>
-        <div style={{ marginTop: 8, color: "#3a345c", fontSize: 15, lineHeight: 1.45 }}>
-          Крути бутылку — она выберет, кто ходит: <b>парень</b> или <b>девушка</b>.
-          После этого выпадет задание для выбранного игрока.
-        </div>
+
         <div
           style={{
-            marginTop: 12,
-            padding: "12px 14px",
-            borderRadius: 16,
-            background: "rgba(255,255,255,0.24)",
-            color: "#2c2647",
-            fontWeight: 800,
+            marginTop: 8,
+            color: "#4b446a",
+            fontSize: 15,
+            lineHeight: 1.45,
           }}
         >
-          Награда за раунд: +{reward} очков
+          Крути бутылку и получай задание для того, на кого она покажет.
         </div>
       </div>
 
- <div style={{ ...cardBaseStyle(), padding: 18 }}>
-  <div
-    style={{
-      position: "relative",
-      width: 300,
-      height: 300,
-      margin: "0 auto",
-      maxWidth: "100%",
-    }}
-  >
-   <div
-  style={{
-    position: "absolute",
-    top: "50%",
-    left: 0,
-    transform: "translateY(-50%)",
-    fontSize: 18,
-    fontWeight: 900,
-    color: "#1f1d3a",
-    background:
-      selectedTarget === "boy"
-        ? "rgba(255,255,255,0.55)"
-        : "rgba(255,255,255,0.28)",
-    borderRadius: 14,
-    padding: "8px 10px",
-    boxShadow:
-      selectedTarget === "boy"
-        ? "0 0 18px rgba(255,255,255,0.9)"
-        : "none",
-    transition: "all 0.3s",
-  }}
->
-  👦 Парень
-</div>
+      <div
+        style={{
+          ...cardBaseStyle(),
+          padding: 24,
+          textAlign: "center",
+          position: "relative",
+          overflow: "hidden",
+        }}
+      >
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            marginBottom: 16,
+            fontWeight: 800,
+            color: "#5a5378",
+          }}
+        >
+          <span>👧 Девушка</span>
+          <span>👦 Парень</span>
+        </div>
 
-    <div
-  style={{
-    position: "absolute",
-    top: "50%",
-    right: 0,
-    transform: "translateY(-50%)",
-    fontSize: 18,
-    fontWeight: 900,
-    color: "#1f1d3a",
-    background:
-      selectedTarget === "girl"
-        ? "rgba(255,255,255,0.55)"
-        : "rgba(255,255,255,0.28)",
-    borderRadius: 14,
-    padding: "8px 10px",
-    boxShadow:
-      selectedTarget === "girl"
-        ? "0 0 18px rgba(255,255,255,0.9)"
-        : "none",
-    transition: "all 0.3s",
-  }}
->
-  👧 Девушка
-</div>
-
-    <div
-      style={{
-        position: "absolute",
-        inset: 40,
-        borderRadius: "50%",
-        border: "2px dashed rgba(255,255,255,0.55)",
-        background: "rgba(255,255,255,0.08)",
-      }}
-    />
-
-    <img
-      src="/bottle.png"
-      alt="Бутылка"
-      style={{
-        width: 130,
-        height: "auto",
-        position: "absolute",
-        left: "50%",
-        top: "50%",
-        transform: `translate(-50%, -50%) rotate(${rotation}deg)`,
-        transition: isSpinning
-          ? "transform 3.2s cubic-bezier(0.22, 1, 0.36, 1)"
-          : "none",
-        transformOrigin: "center center",
-        filter: "drop-shadow(0 12px 20px rgba(0,0,0,0.25))",
-      }}
-    />
-
-    <div
-      style={{
-        position: "absolute",
-        left: "50%",
-        top: "50%",
-        transform: "translate(-50%, -50%)",
-        width: 42,
-        height: 42,
-        borderRadius: "50%",
-        background: "rgba(255,255,255,0.95)",
-        border: "3px solid rgba(255,255,255,0.8)",
-        zIndex: 2,
-      }}
-    />
-  </div>
-
-  <button
-    onClick={spinBottle}
-    disabled={isSpinning}
-    style={{
-      ...primaryButtonStyle,
-      width: "100%",
-      marginTop: 16,
-      opacity: isSpinning ? 0.65 : 1,
-      cursor: isSpinning ? "not-allowed" : "pointer",
-    }}
-  >
-    {isSpinning ? "Крутим..." : "Крутить бутылку"}
-  </button>
-</div>
-        
-      {selectedTarget && selectedTask && (
-        <div style={{ ...cardBaseStyle(), padding: 18 }}>
-          <div style={{ fontSize: 22, fontWeight: 900, color: "#1f1d3a" }}>
-            Ходит: {selectedTarget === "boy" ? "Парень 👦" : "Девушка 👧"}
+        <div
+          style={{
+            position: "relative",
+            height: 260,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          <div
+            style={{
+              position: "absolute",
+              top: 8,
+              left: "50%",
+              transform: "translateX(-50%)",
+              fontSize: 28,
+            }}
+          >
+            ▼
           </div>
 
           <div
             style={{
-              marginTop: 14,
-              padding: "14px 16px",
-              borderRadius: 18,
-              background: "rgba(255,255,255,0.26)",
-              color: "#241b40",
-              fontSize: 18,
-              fontWeight: 800,
-              lineHeight: 1.45,
+              width: 220,
+              height: 220,
+              borderRadius: "50%",
+              background: "rgba(255,255,255,0.22)",
+              border: "2px solid rgba(255,255,255,0.35)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              boxShadow: "inset 0 0 30px rgba(255,255,255,0.18)",
             }}
           >
-            {selectedTask.text}
-          </div>
-
-          {!completed ? (
-            <>
-              <button
-                onClick={handleDone}
-                style={{ ...primaryButtonStyle, width: "100%", marginTop: 16 }}
-              >
-                Выполнено
-              </button>
-
-              <button
-                onClick={handleNewTask}
-                style={secondaryButtonStyle}
-              >
-                Другое задание
-              </button>
-            </>
-          ) : (
             <div
               style={{
-                marginTop: 14,
-                padding: "12px 14px",
-                borderRadius: 16,
-                background: "rgba(255,255,255,0.24)",
-                color: "#2c2647",
-                fontWeight: 800,
+                fontSize: 86,
+                lineHeight: 1,
+                transform: `rotate(${rotation}deg)`,
+                transition: isSpinning
+                  ? "transform 3.2s cubic-bezier(0.18, 0.9, 0.2, 1)"
+                  : "none",
+                userSelect: "none",
               }}
             >
-              Готово. Очки начислены ✅
+              🍾
             </div>
-          )}
+          </div>
         </div>
-      )}
 
-      {activeTask && (
-  <div
-    style={{
-      position: "fixed",
-      inset: 0,
-      background: "rgba(20, 16, 35, 0.52)",
-      backdropFilter: "blur(6px)",
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
-      padding: 16,
-      zIndex: 1000,
-    }}
-  >
-    <div
-      style={{
-        width: "100%",
-        maxWidth: 420,
-        borderRadius: 28,
-        padding: 22,
-        background: "linear-gradient(180deg, #fff7fc 0%, #ffffff 100%)",
-        boxShadow: "0 24px 70px rgba(31, 23, 51, 0.24)",
-        border: "1px solid rgba(255,255,255,0.7)",
-      }}
-    >
-      <div
-        style={{
-          display: "inline-flex",
-          alignItems: "center",
-          gap: 8,
-          padding: "8px 12px",
-          borderRadius: 999,
-          background: "rgba(107,70,255,0.10)",
-          color: "#6b46ff",
-          fontWeight: 800,
-          fontSize: 13,
-        }}
-      >
-        💫 Задание бутылочки
-      </div>
-
-      <div
-        style={{
-          marginTop: 14,
-          fontSize: 28,
-          lineHeight: 1.15,
-          fontWeight: 900,
-          color: "#1f1d3a",
-        }}
-      >
-        {activeTask.target === "boy" ? "Задание для него" : "Задание для неё"}
-      </div>
-
-      <div
-        style={{
-          marginTop: 10,
-          fontSize: 16,
-          lineHeight: 1.55,
-          color: "#4b446a",
-          padding: "14px 16px",
-          borderRadius: 20,
-          background: "rgba(107,70,255,0.06)",
-        }}
-      >
-        {activeTask.text}
-      </div>
-
-      <div style={{ display: "grid", gap: 10, marginTop: 18 }}>
         <button
-          onClick={handleCompleteBottleTask}
+          onClick={handleSpin}
+          disabled={isSpinning}
           style={{
             ...primaryButtonStyle,
             width: "100%",
+            opacity: isSpinning ? 0.7 : 1,
+            cursor: isSpinning ? "not-allowed" : "pointer",
           }}
         >
-          Задание выполнено
+          {isSpinning ? "Крутим..." : "Крутить бутылку"}
         </button>
 
         <button
-          onClick={handleAnotherBottleTask}
-          style={{
-            ...secondaryButtonStyle,
-            width: "100%",
-          }}
+          onClick={onBack}
+          style={{ ...secondaryButtonStyle, width: "100%", marginTop: 10 }}
         >
-          Другое задание
+          Назад
         </button>
       </div>
-    </div>
-  </div>
-)}
 
-      <button onClick={onBack} style={secondaryButtonStyle}>
+      {activeTask && (
+        <div
+          style={{
+            position: "fixed",
+            inset: 0,
+            background: "rgba(20,16,35,0.52)",
+            backdropFilter: "blur(6px)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            padding: 16,
+            zIndex: 1000,
+          }}
+        >
+          <div
+            style={{
+              width: "100%",
+              maxWidth: 420,
+              borderRadius: 28,
+              padding: 22,
+              background: "linear-gradient(180deg, #fff7fc 0%, #ffffff 100%)",
+              boxShadow: "0 24px 70px rgba(31,23,51,0.24)",
+            }}
+          >
+            <div
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 8,
+                padding: "8px 12px",
+                borderRadius: 999,
+                background: "rgba(107,70,255,0.10)",
+                color: "#6b46ff",
+                fontWeight: 800,
+                fontSize: 13,
+              }}
+            >
+              💫 Задание бутылочки
+            </div>
+
+            <div
+              style={{
+                marginTop: 14,
+                fontSize: 28,
+                lineHeight: 1.15,
+                fontWeight: 900,
+                color: "#1f1d3a",
+              }}
+            >
+              {activeTask.target === "boy" ? "Задание для него" : "Задание для неё"}
+            </div>
+
+            <div
+              style={{
+                marginTop: 10,
+                fontSize: 16,
+                lineHeight: 1.55,
+                color: "#4b446a",
+                padding: "14px 16px",
+                borderRadius: 20,
+                background: "rgba(107,70,255,0.06)",
+              }}
+            >
+              {activeTask.text}
+            </div>
+
+            <div style={{ display: "grid", gap: 10, marginTop: 18 }}>
+              <button
+                onClick={handleCompleteBottleTask}
+                style={{ ...primaryButtonStyle, width: "100%" }}
+              >
+                Задание выполнено
+              </button>
+
+              <button
+                onClick={handleAnotherBottleTask}
+                style={{ ...secondaryButtonStyle, width: "100%" }}
+              >
+                Другое задание
+              </button>
+            </div>
+          </div>
+           <button onClick={onBack} style={secondaryButtonStyle}>
         Назад в игры
       </button>
+        </div>
+      )}
     </div>
+
   );
 }
+
 
 function LoveQuestionsGameScreen({
   reward,
