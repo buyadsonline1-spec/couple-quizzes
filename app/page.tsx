@@ -4359,6 +4359,43 @@ function BottleGameScreen({
   const [selectedTask, setSelectedTask] = useState<BottleTask | null>(null);
   const [completed, setCompleted] = useState(false);
 
+  const [activeTask, setActiveTask] = useState<BottleTask | null>(null);
+
+function pickRandomTask() {
+  const pool = BOTTLE_TASKS;
+  if (!pool.length) return null;
+  return pool[Math.floor(Math.random() * pool.length)];
+}
+
+function openBottleTask() {
+  const nextTask = pickRandomTask();
+  if (!nextTask) return;
+  setActiveTask(nextTask);
+}
+
+async function handleCompleteBottleTask() {
+  if (!activeTask) return;
+
+  const rewardKey = `bottle:${activeTask.id}`;
+  await onClaimReward(rewardKey);
+
+  setActiveTask(null);
+}
+
+function handleAnotherBottleTask() {
+  const currentId = activeTask?.id ?? null;
+  const pool =
+    BOTTLE_TASKS.filter((task) => task.id !== currentId);
+
+  if (!pool.length) {
+    setActiveTask(pickRandomTask());
+    return;
+  }
+
+  const nextTask = pool[Math.floor(Math.random() * pool.length)];
+  setActiveTask(nextTask);
+}
+
   function spinBottle() {
     if (isSpinning) return;
 
@@ -4601,6 +4638,98 @@ function BottleGameScreen({
           )}
         </div>
       )}
+
+      {activeTask && (
+  <div
+    style={{
+      position: "fixed",
+      inset: 0,
+      background: "rgba(20, 16, 35, 0.52)",
+      backdropFilter: "blur(6px)",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      padding: 16,
+      zIndex: 1000,
+    }}
+  >
+    <div
+      style={{
+        width: "100%",
+        maxWidth: 420,
+        borderRadius: 28,
+        padding: 22,
+        background: "linear-gradient(180deg, #fff7fc 0%, #ffffff 100%)",
+        boxShadow: "0 24px 70px rgba(31, 23, 51, 0.24)",
+        border: "1px solid rgba(255,255,255,0.7)",
+      }}
+    >
+      <div
+        style={{
+          display: "inline-flex",
+          alignItems: "center",
+          gap: 8,
+          padding: "8px 12px",
+          borderRadius: 999,
+          background: "rgba(107,70,255,0.10)",
+          color: "#6b46ff",
+          fontWeight: 800,
+          fontSize: 13,
+        }}
+      >
+        💫 Задание бутылочки
+      </div>
+
+      <div
+        style={{
+          marginTop: 14,
+          fontSize: 28,
+          lineHeight: 1.15,
+          fontWeight: 900,
+          color: "#1f1d3a",
+        }}
+      >
+        {activeTask.target === "boy" ? "Задание для него" : "Задание для неё"}
+      </div>
+
+      <div
+        style={{
+          marginTop: 10,
+          fontSize: 16,
+          lineHeight: 1.55,
+          color: "#4b446a",
+          padding: "14px 16px",
+          borderRadius: 20,
+          background: "rgba(107,70,255,0.06)",
+        }}
+      >
+        {activeTask.text}
+      </div>
+
+      <div style={{ display: "grid", gap: 10, marginTop: 18 }}>
+        <button
+          onClick={handleCompleteBottleTask}
+          style={{
+            ...primaryButtonStyle,
+            width: "100%",
+          }}
+        >
+          Задание выполнено
+        </button>
+
+        <button
+          onClick={handleAnotherBottleTask}
+          style={{
+            ...secondaryButtonStyle,
+            width: "100%",
+          }}
+        >
+          Другое задание
+        </button>
+      </div>
+    </div>
+  </div>
+)}
 
       <button onClick={onBack} style={secondaryButtonStyle}>
         Назад в игры
