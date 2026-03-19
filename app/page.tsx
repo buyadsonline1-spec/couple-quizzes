@@ -8150,7 +8150,7 @@ if (finishedAllTests && !appState.completionBonusesClaimed.tests) {
   <PollsScreen
     genderFilter="boy"
     completedPollIds={appState.completedPollIds}
-    onBack={() => setScreen("polls")}
+     onBack={() => setScreen("menu")}
     onCompletePoll={handleCompletePoll}
   />
 )}
@@ -8159,7 +8159,7 @@ if (finishedAllTests && !appState.completionBonusesClaimed.tests) {
   <PollsScreen
     genderFilter="girl"
     completedPollIds={appState.completedPollIds}
-    onBack={() => setScreen("polls")}
+     onBack={() => setScreen("menu")}
     onCompletePoll={handleCompletePoll}
   />
 )}
