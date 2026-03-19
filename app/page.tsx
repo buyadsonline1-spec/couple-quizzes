@@ -4656,11 +4656,15 @@ function LoveQuestionsGameScreen({
     setCurrentQuestion(first);
   }, []);
 
-  function handleAnswered() {
-    if (!currentQuestion || answered) return;
-    setAnswered(true);
-    onFinish();
-  }
+ async function handleAnswered() {
+  if (!currentQuestion || answered) return;
+
+  const rewardKey = `love-questions:${currentQuestion.id}`;
+  await onClaimStepReward(rewardKey);
+
+  setAnswered(true);
+  onFinish();
+}
   
 
   function handleNextQuestion() {
@@ -4700,74 +4704,87 @@ function LoveQuestionsGameScreen({
             fontWeight: 800,
           }}
         >
-          Награда за ответ: +{reward} очков
+          Награда за ответ: +10 очков
         </div>
       </div>
 
-      <div style={{ ...cardBaseStyle(), padding: 18 }}>
-        {currentQuestion ? (
-          <>
-            <div
-              style={{
-                fontSize: 22,
-                fontWeight: 800,
-                color: "#211b3b",
-                lineHeight: 1.45,
-              }}
-            >
-              {currentQuestion.text}
-            </div>
+     <div
+  style={{
+    ...cardBaseStyle(),
+    padding: 22,
+    minHeight: 320,
+    display: "flex",
+    flexDirection: "column",
+    justifyContent: "space-between",
+    background:
+      "linear-gradient(180deg, rgba(255,255,255,0.28), rgba(255,255,255,0.18))",
+  }}
+>
+  {currentQuestion ? (
+    <>
+      <div>
+        <div
+          style={{
+            display: "inline-flex",
+            padding: "8px 12px",
+            borderRadius: 999,
+            background: "rgba(107,70,255,0.10)",
+            color: "#6b46ff",
+            fontWeight: 800,
+            fontSize: 13,
+          }}
+        >
+          90 вопросов 💞
+        </div>
 
-            {!answered ? (
-              <button
-                onClick={handleAnswered}
-                style={{ ...primaryButtonStyle, width: "100%", marginTop: 16 }}
-              >
-                Ответил(-а)
-              </button>
-            ) : (
-              <>
-                <div
-                  style={{
-                    marginTop: 14,
-                    padding: "12px 14px",
-                    borderRadius: 16,
-                    background: "rgba(255,255,255,0.24)",
-                    color: "#2c2647",
-                    fontWeight: 800,
-                  }}
-                >
-                  Готово. +{reward} очков начислено ✅
-                </div>
-
-                <button
-                  onClick={handleNextQuestion}
-                  style={{ ...primaryButtonStyle, width: "100%", marginTop: 14 }}
-                >
-                  Следующий вопрос
-                </button>
-              </>
-            )}
-          </>
-        ) : (
-          <>
-            <div
-              style={{
-                fontSize: 22,
-                fontWeight: 800,
-                color: "#211b3b",
-                lineHeight: 1.45,
-              }}
-            >
-              Вопросы закончились 🎉
-            </div>
-
-            <div style={{ marginTop: 10, color: "#4b446a", lineHeight: 1.45 }}>
-              Ты прошёл(а) весь текущий набор вопросов.
-            </div>
-          </>
-        )}
+        <div
+          style={{
+            marginTop: 18,
+            fontSize: 26,
+            fontWeight: 900,
+            color: "#211b3b",
+            lineHeight: 1.35,
+          }}
+        >
+          {currentQuestion.text}
+        </div>
       </div>
+
+      {!answered ? (
+        <button
+          onClick={handleAnswered}
+          style={{ ...primaryButtonStyle, width: "100%", marginTop: 20 }}
+        >
+          Ответили
+        </button>
+      ) : (
+        <button
+          onClick={handleNextQuestion}
+          style={{ ...primaryButtonStyle, width: "100%", marginTop: 20 }}
+        >
+          Следующий вопрос
+        </button>
+      )}
+    </>
+  ) : (
+    <>
+      <div
+        style={{
+          fontSize: 24,
+          fontWeight: 900,
+          color: "#211b3b",
+          lineHeight: 1.35,
+        }}
+      >
+        Вопросы закончились 🎉
+      </div>
+
+      <div style={{ marginTop: 12, color: "#4b446a", lineHeight: 1.45 }}>
+        Ты прошёл(а) весь текущий набор вопросов.
+      </div>
+    </>
+  )}
+</div>
 
       <button onClick={onBack} style={secondaryButtonStyle}>
         Назад в игры
