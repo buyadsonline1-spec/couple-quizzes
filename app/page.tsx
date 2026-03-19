@@ -5359,7 +5359,7 @@ return (
         onClick={() => setFlipped((prev) => !prev)}
         style={{ ...primaryButtonStyle, width: "100%", marginTop: 16 }}
       >
-        {flipped ? "Показать вопрос" : "Перевернуть карточку"}
+        {flipped ? "Показать вопрос" : "Показать задание"}
       </button>
 
 
