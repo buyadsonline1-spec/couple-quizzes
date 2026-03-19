@@ -8271,12 +8271,18 @@ if (finishedAllTests && !appState.completionBonusesClaimed.tests) {
   />
 )}
 
-      {screen === "gender-select" && (
+   {screen === "gender-select" && (
   <GenderSelectScreen
-    appState={appState}
-    setAppState={setAppState}
-    onBack={() => setScreen("menu")}
-    onContinue={() => setScreen("menu")}
+    onSelect={(gender) => {
+      setAppState((prev) => ({
+        ...prev,
+        profile: {
+          ...prev.profile,
+          gender,
+        },
+      }));
+      setScreen("menu");
+    }}
   />
 )}
 
