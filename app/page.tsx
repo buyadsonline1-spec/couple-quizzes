@@ -4632,6 +4632,17 @@ function BottleGameScreen({
   );
 }
 
+function shuffle<T>(array: T[]): T[] {
+  const copy = [...array];
+
+  for (let i = copy.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [copy[i], copy[j]] = [copy[j], copy[i]];
+  }
+
+  return copy;
+}
+
 
 function LoveQuestionsGameScreen({
   reward,
@@ -4644,152 +4655,136 @@ function LoveQuestionsGameScreen({
   onFinish: () => void;
   onClaimStepReward: (key: string) => Promise<boolean>;
 }) {
-  
-  const [usedIds, setUsedIds] = useState<string[]>([]);
-  const [currentQuestion, setCurrentQuestion] = useState<LoveQuestion | null>(null);
-  
+  const [questionIndex, setQuestionIndex] = useState(0);
+  const [animating, setAnimating] = useState(false);
+  const [shuffledQuestions, setShuffledQuestions] = useState(() =>
+    shuffle(LOVE_QUESTIONS)
+  );
 
-  function pickRandomQuestion(excludedIds: string[]) {
-    const available = LOVE_QUESTIONS.filter((q) => !excludedIds.includes(q.id));
-    if (available.length === 0) return null;
-    return available[Math.floor(Math.random() * available.length)];
+  const currentQuestion = shuffledQuestions[questionIndex] ?? null;
+
+  async function handleAnswered() {
+    if (!currentQuestion || animating) return;
+
+    setAnimating(true);
+
+    const rewardKey = `love-questions:${currentQuestion.id}`;
+    await onClaimStepReward(rewardKey);
+
+    onFinish();
+
+    setTimeout(() => {
+      handleNextQuestion();
+      setAnimating(false);
+    }, 300);
   }
-
-  useEffect(() => {
-    const first = pickRandomQuestion([]);
-    setCurrentQuestion(first);
-  }, []);
-
- async function handleAnswered() {
-  if (!currentQuestion || animating) return;
-
-  setAnimating(true);
-
-  const rewardKey = `love-questions:${currentQuestion.id}`;
-  await onClaimStepReward(rewardKey);
-  
-  onFinish();
-
-  setTimeout(() => {
-    handleNextQuestion();
-    setAnimating(false);
-  }, 300);
-}
-
-
-const [animating, setAnimating] = useState(false);
-  
 
   function handleNextQuestion() {
-  if (questionIndex + 1 >= shuffledQuestions.length) {
-    setShuffledQuestions(shuffle(LOVE_QUESTIONS));
-    setQuestionIndex(0);
-  } else {
-    setQuestionIndex((prev) => prev + 1);
+    if (questionIndex + 1 >= shuffledQuestions.length) {
+      setShuffledQuestions(shuffle(LOVE_QUESTIONS));
+      setQuestionIndex(0);
+    } else {
+      setQuestionIndex((prev) => prev + 1);
+    }
   }
-}
 
   return (
     <div style={{ padding: 16, display: "grid", gap: 14 }}>
       <div style={{ ...cardBaseStyle(), padding: 18 }}>
-        <div style={{ fontSize: 28, fontWeight: 900, color: "#1f1d3a" }}>
+        <div style={{ fontSize: 26, fontWeight: 900, color: "#1f1d3a" }}>
           90 вопросов
         </div>
-        <div style={{ marginTop: 8, color: "#3a345c", fontSize: 15, lineHeight: 1.45 }}>
-          Откровенные вопросы про любовь, чувства и отношения.
-        </div>
+
         <div
           style={{
-            marginTop: 12,
-            padding: "12px 14px",
-            borderRadius: 16,
-            background: "rgba(255,255,255,0.24)",
-            color: "#2c2647",
-            fontWeight: 800,
+            marginTop: 8,
+            color: "#4b446a",
+            fontSize: 15,
+            lineHeight: 1.45,
           }}
         >
-          Награда за ответ: +10 очков
+          Глубокие вопросы про чувства, близость и отношения.
         </div>
       </div>
 
-    <div
-  style={{
-    ...cardBaseStyle(),
-    padding: 22,
-    minHeight: 320,
-    display: "flex",
-    flexDirection: "column",
-    justifyContent: "space-between",
-    background:
-      "linear-gradient(180deg, rgba(255,255,255,0.28), rgba(255,255,255,0.18))",
-    transition: "all 0.3s ease",
-    transform: animating ? "translateY(40px) scale(0.95)" : "translateY(0)",
-    opacity: animating ? 0 : 1,
-  }}
->
-  {currentQuestion ? (
-    <>
-      <div>
-        <div
-          style={{
-            display: "inline-flex",
-            padding: "8px 12px",
-            borderRadius: 999,
-            background: "rgba(107,70,255,0.10)",
-            color: "#6b46ff",
-            fontWeight: 800,
-            fontSize: 13,
-          }}
-        >
-          90 вопросов 💞
-        </div>
-
-        <div
-          style={{
-            marginTop: 18,
-            fontSize: 26,
-            fontWeight: 900,
-            color: "#211b3b",
-            lineHeight: 1.35,
-          }}
-        >
-          {currentQuestion.text}
-        </div>
-      </div>
-
-      <button
-        onClick={handleAnswered}
-        disabled={animating}
-        style={{
-          ...primaryButtonStyle,
-          width: "100%",
-          marginTop: 20,
-          opacity: animating ? 0.75 : 1,
-          cursor: animating ? "not-allowed" : "pointer",
-        }}
-      >
-        Ответили
-      </button>
-    </>
-  ) : (
-    <>
       <div
         style={{
-          fontSize: 24,
-          fontWeight: 900,
-          color: "#211b3b",
-          lineHeight: 1.35,
+          ...cardBaseStyle(),
+          padding: 22,
+          minHeight: 320,
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "space-between",
+          background:
+            "linear-gradient(180deg, rgba(255,255,255,0.28), rgba(255,255,255,0.18))",
+          transition: "all 0.3s ease",
+          transform: animating ? "translateY(40px) scale(0.95)" : "translateY(0)",
+          opacity: animating ? 0 : 1,
         }}
       >
-        Вопросы закончились 🎉
-      </div>
+        {currentQuestion ? (
+          <>
+            <div>
+              <div
+                style={{
+                  display: "inline-flex",
+                  padding: "8px 12px",
+                  borderRadius: 999,
+                  background: "rgba(107,70,255,0.10)",
+                  color: "#6b46ff",
+                  fontWeight: 800,
+                  fontSize: 13,
+                }}
+              >
+                90 вопросов 💞
+              </div>
 
-      <div style={{ marginTop: 12, color: "#4b446a", lineHeight: 1.45 }}>
-        Ты прошёл(а) весь текущий набор вопросов.
+              <div
+                style={{
+                  marginTop: 18,
+                  fontSize: 26,
+                  fontWeight: 900,
+                  color: "#211b3b",
+                  lineHeight: 1.35,
+                }}
+              >
+                {currentQuestion.text}
+              </div>
+            </div>
+
+            <button
+              onClick={handleAnswered}
+              disabled={animating}
+              style={{
+                ...primaryButtonStyle,
+                width: "100%",
+                marginTop: 20,
+                opacity: animating ? 0.75 : 1,
+                cursor: animating ? "not-allowed" : "pointer",
+              }}
+            >
+              Ответили
+            </button>
+          </>
+        ) : (
+          <>
+            <div
+              style={{
+                fontSize: 24,
+                fontWeight: 900,
+                color: "#211b3b",
+                lineHeight: 1.35,
+              }}
+            >
+              Вопросы закончились 🎉
+            </div>
+
+            <div style={{ marginTop: 12, color: "#4b446a", lineHeight: 1.45 }}>
+              Ты прошёл(а) весь текущий набор вопросов.
+            </div>
+          </>
+        )}
       </div>
-    </>
-  )}
-</div>
 
       <button onClick={onBack} style={secondaryButtonStyle}>
         Назад в игры
