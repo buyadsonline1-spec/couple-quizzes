@@ -3368,6 +3368,7 @@ function WelcomeScreen({ onStart }: { onStart: () => void }) {
             Couple Quizzes
           </div>
         </div>
+        
 
         <button
           onClick={onStart}
@@ -7065,11 +7066,7 @@ const handleSelectGender = (gender: "boy" | "girl") => {
   setScreen("menu");
 };
 
-useEffect(() => {
-  if (mounted && !appState.profile.gender) {
-    setScreen("gender-select");
-  }
-}, [mounted, appState.profile.gender]);
+
 
 function animatePairPoints(from: number, to: number) {
   const duration = 900;
