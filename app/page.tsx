@@ -4644,9 +4644,10 @@ function LoveQuestionsGameScreen({
   onFinish: () => void;
   onClaimStepReward: (key: string) => Promise<boolean>;
 }) {
+  
   const [usedIds, setUsedIds] = useState<string[]>([]);
   const [currentQuestion, setCurrentQuestion] = useState<LoveQuestion | null>(null);
-  const [answered, setAnswered] = useState(false);
+  
 
   function pickRandomQuestion(excludedIds: string[]) {
     const available = LOVE_QUESTIONS.filter((q) => !excludedIds.includes(q.id));
@@ -4660,33 +4661,33 @@ function LoveQuestionsGameScreen({
   }, []);
 
  async function handleAnswered() {
-  if (!currentQuestion || answered) return;
+  if (!currentQuestion || animating) return;
+
+  setAnimating(true);
 
   const rewardKey = `love-questions:${currentQuestion.id}`;
   await onClaimStepReward(rewardKey);
-
-  setAnswered(true);
+  
   onFinish();
+
+  setTimeout(() => {
+    handleNextQuestion();
+    setAnimating(false);
+  }, 300);
 }
+
+
+const [animating, setAnimating] = useState(false);
   
 
   function handleNextQuestion() {
-    if (!currentQuestion) return;
-
-    const nextUsed = [...usedIds, currentQuestion.id];
-    setUsedIds(nextUsed);
-
-    const nextQuestion = pickRandomQuestion(nextUsed);
-
-    if (!nextQuestion) {
-      setCurrentQuestion(null);
-      setAnswered(false);
-      return;
-    }
-
-    setCurrentQuestion(nextQuestion);
-    setAnswered(false);
+  if (questionIndex + 1 >= shuffledQuestions.length) {
+    setShuffledQuestions(shuffle(LOVE_QUESTIONS));
+    setQuestionIndex(0);
+  } else {
+    setQuestionIndex((prev) => prev + 1);
   }
+}
 
   return (
     <div style={{ padding: 16, display: "grid", gap: 14 }}>
@@ -4711,7 +4712,7 @@ function LoveQuestionsGameScreen({
         </div>
       </div>
 
-     <div
+    <div
   style={{
     ...cardBaseStyle(),
     padding: 22,
@@ -4721,6 +4722,9 @@ function LoveQuestionsGameScreen({
     justifyContent: "space-between",
     background:
       "linear-gradient(180deg, rgba(255,255,255,0.28), rgba(255,255,255,0.18))",
+    transition: "all 0.3s ease",
+    transform: animating ? "translateY(40px) scale(0.95)" : "translateY(0)",
+    opacity: animating ? 0 : 1,
   }}
 >
   {currentQuestion ? (
@@ -4753,21 +4757,19 @@ function LoveQuestionsGameScreen({
         </div>
       </div>
 
-      {!answered ? (
-        <button
-          onClick={handleAnswered}
-          style={{ ...primaryButtonStyle, width: "100%", marginTop: 20 }}
-        >
-          Ответили
-        </button>
-      ) : (
-        <button
-          onClick={handleNextQuestion}
-          style={{ ...primaryButtonStyle, width: "100%", marginTop: 20 }}
-        >
-          Следующий вопрос
-        </button>
-      )}
+      <button
+        onClick={handleAnswered}
+        disabled={animating}
+        style={{
+          ...primaryButtonStyle,
+          width: "100%",
+          marginTop: 20,
+          opacity: animating ? 0.75 : 1,
+          cursor: animating ? "not-allowed" : "pointer",
+        }}
+      >
+        Ответили
+      </button>
     </>
   ) : (
     <>
