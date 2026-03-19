@@ -43,7 +43,8 @@ type Screen =
   | "profile"
   | "gender-select"
   | "daily-pair-question"
-  | "pair-streak-info";
+  | "pair-streak-info"
+  | "paywall";
 
 
 
