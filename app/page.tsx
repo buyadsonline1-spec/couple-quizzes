@@ -7134,19 +7134,23 @@ function getTelegramUserSafe(fallbackUser: TgUser | null): TgUser | null {
   return null;
 }
 
-const FREE_POLLS_LIMIT = 3;
-const FREE_TESTS_LIMIT = 1;
-const FREE_GAME_STEPS_LIMIT = 3;
+
 
 export default function Page() {
 
-  
   const [appState, setAppState] = useState<AppState>(DEFAULT_STATE);
 
-const freeAccessExhausted =
-  (appState.completedPollIds?.length ?? 0) >= FREE_POLLS_LIMIT &&
-  (appState.completedTestIds?.length ?? 0) >= FREE_TESTS_LIMIT &&
-  (appState.playedGameRewardKeys?.length ?? 0) >= FREE_GAME_STEPS_LIMIT;
+  const FREE_POLLS_LIMIT = 3;
+  const FREE_TESTS_LIMIT = 1;
+  const FREE_GAME_STEPS_LIMIT = 3;
+
+  const freeAccessExhausted =
+    (appState.completedPollIds?.length ?? 0) >= FREE_POLLS_LIMIT &&
+    (appState.completedTestIds?.length ?? 0) >= FREE_TESTS_LIMIT &&
+    (appState.playedGameRewardKeys?.length ?? 0) >= FREE_GAME_STEPS_LIMIT;
+
+
+
 
 
   function getLiveTelegramUser(): TgUser | null {
@@ -7743,9 +7747,7 @@ useEffect(() => {
 }, [mounted, appState.dailyBonus.lastClaimDate]);
 
 const [levelUpData, setLevelUpData] = useState<{ level: number; title: string } | null>(null);
-const FREE_POLLS_LIMIT = 3;
-const FREE_TESTS_LIMIT = 1;
-const FREE_GAME_STEPS_LIMIT = 3;
+
 
 
 useEffect(() => {
