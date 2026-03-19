@@ -8404,7 +8404,7 @@ if (finishedAllTests && !appState.completionBonusesClaimed.tests) {
     pairPollAnswers={appState.pairPollAnswers}
     onBack={() => setScreen("menu")}
     onOpenInvite={() => setScreen("pair-invite")}
-    onOpenDailyQuestion={() => setScreen("daily-pair")}
+    onOpenDailyQuestion={() => setScreen("daily-pair-question")}
   />
 )}
 
