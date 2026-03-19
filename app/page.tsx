@@ -8430,7 +8430,7 @@ if (finishedAllTests && !appState.completionBonusesClaimed.tests) {
 
 {screen === "pair-streak-info" && (
   <PairStreakInfoScreen
-    appState={appState}
+  
     onBack={() => setScreen("daily-pair-question")}
   />
 )}
