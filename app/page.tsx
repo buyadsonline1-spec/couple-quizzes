@@ -2374,6 +2374,7 @@ function PairStreakInfoScreen({
   Назад
 </button>
 
+
       </div>
     </div>
   );
