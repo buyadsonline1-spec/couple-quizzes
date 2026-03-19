@@ -4623,9 +4623,7 @@ function BottleGameScreen({
               </button>
             </div>
           </div>
-           <button onClick={onBack} style={secondaryButtonStyle}>
-        Назад в игры
-      </button>
+           
         </div>
       )}
     </div>
