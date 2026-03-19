@@ -7211,6 +7211,10 @@ const handleBuyPremium = async () => {
 
 const [mounted, setMounted] = useState(false);
 
+useEffect(() => {
+  setMounted(true);
+}, []);
+
 
 const handleSelectGender = (gender: "boy" | "girl") => {
   setAppState((prev) => ({
@@ -7686,7 +7690,7 @@ const [showPaymentChoice, setShowPaymentChoice] = useState(false);
 
 const TRIBUTE_LINK = "https://t.me/tribute/app?startapp=sMuC";
   
-  const [screen, setScreen] = useState<Screen>("start");
+  const [screen, setScreen] = useState<Screen>("welcome");
   const [paywallBackScreen, setPaywallBackScreen] = useState<Screen>("menu");
   const [user, setUser] = useState<TgUser | null>(null);
   const [showDailyBonus, setShowDailyBonus] = useState(true);
@@ -8430,7 +8434,7 @@ if (finishedAllTests && !appState.completionBonusesClaimed.tests) {
 
 {screen === "pair-streak-info" && (
   <PairStreakInfoScreen
-  
+
     onBack={() => setScreen("daily-pair-question")}
   />
 )}
