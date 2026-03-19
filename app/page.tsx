@@ -2363,19 +2363,23 @@ function PairStreakInfoScreen({
           })}
         </div>
 
-         <button
+
+
+
+      </div>
+       <button
   onClick={onBack}
   style={{
     ...secondaryButtonStyle,
     width: "100%",
-    marginTop: 4,
+    marginTop: 16,
   }}
 >
   Назад
 </button>
 
 
-      </div>
+
     </div>
   );
 }
@@ -2854,6 +2858,8 @@ function DailyPairQuestionScreen({
               );
             })}
           </div>
+
+
         </div>
       )}
 
