@@ -28,6 +28,7 @@ declare global {
 }
 
 type Screen =
+  | "welcome"
   | "start"
   | "menu"
   | "polls"
@@ -7683,7 +7684,7 @@ const [showPaymentChoice, setShowPaymentChoice] = useState(false);
 
 const TRIBUTE_LINK = "https://t.me/tribute/app?startapp=sMuC";
   
-  const [screen, setScreen] = useState<Screen>("welcome");
+  const [screen, setScreen] = useState<Screen>("start");
   const [paywallBackScreen, setPaywallBackScreen] = useState<Screen>("menu");
   const [user, setUser] = useState<TgUser | null>(null);
   const [showDailyBonus, setShowDailyBonus] = useState(true);
