@@ -82,6 +82,9 @@ type WonReward = {
 type AppState = {
   points: number;
   isPremium: boolean;
+  loveQuestionsProgress: {
+  currentIndex: number;
+};
 
   completionBonusesClaimed: {
   polls: boolean;
@@ -3340,6 +3343,10 @@ function loadState(): AppState {
     DEFAULT_STATE.completionBonusesClaimed.games,
 },
 
+loveQuestionsProgress: {
+  currentIndex: 0,
+},
+
 
   referrals: {
   invitedUsers:
@@ -4422,9 +4429,12 @@ function GamesScreen({
   return (
     <LoveQuestionsGameScreen
       reward={activeGame.reward}
+      appState={appState}
+setAppState={setAppState}
       onBack={() => setActiveGameId(null)}
       onFinish={handleLoveQuestionFinish}
       onClaimStepReward={onClaimStepReward}
+
     />
   );
 }
@@ -4853,24 +4863,28 @@ function shuffle<T>(array: T[]): T[] {
 
 function LoveQuestionsGameScreen({
   reward,
+  appState,
+  setAppState,
   onBack,
   onFinish,
   onClaimStepReward,
 }: {
   reward: number;
+  appState: AppState;
+  setAppState: React.Dispatch<React.SetStateAction<AppState>>;
   onBack: () => void;
   onFinish: () => void;
   onClaimStepReward: (key: string) => Promise<boolean>;
 }) {
-  const [questionIndex, setQuestionIndex] = useState(0);
   const [animating, setAnimating] = useState(false);
-  const [shuffledQuestions, setShuffledQuestions] = useState(() =>
-    shuffle(LOVE_QUESTIONS)
-  );
 
-  const progressLabel = `${Math.min(questionIndex + 1, shuffledQuestions.length)} / ${shuffledQuestions.length}`;
+  const questionIndex = appState.loveQuestionsProgress.currentIndex ?? 0;
+  const currentQuestion = LOVE_QUESTIONS[questionIndex] ?? null;
 
-  const currentQuestion = shuffledQuestions[questionIndex] ?? null;
+  const progressLabel = `${Math.min(
+    questionIndex + 1,
+    LOVE_QUESTIONS.length
+  )} / ${LOVE_QUESTIONS.length}`;
 
   async function handleAnswered() {
     if (!currentQuestion || animating) return;
@@ -4889,12 +4903,18 @@ function LoveQuestionsGameScreen({
   }
 
   function handleNextQuestion() {
-    if (questionIndex + 1 >= shuffledQuestions.length) {
-      setShuffledQuestions(shuffle(LOVE_QUESTIONS));
-      setQuestionIndex(0);
-    } else {
-      setQuestionIndex((prev) => prev + 1);
-    }
+    setAppState((prev) => {
+      const current = prev.loveQuestionsProgress.currentIndex ?? 0;
+      const nextIndex =
+        current + 1 >= LOVE_QUESTIONS.length ? 0 : current + 1;
+
+      return {
+        ...prev,
+        loveQuestionsProgress: {
+          currentIndex: nextIndex,
+        },
+      };
+    });
   }
 
   return (
@@ -4934,43 +4954,43 @@ function LoveQuestionsGameScreen({
         {currentQuestion ? (
           <>
             <div>
-             <div
-  style={{
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "space-between",
-    gap: 12,
-    flexWrap: "wrap",
-  }}
->
-  <div
-    style={{
-      display: "inline-flex",
-      padding: "8px 12px",
-      borderRadius: 999,
-      background: "rgba(107,70,255,0.10)",
-      color: "#6b46ff",
-      fontWeight: 800,
-      fontSize: 13,
-    }}
-  >
-    90 вопросов 💞
-  </div>
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  gap: 12,
+                  flexWrap: "wrap",
+                }}
+              >
+                <div
+                  style={{
+                    display: "inline-flex",
+                    padding: "8px 12px",
+                    borderRadius: 999,
+                    background: "rgba(107,70,255,0.10)",
+                    color: "#6b46ff",
+                    fontWeight: 800,
+                    fontSize: 13,
+                  }}
+                >
+                  90 вопросов 💞
+                </div>
 
-  <div
-    style={{
-      display: "inline-flex",
-      padding: "8px 12px",
-      borderRadius: 999,
-      background: "rgba(255,255,255,0.24)",
-      color: "#4b446a",
-      fontWeight: 800,
-      fontSize: 13,
-    }}
-  >
-    {progressLabel}
-  </div>
-</div>
+                <div
+                  style={{
+                    display: "inline-flex",
+                    padding: "8px 12px",
+                    borderRadius: 999,
+                    background: "rgba(255,255,255,0.24)",
+                    color: "#4b446a",
+                    fontWeight: 800,
+                    fontSize: 13,
+                  }}
+                >
+                  {progressLabel}
+                </div>
+              </div>
 
               <div
                 style={{
