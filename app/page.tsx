@@ -4162,13 +4162,15 @@ function GamesScreen({
     fontSize: 12,
   }}
 >
-              <span>
-                {game.id === "bottle"
-                  ? "Формат: раунд"
-                  : game.id === "90-questions"
-                  ? "Формат: случайный вопрос"
-                  : `Вопросов: ${game.questions.length}`}
-              </span>
+             <span
+  style={{
+    fontSize: 12,
+    opacity: 0.6,
+    fontWeight: 600,
+  }}
+>
+  🎮
+</span>
               <span>+{game.reward}</span>
             </div>
 
