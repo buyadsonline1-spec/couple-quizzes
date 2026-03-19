@@ -40,7 +40,8 @@ type Screen =
   | "top"
   | "rewards"
   | "daily-pair-question"
-  | "pair-streak-info";
+  | "pair-streak-info"
+  | "gender-select";
 
 
 
@@ -8276,8 +8277,13 @@ if (finishedAllTests && !appState.completionBonusesClaimed.tests) {
   />
 )}
 
-          {screen === "gender-select" && (
-  <GenderSelectScreen onSelect={handleSelectGender} />
+      {screen === "gender-select" && (
+  <GenderSelectScreen
+    appState={appState}
+    setAppState={setAppState}
+    onBack={() => setScreen("menu")}
+    onContinue={() => setScreen("menu")}
+  />
 )}
 
 {screen === "menu" && (
