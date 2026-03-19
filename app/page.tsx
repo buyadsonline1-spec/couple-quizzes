@@ -5140,20 +5140,18 @@ function NeverHaveIEverGameScreen({
 
   const card = shuffledCards[index] ?? null;
 
-  async function handleComplete() {
-  if (rewardClaimed) return;
+async function handleComplete() {
+  if (rewardClaimed || !card) return;
 
   const rewardKey = `never-have:${card.text}`;
-  const claimed = await onClaimReward(rewardKey);
+  await onClaimReward(rewardKey);
 
-  if (claimed) {
-    setRewardClaimed(true);
+  setRewardClaimed(true);
+  onFinish();
 
-
-    onFinish();
-  } else {
-    setRewardClaimed(true);
-  }
+  setTimeout(() => {
+    handleNext();
+  }, 350);
 }
 
 function handleNext() {
@@ -5360,30 +5358,21 @@ return (
         {flipped ? "Показать вопрос" : "Перевернуть карточку"}
       </button>
 
-      <button
-        onClick={handleComplete}
-        disabled={rewardClaimed || alreadyPlayed}
-        style={{
-          ...primaryButtonStyle,
-          width: "100%",
-          marginTop: 12,
-          opacity: rewardClaimed || alreadyPlayed ? 0.6 : 1,
-          cursor: rewardClaimed || alreadyPlayed ? "not-allowed" : "pointer",
-        }}
-      >
-        {alreadyPlayed
-          ? "Карточка уже сыграна (+10 уже получено)"
-          : rewardClaimed
-          ? `Карточка сыграна (+${reward} очков)`
-          : `Карточка сыграна (+${reward} очков)`}
-      </button>
+     <button
+  onClick={handleComplete}
+  disabled={rewardClaimed || alreadyPlayed}
+  style={{
+    ...primaryButtonStyle,
+    width: "100%",
+    marginTop: 12,
+    opacity: rewardClaimed || alreadyPlayed ? 0.6 : 1,
+    cursor: rewardClaimed || alreadyPlayed ? "not-allowed" : "pointer",
+  }}
+>
+  {alreadyPlayed ? "Карточка уже сыграна" : "Карточка сыграна"}
+</button>
 
-      <button
-        onClick={handleNext}
-        style={{ ...secondaryButtonStyle, marginTop: 12 }}
-      >
-        Следующая карточка
-      </button>
+     
     </div>
 
     <button onClick={onBack} style={secondaryButtonStyle}>
