@@ -35,12 +35,13 @@ type Screen =
   | "polls-girl"
   | "games"
   | "tests"
+  | "rewards"
   | "pair"
   | "top"
-  | "rewards"
+  | "profile"
+  | "gender-select"
   | "daily-pair-question"
-  | "pair-streak-info"
-  | "gender-select";
+  | "pair-streak-info";
 
 
 
@@ -4136,15 +4137,7 @@ function GamesScreen({
     fontSize: 12,
   }}
 >
-             <span
-  style={{
-    fontSize: 12,
-    opacity: 0.6,
-    fontWeight: 600,
-  }}
->
-  🎮
-</span>
+             
               <span>+10</span>
             </div>
 
