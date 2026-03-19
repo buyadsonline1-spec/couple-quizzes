@@ -1250,6 +1250,10 @@ const DEFAULT_STATE: AppState = {
   totalReward: 0,
 },
 
+loveQuestionsProgress: {
+  currentIndex: 0,
+},
+
 profile: {
   displayName: "",
   avatar: null,
