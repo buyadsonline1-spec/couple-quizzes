@@ -4171,7 +4171,7 @@ function GamesScreen({
 >
   🎮
 </span>
-              <span>+{game.reward}</span>
+              <span>+10</span>
             </div>
 
             <button
