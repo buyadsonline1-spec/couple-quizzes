@@ -284,7 +284,7 @@ const TESTS: TestDefinition[] = [
     id: "trust-level",
     title: "Уровень доверия к партнёру",
     description: "Покажет, насколько спокойно и уверенно ты чувствуешь себя в отношениях.",
-    reward: 50,
+    reward: 60,
     kind: "scale",
     questions: [
       {
@@ -3516,7 +3516,7 @@ function MainMenu({
 </div>
         </div>
 
-        <div
+       <div
   style={{
     marginTop: 7,
     height: 7,
@@ -3525,18 +3525,18 @@ function MainMenu({
     overflow: "hidden",
   }}
 >
-          <div
-            style={{
-              
-              height: "100%",
-              borderRadius: 999,
-              background: "linear-gradient(135deg,#8f6bff,#ff76ba)",
-              transition: "width 0.35s ease",
-            }}
-          />
-        </div>
+  <div
+    style={{
+      width: `${pairLevel.progressPercent}%`,
+      height: "100%",
+      borderRadius: 999,
+      background: "linear-gradient(135deg,#8f6bff,#ff76ba)",
+      transition: "width 0.35s ease",
+    }}
+  />
+</div>
 
-        <div
+<div
   style={{
     marginTop: 5,
     fontSize: 10,
@@ -3545,11 +3545,9 @@ function MainMenu({
     lineHeight: 1.2,
   }}
 >
-  
-    ? {pairLevel.nextLevelPoints
-  ? `До следующего уровня: ${pairLevel.nextLevelPoints - points}`
-  : "Максимальный уровень"}
-    : "Максимальный уровень"
+  {pairLevel.nextLevelPoints
+    ? `До следующего уровня: ${Math.max(0, pairLevel.nextLevelPoints - points)}`
+    : "Максимальный уровень"}
 </div>
       </div>
     </div>
