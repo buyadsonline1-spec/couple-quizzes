@@ -2231,16 +2231,7 @@ function PairStreakInfoScreen({
           Чем длиннее серия, тем больше бонусных очков получает ваша пара.
         </div>
 
-        <button
-  onClick={onBack}
-  style={{
-    ...secondaryButtonStyle,
-    width: "100%",
-    marginTop: 4,
-  }}
->
-  Назад
-</button>
+       
 
         <div
           style={{
@@ -2360,6 +2351,17 @@ function PairStreakInfoScreen({
                   }}
                 >
                   +{reward}
+
+                   <button
+  onClick={onBack}
+  style={{
+    ...secondaryButtonStyle,
+    width: "100%",
+    marginTop: 4,
+  }}
+>
+  Назад
+</button>
                 </div>
               </div>
             );
