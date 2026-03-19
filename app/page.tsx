@@ -28,22 +28,19 @@ declare global {
 }
 
 type Screen =
-  | "welcome"
-  | "gender-select"
+  | "start"
   | "menu"
   | "polls"
-  | "polls-boy"
-  | "polls-girl"
+
   | "games"
   | "tests"
-  | "rewards"
+
   | "pair"
-  | "pair-invite"
-  | "daily-pair"
-  | "profile"
-  | "referrals"
+
   | "top"
-  | "paywall";
+  | "rewards"
+  | "daily-pair-question"
+  | "pair-streak-info";
 
 
 
@@ -2100,6 +2097,125 @@ function PairInviteScreen({
   );
 }
 
+function PairStreakInfoScreen({
+  onBack,
+}: {
+  onBack: () => void;
+}) {
+  const milestones = [
+    { days: 3, reward: 100 },
+    { days: 5, reward: 200 },
+    { days: 10, reward: 500 },
+    { days: 15, reward: 750 },
+    { days: 20, reward: 1000 },
+    { days: 30, reward: 2000 },
+  ];
+
+  return (
+    <div style={{ padding: 16, display: "grid", gap: 14 }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+        <button
+          onClick={onBack}
+          style={{
+            border: "none",
+            background: "rgba(255,255,255,0.78)",
+            borderRadius: 999,
+            padding: "10px 14px",
+            fontWeight: 800,
+            cursor: "pointer",
+            color: "#1f1d3a",
+          }}
+        >
+          ← Назад
+        </button>
+
+        <div style={{ fontSize: 24, fontWeight: 900, color: "#1f1d3a" }}>
+          🔥 Серия пары
+        </div>
+      </div>
+
+      <div style={{ ...cardBaseStyle(), padding: 18 }}>
+        <div style={{ fontSize: 18, fontWeight: 900, color: "#1f1d3a" }}>
+          Как работает серия
+        </div>
+
+        <div
+          style={{
+            marginTop: 10,
+            fontSize: 16,
+            lineHeight: 1.5,
+            color: "rgba(31,29,58,0.78)",
+          }}
+        >
+          Серия растёт, когда вы оба отвечаете на вопрос дня несколько дней подряд.
+          За некоторые рубежи даются бонусные очки.
+        </div>
+      </div>
+
+      <div style={{ ...cardBaseStyle(), padding: 18 }}>
+        <div style={{ fontSize: 18, fontWeight: 900, color: "#1f1d3a" }}>
+          🏆 Рубежи серии
+        </div>
+
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
+            gap: 12,
+            marginTop: 14,
+          }}
+        >
+          {milestones.map((item) => (
+            <div
+              key={item.days}
+              style={{
+                borderRadius: 22,
+                padding: 16,
+                background: "rgba(255,255,255,0.55)",
+                border: "1px solid rgba(255,255,255,0.6)",
+                textAlign: "center",
+              }}
+            >
+              <div
+                style={{
+                  fontSize: 28,
+                  fontWeight: 900,
+                  color: "#1f1d3a",
+                  lineHeight: 1,
+                }}
+              >
+                {item.days}
+              </div>
+
+              <div
+                style={{
+                  marginTop: 6,
+                  fontSize: 15,
+                  fontWeight: 700,
+                  color: "rgba(31,29,58,0.78)",
+                }}
+              >
+                дней
+              </div>
+
+              <div
+                style={{
+                  marginTop: 8,
+                  fontSize: 18,
+                  fontWeight: 900,
+                  color: "#7c5cff",
+                }}
+              >
+                +{item.reward}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function DailyPairQuestionScreen({
   user,
   pair,
@@ -2267,9 +2383,38 @@ function DailyPairQuestionScreen({
       </div>
 
       <div style={{ ...cardBaseStyle(), padding: 14 }}>
-        <div style={{ fontSize: 18, fontWeight: 900, color: "#1f1d3a" }}>
-          🔥 Серия пары
-        </div>
+        <div
+  style={{
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginBottom: 10,
+  }}
+>
+  <div style={{ fontSize: 18, fontWeight: 900, color: "#1f1d3a" }}>
+    🔥 Серия пары
+  </div>
+
+  <button
+    onClick={() => setScreen("pair-streak-info")}
+    style={{
+      width: 28,
+      height: 28,
+      borderRadius: 999,
+      border: "1px solid rgba(143,107,255,0.25)",
+      background: "rgba(255,255,255,0.7)",
+      color: "#7c5cff",
+      fontSize: 14,
+      fontWeight: 800,
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      cursor: "pointer",
+    }}
+  >
+    i
+  </button>
+</div>
 
         <div
           style={{
@@ -2325,54 +2470,7 @@ function DailyPairQuestionScreen({
         </div>
       </div>
 
-      <div style={{ ...cardBaseStyle(), padding: 14 }}>
-        <div style={{ fontSize: 18, fontWeight: 900, color: "#1f1d3a" }}>
-          🏆 Рубежи серии
-        </div>
-
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(4, 1fr)",
-            gap: 8,
-            marginTop: 12,
-          }}
-        >
-          {[
-  { days: 3, points: 100 },
-  { days: 5, points: 200 },
-  { days: 10, points: 500 },
-  { days: 15, points: 750 },
-].map(({ days, points }) => {
-  const reached = appState.dailyPairStreak.reachedMilestones.includes(days);
-
-  return (
-    <div
-      key={days}
-      style={{
-        padding: "12px 10px",
-        borderRadius: 16,
-        textAlign: "center",
-        background: reached
-          ? "linear-gradient(135deg, rgba(255,230,240,0.95), rgba(255,255,255,0.9))"
-          : "rgba(255,255,255,0.18)",
-        border: reached
-          ? "2px solid rgba(255,120,190,0.35)"
-          : "1px solid rgba(255,255,255,0.20)",
-        color: "#241b40",
-      }}
-    >
-      <div style={{ fontSize: 20 }}>
-        {reached
-          ? days === 3
-            ? "🔥"
-            : days === 5
-            ? "🏆"
-            : days === 10
-            ? "💎"
-            : "👑"
-          : "▫️"}
-      </div>
+    
 
       <div
         style={{
@@ -8434,6 +8532,7 @@ if (finishedAllTests && !appState.completionBonusesClaimed.tests) {
   />
 )}
 
+
 {screen === "daily-pair" && (
   <DailyPairQuestionScreen
     user={user}
@@ -8442,6 +8541,10 @@ if (finishedAllTests && !appState.completionBonusesClaimed.tests) {
     setAppState={setAppState}
     onBack={() => setScreen("pair")}
   />
+)}
+
+{screen === "pair-streak-info" && (
+  <PairStreakInfoScreen onBack={() => setScreen("daily-pair-question")} />
 )}
 
 {screen === "paywall" && (
