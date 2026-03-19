@@ -8480,7 +8480,7 @@ if (finishedAllTests && !appState.completionBonusesClaimed.tests) {
             : completionBonusData?.section === "tests"
             ? " тесты"
             : " раздел"}
-          {" "}и получил праздничный бонус
+          {" "}и получаешь бонус!
         </div>
 
         <div style={completionPointsStyle}>

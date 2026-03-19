@@ -41,18 +41,18 @@ async function setMenuButton() {
 
 setMenuButton().catch(console.error);
 
-bot.onText(/\/start/, (msg) => {
+bot.onText(/\/start/, async (msg) => {
   const chatId = msg.chat.id;
 
-  bot.sendMessage(
+  await bot.sendMessage(
     chatId,
     `💖 Добро пожаловать в Couple Quizzes!
 
 Здесь вы можете:
 • проходить тесты и опросы для пары
-• играть вместе
+• проверять вашу совместимость
 • получать очки и награды
-• открывать полный доступ
+• выигрывать реальные призы
 
 Нажми кнопку ниже, чтобы открыть приложение 👇`,
     {
@@ -62,7 +62,7 @@ bot.onText(/\/start/, (msg) => {
             {
               text: "💖 Открыть Couple Quizzes",
               web_app: {
-                url: "https://couple-quizzes.vercel.app/",
+                url: webAppUrl,
               },
             },
           ],
