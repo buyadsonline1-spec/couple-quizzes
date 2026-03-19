@@ -3042,18 +3042,16 @@ function calculateMatch(a?: number[], b?: number[]) {
 
 function calculatePairStats(pollAnswers: Record<string, number[]>) {
   const matchGroups = [
-    { key: "romance", label: "Романтика" },
-    { key: "jealousy", label: "Ревность" },
+    { key: "love", label: "Любовь" },
     { key: "conflicts", label: "Конфликты" },
-    { key: "boundaries", label: "Границы" },
-    { key: "space", label: "Личное пространство" },
-    { key: "roles", label: "Роли в отношениях" },
-    { key: "future", label: "Будущее" },
     { key: "trust", label: "Доверие" },
-    { key: "values", label: "Ценности" },
+    { key: "understanding", label: "Понимание" },
+    { key: "romance", label: "Романтика" },
+    { key: "space", label: "Личное пространство" },
+    { key: "future", label: "Будущее" },
+    { key: "life", label: "Быт" },
+    { key: "jealousy", label: "Ревность" },
   ];
-
-
 
   const results = matchGroups
     .map((group) => {
@@ -3081,13 +3079,12 @@ function calculatePairStats(pollAnswers: Record<string, number[]>) {
     })
     .filter(Boolean) as { key: string; label: string; score: number }[];
 
-  if (results.length === 0) {
+  if (!results.length) {
     return {
-      total: null as number | null,
+      total: null,
       completedThemes: 0,
-      strongest: [] as { key: string; label: string; score: number }[],
-      weakest: [] as { key: string; label: string; score: number }[],
-      all: [] as { key: string; label: string; score: number }[],
+      strongest: [],
+      weakest: [],
     };
   }
 
@@ -3100,9 +3097,8 @@ function calculatePairStats(pollAnswers: Record<string, number[]>) {
   return {
     total,
     completedThemes: results.length,
-    strongest: sorted.slice(0, 2),
-    weakest: [...sorted].reverse().slice(0, 2),
-    all: results,
+    strongest: sorted.slice(0, Math.min(3, sorted.length)),
+    weakest: [...sorted].reverse().slice(0, Math.min(3, sorted.length)),
   };
 }
 
