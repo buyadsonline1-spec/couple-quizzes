@@ -2103,8 +2103,10 @@ function PairInviteScreen({
 }
 
 function PairStreakInfoScreen({
+  appState,
   onBack,
 }: {
+  appState: AppState;
   onBack: () => void;
 }) {
   const milestones = [
@@ -2112,48 +2114,43 @@ function PairStreakInfoScreen({
     { days: 5, reward: 200 },
     { days: 10, reward: 500 },
     { days: 15, reward: 750 },
-    { days: 20, reward: 1000 },
-    { days: 30, reward: 2000 },
   ];
+
+  const current = appState.dailyPairStreak.current;
+  const reachedMilestones = appState.dailyPairStreak.reachedMilestones;
 
   return (
     <div style={{ padding: 16, display: "grid", gap: 14 }}>
-      <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-        <button
-          onClick={onBack}
-          style={{
-            border: "none",
-            background: "rgba(255,255,255,0.78)",
-            borderRadius: 999,
-            padding: "10px 14px",
-            fontWeight: 800,
-            cursor: "pointer",
-            color: "#1f1d3a",
-          }}
-        >
-          ← Назад
-        </button>
-
-        <div style={{ fontSize: 24, fontWeight: 900, color: "#1f1d3a" }}>
-          🔥 Серия пары
-        </div>
-      </div>
+      <button
+        onClick={onBack}
+        style={{
+          border: "none",
+          background: "rgba(255,255,255,0.78)",
+          borderRadius: 999,
+          padding: "10px 14px",
+          fontWeight: 800,
+          cursor: "pointer",
+          color: "#1f1d3a",
+          width: "fit-content",
+        }}
+      >
+        ← Назад
+      </button>
 
       <div style={{ ...cardBaseStyle(), padding: 18 }}>
         <div style={{ fontSize: 18, fontWeight: 900, color: "#1f1d3a" }}>
-          Как работает серия
+          🔥 Серия пары
         </div>
 
         <div
           style={{
             marginTop: 10,
-            fontSize: 16,
+            fontSize: 15,
             lineHeight: 1.5,
             color: "rgba(31,29,58,0.78)",
           }}
         >
-          Серия растёт, когда вы оба отвечаете на вопрос дня несколько дней подряд.
-          За некоторые рубежи даются бонусные очки.
+          Сейчас у вашей пары серия: <b>{current} дн.</b>
         </div>
       </div>
 
@@ -2170,51 +2167,64 @@ function PairStreakInfoScreen({
             marginTop: 14,
           }}
         >
-          {milestones.map((item) => (
-            <div
-              key={item.days}
-              style={{
-                borderRadius: 22,
-                padding: 16,
-                background: "rgba(255,255,255,0.55)",
-                border: "1px solid rgba(255,255,255,0.6)",
-                textAlign: "center",
-              }}
-            >
-              <div
-                style={{
-                  fontSize: 28,
-                  fontWeight: 900,
-                  color: "#1f1d3a",
-                  lineHeight: 1,
-                }}
-              >
-                {item.days}
-              </div>
+          {milestones.map(({ days, reward }) => {
+            const reached = reachedMilestones.includes(days);
 
+            return (
               <div
+                key={days}
                 style={{
-                  marginTop: 6,
-                  fontSize: 15,
-                  fontWeight: 700,
-                  color: "rgba(31,29,58,0.78)",
+                  borderRadius: 22,
+                  padding: 16,
+                  background: reached
+                    ? "linear-gradient(135deg, rgba(255,230,240,0.95), rgba(255,255,255,0.9))"
+                    : "rgba(255,255,255,0.55)",
+                  border: reached
+                    ? "2px solid rgba(255,120,190,0.35)"
+                    : "1px solid rgba(255,255,255,0.6)",
+                  textAlign: "center",
                 }}
               >
-                дней
-              </div>
+                <div style={{ fontSize: 22 }}>
+                  {reached ? "🔥" : "▫️"}
+                </div>
 
-              <div
-                style={{
-                  marginTop: 8,
-                  fontSize: 18,
-                  fontWeight: 900,
-                  color: "#7c5cff",
-                }}
-              >
-                +{item.reward}
+                <div
+                  style={{
+                    fontSize: 28,
+                    fontWeight: 900,
+                    color: "#1f1d3a",
+                    lineHeight: 1,
+                    marginTop: 8,
+                  }}
+                >
+                  {days}
+                </div>
+
+                <div
+                  style={{
+                    marginTop: 6,
+                    fontSize: 15,
+                    fontWeight: 700,
+                    color: "rgba(31,29,58,0.78)",
+                  }}
+                >
+                  дней
+                </div>
+
+                <div
+                  style={{
+                    marginTop: 8,
+                    fontSize: 18,
+                    fontWeight: 900,
+                    color: "#7c5cff",
+                  }}
+                >
+                  +{reward}
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
     </div>
@@ -2227,12 +2237,14 @@ function DailyPairQuestionScreen({
   appState,
   setAppState,
   onBack,
+  onOpenStreakInfo,
 }: {
   user: TgUser | null;
   pair: PairState;
   appState: AppState;
   setAppState: React.Dispatch<React.SetStateAction<AppState>>;
   onBack: () => void;
+  onOpenStreakInfo: () => void;
 }) {
   const today = getTodayLocalDateString();
   const question = getDailyPairQuestionForToday();
@@ -2435,31 +2447,98 @@ function DailyPairQuestionScreen({
           </div>
         )}
 
-        <div style={{ display: "grid", gap: 8, marginTop: 12 }}>
-          <div
-            style={{
-              padding: "10px 12px",
-              borderRadius: 14,
-              background: "rgba(255,255,255,0.20)",
-              color: "#2c2647",
-              fontWeight: 700,
-            }}
-          >
-            Ты: {myAnswer ? "ответил(а)" : "ещё не ответил(а)"}
-          </div>
+        {bothAnswered ? (
+  <div
+    style={{
+      ...cardBaseStyle(),
+      padding: 16,
+      marginTop: 12,
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "space-between",
+      gap: 12,
+    }}
+  >
+    <div>
+      <div style={{ fontSize: 16, fontWeight: 900, color: "#1f1d3a" }}>
+        🔥 Серия пары
+      </div>
 
-          <div
-            style={{
-              padding: "10px 12px",
-              borderRadius: 14,
-              background: "rgba(255,255,255,0.20)",
-              color: "#2c2647",
-              fontWeight: 700,
-            }}
-          >
-            Партнёр: {partnerAnswer ? "ответил(а)" : "ещё не ответил(а)"}
-          </div>
-        </div>
+      <div
+        style={{
+          marginTop: 6,
+          fontSize: 30,
+          fontWeight: 900,
+          color: "#241b40",
+          lineHeight: 1,
+        }}
+      >
+        {appState.dailyPairStreak.current} дн.
+      </div>
+
+      <div
+        style={{
+          marginTop: 8,
+          fontSize: 13,
+          lineHeight: 1.45,
+          color: "rgba(36,27,64,0.72)",
+        }}
+      >
+        Оба ответили на вопрос дня подряд
+      </div>
+    </div>
+
+    <button
+      onClick={onOpenStreakInfo}
+      style={{
+        width: 30,
+        height: 30,
+        flexShrink: 0,
+        borderRadius: 999,
+        border: "1px solid rgba(143,107,255,0.22)",
+        background: "rgba(255,255,255,0.72)",
+        color: "#7c5cff",
+        fontSize: 15,
+        fontWeight: 800,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        cursor: "pointer",
+        boxShadow: "0 8px 20px rgba(124,92,255,0.10)",
+      }}
+    >
+      i
+    </button>
+  </div>
+) : (
+  <div style={{ display: "grid", gap: 8, marginTop: 12 }}>
+    <div
+      style={{
+        ...cardBaseStyle(),
+        padding: 14,
+        fontSize: 16,
+        fontWeight: 800,
+        color: "#2b2148",
+      }}
+    >
+      Ты: {myAnswer ? "ответил(а)" : "ещё не ответил(а)"}
+    </div>
+
+    <div
+      style={{
+        ...cardBaseStyle(),
+        padding: 14,
+        fontSize: 16,
+        fontWeight: 800,
+        color: "#2b2148",
+      }}
+    >
+      Партнёр: {partnerAnswer ? "ответил(а)" : "ещё не ответил(а)"}
+    </div>
+  </div>
+)}
+
+          
 
         {bothAnswered && (
           <div
@@ -8429,12 +8508,13 @@ if (finishedAllTests && !appState.completionBonusesClaimed.tests) {
     appState={appState}
     setAppState={setAppState}
     onBack={() => setScreen("pair")}
+    onOpenStreakInfo={() => setScreen("pair-streak-info")}
   />
 )}
 
 {screen === "pair-streak-info" && (
   <PairStreakInfoScreen
-
+    appState={appState}
     onBack={() => setScreen("daily-pair-question")}
   />
 )}
