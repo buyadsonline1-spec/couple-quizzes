@@ -36,6 +36,7 @@ type Screen =
   | "games"
   | "tests"
   | "rewards"
+  | "referrals"
   | "pair"
   | "top"
   | "profile"
@@ -8377,10 +8378,10 @@ if (finishedAllTests && !appState.completionBonusesClaimed.tests) {
 
 
 {screen === "referrals" && (
-  <ReferralsScreen
-    user={user}
+  <ReferralScreen
     appState={appState}
-    onBack={() => setScreen("profile")}
+    setAppState={setAppState}
+    onBack={() => setScreen("menu")}
   />
 )}
 
