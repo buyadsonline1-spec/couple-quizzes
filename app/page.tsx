@@ -4276,15 +4276,19 @@ setFinished(false);
 function GamesScreen({
   completedGameIds,
   playedGameRewardKeys,
+  appState,
+  setAppState,
   onBack,
   onCompleteGame,
   onClaimStepReward,
 }: {
   completedGameIds: string[];
   playedGameRewardKeys: string[];
+  appState: AppState;
+  setAppState: React.Dispatch<React.SetStateAction<AppState>>;
   onBack: () => void;
   onCompleteGame: (game: Game, score: number) => void;
-  onClaimStepReward: (rewardKey: string) => Promise<boolean>;
+  onClaimStepReward: (key: string) => Promise<boolean>;
 }) {
   const [activeGameId, setActiveGameId] = useState<string | null>(null);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
@@ -4434,11 +4438,11 @@ function GamesScreen({
     <LoveQuestionsGameScreen
       reward={activeGame.reward}
       appState={appState}
-setAppState={setAppState}
+      setAppState={setAppState}
       onBack={() => setActiveGameId(null)}
       onFinish={handleLoveQuestionFinish}
       onClaimStepReward={onClaimStepReward}
-
+      
     />
   );
 }
@@ -7394,6 +7398,8 @@ export default function Page() {
 
   const [appState, setAppState] = useState<AppState>(DEFAULT_STATE);
 
+ 
+
   const FREE_POLLS_LIMIT = 3;
   const FREE_TESTS_LIMIT = 1;
   const FREE_GAME_STEPS_LIMIT = 3;
@@ -8594,13 +8600,15 @@ if (finishedAllTests && !appState.completionBonusesClaimed.tests) {
 )}
 
      {screen === "games" && (
-  <GamesScreen
-    completedGameIds={appState.completedGameIds}
-    playedGameRewardKeys={appState.playedGameRewardKeys}
-    onBack={() => setScreen("menu")}
-    onCompleteGame={handleCompleteGame}
-    onClaimStepReward={claimGameStepReward}
-  />
+ <GamesScreen
+  completedGameIds={appState.completedGameIds}
+  playedGameRewardKeys={appState.playedGameRewardKeys}
+  appState={appState}
+  setAppState={setAppState}
+  onBack={() => setScreen("menu")}
+ onCompleteGame={handleCompleteGame}
+  onClaimStepReward={claimGameStepReward}
+/>
 )}
 
               {screen === "tests" && (
