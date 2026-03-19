@@ -7527,7 +7527,7 @@ const [showPaymentChoice, setShowPaymentChoice] = useState(false);
 const TRIBUTE_LINK = "https://t.me/tribute/app?startapp=sMuC";
   
   const [screen, setScreen] = useState<Screen>("welcome");
-  
+  const [paywallBackScreen, setPaywallBackScreen] = useState<Screen>("menu");
   const [user, setUser] = useState<TgUser | null>(null);
   const [showDailyBonus, setShowDailyBonus] = useState(true);
   const [claimableDay, setClaimableDay] = useState(1);
@@ -8123,19 +8123,19 @@ if (finishedAllTests && !appState.completionBonusesClaimed.tests) {
     user={user}
     pairLevel={getPairLevelInfo(animatedPairPoints)}
     appState={appState}
-    onNavigate={(next) => {
-      if (
-        next === "polls" &&
-        !appState.isPremium &&
-        appState.completedPollIds.length >= FREE_POLLS_LIMIT
+   onNavigate={(next) => {
+  if (
+    next === "polls" &&
+    !appState.isPremium &&
+    appState.completedPollIds.length >= FREE_POLLS_LIMIT
+  ) {
+    setPaywallBackScreen(screen);
+    setScreen("paywall");
+    return;
+  }
 
-      ) {
-        setScreen("paywall");
-        return;
-      }
-
-      setScreen(next);
-    }}
+  setScreen(next);
+}}
   />
 )}
 
@@ -8312,13 +8312,11 @@ if (finishedAllTests && !appState.completionBonusesClaimed.tests) {
 </button>
 
       <button
-        onClick={() =>
-  setScreen(appState.profile.gender ? "menu" : "gender-select")
-}
-        style={{ ...secondaryButtonStyle, marginTop: 10 }}
-      >
-        Назад
-      </button>
+  onClick={() => setScreen(paywallBackScreen)}
+  style={{ ...secondaryButtonStyle, marginTop: 10 }}
+>
+  Назад
+</button>
     </div>
   </div>
 )}
