@@ -41,36 +41,7 @@ async function setMenuButton() {
 
 setMenuButton().catch(console.error);
 
-bot.onText(/\/start/, async (msg) => {
-  const chatId = msg.chat.id;
 
-  await bot.sendMessage(
-    chatId,
-    `💖 Добро пожаловать в Couple Quizzes!
-
-Здесь вы можете:
-• проходить тесты и опросы для пары
-• проверять вашу совместимость
-• получать очки и награды
-• выигрывать реальные призы
-
-Нажми кнопку ниже, чтобы открыть приложение 👇`,
-    {
-      reply_markup: {
-        inline_keyboard: [
-          [
-            {
-              text: "💖 Открыть Couple Quizzes",
-              web_app: {
-                url: webAppUrl,
-              },
-            },
-          ],
-        ],
-      },
-    }
-  );
-});
 
 bot.on("message", (msg) => {
   console.log("Message:", msg.text);
