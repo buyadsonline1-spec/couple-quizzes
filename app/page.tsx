@@ -39,6 +39,7 @@ type Screen =
   | "rewards"
   | "referrals"
   | "pair"
+  | "pair-invite"
   | "top"
   | "profile"
   | "gender-select"
@@ -8386,9 +8387,10 @@ if (finishedAllTests && !appState.completionBonusesClaimed.tests) {
 
 
 {screen === "referrals" && (
-  <ReferralScreen
+  <ReferralsScreen
+    user={user}
     appState={appState}
-    setAppState={setAppState}
+
     onBack={() => setScreen("menu")}
   />
 )}
@@ -8416,7 +8418,7 @@ if (finishedAllTests && !appState.completionBonusesClaimed.tests) {
 )}
 
 
-{screen === "daily-pair" && (
+{screen === "daily-pair-question" && (
   <DailyPairQuestionScreen
     user={user}
     pair={appState.pair}
