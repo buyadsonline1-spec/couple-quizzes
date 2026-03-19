@@ -2428,9 +2428,7 @@ function DailyPairQuestionScreen({
 
         {!myAnswer && (
           <div style={{ marginTop: 12 }}>
-            <div style={{ fontWeight: 800, color: "#2c2647", marginBottom: 8 }}>
-              Твой ответ
-            </div>
+            
 
             <div style={{ display: "grid", gap: 8 }}>
               {question.options.map((option, index) => (
@@ -5169,6 +5167,8 @@ function handleNext() {
   setFlipped(false);
   setRewardClaimed(false);
 }
+
+
   
 
   if (!card) {
@@ -5363,7 +5363,7 @@ return (
       </button>
 
 
-     <button
+    <button
   onClick={handleComplete}
   disabled={rewardClaimed || alreadyPlayed}
   style={{
@@ -5953,18 +5953,17 @@ function RewardsScreen({
           Выбери свой пол
         </div>
 
-        <div
-          style={{
-            marginTop: 10,
-            fontSize: 14,
-            lineHeight: 1.5,
-            color: "#5f5a7a",
-            textAlign: "center",
-          }}
-        >
-          Это нужно только один раз, чтобы показывать тебе подходящие опросы
-          и не начислять очки за обе ветки сразу.
-        </div>
+       <div
+  style={{
+    marginTop: 8,
+    color: "#5a5378",
+    fontSize: 14,
+    lineHeight: 1.45,
+    textAlign: "center",
+  }}
+>
+  Это нужно только один раз, чтобы показывать тебе подходящие тесты и опросы!
+</div>
 
         <button
           style={{ ...primaryButtonStyle, width: "100%", marginTop: 18 }}
