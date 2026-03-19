@@ -2123,30 +2123,7 @@ function PairStreakInfoScreen({
 
   return (
     <div style={{ padding: 16, display: "grid", gap: 14 }}>
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          gap: 10,
-        }}
-      >
-        <button
-          onClick={onBack}
-          style={{
-            border: "none",
-            background: "rgba(255,255,255,0.72)",
-            borderRadius: 999,
-            padding: "10px 14px",
-            fontWeight: 800,
-            fontSize: 16,
-            cursor: "pointer",
-            color: "#2a2143",
-            boxShadow: "0 8px 22px rgba(80, 45, 140, 0.08)",
-          }}
-        >
-          ← Назад
-        </button>
-      </div>
+      
 
       <div
         style={{
@@ -2156,67 +2133,42 @@ function PairStreakInfoScreen({
             "linear-gradient(135deg, rgba(255,255,255,0.38), rgba(255,255,255,0.22))",
         }}
       >
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            gap: 12,
-          }}
-        >
-          <div>
-            <div
-              style={{
-                fontSize: 16,
-                fontWeight: 900,
-                color: "#2b2148",
-              }}
-            >
-              🔥 Серия пары
-            </div>
+        <div>
+  <div
+    style={{
+      fontSize: 16,
+      fontWeight: 900,
+      color: "#2b2148",
+    }}
+  >
+    🔥 Серия пары
+  </div>
 
-            <div
-              style={{
-                marginTop: 10,
-                fontSize: 36,
-                fontWeight: 900,
-                color: "#1f1d3a",
-                lineHeight: 1,
-              }}
-            >
-              {current} дн.
-            </div>
+  <div
+    style={{
+      marginTop: 10,
+      fontSize: 36,
+      fontWeight: 900,
+      color: "#1f1d3a",
+      lineHeight: 1,
+    }}
+  >
+    {current} дн.
+  </div>
 
-            <div
-              style={{
-                marginTop: 8,
-                fontSize: 14,
-                lineHeight: 1.5,
-                color: "rgba(43,33,72,0.72)",
-                maxWidth: 240,
-              }}
-            >
-              Вы оба отвечаете на вопрос дня подряд и прокачиваете серию пары.
-            </div>
-          </div>
+  <div
+    style={{
+      marginTop: 10,
+      fontSize: 14,
+      lineHeight: 1.55,
+      color: "rgba(43,33,72,0.72)",
+    }}
+  >
+    Вы оба отвечаете на вопрос дня подряд и прокачиваете серию пары.
+  </div>
+</div>
 
-          <div
-            style={{
-              minWidth: 86,
-              height: 86,
-              borderRadius: 24,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              background:
-                "linear-gradient(135deg, rgba(255,255,255,0.82), rgba(255,240,248,0.72))",
-              fontSize: 34,
-              boxShadow: "inset 0 1px 0 rgba(255,255,255,0.65)",
-            }}
-          >
-            🔥
-          </div>
-        </div>
+     
 
         <div
           style={{
@@ -2278,6 +2230,17 @@ function PairStreakInfoScreen({
         >
           Чем длиннее серия, тем больше бонусных очков получает ваша пара.
         </div>
+
+        <button
+  onClick={onBack}
+  style={{
+    ...secondaryButtonStyle,
+    width: "100%",
+    marginTop: 4,
+  }}
+>
+  Назад
+</button>
 
         <div
           style={{
