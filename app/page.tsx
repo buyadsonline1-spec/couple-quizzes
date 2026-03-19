@@ -31,12 +31,11 @@ type Screen =
   | "start"
   | "menu"
   | "polls"
-
+  | "polls-boy"
+  | "polls-girl"
   | "games"
   | "tests"
-
   | "pair"
-
   | "top"
   | "rewards"
   | "daily-pair-question"
