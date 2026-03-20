@@ -96,6 +96,9 @@ type AppState = {
   totalReward: number;
 };
 
+
+
+
 playedGameRewardKeys: string[];
 
 lastDailyBonusPopupDate: string | null;
@@ -1254,6 +1257,7 @@ const DEFAULT_STATE: AppState = {
   totalReward: 0,
 },
 
+ 
 
 
 profile: {
@@ -3361,6 +3365,11 @@ loveQuestionsProgress: {
     DEFAULT_STATE.loveQuestionsProgress.currentIndex,
 },
 
+loveQuestionsProgress: {
+  currentIndex:
+    parsed.loveQuestionsProgress?.currentIndex ??
+    DEFAULT_STATE.loveQuestionsProgress.currentIndex,
+},
 
   referrals: {
   invitedUsers:
@@ -3368,6 +3377,7 @@ loveQuestionsProgress: {
   totalReward:
     parsed.referrals?.totalReward ?? DEFAULT_STATE.referrals.totalReward,
 },
+
 
 
 lastDailyBonusPopupDate:
