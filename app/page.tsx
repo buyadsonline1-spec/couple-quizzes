@@ -96,7 +96,7 @@ type AppState = {
   totalReward: number;
 };
 
-
+loveQuestionsAnsweredIds: string[];
 
 
 playedGameRewardKeys: string[];
@@ -1258,7 +1258,7 @@ const DEFAULT_STATE: AppState = {
 },
 
  
-
+loveQuestionsAnsweredIds: [],
 
 profile: {
   displayName: "",
@@ -3358,6 +3358,9 @@ function loadState(): AppState {
     DEFAULT_STATE.completionBonusesClaimed.games,
 },
 
+loveQuestionsAnsweredIds:
+  parsed.loveQuestionsAnsweredIds ??
+  DEFAULT_STATE.loveQuestionsAnsweredIds,
 
 loveQuestionsProgress: {
   currentIndex:
@@ -4908,8 +4911,13 @@ function LoveQuestionsGameScreen({
   const [animating, setAnimating] = useState(false);
 
   const questionIndex = appState.loveQuestionsProgress.currentIndex ?? 0;
-  const currentQuestion = LOVE_QUESTIONS[questionIndex] ?? null;
-  
+  const unansweredQuestions = LOVE_QUESTIONS.filter(
+  (q) => !answeredIds.includes(q.id)
+);
+
+const currentQuestion =
+  unansweredQuestions[questionIndex % unansweredQuestions.length] ?? null;
+  const answeredIds = appState.loveQuestionsAnsweredIds ?? [];
   
 
  const progressLabel = `${Math.min(
@@ -4924,6 +4932,14 @@ function LoveQuestionsGameScreen({
 
     const rewardKey = `love-questions:${currentQuestion.id}`;
     await onClaimStepReward(rewardKey);
+
+// 👇 добавляем в список отвеченных
+setAppState((prev) => ({
+  ...prev,
+  loveQuestionsAnsweredIds: prev.loveQuestionsAnsweredIds.includes(currentQuestion.id)
+    ? prev.loveQuestionsAnsweredIds
+    : [...prev.loveQuestionsAnsweredIds, currentQuestion.id],
+}));
 
     onFinish();
 
@@ -5033,7 +5049,20 @@ function LoveQuestionsGameScreen({
                 }}
               >
                 {currentQuestion.text}
+            
               </div>
+              {answeredIds.includes(currentQuestion?.id) && (
+  <div
+    style={{
+      marginTop: 10,
+      fontSize: 13,
+      fontWeight: 700,
+      color: "#6f54ff",
+    }}
+  >
+    ✔ Вы уже отвечали на этот вопрос
+  </div>
+)}
             </div>
 
             <button
