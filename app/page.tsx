@@ -4319,6 +4319,10 @@ function GamesScreen({
   const [correctAnswers, setCorrectAnswers] = useState(0);
   const [finished, setFinished] = useState(false);
   const [bottleRewardGiven, setBottleRewardGiven] = useState(false);
+  const [floatingReward, setFloatingReward] = useState<{
+  id: number;
+  value: number;
+} | null>(null);
 
   const activeGame = GAMES.find((game) => game.id === activeGameId) || null;
   const currentQuestion = activeGame?.questions[currentQuestionIndex] || null;
@@ -4331,6 +4335,16 @@ function GamesScreen({
     setFinished(false);
     setBottleRewardGiven(false);
   }
+
+  function showFloatingReward(value: number) {
+  const id = Date.now();
+
+  setFloatingReward({ id, value });
+
+  setTimeout(() => {
+    setFloatingReward((prev) => (prev?.id === id ? null : prev));
+  }, 900);
+}
 
   function handleNext() {
     if (!activeGame || !currentQuestion || selectedOptionIndex === null) return;
@@ -4350,25 +4364,42 @@ function GamesScreen({
     setSelectedOptionIndex(null);
   }
 
-  function handleFinish() {
-    if (!activeGame) return;
-    onCompleteGame(activeGame, correctAnswers);
-    setActiveGameId(null);
-    setCurrentQuestionIndex(0);
-    setSelectedOptionIndex(null);
-    setCorrectAnswers(0);
-    setFinished(false);
-  }
-
-  function handleBottleFinish() {
-    if (!activeGame || bottleRewardGiven) return;
-    onCompleteGame(activeGame, 1);
-    setBottleRewardGiven(true);
-  }
-
-  function handleLoveQuestionFinish() {
+function handleFinish() {
   if (!activeGame) return;
+
+  onCompleteGame(activeGame, correctAnswers);
+
+  if (activeGame.reward > 0) {
+    showFloatingReward(activeGame.reward);
+  }
+
+  setActiveGameId(null);
+  setCurrentQuestionIndex(0);
+  setSelectedOptionIndex(null);
+  setCorrectAnswers(0);
+  setFinished(false);
+}
+
+function handleBottleFinish() {
+  if (!activeGame || bottleRewardGiven) return;
+
   onCompleteGame(activeGame, 1);
+
+  if (activeGame.reward > 0) {
+    showFloatingReward(activeGame.reward);
+  }
+
+  setBottleRewardGiven(true);
+}
+
+function handleLoveQuestionFinish() {
+  if (!activeGame) return;
+
+  onCompleteGame(activeGame, 1);
+
+  if (activeGame.reward > 0) {
+    showFloatingReward(activeGame.reward);
+  }
 }
 
   if (!activeGameId) {
@@ -4388,9 +4419,33 @@ function GamesScreen({
 
         return (
           <div key={game.id} style={{ ...cardBaseStyle(), padding: 12 }}>
-            <div style={{ fontSize: 18, fontWeight: 900, color: "#1f1d3a" }}>
-              {game.title}
-            </div>
+            <div
+  style={{
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: 10,
+  }}
+>
+  <div style={{ fontWeight: 900, fontSize: 16 }}>
+    {game.title}
+  </div>
+
+  <div
+    style={{
+      padding: "6px 10px",
+      borderRadius: 999,
+      background: "rgba(107,70,255,0.10)",
+      color: "#6b46ff",
+      fontWeight: 800,
+      boxShadow: "0 6px 16px rgba(107,70,255,0.15)",
+      fontSize: 12,
+      whiteSpace: "nowrap",
+    }}
+  >
+      +{game.reward}
+  </div>
+</div>
 
             <div
   style={{
@@ -4519,81 +4574,106 @@ if (activeGame?.id === "never-have-i-ever") {
 
   if (!activeGame || !currentQuestion) return null;
 
-  return (
-    <div style={{ padding: 16, display: "grid", gap: 14 }}>
-      <div style={{ ...cardBaseStyle(), padding: 18 }}>
-        <div style={{ fontSize: 24, fontWeight: 900, color: "#1f1d3a" }}>
-          {activeGame.title}
-        </div>
-        <div style={{ marginTop: 8, color: "#4b446a" }}>
-          Вопрос {currentQuestionIndex + 1} из {activeGame.questions.length}
-        </div>
+
+   return (
+  <div style={{ padding: 16, display: "grid", gap: 14 }}>
+    <div style={{ ...cardBaseStyle(), padding: 18 }}>
+      <div style={{ fontSize: 24, fontWeight: 900, color: "#1f1d3a" }}>
+        {activeGame.title}
       </div>
-
-      <div style={{ ...cardBaseStyle(), padding: 18 }}>
-        <div
-          style={{
-            fontSize: 22,
-            fontWeight: 800,
-            color: "#211b3b",
-            lineHeight: 1.35,
-          }}
-        >
-          {currentQuestion.text}
-        </div>
-
-        <div style={{ display: "grid", gap: 10, marginTop: 16 }}>
-          {currentQuestion.options.map((option, index) => {
-            const isSelected = selectedOptionIndex === index;
-
-            return (
-              <button
-                key={option}
-                onClick={() => setSelectedOptionIndex(index)}
-                style={{
-                  border: isSelected
-                    ? "2px solid rgba(108, 58, 255, 0.48)"
-                    : "1px solid rgba(255,255,255,0.28)",
-                  borderRadius: 18,
-                  padding: "14px 16px",
-                  background: isSelected
-                    ? "rgba(255,255,255,0.38)"
-                    : "rgba(255,255,255,0.20)",
-                  color: "#1f1d3a",
-                  textAlign: "left",
-                  fontSize: 16,
-                  fontWeight: isSelected ? 900 : 700,
-                  cursor: "pointer",
-                }}
-              >
-                {option}
-              </button>
-            );
-          })}
-        </div>
-
-        <button
-          onClick={handleNext}
-          disabled={selectedOptionIndex === null}
-          style={{
-            ...primaryButtonStyle,
-            width: "100%",
-            marginTop: 16,
-            opacity: selectedOptionIndex !== null ? 1 : 0.55,
-            cursor: selectedOptionIndex !== null ? "pointer" : "not-allowed",
-          }}
-        >
-          {currentQuestionIndex === activeGame.questions.length - 1
-            ? "Завершить"
-            : "Дальше"}
-        </button>
-
-        <button onClick={() => setActiveGameId(null)} style={secondaryButtonStyle}>
-          Выйти из игры
-        </button>
+      <div style={{ marginTop: 8, color: "#4b446a" }}>
+        Вопрос {currentQuestionIndex + 1} из {activeGame.questions.length}
       </div>
     </div>
-  );
+
+    <div style={{ ...cardBaseStyle(), padding: 18 }}>
+      <div
+        style={{
+          fontSize: 22,
+          fontWeight: 800,
+          color: "#211b3b",
+          lineHeight: 1.35,
+        }}
+      >
+        {currentQuestion.text}
+      </div>
+
+      <div style={{ display: "grid", gap: 10, marginTop: 16 }}>
+        {currentQuestion.options.map((option, index) => {
+          const isSelected = selectedOptionIndex === index;
+
+          return (
+            <button
+              key={option}
+              onClick={() => setSelectedOptionIndex(index)}
+              style={{
+                border: isSelected
+                  ? "2px solid rgba(108, 58, 255, 0.48)"
+                  : "1px solid rgba(255,255,255,0.28)",
+                borderRadius: 18,
+                padding: "14px 16px",
+                background: isSelected
+                  ? "rgba(255,255,255,0.38)"
+                  : "rgba(255,255,255,0.20)",
+                color: "#1f1d3a",
+                textAlign: "left",
+                fontSize: 16,
+                fontWeight: isSelected ? 900 : 700,
+                cursor: "pointer",
+              }}
+            >
+              {option}
+            </button>
+          );
+        })}
+      </div>
+
+      <button
+        onClick={handleNext}
+        disabled={selectedOptionIndex === null}
+        style={{
+          ...primaryButtonStyle,
+          width: "100%",
+          marginTop: 16,
+          opacity: selectedOptionIndex !== null ? 1 : 0.55,
+          cursor: selectedOptionIndex !== null ? "pointer" : "not-allowed",
+        }}
+      >
+        {currentQuestionIndex === activeGame.questions.length - 1
+          ? "Завершить"
+          : "Дальше"}
+      </button>
+
+      <button onClick={() => setActiveGameId(null)} style={secondaryButtonStyle}>
+        Выйти из игры
+      </button>
+    </div>
+
+    {floatingReward && (
+      <div
+        style={{
+          position: "fixed",
+          left: "50%",
+          bottom: 110,
+          transform: "translateX(-50%)",
+          zIndex: 1000,
+          pointerEvents: "none",
+          animation: "rewardFloatUp 0.9s ease-out forwards",
+          padding: "10px 16px",
+          borderRadius: 999,
+          background: "rgba(107,70,255,0.14)",
+          color: "#6b46ff",
+          fontSize: 24,
+          fontWeight: 900,
+          boxShadow: "0 12px 30px rgba(107,70,255,0.18)",
+        }}
+      >
+        +{floatingReward.value}
+      </div>
+    )}
+  </div>
+);
+   
 }
 
 function BottleGameScreen({
@@ -8548,6 +8628,23 @@ if (finishedAllTests && !appState.completionBonusesClaimed.tests) {
     opacity: 1;
   }
 }
+`}</style>
+
+<style jsx global>{`
+  @keyframes rewardFloatUp {
+    0% {
+      opacity: 0;
+      transform: translateX(-50%) translateY(18px) scale(0.9);
+    }
+    20% {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0) scale(1);
+    }
+    100% {
+      opacity: 0;
+      transform: translateX(-50%) translateY(-60px) scale(1.05);
+    }
+  }
 `}</style>
 
     
