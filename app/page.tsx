@@ -3368,11 +3368,7 @@ loveQuestionsProgress: {
     DEFAULT_STATE.loveQuestionsProgress.currentIndex,
 },
 
-loveQuestionsProgress: {
-  currentIndex:
-    parsed.loveQuestionsProgress?.currentIndex ??
-    DEFAULT_STATE.loveQuestionsProgress.currentIndex,
-},
+
 
   referrals: {
   invitedUsers:
