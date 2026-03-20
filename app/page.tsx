@@ -124,6 +124,10 @@ dailyPairMatchBonusClaimedDates: string[];
   pairPollAnswers: Record<string, number[]>;
   weeklyTopRewardClaimedWeek: string | null;
 
+  loveQuestionsProgress: {
+  currentIndex: number;
+};
+
   pair: PairState;
 
   dailyPair: {
@@ -143,9 +147,7 @@ dailyPairStreak: {
   reachedMilestones: number[];
 };
 
-loveQuestionsProgress: {
-  currentIndex: number;
-};
+
 
   profile: {
   displayName: string;
@@ -1252,9 +1254,7 @@ const DEFAULT_STATE: AppState = {
   totalReward: 0,
 },
 
-loveQuestionsProgress: {
-  currentIndex: 0,
-},
+
 
 profile: {
   displayName: "",
