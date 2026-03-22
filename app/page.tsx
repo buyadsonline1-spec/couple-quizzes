@@ -4320,7 +4320,30 @@ function GamesScreen({
   value: number;
 } | null>(null);
 
+ 
+
   const activeGame = GAMES.find((game) => game.id === activeGameId) || null;
+
+if (activeGame?.id === "90-questions") {
+  return (
+    <LoveQuestionsGameScreen
+      reward={10}
+      appState={appState}
+      setAppState={setAppState}
+      onBack={() => {
+        setActiveGameId(null);
+        setFinished(false);
+      }}
+     onFinish={() => {
+  onCompleteGame(activeGame, 0);
+  setActiveGameId(null);
+  setFinished(false);
+}}
+      onClaimStepReward={onClaimStepReward}
+    />
+  );
+}
+
   const currentQuestion = activeGame?.questions[currentQuestionIndex] || null;
 
   function startGame(gameId: string) {
