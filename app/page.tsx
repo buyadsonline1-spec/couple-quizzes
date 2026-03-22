@@ -4122,23 +4122,23 @@ setFinished(false);
     </div>
   </div>
 
-  <div
-    style={{
-      minWidth: 38,
-      height: 38,
-      borderRadius: 999,
-      background: "rgba(255,255,255,0.22)",
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
-      color: "#6b46ff",
-      fontWeight: 900,
-      fontSize: 14,
-      flexShrink: 0,
-    }}
-  >
-    +{poll.reward}
-  </div>
+ <div
+  style={{
+    minWidth: 30,
+    height: 30,
+    borderRadius: 999,
+    background: "rgba(143,107,255,0.15)",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    color: "#6b46ff",
+    fontWeight: 900,
+    fontSize: 13,
+    flexShrink: 0,
+  }}
+>
+  +{poll.reward}
+</div>
 </div>
 
   <button
@@ -5954,22 +5954,22 @@ function selectOption(optionIndex: number) {
     </div>
 
     <div
-      style={{
-        minWidth: 38,
-        height: 38,
-        borderRadius: 999,
-        background: "rgba(255,255,255,0.22)",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        color: "#6b46ff",
-        fontWeight: 900,
-        fontSize: 14,
-        flexShrink: 0,
-      }}
-    >
-      +{test.reward}
-    </div>
+  style={{
+    minWidth: 30,
+    height: 30,
+    borderRadius: 999,
+    background: "rgba(143,107,255,0.15)",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    color: "#6b46ff",
+    fontWeight: 900,
+    fontSize: 13,
+    flexShrink: 0,
+  }}
+>
+  +{test.reward}
+</div>
   </div>
 
   {/* Описание */}
