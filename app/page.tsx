@@ -6459,33 +6459,49 @@ function RewardsScreen({
 function TopPlayersScreen({
   pair,
   leaderboard,
+  previousLeaderboard,
   weeklyTopRewardClaimedWeek,
   onBack,
   onClaimWeeklyReward,
 }: {
   pair: PairState;
   leaderboard: WeeklyPairLeaderboardRow[];
+  previousLeaderboard: WeeklyPairLeaderboardRow[];
   weeklyTopRewardClaimedWeek: string | null;
   onBack: () => void;
   onClaimWeeklyReward: () => void;
 }) {
-  const currentWeekKey = getCurrentWeekKey();
 
-  const allPairs = leaderboard.map((row, index) => ({
-    ...row,
-    place: index + 1,
-    isCurrentPair: row.pair_id === pair.pairId,
-  }));
+  previousLeaderboard={previousWeeklyPairLeaderboard}
 
-  const currentPairRow = allPairs.find((row) => row.isCurrentPair);
+ const currentWeekKey = getCurrentWeekKey();
+const previousWeekKey = getPreviousWeekKey();
 
-  const isTopThree =
-    currentPairRow?.place === 1 ||
-    currentPairRow?.place === 2 ||
-    currentPairRow?.place === 3;
+const allPairs = leaderboard.map((row, index) => ({
+  ...row,
+  place: index + 1,
+  isCurrentPair: row.pair_id === pair.pairId,
+}));
 
-  const canClaimWeeklyReward =
-    isTopThree && weeklyTopRewardClaimedWeek !== currentWeekKey;
+const previousWeekPairs = previousLeaderboard.map((row, index) => ({
+  ...row,
+  place: index + 1,
+  isCurrentPair: row.pair_id === pair.pairId,
+}));
+
+const currentPairRow = allPairs.find((row) => row.isCurrentPair);
+const previousWeekPairRow = previousWeekPairs.find((row) => row.isCurrentPair);
+
+const wasTopThreeLastWeek =
+  previousWeekPairRow?.place === 1 ||
+  previousWeekPairRow?.place === 2 ||
+  previousWeekPairRow?.place === 3;
+
+const alreadyClaimedLastWeek =
+  weeklyTopRewardClaimedWeek === previousWeekKey;
+
+const canClaimWeeklyReward =
+  wasTopThreeLastWeek && !alreadyClaimedLastWeek;
 
   return (
     <div style={{ padding: 12, display: "grid", gap: 10 }}>
@@ -6515,25 +6531,34 @@ function TopPlayersScreen({
               const isTop3 = pairRow.place === 3;
 
               return (
-                <div
-                  key={pairRow.id}
-                  style={{
-                    padding: "10px 12px",
-                    borderRadius: 16,
-                    background: pairRow.isCurrentPair
-                      ? "rgba(255,255,255,0.34)"
-                      : "rgba(255,255,255,0.24)",
-                    border: pairRow.isCurrentPair
-                      ? "2px solid rgba(108,58,255,0.42)"
-                      : "1px solid transparent",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "space-between",
-                    gap: 10,
-                  }}
-                >
-                  <div style={{ display: "flex", alignItems: "center", gap: 10, minWidth: 0 }}>
-                    <div
+                <div             
+  key={pairRow.id}
+  style={{
+    padding: "10px 12px",
+    borderRadius: 16,
+    background: pairRow.isCurrentPair
+      ? "rgba(255,255,255,0.34)"
+      : "rgba(255,255,255,0.24)",
+    border: pairRow.isCurrentPair
+      ? "2px solid rgba(108,58,255,0.42)"
+      : "1px solid transparent",
+    display: "flex",
+    alignItems: "center",
+    gap: 10,
+    width: "100%",
+    boxSizing: "border-box",
+    overflow: "hidden",
+  }}
+>
+<div
+  style={{
+    display: "flex",
+    alignItems: "center",
+    gap: 10,
+    minWidth: 0,
+    flex: 1,
+  }}
+>                    <div
                       style={{
                         width: 34,
                         height: 34,
@@ -6557,17 +6582,17 @@ function TopPlayersScreen({
                     </div>
 
                     <div style={{ minWidth: 0 }}>
-                      <div
-                        style={{
-                          fontSize: 15,
-                          fontWeight: 900,
-                          color: "#1f1d3a",
-                          whiteSpace: "nowrap",
-                          overflow: "hidden",
-                          textOverflow: "ellipsis",
-                        }}
-                      >
-                        {pairRow.pair_title}
+                     <div
+  style={{
+    fontWeight: 900,
+    color: "#241b40",
+    whiteSpace: "nowrap",
+    overflow: "hidden",
+    textOverflow: "ellipsis",
+  }}
+>
+  {pairRow.pair_title}
+
                         {pairRow.isCurrentPair ? " (Вы)" : ""}
                       </div>
                       <div style={{ marginTop: 3, fontSize: 12, color: "#4d466c" }}>
@@ -6577,15 +6602,17 @@ function TopPlayersScreen({
                   </div>
 
                   <div
-                    style={{
-                      whiteSpace: "nowrap",
-                      fontSize: 15,
-                      fontWeight: 900,
-                      color: "#6b46ff",
-                    }}
-                  >
-                    ⭐ {pairRow.total_points}
-                  </div>
+  style={{
+    flexShrink: 0,
+    textAlign: "right",
+    color: "#241b40",
+    fontWeight: 900,
+    fontSize: 15,
+    whiteSpace: "nowrap",
+  }}
+>
+ ⭐ {pairRow.total_points}
+</div>
                 </div>
               );
             })}
@@ -6609,32 +6636,32 @@ function TopPlayersScreen({
           Пары из топ-3 получают <b>+500 очков</b> один раз в неделю.
         </div>
 
-        <div
-          style={{
-            marginTop: 10,
-            padding: "12px 14px",
-            borderRadius: 16,
-            background: "rgba(255,255,255,0.24)",
-            color: "#241b40",
-            fontWeight: 800,
-            fontSize: 14,
-          }}
-        >
-          {isTopThree
-            ? weeklyTopRewardClaimedWeek === currentWeekKey
-              ? "Награда за эту неделю уже получена ✅"
-              : "Ваша пара в топ-3 недели! Можно забрать награду 🎉"
-            : "Награда доступна только парам из топ-3"}
-        </div>
+       <div
+  style={{
+    marginTop: 10,
+    padding: "12px 14px",
+    borderRadius: 16,
+    background: "rgba(255,255,255,0.24)",
+    color: "#241b40",
+    fontWeight: 800,
+    fontSize: 14,
+  }}
+>
+  {wasTopThreeLastWeek
+    ? alreadyClaimedLastWeek
+      ? "Награда за прошлую неделю уже получена ✅"
+      : "Ваша пара вошла в топ-3 по итогам прошлой недели! Можно забрать награду 🎉"
+    : "Награда появляется только после завершения недели и только для пар из топ-3 прошлой недели"}
+</div>
 
-        {canClaimWeeklyReward && (
-          <button
-            onClick={onClaimWeeklyReward}
-            style={{ ...primaryButtonStyle, width: "100%", marginTop: 12 }}
-          >
-            Забрать +500 очков
-          </button>
-        )}
+       {canClaimWeeklyReward && (
+  <button
+    onClick={onClaimWeeklyReward}
+    style={{ ...primaryButtonStyle, width: "100%", marginTop: 12 }}
+  >
+    Забрать +500 очков
+  </button>
+)}
       </div>
 
       <button onClick={onBack} style={{ ...secondaryButtonStyle, marginTop: 0 }}>
@@ -7816,6 +7843,27 @@ const syncPairAfterPointsChange = async (
   return nextPairState;
 };
 
+const previousRows = await loadWeeklyPairLeaderboard(getPreviousWeekKey());
+setPreviousWeeklyPairLeaderboard(previousRows);
+
+function getPreviousWeekKey() {
+  const now = new Date();
+  const day = now.getDay();
+  const mondayOffset = day === 0 ? -6 : 1 - day;
+
+  const monday = new Date(now);
+  monday.setHours(0, 0, 0, 0);
+  monday.setDate(now.getDate() + mondayOffset - 7);
+
+  const year = monday.getFullYear();
+  const month = String(monday.getMonth() + 1).padStart(2, "0");
+  const date = String(monday.getDate()).padStart(2, "0");
+
+  return `${year}-${month}-${date}`;
+}
+
+const [previousWeeklyPairLeaderboard, setPreviousWeeklyPairLeaderboard] = useState<WeeklyPairLeaderboardRow[]>([]);
+
 
 const claimCompletionBonus = async (
   type: "polls" | "tests" | "games"
@@ -7834,6 +7882,12 @@ if (appState.pair.pairId) {
 
   nextPairState = await syncPairAfterPointsChange(appState.pair);
 }   
+
+const freshLeaderboard = await loadWeeklyPairLeaderboard(getCurrentWeekKey());
+setWeeklyPairLeaderboard(freshLeaderboard);
+
+const freshPreviousLeaderboard = await loadWeeklyPairLeaderboard(getPreviousWeekKey());
+setPreviousWeeklyPairLeaderboard(freshPreviousLeaderboard);
 
   const bonusData =
     type === "polls"
@@ -7965,10 +8019,23 @@ if (nextPoints > previousPoints) {
 
 
 const handleClaimWeeklyTopReward = async () => {
-  const currentWeekKey = getCurrentWeekKey();
+  const previousWeekKey = getPreviousWeekKey();
 
   if (!appState.pair.pairId) return;
-  if (appState.weeklyTopRewardClaimedWeek === currentWeekKey) return;
+  if (appState.weeklyTopRewardClaimedWeek === previousWeekKey) return;
+
+  const previousRows = await loadWeeklyPairLeaderboard(previousWeekKey);
+  const previousWeekPairRow = previousRows.find(
+    (row) => row.pair_id === appState.pair.pairId
+  );
+
+  const isEligible =
+    previousWeekPairRow?.pair_id === appState.pair.pairId &&
+    [1, 2, 3].includes(
+      previousRows.findIndex((row) => row.pair_id === appState.pair.pairId) + 1
+    );
+
+  if (!isEligible) return;
 
   await updatePairPoints({
     pairId: appState.pair.pairId,
@@ -7981,22 +8048,28 @@ const handleClaimWeeklyTopReward = async () => {
   }
 
   const previousPoints = appState.pair.totalPoints || 0;
-const nextPoints = refreshedPair.totalPoints || 0;
+  const nextPoints = refreshedPair.totalPoints || 0;
 
-if (nextPoints > previousPoints) {
-  setAnimatedPairPoints(previousPoints);
-  animatePairPoints(previousPoints, nextPoints);
-}
+  if (nextPoints > previousPoints) {
+    setAnimatedPairPoints(previousPoints);
+    animatePairPoints(previousPoints, nextPoints);
+  }
 
   const nextState = {
     ...appState,
     pair: refreshedPair,
     points: refreshedPair.totalPoints || 0,
-    weeklyTopRewardClaimedWeek: currentWeekKey,
+    weeklyTopRewardClaimedWeek: previousWeekKey,
   };
 
   setAppState(nextState);
   await syncWeeklyPairLeaderboard(nextState, user);
+
+  const freshCurrent = await loadWeeklyPairLeaderboard(getCurrentWeekKey());
+  setWeeklyPairLeaderboard(freshCurrent);
+
+  const freshPrevious = await loadWeeklyPairLeaderboard(getPreviousWeekKey());
+  setPreviousWeeklyPairLeaderboard(freshPrevious);
 
   await refreshPairData({
     user,
