@@ -5007,16 +5007,19 @@ function LoveQuestionsGameScreen({
   onFinish: () => void;
   onClaimStepReward: (key: string) => Promise<boolean>;
 }) {
-  const [animating, setAnimating] = useState(false);
+const [animating, setAnimating] = useState(false);
 
-  const questionIndex = appState.loveQuestionsProgress.currentIndex ?? 0;
-  const unansweredQuestions = LOVE_QUESTIONS.filter(
+const questionIndex = appState.loveQuestionsProgress.currentIndex ?? 0;
+const answeredIds = appState.loveQuestionsAnsweredIds ?? [];
+
+const unansweredQuestions = LOVE_QUESTIONS.filter(
   (q) => !answeredIds.includes(q.id)
 );
 
 const currentQuestion =
-  unansweredQuestions[questionIndex % unansweredQuestions.length] ?? null;
-  const answeredIds = appState.loveQuestionsAnsweredIds ?? [];
+  unansweredQuestions.length > 0
+    ? unansweredQuestions[questionIndex % unansweredQuestions.length]
+    : null;
   
 
  const progressLabel = `${Math.min(
@@ -5040,7 +5043,7 @@ setAppState((prev) => ({
     : [...prev.loveQuestionsAnsweredIds, currentQuestion.id],
 }));
 
-    onFinish();
+    handleNextQuestion();
 
     setTimeout(() => {
       handleNextQuestion();
