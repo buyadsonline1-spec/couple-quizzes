@@ -7837,14 +7837,16 @@ const syncPairAfterPointsChange = async (
 
   await syncWeeklyPairLeaderboard(nextState, user);
 
- const freshLeaderboard = await loadWeeklyPairLeaderboard(getCurrentWeekKey());
+  const freshLeaderboard = await loadWeeklyPairLeaderboard(getCurrentWeekKey());
   setWeeklyPairLeaderboard(freshLeaderboard);
+
+  const previousRows = await loadWeeklyPairLeaderboard(getPreviousWeekKey());
+  setPreviousWeeklyPairLeaderboard(previousRows);
 
   return nextPairState;
 };
 
-const previousRows = await loadWeeklyPairLeaderboard(getPreviousWeekKey());
-setPreviousWeeklyPairLeaderboard(previousRows);
+
 
 function getPreviousWeekKey() {
   const now = new Date();
@@ -7863,6 +7865,7 @@ function getPreviousWeekKey() {
 }
 
 const [previousWeeklyPairLeaderboard, setPreviousWeeklyPairLeaderboard] = useState<WeeklyPairLeaderboardRow[]>([]);
+
 
 
 const claimCompletionBonus = async (
