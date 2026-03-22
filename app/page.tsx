@@ -4022,13 +4022,24 @@ const activePoll = POLLS.find((poll) => poll.id === activePollId) || null;
     setFinished(false);
   }
 
-  function handleSelect(optionIndex: number) {
-    setAnswers((prev) => {
-      const next = [...prev];
-      next[currentQuestionIndex] = optionIndex;
-      return next;
-    });
-  }
+ function handleSelect(optionIndex: number) {
+  if (!activePoll || !currentQuestion) return;
+  if (answers[currentQuestionIndex] !== undefined) return;
+
+  const nextAnswers = [...answers];
+  nextAnswers[currentQuestionIndex] = optionIndex;
+  setAnswers(nextAnswers);
+
+  const isLast = currentQuestionIndex === activePoll.questions.length - 1;
+
+  setTimeout(() => {
+    if (isLast) {
+      setFinished(true);
+    } else {
+      setCurrentQuestionIndex((prev) => prev + 1);
+    }
+  }, 180);
+}
 
   function handleNext() {
     if (!activePoll || !currentQuestion) return;
@@ -4264,21 +4275,7 @@ setFinished(false);
           })}
         </div>
 
-        <button
-          onClick={handleNext}
-          disabled={selected === undefined}
-          style={{
-            ...primaryButtonStyle,
-            width: "100%",
-            marginTop: 14,
-            opacity: selected !== undefined ? 1 : 0.55,
-            cursor: selected !== undefined ? "pointer" : "not-allowed",
-          }}
-        >
-          {currentQuestionIndex === activePoll.questions.length - 1
-            ? "Завершить"
-            : "Дальше"}
-        </button>
+        
 
         <button
           onClick={() => setActivePollId(null)}
@@ -5856,14 +5853,25 @@ function TestsScreen({
     setFinished(false);
   }
 
-  function selectOption(optionIndex: number) {
-    setAnswers((prev) => {
-      const next = [...prev];
-      next[currentQuestionIndex] = optionIndex;
-      return next;
-    });
-  }
+ 
+function selectOption(optionIndex: number) {
+  if (!activeTest) return;
+  if (answers[currentQuestionIndex] !== undefined) return;
 
+  const nextAnswers = [...answers];
+  nextAnswers[currentQuestionIndex] = optionIndex;
+  setAnswers(nextAnswers);
+
+  const isLast = currentQuestionIndex === activeTest.questions.length - 1;
+
+  setTimeout(() => {
+    if (isLast) {
+      setFinished(true);
+    } else {
+      setCurrentQuestionIndex((prev) => prev + 1);
+    }
+  }, 180);
+}
   function handleNext() {
     if (!activeTest) return;
     if (answers[currentQuestionIndex] === undefined) return;
@@ -6085,21 +6093,7 @@ function TestsScreen({
           })}
         </div>
 
-        <button
-          onClick={handleNext}
-          disabled={selectedIndex === undefined}
-          style={{
-            ...primaryButtonStyle,
-            width: "100%",
-            marginTop: 16,
-            opacity: selectedIndex !== undefined ? 1 : 0.55,
-            cursor: selectedIndex !== undefined ? "pointer" : "not-allowed",
-          }}
-        >
-          {currentQuestionIndex === activeTest.questions.length - 1
-            ? "Посмотреть результат"
-            : "Дальше"}
-        </button>
+       
 
         <button onClick={() => setActiveTestId(null)} style={secondaryButtonStyle}>
           Выйти из теста
