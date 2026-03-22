@@ -7781,7 +7781,7 @@ const syncPairAfterPointsChange = async (
 
   await syncWeeklyPairLeaderboard(nextState, user);
 
-  const freshLeaderboard = await loadWeeklyPairLeaderboard();
+ const freshLeaderboard = await loadWeeklyPairLeaderboard(getCurrentWeekKey());
   setWeeklyPairLeaderboard(freshLeaderboard);
 
   return nextPairState;
