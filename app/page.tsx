@@ -4100,40 +4100,46 @@ setFinished(false);
 
             return (
               <div key={poll.id} style={{ ...cardBaseStyle(), padding: 12 }}>
-  <div
-    style={{
-      display: "flex",
-      justifyContent: "space-between",
-      gap: 10,
-      alignItems: "flex-start",
-    }}
-  >
-    <div style={{ minWidth: 0 }}>
-      <div
-        style={{
-          fontSize: 17,
-          fontWeight: 900,
-          color: "#1f1d3a",
-          lineHeight: 1.2,
-        }}
-      >
-        {poll.title}
-      </div>
-    </div>
-
-   <div
+ 
+ <div
   style={{
-    marginTop: 6,
     display: "flex",
     justifyContent: "space-between",
     gap: 10,
-    color: "#4d466c",
-    fontSize: 12,
+    alignItems: "flex-start",
   }}
 >
-  <span>+{poll.reward}</span>
-</div>
+  <div style={{ minWidth: 0 }}>
+    <div
+      style={{
+        fontSize: 17,
+        fontWeight: 900,
+        color: "#111111",
+        lineHeight: 1.2,
+      }}
+    >
+      {poll.title}
+    </div>
   </div>
+
+  <div
+    style={{
+      minWidth: 38,
+      height: 38,
+      borderRadius: 999,
+      background: "rgba(255,255,255,0.22)",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      color: "#6b46ff",
+      fontWeight: 900,
+      fontSize: 14,
+      flexShrink: 0,
+    }}
+  >
+    +{poll.reward}
+  </div>
+</div>
 
   <button
     onClick={() => startPoll(poll.id)}
@@ -4481,19 +4487,6 @@ function handleLoveQuestionFinish() {
   {game.description}
 </div>
 
-<div
-  style={{
-    marginTop: 6,
-    display: "flex",
-    justifyContent: "space-between",
-    gap: 10,
-    color: "#4d466c",
-    fontSize: 12,
-  }}
->
-             
-              <span>+10</span>
-            </div>
 
             <button
               onClick={() => startGame(game.id)}
@@ -5938,34 +5931,69 @@ function selectOption(optionIndex: number) {
 
         return (
           <div key={test.id} style={{ ...cardBaseStyle(), padding: 12 }}>
-            <div style={{ fontSize: 18, fontWeight: 900, color: "#1f1d3a" }}>
-              {test.title}
-            </div>
+  {/* ВЕРХ: название + бейдж */}
+  <div
+    style={{
+      display: "flex",
+      justifyContent: "space-between",
+      alignItems: "flex-start",
+      gap: 10,
+    }}
+  >
+    <div style={{ minWidth: 0 }}>
+      <div
+        style={{
+          fontSize: 18,
+          fontWeight: 900,
+          color: "#111111",
+          lineHeight: 1.2,
+        }}
+      >
+        {test.title}
+      </div>
+    </div>
 
-            <div
-  style={{
-    marginTop: 4,
-    color: "#40395f",
-    lineHeight: 1.3,
-    fontSize: 13,
-  }}
->
-  {test.description}
-</div>
+    <div
+      style={{
+        minWidth: 38,
+        height: 38,
+        borderRadius: 999,
+        background: "rgba(255,255,255,0.22)",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        color: "#6b46ff",
+        fontWeight: 900,
+        fontSize: 14,
+        flexShrink: 0,
+      }}
+    >
+      +{test.reward}
+    </div>
+  </div>
 
-          <div
-  style={{
-    marginTop: 6,
-    display: "flex",
-    justifyContent: "space-between",
-    gap: 10,
-    color: "#4d466c",
-    fontSize: 12,
-  }}
-> 
-              <span>{test.questions.length} вопросов</span>
-  <span>+{test.reward}</span>
-</div>
+  {/* Описание */}
+  <div
+    style={{
+      marginTop: 4,
+      color: "#40395f",
+      lineHeight: 1.3,
+      fontSize: 13,
+    }}
+  >
+    {test.description}
+  </div>
+
+  {/* Только количество вопросов */}
+  <div
+    style={{
+      marginTop: 6,
+      color: "#4d466c",
+      fontSize: 12,
+    }}
+  >
+    {test.questions.length} вопросов
+  </div>
 
               
 
