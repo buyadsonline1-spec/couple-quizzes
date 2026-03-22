@@ -4319,6 +4319,7 @@ function GamesScreen({
   id: number;
   value: number;
 } | null>(null);
+const [cardFlipped, setCardFlipped] = useState(false);
 
  
 
@@ -4353,6 +4354,7 @@ if (activeGame?.id === "90-questions") {
     setCorrectAnswers(0);
     setFinished(false);
     setBottleRewardGiven(false);
+    setCardFlipped(false);
   }
 
   function showFloatingReward(value: number) {
@@ -4942,19 +4944,7 @@ function BottleGameScreen({
               {activeTask.target === "boy" ? "Задание для него" : "Задание для неё"}
             </div>
 
-            <div
-              style={{
-                marginTop: 10,
-                fontSize: 16,
-                lineHeight: 1.55,
-                color: "#4b446a",
-                padding: "14px 16px",
-                borderRadius: 20,
-                background: "rgba(107,70,255,0.06)",
-              }}
-            >
-              {activeTask.text}
-            </div>
+           <div style={{ marginTop: 10, fontSize: 16, lineHeight: 1.55, color: "#4b446a", padding: "14px 16px", borderRadius: 20, background: "rgba(107,70,255,0.06)", }} > {activeTask.text} </div>
 
             <div style={{ display: "grid", gap: 10, marginTop: 18 }}>
               <button
@@ -5815,19 +5805,21 @@ return (
       </button>
 
 
-    <button
-  onClick={handleComplete}
-  disabled={rewardClaimed || alreadyPlayed}
-  style={{
-    ...primaryButtonStyle,
-    width: "100%",
-    marginTop: 12,
-    opacity: rewardClaimed || alreadyPlayed ? 0.6 : 1,
-    cursor: rewardClaimed || alreadyPlayed ? "not-allowed" : "pointer",
-  }}
->
-  {alreadyPlayed ? "Карточка уже сыграна" : "Карточка сыграна"}
-</button>
+  {flipped && (
+  <button
+    onClick={handleComplete}
+    disabled={rewardClaimed || alreadyPlayed}
+    style={{
+      ...primaryButtonStyle,
+      width: "100%",
+      marginTop: 12,
+      opacity: rewardClaimed || alreadyPlayed ? 0.6 : 1,
+      cursor: rewardClaimed || alreadyPlayed ? "not-allowed" : "pointer",
+    }}
+  >
+    {alreadyPlayed ? "Карточка уже сыграна" : "Карточка сыграна"}
+  </button>
+)}
 
      
     </div>
