@@ -7764,6 +7764,29 @@ const completionButtonStyle: CSSProperties = {
   cursor: "pointer",
 };
 
+const syncPairAfterPointsChange = async (
+  fallbackPairState?: PairState
+): Promise<PairState> => {
+  let nextPairState = fallbackPairState ?? appState.pair;
+
+  if (user?.id) {
+    nextPairState = await loadPairStateForUser(user.id);
+  }
+
+  const nextState: AppState = {
+    ...appState,
+    pair: nextPairState,
+    points: nextPairState.totalPoints || 0,
+  };
+
+  await syncWeeklyPairLeaderboard(nextState, user);
+
+  const freshLeaderboard = await loadWeeklyPairLeaderboard();
+  setWeeklyPairLeaderboard(freshLeaderboard);
+
+  return nextPairState;
+};
+
 
 const claimCompletionBonus = async (
   type: "polls" | "tests" | "games"
@@ -7772,18 +7795,16 @@ const claimCompletionBonus = async (
     return false;
   }
 
-  let nextPairState = appState.pair;
+let nextPairState = appState.pair;
 
-  if (appState.pair.pairId) {
-    await updatePairPoints({
-      pairId: appState.pair.pairId,
-      delta: 200,
-    });
+if (appState.pair.pairId) {
+  await updatePairPoints({
+    pairId: appState.pair.pairId,
+    delta: 200,
+  });
 
-    if (user?.id) {
-      nextPairState = await loadPairStateForUser(user.id);
-    }
-  }
+  nextPairState = await syncPairAfterPointsChange(appState.pair);
+}   
 
   const bonusData =
     type === "polls"
@@ -7820,16 +7841,15 @@ const claimGameStepReward = async (rewardKey: string) => {
 
   let nextPairState = appState.pair;
 
-  if (appState.pair.pairId) {
-    await updatePairPoints({
-      pairId: appState.pair.pairId,
-      delta: 10,
-    });
+if (appState.pair.pairId) {
+  await updatePairPoints({
+    pairId: appState.pair.pairId,
+    delta: 10,
+  });
 
-    if (user?.id) {
-      nextPairState = await loadPairStateForUser(user.id);
-    }
-  }
+  nextPairState = await syncPairAfterPointsChange(appState.pair);
+}
+
 
   setAppState((prev) => ({
     ...prev,
@@ -8407,9 +8427,7 @@ if (rewardToAdd > 0 && appState.pair.pairId) {
     delta: rewardToAdd,
   });
 
-  if (user?.id) {
-    nextPairState = await loadPairStateForUser(user.id);
-  }
+  nextPairState = await syncPairAfterPointsChange(appState.pair);
 }
 
 const previousPoints = appState.pair.totalPoints || 0;
@@ -8482,21 +8500,19 @@ if (finishedAllPolls && !appState.completionBonusesClaimed.polls) {
   const alreadyCompleted = appState.completedTestIds.includes(test.id);
   const rewardToAdd = alreadyCompleted ? 0 : test.reward;
 
-  let nextPairState = appState.pair;
-  let leveledUpTo: { level: number; title: string } | null = null;
+let nextPairState = appState.pair;
+let leveledUpTo: { level: number; title: string } | null = null;
 
-  if (rewardToAdd > 0 && appState.pair.pairId) {
-    await updatePairPoints({
-      pairId: appState.pair.pairId,
-      delta: rewardToAdd,
-    });
+if (rewardToAdd > 0 && appState.pair.pairId) {
+  await updatePairPoints({
+    pairId: appState.pair.pairId,
+    delta: rewardToAdd,
+  });
 
-    if (user?.id) {
-      nextPairState = await loadPairStateForUser(user.id);
-    }
-  }
+  nextPairState = await syncPairAfterPointsChange(appState.pair);
+}
 
-  const previousPoints = appState.pair.totalPoints || 0;
+const previousPoints = appState.pair.totalPoints || 0;
 const nextPoints = nextPairState.totalPoints || 0;
 
 if (nextPoints > previousPoints) {
