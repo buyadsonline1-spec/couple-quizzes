@@ -1862,7 +1862,7 @@ function PairInviteScreen({
  
 
   const inviteLink = pair.inviteCode
-    ? `https://t.me/testcouple1_bot?startapp=invite_${pair.inviteCode}`
+    ? `https://t.me/couple_quizzes_bot?startapp=invite_${pair.inviteCode}`
     : "";
 
   async function handleCreateInviteClick() {
@@ -3027,7 +3027,7 @@ function getPairDisplayTitle(user: TgUser | null, pair: PairState) {
 
 function getReferralLink(user: TgUser | null) {
   if (!user?.id) return "";
-  return `https://t.me/testcouple1_bot?startapp=ref_${user.id}`;
+  return `https://t.me/couple_quizzes_bot?startapp=ref_${user.id}`;
 }
 
 function shareReferralLink(user: TgUser | null) {
@@ -6610,7 +6610,7 @@ function ReferralsScreen({
   onBack: () => void;
 }) {
   const inviteLink = user?.id
-    ? `https://t.me/${window.Telegram?.WebApp ? "testcouple1_bot" : "testcouple1_bot"}?startapp=ref_${user.id}`
+    ? `https://t.me/${window.Telegram?.WebApp ? "couple_quizzes_bot" : "couple_quizzes_bot"}?startapp=ref_${user.id}`
     : "";
 
   const handleInvite = () => {
