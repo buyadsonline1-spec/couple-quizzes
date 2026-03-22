@@ -4121,19 +4121,18 @@ setFinished(false);
       </div>
     </div>
 
-    <div
-      style={{
-        alignSelf: "flex-start",
-        padding: "6px 10px",
-        borderRadius: 12,
-        background: "rgba(255,255,255,0.28)",
-        fontWeight: 900,
-        whiteSpace: "nowrap",
-        fontSize: 13,
-      }}
-    >
-      +{poll.reward}
-    </div>
+   <div
+  style={{
+    marginTop: 6,
+    display: "flex",
+    justifyContent: "space-between",
+    gap: 10,
+    color: "#4d466c",
+    fontSize: 12,
+  }}
+>
+  <span>+{poll.reward}</span>
+</div>
   </div>
 
   <button
@@ -4445,9 +4444,15 @@ function handleLoveQuestionFinish() {
     gap: 10,
   }}
 >
-  <div style={{ fontWeight: 900, fontSize: 16 }}>
-    {game.title}
-  </div>
+  <div
+  style={{
+    fontWeight: 900,
+    fontSize: 16,
+    color: "#111111",
+  }}
+>
+  {game.title}
+</div>
 
   <div
     style={{
@@ -5948,7 +5953,7 @@ function selectOption(optionIndex: number) {
   {test.description}
 </div>
 
-            <div
+          <div
   style={{
     marginTop: 6,
     display: "flex",
@@ -5957,10 +5962,12 @@ function selectOption(optionIndex: number) {
     color: "#4d466c",
     fontSize: 12,
   }}
->
+> 
               <span>{test.questions.length} вопросов</span>
-              <span>+{test.reward}</span>
-            </div>
+  <span>+{test.reward}</span>
+</div>
+
+              
 
             <button
   onClick={() => startTest(test.id)}
