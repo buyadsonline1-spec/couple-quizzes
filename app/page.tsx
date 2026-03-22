@@ -5022,10 +5022,7 @@ const currentQuestion =
     : null;
   
 
- const progressLabel = `${Math.min(
-  questionIndex + 1,
-  LOVE_QUESTIONS.length
-)} / ${LOVE_QUESTIONS.length}`;
+ const progressLabel = `${answeredIds.length} / ${LOVE_QUESTIONS.length}`;
 
   async function handleAnswered() {
     if (!currentQuestion || animating) return;
