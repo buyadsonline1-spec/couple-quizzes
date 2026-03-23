@@ -8858,10 +8858,14 @@ if (finishedAllTests && !appState.completionBonusesClaimed.tests) {
     appState={appState}
    onNavigate={(next) => {
   const wantsContent =
-    next === "polls" || next === "tests" || next === "games";
+    next === "polls" ||
+    next === "polls-boy" ||
+    next === "polls-girl" ||
+    next === "tests" ||
+    next === "games";
 
   if (!appState.isPremium && freeAccessExhausted && wantsContent) {
-    setPaywallBackScreen(screen);
+    setPaywallBackScreen(next);
     setScreen("paywall");
     return;
   }
