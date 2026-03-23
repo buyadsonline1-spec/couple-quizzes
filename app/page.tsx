@@ -6472,8 +6472,6 @@ function TopPlayersScreen({
   onClaimWeeklyReward: () => void;
 }) {
 
-  previousLeaderboard={previousWeeklyPairLeaderboard}
-
  const currentWeekKey = getCurrentWeekKey();
 const previousWeekKey = getPreviousWeekKey();
 
@@ -8914,6 +8912,7 @@ if (finishedAllTests && !appState.completionBonusesClaimed.tests) {
     pair={appState.pair}
     leaderboard={weeklyPairLeaderboard}
     weeklyTopRewardClaimedWeek={appState.weeklyTopRewardClaimedWeek}
+    previousLeaderboard={previousWeeklyPairLeaderboard}
     onBack={() => setScreen("menu")}
     onClaimWeeklyReward={handleClaimWeeklyTopReward}
   />
