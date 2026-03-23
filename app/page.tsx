@@ -13,6 +13,253 @@ import confetti from "canvas-confetti";
 import { TEXT_RU } from "@/config/text-ru";
 import { TEXT_EN } from "@/config/text-en";
 
+
+const TEXTS = {
+  ru: {
+    appName: "Couple Quizzes",
+
+    menu: {
+      polls: "Опросы",
+      games: "Игры",
+      tests: "Тесты",
+      rewards: "Очки и призы",
+      pair: "Пара",
+      topPlayers: "Топ игроков",
+      profile: "Профиль и статистика",
+    },
+
+    common: {
+      back: "Назад",
+      start: "Старт",
+      next: "Далее",
+      finish: "Завершить",
+      continue: "Продолжить",
+      save: "Сохранить",
+      cancel: "Отмена",
+      close: "Закрыть",
+      claim: "Получить",
+      play: "Играть",
+      open: "Открыть",
+      loading: "Загрузка...",
+      noData: "Пока нет данных",
+      done: "Готово",
+    },
+
+    home: {
+      pairLevel: "Уровень пары",
+      toNextLevel: "До следующего уровня",
+      yourPoints: "Ваши очки",
+      newbies: "Новички",
+    },
+
+    bonus: {
+      title: "Ежедневный бонус",
+      subtitle: "Заходи каждый день и забирай награду",
+      day: "День",
+      claim: "Получить",
+      claimed: "Получено",
+    },
+
+    polls: {
+      title: "Опросы",
+      subtitle: "Узнайте друг друга лучше",
+      empty: "Опросы пока недоступны",
+      completed: "Пройдено",
+      reward: "Награда",
+    },
+
+    tests: {
+      title: "Тесты",
+      subtitle: "Проверьте, насколько хорошо вы знаете друг друга",
+      empty: "Тесты пока недоступны",
+      completed: "Пройдено",
+      reward: "Награда",
+    },
+
+    games: {
+      title: "Игры",
+      subtitle: "Играйте вместе и получайте очки",
+      empty: "Игры пока недоступны",
+      completed: "Пройдено",
+      reward: "Награда",
+      bottle: "Бутылочка",
+      whoFirst: "Кто идет первым?",
+      spin: "Крутить",
+    },
+
+    rewards: {
+      title: "Очки и призы",
+      subtitle: "Обменивайте очки на призы",
+      wheel: "Колесо призов",
+      prizes: "Призы",
+      spin: "Крутить колесо",
+      notEnoughPoints: "Недостаточно очков",
+      yourBalance: "Ваш баланс",
+    },
+
+    pair: {
+      title: "Пара",
+      subtitle: "Ваш прогресс как пары",
+      level: "Уровень",
+      compatibility: "Совместимость",
+      totalPoints: "Всего очков пары",
+      nextLevel: "До следующего уровня",
+      noPairYet: "Пара еще не подключена",
+    },
+
+    top: {
+      title: "Топ игроков",
+      subtitle: "Лучшие пары этого рейтинга",
+      place: "Место",
+      points: "Очки",
+      empty: "Рейтинг пока пуст",
+    },
+
+    profile: {
+      title: "Профиль и статистика",
+      name: "Имя",
+      username: "Username",
+      stats: "Статистика",
+      pollsCompleted: "Опросов пройдено",
+      testsCompleted: "Тестов пройдено",
+      gamesPlayed: "Игр сыграно",
+      currentBonusDay: "Текущий день бонуса",
+      bonusPoints: "Очков из бонусов",
+      recentPrizes: "Последние призы",
+      noPrizes: "Пока призов нет",
+    },
+
+    notifications: {
+      newLevel: "Новый уровень!",
+      rewardReceived: "Награда получена!",
+      sectionCompleted: "Раздел полностью пройден!",
+      bonusReceived: "Бонус получен!",
+    },
+  },
+
+  en: {
+    appName: "Couple Quizzes",
+
+    menu: {
+      polls: "Polls",
+      games: "Games",
+      tests: "Tests",
+      rewards: "Points & Rewards",
+      pair: "Pair",
+      topPlayers: "Top Players",
+      profile: "Profile & Stats",
+    },
+
+    common: {
+      back: "Back",
+      start: "Start",
+      next: "Next",
+      finish: "Finish",
+      continue: "Continue",
+      save: "Save",
+      cancel: "Cancel",
+      close: "Close",
+      claim: "Claim",
+      play: "Play",
+      open: "Open",
+      loading: "Loading...",
+      noData: "No data yet",
+      done: "Done",
+    },
+
+    home: {
+      pairLevel: "Pair level",
+      toNextLevel: "To the next level",
+      yourPoints: "Your points",
+      newbies: "Newbies",
+    },
+
+    bonus: {
+      title: "Daily bonus",
+      subtitle: "Come back every day and claim your reward",
+      day: "Day",
+      claim: "Claim",
+      claimed: "Claimed",
+    },
+
+    polls: {
+      title: "Polls",
+      subtitle: "Get to know each other better",
+      empty: "No polls available yet",
+      completed: "Completed",
+      reward: "Reward",
+    },
+
+    tests: {
+      title: "Tests",
+      subtitle: "See how well you know each other",
+      empty: "No tests available yet",
+      completed: "Completed",
+      reward: "Reward",
+    },
+
+    games: {
+      title: "Games",
+      subtitle: "Play together and earn points",
+      empty: "No games available yet",
+      completed: "Completed",
+      reward: "Reward",
+      bottle: "Spin the Bottle",
+      whoFirst: "Who goes first?",
+      spin: "Spin",
+    },
+
+    rewards: {
+      title: "Points & Rewards",
+      subtitle: "Exchange points for prizes",
+      wheel: "Prize Wheel",
+      prizes: "Prizes",
+      spin: "Spin the wheel",
+      notEnoughPoints: "Not enough points",
+      yourBalance: "Your balance",
+    },
+
+    pair: {
+      title: "Pair",
+      subtitle: "Your progress as a couple",
+      level: "Level",
+      compatibility: "Compatibility",
+      totalPoints: "Total couple points",
+      nextLevel: "To the next level",
+      noPairYet: "No pair connected yet",
+    },
+
+    top: {
+      title: "Top Players",
+      subtitle: "Best couples in the ranking",
+      place: "Place",
+      points: "Points",
+      empty: "The leaderboard is empty for now",
+    },
+
+    profile: {
+      title: "Profile & Stats",
+      name: "Name",
+      username: "Username",
+      stats: "Stats",
+      pollsCompleted: "Polls completed",
+      testsCompleted: "Tests completed",
+      gamesPlayed: "Games played",
+      currentBonusDay: "Current bonus day",
+      bonusPoints: "Bonus points earned",
+      recentPrizes: "Recent prizes",
+      noPrizes: "No prizes yet",
+    },
+
+    notifications: {
+      newLevel: "New level!",
+      rewardReceived: "Reward received!",
+      sectionCompleted: "Section completed!",
+      bonusReceived: "Bonus claimed!",
+    },
+  },
+} as const;
+
 declare global {
   interface Window {
     Telegram?: {

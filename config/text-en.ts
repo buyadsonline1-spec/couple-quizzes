@@ -8,17 +8,18 @@ export const TEXT_EN = {
   top: "Top Players",
   profile: "Profile & Stats",
 },
-  common: {
-    back: "Back",
-    start: "Start",
-    continue: "Continue",
-    claim: "Claim",
-  },
-  rewards: {
-    title: "Rewards",
-    spin: "Spin",
-    notEnough: "Not enough points",
-  },
+common: {
+  back: "Back",
+  start: "Start",
+  next: "Next",
+  finish: "Finish",
+  continue: "Continue",
+  claim: "Claim",
+  play: "Play",
+  close: "Close",
+  loading: "Loading...",
+  noData: "No data yet",
+},
 
   pair: {
   title: "Pair",

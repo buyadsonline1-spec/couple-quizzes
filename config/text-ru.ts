@@ -8,17 +8,19 @@ export const TEXT_RU = {
   top: "Топ игроков",
   profile: "Профиль и статистика",
 },
-  common: {
-    back: "Назад",
-    start: "Начать",
-    continue: "Продолжить",
-    claim: "Забрать",
-  },
-  rewards: {
-    title: "Очки и призы",
-    spin: "Крутить",
-    notEnough: "Недостаточно очков",
-  },
+  
+common: {
+  back: "Назад",
+  start: "Старт",
+  next: "Далее",
+  finish: "Завершить",
+  continue: "Продолжить",
+  claim: "Получить",
+  play: "Играть",
+  close: "Закрыть",
+  loading: "Загрузка...",
+  noData: "Пока нет данных",
+},
 
   pair: {
   title: "Пара",
