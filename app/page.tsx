@@ -3358,7 +3358,7 @@ function loadState(): AppState {
   
    return {
   points: parsed.points ?? DEFAULT_STATE.points,
-  isPremium: parsed.isPremium ?? DEFAULT_STATE.isPremium,
+  isPremium: DEFAULT_STATE.isPremium,
   playedGameRewardKeys:
   parsed.playedGameRewardKeys ?? DEFAULT_STATE.playedGameRewardKeys,
 
@@ -7672,9 +7672,25 @@ const handleBuyPremium = async () => {
     }
 
     if (window.Telegram?.WebApp?.openInvoice) {
-      window.Telegram.WebApp.openInvoice(invoiceLink, (status) => {
-        console.log("INVOICE STATUS:", status);
-      });
+      window.Telegram.WebApp.openInvoice(invoiceLink, async (status) => {
+  console.log("INVOICE STATUS:", status);
+
+  if (status !== "paid" || !user?.id) return;
+
+  const hasPremium = await loadPremiumStatus(user.id);
+
+  setAppState((prev) => ({
+    ...prev,
+    isPremium: hasPremium,
+  }));
+
+  if (hasPremium) {
+    setShowPaymentChoice(false);
+    if (screen === "paywall") {
+      setScreen(paywallBackScreen || "menu");
+    }
+  }
+});
     } else {
       throw new Error("Telegram WebApp openInvoice недоступен");
     }
@@ -8374,13 +8390,10 @@ const hasPremium = await loadPremiumStatus(telegramId);
 
 setAppState((prev) => ({
   ...prev,
-  isPremium: hasPremium || prev.isPremium,
+  isPremium: hasPremium,
 }));
 
-setAppState((prev) => ({
-  ...prev,
-  isPremium: hasPremium || prev.isPremium,
-}));
+
 
    const currentUser: TgUser = {
   id: telegramUser.id,
