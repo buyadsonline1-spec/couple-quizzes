@@ -2980,6 +2980,22 @@ function getCurrentWeekKey() {
   return `${now.getFullYear()}-W${week}`;
 }
 
+function getPreviousWeekKey() {
+  const now = new Date();
+  const day = now.getDay();
+  const mondayOffset = day === 0 ? -6 : 1 - day;
+
+  const monday = new Date(now);
+  monday.setHours(0, 0, 0, 0);
+  monday.setDate(now.getDate() + mondayOffset - 7);
+
+  const year = monday.getFullYear();
+  const month = String(monday.getMonth() + 1).padStart(2, "0");
+  const date = String(monday.getDate()).padStart(2, "0");
+
+  return `${year}-${month}-${date}`;
+}
+
 function getDailyPairQuestionForToday() {
   const today = getTodayLocalDateString();
   const dayNumber = Number(today.replaceAll("-", ""));
