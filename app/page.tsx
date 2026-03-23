@@ -2,6 +2,8 @@
 
 import { CSSProperties, useEffect, useMemo, useState } from "react";
 import { getMarket } from "@/config/markets";
+import { REWARD_CATEGORIES_RU } from "@/config/rewards-ru";
+import { REWARD_CATEGORIES_EN } from "@/config/rewards-en";
 import { supabase } from "@/lib/supabase";
 import confetti from "canvas-confetti";
 
@@ -1097,7 +1099,8 @@ const STREAK_BONUSES = [
 const DAILY_PAIR_MATCH_BONUS = 25;
 
 
-const REWARD_CATEGORIES: RewardCategory[] = [
+const REWARD_CATEGORIES_OLD: RewardCategory[] = [
+  
   {
     id: "dyson",
     title: "Dyson",
@@ -7612,6 +7615,8 @@ export default function Page() {
 
   const market = getMarket();
   console.log("MARKET:", market);
+  const REWARD_CATEGORIES =
+  market === "en" ? REWARD_CATEGORIES_EN : REWARD_CATEGORIES_RU;
 
   const [appState, setAppState] = useState<AppState>(DEFAULT_STATE);
 
