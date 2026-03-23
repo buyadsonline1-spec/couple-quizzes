@@ -5,6 +5,7 @@ import { getMarket } from "@/config/markets";
 import { REWARD_CATEGORIES_RU } from "@/config/rewards-ru";
 import { REWARD_CATEGORIES_EN } from "@/config/rewards-en";
 const market = getMarket();
+const t = market === "en" ? TEXT_EN : TEXT_RU;
 
 const REWARD_CATEGORIES =
   market === "en" ? REWARD_CATEGORIES_EN : REWARD_CATEGORIES_RU;
@@ -1321,6 +1322,8 @@ function getPairLevelInfo(points: number): PairLevelInfo {
     }
   }
 
+  const market = getMarket();
+const t = market === "en" ? TEXT_EN : TEXT_RU;
   const currentLevelPoints = current.points;
   const nextLevelPoints = next ? next.points : null;
   const progressInLevel = safePoints - currentLevelPoints;
@@ -1693,6 +1696,7 @@ function PairScreen({
   onOpenDailyQuestion: () => void;
   t: any;
 }) {
+
 
   const hasPairCreated = !!pair.pairId;
 const hasPartnerConnected = !!pair.partner;
@@ -2097,7 +2101,7 @@ const isWaitingForPartner = hasPairCreated && !hasPartnerConnected;
       )}
 
       <button onClick={onBack} style={secondaryButtonStyle}>
-        Назад в меню
+        {t.common.back}
       </button>
     </div>
   );
@@ -2114,6 +2118,8 @@ function PairInviteScreen({
   onCreateInvite: () => Promise<void>;
   onJoinByCode: (code: string) => Promise<void>;
 }) {
+  const market = getMarket();
+const t = market === "en" ? TEXT_EN : TEXT_RU;
   const [joinCode, setJoinCode] = useState("");
   const [joining, setJoining] = useState(false);
   const [creating, setCreating] = useState(false);
@@ -2373,7 +2379,7 @@ function PairInviteScreen({
 
 
       <button onClick={onBack} style={secondaryButtonStyle}>
-        Назад
+        {t.common.back}
       </button>
     </div>
   );
@@ -2652,7 +2658,7 @@ function PairStreakInfoScreen({
     marginTop: 16,
   }}
 >
-  Назад
+  {t.common.back}
 </button>
 
 
@@ -2676,6 +2682,9 @@ function DailyPairQuestionScreen({
   onBack: () => void;
   onOpenStreakInfo: () => void;
 }) {
+
+  const market = getMarket();
+const t = market === "en" ? TEXT_EN : TEXT_RU;
   const today = getTodayLocalDateString();
   const question = getDailyPairQuestionForToday();
 
@@ -3141,7 +3150,7 @@ function DailyPairQuestionScreen({
       )}
 
       <button onClick={onBack} style={{ ...secondaryButtonStyle, marginTop: 0 }}>
-        Назад в раздел «Пара»
+        {t.common.back}
       </button>
     </div>
   );
@@ -3216,7 +3225,7 @@ function PollsEntryScreen({
       </button>
 
       <button onClick={onBack} style={secondaryButtonStyle}>
-        Назад в меню
+        {t.common.back}
       </button>
     </div>
   );
@@ -3822,7 +3831,7 @@ function SectionPlaceholder({
         </div>
 
         <button onClick={onBack} style={secondaryButtonStyle}>
-          Назад в меню
+          {t.common.back}
         </button>
       </div>
     </div>
@@ -4072,6 +4081,7 @@ function MainMenu({
   onNavigate: (screen: Screen) => void;
 }) {
 
+  
   const firstName = user?.first_name || "Друг";
 
   return (
@@ -4119,7 +4129,7 @@ function MainMenu({
         >
           <div>
             <div style={{ fontSize: 11, color: "#5a5378", fontWeight: 700 }}>
-  Уровень пары
+  {t.home.pairLevel}
 </div>
             <div
   style={{
@@ -4205,7 +4215,7 @@ function MainMenu({
       color: "#5a5378",
     }}
   >
-    Ваши очки:
+    {t.home.yourPoints}:
   </div>
 
   <div
@@ -4276,6 +4286,8 @@ function PollsScreen({
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [answers, setAnswers] = useState<number[]>([]);
   const [finished, setFinished] = useState(false);
+  const market = getMarket();
+const t = market === "en" ? TEXT_EN : TEXT_RU;
 
 
 const POLLS_PER_PAGE = 4;
@@ -4469,7 +4481,7 @@ setFinished(false);
         </div>
 
         <button onClick={onBack} style={{ ...secondaryButtonStyle, marginTop: 0 }}>
-          Назад в меню
+          {t.common.back}
         </button>
       </div>
     );
@@ -4586,6 +4598,9 @@ function GamesScreen({
   onCompleteGame: (game: Game, score: number) => void;
   onClaimStepReward: (key: string) => Promise<boolean>;
 }) {
+
+  const market = getMarket();
+const t = market === "en" ? TEXT_EN : TEXT_RU;
   const [activeGameId, setActiveGameId] = useState<string | null>(null);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [selectedOptionIndex, setSelectedOptionIndex] = useState<number | null>(null);
@@ -4784,7 +4799,7 @@ function handleLoveQuestionFinish() {
   onClick={onBack}
   style={{ ...secondaryButtonStyle, marginTop: 0, padding: "10px 16px" }}
 >
-        Назад в меню
+        {t.common.back}
       </button>
     </div>
   );
@@ -5158,7 +5173,7 @@ function BottleGameScreen({
           onClick={onBack}
           style={{ ...secondaryButtonStyle, width: "100%", marginTop: 10 }}
         >
-          Назад
+          {t.common.back}
         </button>
       </div>
 
@@ -5459,7 +5474,7 @@ setAppState((prev) => ({
       </div>
 
       <button onClick={onBack} style={secondaryButtonStyle}>
-        Назад в игры
+        {t.common.back}
       </button>
     </div>
   );
@@ -5897,7 +5912,7 @@ function handleNext() {
       </div>
 
       <button onClick={onBack} style={secondaryButtonStyle}>
-        Назад в игры
+        {t.common.back}
       </button>
     </div>
   );
@@ -6095,7 +6110,7 @@ return (
     </div>
 
     <button onClick={onBack} style={secondaryButtonStyle}>
-      Назад в игры
+      {t.common.back}
       </button>
   </div>
 );
@@ -6116,6 +6131,8 @@ function TestsScreen({
   const [answers, setAnswers] = useState<number[]>([]);
   const [finished, setFinished] = useState(false);
 
+  const market = getMarket();
+const t = market === "en" ? TEXT_EN : TEXT_RU;
   const activeTest = TESTS.find((item) => item.id === activeTestId) || null;
   const currentQuestion = activeTest?.questions[currentQuestionIndex] || null;
 
@@ -6294,7 +6311,7 @@ function selectOption(optionIndex: number) {
   onClick={onBack}
   style={{ ...secondaryButtonStyle, marginTop: 0, padding: "10px 16px" }}
 >
-        Назад в меню
+        {t.common.back}
       </button>
     </div>
   );
@@ -6424,6 +6441,9 @@ function RewardsScreen({
   onBack: () => void;
   onSpin: (categoryIndex: number) => Promise<WonReward | null>;
 }) {
+
+  const market = getMarket();
+const t = market === "en" ? TEXT_EN : TEXT_RU;
   const [rotation, setRotation] = useState(0);
   const [isSpinning, setIsSpinning] = useState(false);
   const [message, setMessage] = useState("");
@@ -6676,7 +6696,7 @@ function RewardsScreen({
       </div>
 
       <button onClick={onBack} style={secondaryButtonStyle}>
-        Назад в меню
+        {t.common.back}
       </button>
     </div>
   );
@@ -6748,6 +6768,7 @@ function TopPlayersScreen({
   onClaimWeeklyReward: () => void;
   t: any;
 }) {
+
 
  const currentWeekKey = getCurrentWeekKey();
 const previousWeekKey = getPreviousWeekKey();
@@ -7062,7 +7083,7 @@ return (
     marginTop: 16,
   }}
 >
-  Назад
+  {t.common.back}
 </button>
     </div>
   );
@@ -7081,6 +7102,7 @@ function ProfileAndStatsScreen({
   onBack,
   onNavigate,
 }: {
+  
 
   user: TgUser | null;
   points: number;
@@ -7100,7 +7122,8 @@ function ProfileAndStatsScreen({
 }) {
 
 
-  
+  const market = getMarket();
+const t = market === "en" ? TEXT_EN : TEXT_RU;
   const fullName =
     [user?.first_name, user?.last_name].filter(Boolean).join(" ") ||
     "Пользователь";
@@ -7234,7 +7257,7 @@ function ProfileAndStatsScreen({
     marginTop: 16,
   }}
 >
-  Назад
+  {t.common.back}
 </button>
   
     </div>
@@ -9333,7 +9356,7 @@ if (finishedAllTests && !appState.completionBonusesClaimed.tests) {
   onClick={() => setScreen(paywallBackScreen)}
   style={{ ...secondaryButtonStyle, marginTop: 10 }}
 >
-  Назад
+  {t.common.back}
 </button>
     </div>
   </div>

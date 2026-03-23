@@ -53,4 +53,59 @@ top: {
   weekLeaders: "Weekly leaders",
   back: "Back",
 },
+
+home: {
+  pairLevel: "Pair level",
+  yourPoints: "Your points",
+  toNextLevel: "To the next level",
+  newbies: "Newbies",
+},
+
+polls: {
+  title: "Polls",
+  subtitle: "Get to know each other better",
+  empty: "No polls available yet",
+  completed: "Completed",
+  reward: "Reward",
+},
+
+games: {
+  title: "Games",
+  subtitle: "Play together and earn points",
+  empty: "No games available yet",
+  bottle: "Spin the Bottle",
+  whoFirst: "Who goes first?",
+  spin: "Spin",
+  reward: "Reward",
+},
+
+tests: {
+  title: "Tests",
+  subtitle: "See how well you know each other",
+  empty: "No tests available yet",
+  completed: "Completed",
+  reward: "Reward",
+},
+
+rewards: {
+  title: "Points & Rewards",
+  subtitle: "Exchange points for prizes",
+  wheel: "Prize Wheel",
+  prizes: "Prizes",
+  spin: "Spin the wheel",
+  yourBalance: "Your balance",
+  notEnoughPoints: "Not enough points",
+},
+
+profile: {
+  title: "Profile & Stats",
+  stats: "Stats",
+  pollsCompleted: "Polls completed",
+  testsCompleted: "Tests completed",
+  gamesPlayed: "Games played",
+  currentBonusDay: "Current bonus day",
+  bonusPoints: "Bonus points earned",
+  recentPrizes: "Recent prizes",
+  noPrizes: "No prizes yet",
+},
 };

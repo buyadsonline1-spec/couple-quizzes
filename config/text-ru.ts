@@ -54,4 +54,60 @@ top: {
   weekLeaders: "Лидеры недели",
   back: "Назад",
 },
+
+home: {
+  pairLevel: "Уровень пары",
+  yourPoints: "Ваши очки",
+  toNextLevel: "До следующего уровня",
+  newbies: "Новички",
+},
+
+
+polls: {
+  title: "Опросы",
+  subtitle: "Узнайте друг друга лучше",
+  empty: "Опросы пока недоступны",
+  completed: "Пройдено",
+  reward: "Награда",
+},
+
+games: {
+  title: "Игры",
+  subtitle: "Играйте вместе и получайте очки",
+  empty: "Игры пока недоступны",
+  bottle: "Бутылочка",
+  whoFirst: "Кто идет первым?",
+  spin: "Крутить",
+  reward: "Награда",
+},
+
+tests: {
+  title: "Тесты",
+  subtitle: "Проверьте, насколько хорошо вы знаете друг друга",
+  empty: "Тесты пока недоступны",
+  completed: "Пройдено",
+  reward: "Награда",
+},
+
+rewards: {
+  title: "Очки и призы",
+  subtitle: "Обменивайте очки на призы",
+  wheel: "Колесо призов",
+  prizes: "Призы",
+  spin: "Крутить колесо",
+  yourBalance: "Ваш баланс",
+  notEnoughPoints: "Недостаточно очков",
+},
+
+profile: {
+  title: "Профиль и статистика",
+  stats: "Статистика",
+  pollsCompleted: "Опросов пройдено",
+  testsCompleted: "Тестов пройдено",
+  gamesPlayed: "Игр сыграно",
+  currentBonusDay: "Текущий день бонуса",
+  bonusPoints: "Очков из бонусов",
+  recentPrizes: "Последние призы",
+  noPrizes: "Пока призов нет",
+},
 };
