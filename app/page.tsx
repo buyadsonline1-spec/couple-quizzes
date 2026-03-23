@@ -4,8 +4,14 @@ import { CSSProperties, useEffect, useMemo, useState } from "react";
 import { getMarket } from "@/config/markets";
 import { REWARD_CATEGORIES_RU } from "@/config/rewards-ru";
 import { REWARD_CATEGORIES_EN } from "@/config/rewards-en";
+const market = getMarket();
+
+const REWARD_CATEGORIES =
+  market === "en" ? REWARD_CATEGORIES_EN : REWARD_CATEGORIES_RU;
 import { supabase } from "@/lib/supabase";
 import confetti from "canvas-confetti";
+import { TEXT_RU } from "@/config/text-ru";
+import { TEXT_EN } from "@/config/text-en";
 
 declare global {
   interface Window {
@@ -1428,6 +1434,7 @@ function PairScreen({
   onBack,
   onOpenInvite,
   onOpenDailyQuestion,
+  t,
 }: {
   user: TgUser | null;
   pair: PairState;
@@ -1437,6 +1444,7 @@ function PairScreen({
   onBack: () => void;
   onOpenInvite: () => void;
   onOpenDailyQuestion: () => void;
+  t: any;
 }) {
 
   const hasPairCreated = !!pair.pairId;
@@ -1491,8 +1499,8 @@ const isWaitingForPartner = hasPairCreated && !hasPartnerConnected;
     <div style={{ padding: 16, display: "grid", gap: 14 }}>
       <div style={{ ...cardBaseStyle(), padding: 18 }}>
         <div style={{ fontSize: 28, fontWeight: 900, color: "#1f1d3a" }}>
-          Пара
-        </div>
+  {t.pair.title}
+</div>
         <div
           style={{
             marginTop: 8,
@@ -1501,7 +1509,7 @@ const isWaitingForPartner = hasPairCreated && !hasPartnerConnected;
             lineHeight: 1.45,
           }}
         >
-          Здесь можно посмотреть статус пары и совместимость.
+          {t.pair.subtitle}
         </div>
       </div>
 
@@ -1509,7 +1517,7 @@ const isWaitingForPartner = hasPairCreated && !hasPartnerConnected;
         onClick={onOpenDailyQuestion}
         style={{ ...primaryButtonStyle, width: "100%", marginTop: 0 }}
       >
-        Вопрос дня 💞
+        {t.pair.dailyQuestion}
       </button>
 
       {!hasFullPair ? (
@@ -1528,7 +1536,7 @@ const isWaitingForPartner = hasPairCreated && !hasPartnerConnected;
                 fontWeight: 800,
               }}
             >
-              ⏳ Статус: пара не подключена
+              {t.pair.statusNotConnected}
             </div>
 
             <div
@@ -1539,7 +1547,7 @@ const isWaitingForPartner = hasPairCreated && !hasPartnerConnected;
                 color: "#1f1d3a",
               }}
             >
-              Пока вы не в паре
+              {t.pair.noPairTitle}
             </div>
 
             <div
@@ -1550,7 +1558,7 @@ const isWaitingForPartner = hasPairCreated && !hasPartnerConnected;
                 fontSize: 14,
               }}
             >
-              Пригласи партнёра по ссылке или подключи его по коду.
+              {t.pair.noPairText}
             </div>
 
             <button
@@ -1561,7 +1569,7 @@ const isWaitingForPartner = hasPairCreated && !hasPartnerConnected;
                 marginTop: 14,
               }}
             >
-              Пригласить партнёра
+              {t.pair.invitePartner}
             </button>
           </div>
         </>
@@ -1581,7 +1589,7 @@ const isWaitingForPartner = hasPairCreated && !hasPartnerConnected;
                 fontWeight: 800,
               }}
             >
-              💕 Статус: вы в паре
+              {t.pair.statusConnected}
             </div>
 
             <div
@@ -1620,7 +1628,7 @@ const isWaitingForPartner = hasPairCreated && !hasPartnerConnected;
                     {[user?.first_name, user?.last_name].filter(Boolean).join(" ") || "Пользователь"}
                   </div>
                   <div style={{ marginTop: 4, color: "#5a5378", fontSize: 13 }}>
-                    {user?.username ? `@${user.username}` : "Без username"}
+                    {user?.username ? `@${user.username}` : "t.pair.noUsername"}
                   </div>
                 </div>
               </div>
@@ -1663,7 +1671,7 @@ const isWaitingForPartner = hasPairCreated && !hasPartnerConnected;
 
           <div style={{ ...cardBaseStyle(), padding: 16 }}>
             <div style={{ fontSize: 20, fontWeight: 900, color: "#1f1d3a" }}>
-              Уровень пары 💞
+              {t.pair.pairLevel}
             </div>
 
             <div
@@ -1745,12 +1753,12 @@ const isWaitingForPartner = hasPairCreated && !hasPartnerConnected;
                 <span>
                   {pairLevel.nextLevelPoints
                     ? `${points} / ${pairLevel.nextLevelPoints}`
-                    : "Максимальный уровень"}
+                    : "t.pair.maxLevel"}
                 </span>
 
                 <span>
                   {pairLevel.nextLevelPoints
-                    ? `До следующего: ${pairLevel.nextLevelPoints - points}`
+                    ? `${t.pair.untilNext}: ${pairLevel.nextLevelPoints - points}`
                     : ""}
                 </span>
               </div>
@@ -1759,7 +1767,7 @@ const isWaitingForPartner = hasPairCreated && !hasPartnerConnected;
 
           <div style={{ ...cardBaseStyle(), padding: 18 }}>
             <div style={{ fontSize: 22, fontWeight: 900, color: "#1f1d3a" }}>
-              Совместимость
+              {t.pair.compatibility}
             </div>
 
             <div
@@ -3973,8 +3981,7 @@ function MainMenu({
           gap: 10,
         }}
       >
-        <MenuButton
-  label="Опросы"
+        <MenuButton label={t.menu.polls}
   emoji="💌"
   onClick={() => {
     if (!appState.profile.gender) {
@@ -3985,15 +3992,14 @@ function MainMenu({
     onNavigate(appState.profile.gender === "boy" ? "polls-boy" : "polls-girl");
   }}
 />
-        <MenuButton label="Игры" emoji="🎮" onClick={() => onNavigate("games")} />
-        <MenuButton label="Тесты" emoji="🧠" onClick={() => onNavigate("tests")} />
-        <MenuButton label="Очки и призы" emoji="🎡" onClick={() => onNavigate("rewards")} />
-        <MenuButton label="Пара" emoji="💕" onClick={() => onNavigate("pair")} />
-        <MenuButton label="Топ игроков" emoji="🏆" onClick={() => onNavigate("top")} />
+        <MenuButton label={t.menu.games} emoji="🎮" onClick={() => onNavigate("games")} />
+        <MenuButton label={t.menu.tests} emoji="🧠" onClick={() => onNavigate("tests")} />
+        <MenuButton label={t.menu.rewards} emoji="🎡" onClick={() => onNavigate("rewards")} />
+        <MenuButton label={t.menu.pair} emoji="💕" onClick={() => onNavigate("pair")} />
+        <MenuButton label={t.menu.top} emoji="🏆" onClick={() => onNavigate("top")} />
 
         <div style={{ gridColumn: "1 / -1" }}>
-          <MenuButton
-            label="Профиль и статистика"
+          <MenuButton label={t.menu.profile}
             emoji="👤"
             onClick={() => onNavigate("profile")}
           />
@@ -6483,6 +6489,7 @@ function TopPlayersScreen({
   weeklyTopRewardClaimedWeek,
   onBack,
   onClaimWeeklyReward,
+  t,
 }: {
   pair: PairState;
   leaderboard: WeeklyPairLeaderboardRow[];
@@ -6490,6 +6497,7 @@ function TopPlayersScreen({
   weeklyTopRewardClaimedWeek: string | null;
   onBack: () => void;
   onClaimWeeklyReward: () => void;
+  t: any;
 }) {
 
  const currentWeekKey = getCurrentWeekKey();
@@ -6525,10 +6533,10 @@ const canClaimWeeklyReward =
     <div style={{ padding: 12, display: "grid", gap: 10 }}>
       <div style={{ ...cardBaseStyle(), padding: 14 }}>
         <div style={{ fontSize: 24, fontWeight: 900, color: "#1f1d3a" }}>
-          🏆 Топ пар недели
+          🏆 {t.top.title}
         </div>
         <div style={{ marginTop: 4, color: "#3a345c", fontSize: 13, lineHeight: 1.4 }}>
-          Лучшие пары по очкам за эту неделю
+          {t.top.subtitle}
         </div>
       </div>
 
@@ -6539,7 +6547,7 @@ const canClaimWeeklyReward =
 
         {allPairs.length === 0 ? (
           <div style={{ marginTop: 10, color: "#4a4468", lineHeight: 1.45, fontSize: 14 }}>
-            Пока в рейтинге пусто. Как только пары начнут набирать очки, здесь появится топ.
+            {t.top.noData}
           </div>
         ) : (
           <div style={{ display: "grid", gap: 8, marginTop: 12 }}>
@@ -6677,13 +6685,13 @@ const canClaimWeeklyReward =
     onClick={onClaimWeeklyReward}
     style={{ ...primaryButtonStyle, width: "100%", marginTop: 12 }}
   >
-    Забрать +500 очков
+    {t.top.weeklyReward}
   </button>
 )}
       </div>
 
       <button onClick={onBack} style={{ ...secondaryButtonStyle, marginTop: 0 }}>
-        Назад в меню
+        {t.top.back}
       </button>
     </div>
   );
@@ -7615,8 +7623,8 @@ export default function Page() {
 
   const market = getMarket();
   console.log("MARKET:", market);
-  const REWARD_CATEGORIES =
-  market === "en" ? REWARD_CATEGORIES_EN : REWARD_CATEGORIES_RU;
+  
+  const t = market === "en" ? TEXT_EN : TEXT_RU;
 
   const [appState, setAppState] = useState<AppState>(DEFAULT_STATE);
 
@@ -8937,6 +8945,7 @@ if (finishedAllTests && !appState.completionBonusesClaimed.tests) {
 
    {screen === "top" && (
   <TopPlayersScreen
+  t={t}
     pair={appState.pair}
     leaderboard={weeklyPairLeaderboard}
     weeklyTopRewardClaimedWeek={appState.weeklyTopRewardClaimedWeek}
@@ -8975,6 +8984,7 @@ if (finishedAllTests && !appState.completionBonusesClaimed.tests) {
 
 {screen === "pair" && (
   <PairScreen
+  t={t}
     user={user}
     pair={appState.pair}
     points={appState.points}
