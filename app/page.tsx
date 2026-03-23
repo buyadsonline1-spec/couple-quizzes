@@ -1,6 +1,7 @@
 "use client";
 
 import { CSSProperties, useEffect, useMemo, useState } from "react";
+import { getMarket } from "@/config/markets";
 import { supabase } from "@/lib/supabase";
 import confetti from "canvas-confetti";
 
@@ -7608,6 +7609,9 @@ function getTelegramUserSafe(fallbackUser: TgUser | null): TgUser | null {
 
 
 export default function Page() {
+
+  const market = getMarket();
+  console.log("MARKET:", market);
 
   const [appState, setAppState] = useState<AppState>(DEFAULT_STATE);
 
