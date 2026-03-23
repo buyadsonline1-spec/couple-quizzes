@@ -3815,11 +3815,13 @@ function MainMenu({
   pairLevel,
   appState,
   onNavigate,
+  t,
 }: {
   points: number;
   user: TgUser | null;
   pairLevel: PairLevelInfo;
   appState: AppState;
+  t: any;
   onNavigate: (screen: Screen) => void;
 }) {
 
@@ -8870,6 +8872,7 @@ if (finishedAllTests && !appState.completionBonusesClaimed.tests) {
 {screen === "menu" && (
   <MainMenu
     points={appState.points}
+    t={t}
     user={user}
     pairLevel={getPairLevelInfo(animatedPairPoints)}
     appState={appState}
