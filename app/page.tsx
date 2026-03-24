@@ -2360,39 +2360,10 @@ const isWaitingForPartner = hasPairCreated && !hasPartnerConnected;
               </div>
             </div>
 
-            {compatibilityProfile.completedThemes > 0 && (
-              <div style={{ display: "grid", gap: 10, marginTop: 14 }}>
-                <div
-                  style={{
-                    padding: "12px 14px",
-                    borderRadius: 16,
-                    background: "rgba(255,255,255,0.24)",
-                  }}
-                >
-                  <div style={{ color: "#2c2647", fontWeight: 700 }}>
-                    Сильные стороны пары
-                  </div>
-                  <div style={{ marginTop: 6, color: "#1c1733", fontWeight: 900 }}>
-                    {compatibilityProfile.strongSides.join(" • ")}
-                  </div>
-                </div>
-
-                <div
-                  style={{
-                    padding: "12px 14px",
-                    borderRadius: 16,
-                    background: "rgba(255,255,255,0.24)",
-                  }}
-                >
-                  <div style={{ color: "#2c2647", fontWeight: 700 }}>
-                    На что стоит обратить внимание
-                  </div>
-                  <div style={{ marginTop: 6, color: "#1c1733", fontWeight: 900 }}>
-                    {compatibilityProfile.growthZones.join(" • ")}
-                  </div>
-                </div>
-              </div>
-            )}
+            
+             
+              
+            
           </div>
 
           <button onClick={onBack} style={secondaryButtonStyle}>
