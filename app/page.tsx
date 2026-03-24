@@ -9649,6 +9649,7 @@ if (finishedAllTests && !appState.completionBonusesClaimed.tests) {
     onBack={() => setScreen("menu")}
     onOpenInvite={() => setScreen("pair-invite")}
     onOpenDailyQuestion={() => setScreen("daily-pair-question")}
+    onOpenCompatibilityInfo={() => setScreen("pair-compatibility-info")}
   />
 )}
 
