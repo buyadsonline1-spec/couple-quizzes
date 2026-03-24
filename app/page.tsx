@@ -425,11 +425,10 @@ type PollQuestion = {
 type Poll = {
   id: string;
 
-  // старые (оставляем!)
+
   title: string;
   description: string;
-
-  // новые (добавляем)
+  
   titleRu?: string;
   titleEn?: string;
   descriptionRu?: string;
@@ -442,18 +441,22 @@ type Poll = {
   matchGroup?: string;
 
   questions: {
-    id: string;
 
-    // старое
+
+
+
+
+    id: string;
     text: string;
 
-    // новое
+
     textRu?: string;
+    
+
+
+
     textEn?: string;
-
     options: string[];
-
-    // новое
     optionsRu?: string[];
     optionsEn?: string[];
   }[];
