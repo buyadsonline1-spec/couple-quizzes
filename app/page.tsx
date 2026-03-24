@@ -302,8 +302,8 @@ type Screen =
   | "gender-select"
   | "daily-pair-question"
   | "pair-streak-info"
-  | "paywall";
-  | "pair-compatibility-info"
+  | "paywall"
+  | "pair-compatibility-info";
 
 
 
