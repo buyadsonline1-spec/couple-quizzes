@@ -2274,128 +2274,135 @@ const isWaitingForPartner = hasPairCreated && !hasPartnerConnected;
           </div>
 
          <div style={{ ...cardBaseStyle(), padding: 18 }}>
-  <div
-    style={{
-      display: "flex",
-      justifyContent: "space-between",
-      alignItems: "flex-start",
-      gap: 10,
-    }}
-  >
-    <div>
-      <div style={{ fontSize: 22, fontWeight: 900, color: "#1f1d3a" }}>
-        {t.pair.compatibility}
-      </div>
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "flex-start",
+                gap: 10,
+              }}
+            >
+              <div>
+                <div style={{ fontSize: 22, fontWeight: 900, color: "#1f1d3a" }}>
+                  {t.pair.compatibility}
+                </div>
 
-      <div
-        style={{
-          marginTop: 10,
-          fontSize: 14,
-          color: "#5a5378",
-          lineHeight: 1.45,
-        }}
-      >
-        {compatibilityProfile.completedThemes > 0
-          ? `Рассчитано по ${compatibilityProfile.completedThemes} из ${compatibilityProfile.totalThemes} тем`
-          : "Пройдите парные опросы, чтобы увидеть совместимость"}
-      </div>
+                <div
+                  style={{
+                    marginTop: 10,
+                    fontSize: 14,
+                    color: "#5a5378",
+                    lineHeight: 1.45,
+                  }}
+                >
+                  {compatibilityProfile.completedThemes > 0
+                    ? `Рассчитано по ${compatibilityProfile.completedThemes} из ${compatibilityProfile.totalThemes} тем`
+                    : "Пройдите парные опросы, чтобы увидеть совместимость"}
+                </div>
+              </div>
+
+              <button
+                onClick={onOpenCompatibilityInfo}
+                type="button"
+                style={{
+                  width: 34,
+                  height: 34,
+                  borderRadius: 999,
+                  border: "1px solid rgba(143,107,255,0.22)",
+                  background: "rgba(255,255,255,0.85)",
+                  color: "#7c5cff",
+                  fontSize: 16,
+                  fontWeight: 800,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  cursor: "pointer",
+                  boxShadow: "0 8px 20px rgba(124,92,255,0.10)",
+                  flexShrink: 0,
+                }}
+              >
+                ℹ️
+              </button>
+            </div>
+
+            <div
+              style={{
+                marginTop: 14,
+                padding: "18px 16px",
+                borderRadius: 18,
+                background: "rgba(255,255,255,0.24)",
+                textAlign: "center",
+              }}
+            >
+              <div
+                style={{
+                  fontSize: 34,
+                  fontWeight: 900,
+                  color: "#6b46ff",
+                }}
+              >
+                {compatibilityProfile.completedThemes > 0
+                  ? `${compatibilityProfile.overallPercent}%`
+                  : "—"}
+              </div>
+
+              <div
+                style={{
+                  marginTop: 8,
+                  color: "#4d466c",
+                  fontSize: 14,
+                  lineHeight: 1.45,
+                }}
+              >
+                {compatibilityProfile.completedThemes > 0
+                  ? compatibilityProfile.pairType
+                  : "Совместимость появится, когда вы пройдёте общие парные опросы"}
+              </div>
+            </div>
+
+            {compatibilityProfile.completedThemes > 0 && (
+              <div style={{ display: "grid", gap: 10, marginTop: 14 }}>
+                <div
+                  style={{
+                    padding: "12px 14px",
+                    borderRadius: 16,
+                    background: "rgba(255,255,255,0.24)",
+                  }}
+                >
+                  <div style={{ color: "#2c2647", fontWeight: 700 }}>
+                    Сильные стороны пары
+                  </div>
+                  <div style={{ marginTop: 6, color: "#1c1733", fontWeight: 900 }}>
+                    {compatibilityProfile.strongSides.join(" • ")}
+                  </div>
+                </div>
+
+                <div
+                  style={{
+                    padding: "12px 14px",
+                    borderRadius: 16,
+                    background: "rgba(255,255,255,0.24)",
+                  }}
+                >
+                  <div style={{ color: "#2c2647", fontWeight: 700 }}>
+                    На что стоит обратить внимание
+                  </div>
+                  <div style={{ marginTop: 6, color: "#1c1733", fontWeight: 900 }}>
+                    {compatibilityProfile.growthZones.join(" • ")}
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+
+          <button onClick={onBack} style={secondaryButtonStyle}>
+            {t.common.back}
+          </button>
+        </>
+      )}
     </div>
-
-    <button
-      onClick={onOpenCompatibilityInfo}
-      type="button"
-      style={{
-        width: 34,
-        height: 34,
-        borderRadius: 999,
-        border: "1px solid rgba(143,107,255,0.22)",
-        background: "rgba(255,255,255,0.85)",
-        color: "#7c5cff",
-        fontSize: 16,
-        fontWeight: 800,
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        cursor: "pointer",
-        boxShadow: "0 8px 20px rgba(124,92,255,0.10)",
-        flexShrink: 0,
-      }}
-    >
-      ℹ️
-    </button>
-  </div>
-
-  <div
-    style={{
-      marginTop: 14,
-      padding: "18px 16px",
-      borderRadius: 18,
-      background: "rgba(255,255,255,0.24)",
-      textAlign: "center",
-    }}
-  >
-    <div
-      style={{
-        fontSize: 34,
-        fontWeight: 900,
-        color: "#6b46ff",
-      }}
-    >
-      {compatibilityProfile.completedThemes > 0
-        ? `${compatibilityProfile.overallPercent}%`
-        : "—"}
-    </div>
-
-    <div
-      style={{
-        marginTop: 8,
-        color: "#4d466c",
-        fontSize: 14,
-        lineHeight: 1.45,
-      }}
-    >
-      {compatibilityProfile.completedThemes > 0
-        ? compatibilityProfile.pairType
-        : "Совместимость появится, когда вы пройдёте общие парные опросы"}
-    </div>
-  </div>
-      
-
-
-   {compatibilityProfile.completedThemes > 0 && (
-    <div style={{ display: "grid", gap: 10, marginTop: 14 }}>
-      <div
-        style={{
-          padding: "12px 14px",
-          borderRadius: 16,
-          background: "rgba(255,255,255,0.24)",
-        }}
-      >
-        <div style={{ color: "#2c2647", fontWeight: 700 }}>
-          Сильные стороны пары
-        </div>
-        <div style={{ marginTop: 6, color: "#1c1733", fontWeight: 900 }}>
-          {compatibilityProfile.strongSides.join(" • ")}
-        </div>
-      </div>
-
-      <div
-        style={{
-          padding: "12px 14px",
-          borderRadius: 16,
-          background: "rgba(255,255,255,0.24)",
-        }}
-      >
-        <div style={{ color: "#2c2647", fontWeight: 700 }}>
-          На что стоит обратить внимание
-        </div>
-        <div style={{ marginTop: 6, color: "#1c1733", fontWeight: 900 }}>
-          {compatibilityProfile.growthZones.join(" • ")}
-        </div>
-      </div>
-    </div>
-  )}
-</div>
+  );
+}
 
 function PairInviteScreen({
   pair,
