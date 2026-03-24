@@ -2404,6 +2404,197 @@ const isWaitingForPartner = hasPairCreated && !hasPartnerConnected;
   );
 }
 
+function PairCompatibilityInfoScreen({
+  appState,
+  onBack,
+}: {
+  appState: AppState;
+  onBack: () => void;
+}) {
+  const profile = buildCompatibilityProfile(appState.pollAnswers || {});
+
+  return (
+    <div style={{ padding: 12, display: "grid", gap: 10 }}>
+      <div style={{ ...cardBaseStyle(), padding: 16 }}>
+        <div style={{ fontSize: 16, fontWeight: 900, color: "#1f1d3a" }}>
+          💞 Совместимость пары
+        </div>
+
+        <div
+          style={{
+            marginTop: 10,
+            fontSize: 54,
+            fontWeight: 900,
+            color: "#1f1d3a",
+            lineHeight: 0.95,
+            letterSpacing: "-0.04em",
+          }}
+        >
+          {profile.overallPercent}%
+        </div>
+
+        <div
+          style={{
+            marginTop: 8,
+            fontSize: 22,
+            fontWeight: 900,
+            color: "#6b46ff",
+            lineHeight: 1.2,
+          }}
+        >
+          {profile.pairType}
+        </div>
+
+        <div
+          style={{
+            marginTop: 10,
+            fontSize: 15,
+            lineHeight: 1.55,
+            color: "#5b547d",
+          }}
+        >
+          {profile.description}
+        </div>
+
+        <div
+          style={{
+            marginTop: 14,
+            padding: 12,
+            borderRadius: 18,
+            background: "rgba(255,255,255,0.38)",
+            border: "1px solid rgba(255,255,255,0.35)",
+            fontSize: 14,
+            color: "#615a86",
+          }}
+        >
+          Рассчитано по {profile.completedThemes} из {profile.totalThemes} тем
+        </div>
+      </div>
+
+      <div style={{ ...cardBaseStyle(), padding: 16 }}>
+        <div style={{ fontSize: 16, fontWeight: 900, color: "#1f1d3a" }}>
+          ✨ Сильные стороны пары
+        </div>
+
+        <div
+          style={{
+            marginTop: 12,
+            display: "flex",
+            flexWrap: "wrap",
+            gap: 8,
+          }}
+        >
+          {profile.strongSides.map((item) => (
+            <div
+              key={item}
+              style={{
+                padding: "8px 12px",
+                borderRadius: 999,
+                background: "rgba(255,255,255,0.72)",
+                color: "#6b46ff",
+                fontSize: 14,
+                fontWeight: 800,
+              }}
+            >
+              {item}
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div style={{ ...cardBaseStyle(), padding: 16 }}>
+        <div style={{ fontSize: 16, fontWeight: 900, color: "#1f1d3a" }}>
+          🌱 На что стоит обратить внимание
+        </div>
+
+        <div
+          style={{
+            marginTop: 12,
+            display: "flex",
+            flexWrap: "wrap",
+            gap: 8,
+          }}
+        >
+          {profile.growthZones.map((item) => (
+            <div
+              key={item}
+              style={{
+                padding: "8px 12px",
+                borderRadius: 999,
+                background: "rgba(255,255,255,0.72)",
+                color: "#ff5ebc",
+                fontSize: 14,
+                fontWeight: 800,
+              }}
+            >
+              {item}
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div style={{ ...cardBaseStyle(), padding: 16 }}>
+        <div style={{ fontSize: 16, fontWeight: 900, color: "#1f1d3a" }}>
+          📊 Совместимость по темам
+        </div>
+
+        <div style={{ marginTop: 12, display: "grid", gap: 10 }}>
+          {profile.themes.map((theme) => (
+            <div
+              key={theme.key}
+              style={{
+                padding: 12,
+                borderRadius: 18,
+                background: "rgba(255,255,255,0.34)",
+                border: "1px solid rgba(255,255,255,0.35)",
+              }}
+            >
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  gap: 10,
+                  alignItems: "center",
+                }}
+              >
+                <div style={{ fontSize: 15, fontWeight: 800, color: "#1f1d3a" }}>
+                  {theme.title}
+                </div>
+                <div style={{ fontSize: 15, fontWeight: 900, color: "#6b46ff" }}>
+                  {theme.percent}%
+                </div>
+              </div>
+
+              <div
+                style={{
+                  marginTop: 8,
+                  height: 8,
+                  borderRadius: 999,
+                  background: "rgba(255,255,255,0.65)",
+                  overflow: "hidden",
+                }}
+              >
+                <div
+                  style={{
+                    width: `${theme.percent}%`,
+                    height: "100%",
+                    borderRadius: 999,
+                    background: "linear-gradient(90deg,#8f6bff,#ff76ba)",
+                  }}
+                />
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <button onClick={onBack} style={secondaryButtonStyle}>
+        Назад
+      </button>
+    </div>
+  );
+}
+
 function PairInviteScreen({
   pair,
   onBack,
