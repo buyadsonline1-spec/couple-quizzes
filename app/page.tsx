@@ -9444,14 +9444,16 @@ if (finishedAllTests && !appState.completionBonusesClaimed.tests) {
 )}
 
 
-<DailyPairQuestionScreen
-  user={user}
-  pair={appState.pair}
-  appState={appState}
-  setAppState={setAppState}
-  onBack={() => setScreen("pair")}
-  onOpenStreakInfo={() => setScreen("pair-streak-info")}
-/>
+{screen === "daily-pair-question" && (
+  <DailyPairQuestionScreen
+    user={user}
+    pair={appState.pair}
+    appState={appState}
+    setAppState={setAppState}
+    onBack={() => setScreen("pair")}
+    onOpenStreakInfo={() => setScreen("pair-streak-info")}
+  />
+)}
 
 {screen === "pair-streak-info" && (
   <PairStreakInfoScreen
