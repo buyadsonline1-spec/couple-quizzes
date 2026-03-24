@@ -2028,350 +2028,188 @@ const isWaitingForPartner = hasPairCreated && !hasPartnerConnected;
         {t.pair.dailyQuestion}
       </button>
 
-      {!hasFullPair ? (
-        <>
-          <div style={{ ...cardBaseStyle(), padding: 18 }}>
-            <div
-              style={{
-                display: "inline-flex",
-                alignItems: "center",
-                gap: 8,
-                padding: "8px 12px",
-                borderRadius: 999,
-                background: "rgba(255,255,255,0.30)",
-                color: "#3b3158",
-                fontSize: 13,
-                fontWeight: 800,
-              }}
-            >
-              {t.pair.statusNotConnected}
-            </div>
+     {!hasFullPair ? (
+  <>
+    <div style={{ ...cardBaseStyle(), padding: 18 }}>
+      <div
+        style={{
+          display: "inline-flex",
+          alignItems: "center",
+          gap: 8,
+          padding: "8px 12px",
+          borderRadius: 999,
+          background: "rgba(255,255,255,0.30)",
+          color: "#3b3158",
+          fontSize: 13,
+          fontWeight: 800,
+        }}
+      >
+        {t.pair.statusNotConnected}
+      </div>
 
-            <div
-              style={{
-                marginTop: 14,
-                fontSize: 22,
-                fontWeight: 900,
-                color: "#1f1d3a",
-              }}
-            >
-              {t.pair.noPairTitle}
-            </div>
+      <div
+        style={{
+          marginTop: 14,
+          fontSize: 22,
+          fontWeight: 900,
+          color: "#1f1d3a",
+        }}
+      >
+        {t.pair.noPairTitle}
+      </div>
 
-            <div
-              style={{
-                marginTop: 8,
-                color: "#4b446a",
-                lineHeight: 1.45,
-                fontSize: 14,
-              }}
-            >
-              {t.pair.noPairText}
-            </div>
+      <div
+        style={{
+          marginTop: 8,
+          color: "#4b446a",
+          lineHeight: 1.45,
+          fontSize: 14,
+        }}
+      >
+        {t.pair.noPairText}
+      </div>
 
-            <button
-              onClick={onOpenInvite}
-              style={{
-                ...primaryButtonStyle,
-                width: "100%",
-                marginTop: 14,
-              }}
-            >
-              {t.pair.invitePartner}
-            </button>
-          </div>
-        </>
-      ) : (
-        <>
-          <div style={{ ...cardBaseStyle(), padding: 18 }}>
-            <div
-              style={{
-                display: "inline-flex",
-                alignItems: "center",
-                gap: 8,
-                padding: "8px 12px",
-                borderRadius: 999,
-                background: "rgba(255,255,255,0.30)",
-                color: "#3b3158",
-                fontSize: 13,
-                fontWeight: 800,
-              }}
-            >
-              {t.pair.statusConnected}
-            </div>
-
-            <div
-              style={{
-                marginTop: 14,
-                fontSize: 22,
-                fontWeight: 900,
-                color: "#1f1d3a",
-              }}
-            >
-              Вы в паре
-            </div>
-
-            <div style={{ display: "grid", gap: 12, marginTop: 16 }}>
-              <div
-                style={{
-                  padding: "14px 16px",
-                  borderRadius: 18,
-                  background: "rgba(255,255,255,0.24)",
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 12,
-                }}
-              >
-                {avatarCircle(user?.first_name, user?.last_name, user?.photo_url)}
-                <div>
-                  <div style={{ color: "#2c2647", fontWeight: 700 }}>Ты</div>
-                  <div
-                    style={{
-                      color: "#1c1733",
-                      fontWeight: 900,
-                      marginTop: 4,
-                      fontSize: 16,
-                    }}
-                  >
-                    {[user?.first_name, user?.last_name].filter(Boolean).join(" ") || "Пользователь"}
-                  </div>
-                  <div style={{ marginTop: 4, color: "#5a5378", fontSize: 13 }}>
-                    {user?.username ? `@${user.username}` : "t.pair.noUsername"}
-                  </div>
-                </div>
-              </div>
-
-              <div
-                style={{
-                  padding: "14px 16px",
-                  borderRadius: 18,
-                  background: "rgba(255,255,255,0.24)",
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 12,
-                }}
-              >
-                {avatarCircle(
-                  pair.partner?.firstName,
-                  pair.partner?.lastName,
-                  pair.partner?.photoUrl
-                )}
-                <div>
-                  <div style={{ color: "#2c2647", fontWeight: 700 }}>Партнёр</div>
-                  <div
-                    style={{
-                      color: "#1c1733",
-                      fontWeight: 900,
-                      marginTop: 4,
-                      fontSize: 16,
-                    }}
-                  >
-                    {pair.partner?.firstName || "Подключён"}
-                    {pair.partner?.lastName ? ` ${pair.partner.lastName}` : ""}
-                  </div>
-                  <div style={{ marginTop: 4, color: "#5a5378", fontSize: 13 }}>
-                    {pair.partner?.username ? `@${pair.partner.username}` : "Без username"}
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div style={{ ...cardBaseStyle(), padding: 16 }}>
-            <div style={{ fontSize: 20, fontWeight: 900, color: "#1f1d3a" }}>
-              {t.pair.pairLevel}
-            </div>
-
-            <div
-              style={{
-                marginTop: 10,
-                padding: "14px 14px",
-                borderRadius: 18,
-                background: "rgba(255,255,255,0.26)",
-              }}
-            >
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                }}
-              >
-                <div>
-                  <div style={{ fontSize: 14, color: "#4d466c", fontWeight: 700 }}>
-                    Уровень {pairLevel.level}
-                  </div>
-
-                  <div
-                    style={{
-                      fontSize: 20,
-                      fontWeight: 900,
-                      color: "#1c1733",
-                      marginTop: 2,
-                    }}
-                  >
-                    {pairLevel.title}
-                  </div>
-                </div>
-
-                <div
-                  style={{
-                    padding: "8px 10px",
-                    borderRadius: 14,
-                    background: "rgba(255,255,255,0.36)",
-                    fontWeight: 900,
-                    color: "#6b46ff",
-                    fontSize: 14,
-                  }}
-                >
-                  ⭐ {points}
-                </div>
-              </div>
-
-              <div
-                style={{
-                  marginTop: 12,
-                  height: 10,
-                  borderRadius: 999,
-                  background: "rgba(255,255,255,0.24)",
-                  overflow: "hidden",
-                }}
-              >
-                <div
-                  style={{
-                    width: `${pairLevel.progressPercent}%`,
-                    height: "100%",
-                    borderRadius: 999,
-                    background: "linear-gradient(135deg,#8f6bff,#ff76ba)",
-                    transition: "width 0.35s ease",
-                  }}
-                />
-              </div>
-
-              <div
-                style={{
-                  marginTop: 8,
-                  display: "flex",
-                  justifyContent: "space-between",
-                  fontSize: 12,
-                  color: "#5a5378",
-                  fontWeight: 700,
-                }}
-              >
-                <span>
-                  {pairLevel.nextLevelPoints
-                    ? `${points} / ${pairLevel.nextLevelPoints}`
-                    : "t.pair.maxLevel"}
-                </span>
-
-                <span>
-                  {pairLevel.nextLevelPoints
-                    ? `${t.pair.untilNext}: ${pairLevel.nextLevelPoints - points}`
-                    : ""}
-                </span>
-              </div>
-            </div>
-          </div>
-
-         <div style={{ ...cardBaseStyle(), padding: 18 }}>
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "flex-start",
-                gap: 10,
-              }}
-            >
-              <div>
-                <div style={{ fontSize: 22, fontWeight: 900, color: "#1f1d3a" }}>
-                  {t.pair.compatibility}
-                </div>
-
-                <div
-                  style={{
-                    marginTop: 10,
-                    fontSize: 14,
-                    color: "#5a5378",
-                    lineHeight: 1.45,
-                  }}
-                >
-                  {compatibilityProfile.completedThemes > 0
-                    ? `Рассчитано по ${compatibilityProfile.completedThemes} из ${compatibilityProfile.totalThemes} тем`
-                    : "Пройдите парные опросы, чтобы увидеть совместимость"}
-                </div>
-              </div>
-
-              <button
-                onClick={onOpenCompatibilityInfo}
-                type="button"
-                style={{
-                  width: 34,
-                  height: 34,
-                  borderRadius: 999,
-                  border: "1px solid rgba(143,107,255,0.22)",
-                  background: "rgba(255,255,255,0.85)",
-                  color: "#7c5cff",
-                  fontSize: 16,
-                  fontWeight: 800,
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  cursor: "pointer",
-                  boxShadow: "0 8px 20px rgba(124,92,255,0.10)",
-                  flexShrink: 0,
-                }}
-              >
-                ℹ️
-              </button>
-            </div>
-
-            <div
-              style={{
-                marginTop: 14,
-                padding: "18px 16px",
-                borderRadius: 18,
-                background: "rgba(255,255,255,0.24)",
-                textAlign: "center",
-              }}
-            >
-              <div
-                style={{
-                  fontSize: 34,
-                  fontWeight: 900,
-                  color: "#6b46ff",
-                }}
-              >
-                {compatibilityProfile.completedThemes > 0
-                  ? `${compatibilityProfile.overallPercent}%`
-                  : "—"}
-              </div>
-
-              <div
-                style={{
-                  marginTop: 8,
-                  color: "#4d466c",
-                  fontSize: 14,
-                  lineHeight: 1.45,
-                }}
-              >
-                {compatibilityProfile.completedThemes > 0
-                  ? compatibilityProfile.pairType
-                  : "Совместимость появится, когда вы пройдёте общие парные опросы"}
-              </div>
-            </div>
-
-           
-          </div>
-         
-        </>
-      )}
-      
+      <button
+        onClick={onOpenInvite}
+        style={{
+          ...primaryButtonStyle,
+          width: "100%",
+          marginTop: 14,
+        }}
+      >
+        {t.pair.invitePartner}
+      </button>
     </div>
-  );
-   <button onClick={onBack} style={secondaryButtonStyle}>
-            {t.common.back}
-          </button>
-}
+  </>
+) : (
+  <>
+    {/* ===== ПАРА ПОДКЛЮЧЕНА ===== */}
+
+    <div style={{ ...cardBaseStyle(), padding: 18 }}>
+      <div
+        style={{
+          display: "inline-flex",
+          alignItems: "center",
+          gap: 8,
+          padding: "8px 12px",
+          borderRadius: 999,
+          background: "rgba(255,255,255,0.30)",
+          color: "#3b3158",
+          fontSize: 13,
+          fontWeight: 800,
+        }}
+      >
+        {t.pair.statusConnected}
+      </div>
+
+      <div
+        style={{
+          marginTop: 14,
+          fontSize: 22,
+          fontWeight: 900,
+          color: "#1f1d3a",
+        }}
+      >
+        Вы в паре
+      </div>
+    </div>
+
+    {/* ===== СОВМЕСТИМОСТЬ ===== */}
+
+    <div style={{ ...cardBaseStyle(), padding: 18 }}>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "flex-start",
+          gap: 10,
+        }}
+      >
+        <div>
+          <div style={{ fontSize: 22, fontWeight: 900, color: "#1f1d3a" }}>
+            {t.pair.compatibility}
+          </div>
+
+          <div
+            style={{
+              marginTop: 10,
+              fontSize: 14,
+              color: "#5a5378",
+              lineHeight: 1.45,
+            }}
+          >
+            {compatibilityProfile.completedThemes > 0
+              ? `Рассчитано по ${compatibilityProfile.completedThemes} из ${compatibilityProfile.totalThemes} тем`
+              : "Пройдите парные опросы, чтобы увидеть совместимость"}
+          </div>
+        </div>
+
+        <button
+          onClick={onOpenCompatibilityInfo}
+          type="button"
+          style={{
+            width: 34,
+            height: 34,
+            borderRadius: 999,
+            border: "1px solid rgba(143,107,255,0.22)",
+            background: "rgba(255,255,255,0.85)",
+            color: "#7c5cff",
+            fontSize: 16,
+            fontWeight: 800,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            cursor: "pointer",
+            boxShadow: "0 8px 20px rgba(124,92,255,0.10)",
+            flexShrink: 0,
+          }}
+        >
+          ℹ️
+        </button>
+      </div>
+
+      <div
+        style={{
+          marginTop: 14,
+          padding: "18px 16px",
+          borderRadius: 18,
+          background: "rgba(255,255,255,0.24)",
+          textAlign: "center",
+        }}
+      >
+        <div
+          style={{
+            fontSize: 34,
+            fontWeight: 900,
+            color: "#6b46ff",
+          }}
+        >
+          {compatibilityProfile.completedThemes > 0
+            ? `${compatibilityProfile.overallPercent}%`
+            : "—"}
+        </div>
+
+        <div
+          style={{
+            marginTop: 8,
+            color: "#4d466c",
+            fontSize: 14,
+            lineHeight: 1.45,
+          }}
+        >
+          {compatibilityProfile.completedThemes > 0
+            ? compatibilityProfile.pairType
+            : "Совместимость появится, когда вы пройдёте общие парные опросы"}
+        </div>
+      </div>
+    </div>
+  </>
+)}
+
+
+<button onClick={onBack} style={secondaryButtonStyle}>
+  {t.common.back}
+</button>
 
 function PairCompatibilityInfoScreen({
   appState,
