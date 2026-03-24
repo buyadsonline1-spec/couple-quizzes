@@ -2028,7 +2028,7 @@ const isWaitingForPartner = hasPairCreated && !hasPartnerConnected;
         {t.pair.dailyQuestion}
       </button>
 
-     {!hasFullPair ? (
+    {!hasFullPair ? (
   <>
     <div style={{ ...cardBaseStyle(), padding: 18 }}>
       <div
@@ -2083,8 +2083,7 @@ const isWaitingForPartner = hasPairCreated && !hasPartnerConnected;
   </>
 ) : (
   <>
-    {/* ===== ПАРА ПОДКЛЮЧЕНА ===== */}
-
+  
     <div style={{ ...cardBaseStyle(), padding: 18 }}>
       <div
         style={{
@@ -2112,9 +2111,176 @@ const isWaitingForPartner = hasPairCreated && !hasPartnerConnected;
       >
         Вы в паре
       </div>
+
+      <div style={{ display: "grid", gap: 12, marginTop: 16 }}>
+        <div
+          style={{
+            padding: "14px 16px",
+            borderRadius: 18,
+            background: "rgba(255,255,255,0.24)",
+            display: "flex",
+            alignItems: "center",
+            gap: 12,
+          }}
+        >
+          {avatarCircle(user?.first_name, user?.last_name, user?.photo_url)}
+          <div>
+            <div style={{ color: "#2c2647", fontWeight: 700 }}>Ты</div>
+            <div
+              style={{
+                color: "#1c1733",
+                fontWeight: 900,
+                marginTop: 4,
+                fontSize: 16,
+              }}
+            >
+              {[user?.first_name, user?.last_name].filter(Boolean).join(" ") ||
+                "Пользователь"}
+            </div>
+            <div style={{ marginTop: 4, color: "#5a5378", fontSize: 13 }}>
+              {user?.username ? `@${user.username}` : "Без username"}
+            </div>
+          </div>
+        </div>
+
+        <div
+          style={{
+            padding: "14px 16px",
+            borderRadius: 18,
+            background: "rgba(255,255,255,0.24)",
+            display: "flex",
+            alignItems: "center",
+            gap: 12,
+          }}
+        >
+          {avatarCircle(
+            pair.partner?.firstName,
+            pair.partner?.lastName,
+            pair.partner?.photoUrl
+          )}
+          <div>
+            <div style={{ color: "#2c2647", fontWeight: 700 }}>Партнёр</div>
+            <div
+              style={{
+                color: "#1c1733",
+                fontWeight: 900,
+                marginTop: 4,
+                fontSize: 16,
+              }}
+            >
+              {pair.partner?.firstName || "Подключён"}
+              {pair.partner?.lastName ? ` ${pair.partner.lastName}` : ""}
+            </div>
+            <div style={{ marginTop: 4, color: "#5a5378", fontSize: 13 }}>
+              {pair.partner?.username ? `@${pair.partner.username}` : "Без username"}
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
 
-    {/* ===== СОВМЕСТИМОСТЬ ===== */}
+    <div style={{ ...cardBaseStyle(), padding: 18 }}>
+      <div style={{ fontSize: 22, fontWeight: 900, color: "#1f1d3a" }}>
+        {t.pair.level}
+      </div>
+
+      <div
+        style={{
+          marginTop: 14,
+          padding: "18px 16px",
+          borderRadius: 18,
+          background: "rgba(255,255,255,0.24)",
+        }}
+      >
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            gap: 12,
+          }}
+        >
+          <div>
+            <div style={{ color: "#5a5378", fontSize: 13, fontWeight: 700 }}>
+              Текущий уровень
+            </div>
+            <div
+              style={{
+                marginTop: 6,
+                fontSize: 30,
+                fontWeight: 900,
+                color: "#1f1d3a",
+                lineHeight: 1,
+              }}
+            >
+              {pairLevel.title}
+            </div>
+          </div>
+
+          <div
+            style={{
+              minWidth: 84,
+              height: 84,
+              borderRadius: 24,
+              background: "linear-gradient(135deg,#8f6bff,#ff76ba)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              color: "#fff",
+              fontSize: 28,
+              fontWeight: 900,
+              boxShadow: "0 10px 30px rgba(143,107,255,0.28)",
+              flexShrink: 0,
+            }}
+          >
+            {pairLevel.level}
+          </div>
+        </div>
+
+        <div style={{ marginTop: 16 }}>
+          <div
+            style={{
+              height: 10,
+              borderRadius: 999,
+              background: "rgba(255,255,255,0.60)",
+              overflow: "hidden",
+            }}
+          >
+            <div
+              style={{
+                width: `${pairLevel.progress}%`,
+                height: "100%",
+                borderRadius: 999,
+                background: "linear-gradient(90deg,#8f6bff,#ff76ba)",
+              }}
+            />
+          </div>
+
+          <div
+            style={{
+              marginTop: 8,
+              display: "flex",
+              justifyContent: "space-between",
+              fontSize: 12,
+              color: "#5a5378",
+              fontWeight: 700,
+            }}
+          >
+            <span>
+              {pairLevel.nextLevelPoints
+                ? `${points} / ${pairLevel.nextLevelPoints}`
+                : t.pair.maxLevel}
+            </span>
+
+            <span>
+              {pairLevel.nextLevelPoints
+                ? `${t.pair.untilNext}: ${pairLevel.nextLevelPoints - points}`
+                : ""}
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
 
     <div style={{ ...cardBaseStyle(), padding: 18 }}>
       <div
@@ -2207,7 +2373,6 @@ const isWaitingForPartner = hasPairCreated && !hasPartnerConnected;
 )}
 
 
-{/* ===== КНОПКА НАЗАД ===== */}
 <button onClick={onBack} style={secondaryButtonStyle}>
   {t.common.back}
 </button>
