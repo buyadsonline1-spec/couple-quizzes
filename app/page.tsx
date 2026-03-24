@@ -2362,14 +2362,15 @@ const isWaitingForPartner = hasPairCreated && !hasPartnerConnected;
 
            
           </div>
-
-          <button onClick={onBack} style={secondaryButtonStyle}>
-            {t.common.back}
-          </button>
+         
         </>
       )}
+      
     </div>
   );
+   <button onClick={onBack} style={secondaryButtonStyle}>
+            {t.common.back}
+          </button>
 }
 
 function PairCompatibilityInfoScreen({
