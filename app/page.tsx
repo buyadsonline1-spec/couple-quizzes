@@ -2910,49 +2910,14 @@ const t = market === "en" ? TEXT_EN : TEXT_RU;
 
   return (
     <div style={{ padding: 12, display: "grid", gap: 10 }}>
-      <div
-  style={{
-    ...cardBaseStyle(),
-    padding: 14,
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "flex-start",
-    gap: 10,
-  }}
->
-  <div>
-    <div style={{ fontSize: 24, fontWeight: 900, color: "#1f1d3a" }}>
-      Вопрос дня 💞
-    </div>
-    <div style={{ marginTop: 4, color: "#3a345c", fontSize: 13, lineHeight: 1.4 }}>
-      Вы оба отвечаете на один и тот же вопрос. Когда ответят оба — можно сравнить результат.
-    </div>
-  </div>
-
-  <button
-    onClick={onOpenStreakInfo}
-    type="button"
-    style={{
-      width: 34,
-      height: 34,
-      borderRadius: 999,
-      border: "1px solid rgba(143,107,255,0.22)",
-      background: "rgba(255,255,255,0.85)",
-      color: "#7c5cff",
-      fontSize: 16,
-      fontWeight: 800,
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
-      cursor: "pointer",
-      boxShadow: "0 8px 20px rgba(124,92,255,0.10)",
-      flexShrink: 0,
-    }}
-  >
-    ℹ️
-  </button>
-</div>
-      
+      <div style={{ ...cardBaseStyle(), padding: 14 }}>
+        <div style={{ fontSize: 24, fontWeight: 900, color: "#1f1d3a" }}>
+          Вопрос дня 💞
+        </div>
+        <div style={{ marginTop: 4, color: "#3a345c", fontSize: 13, lineHeight: 1.4 }}>
+          Вы оба отвечаете на один и тот же вопрос. Когда ответят оба — можно сравнить результат.
+        </div>
+      </div>
 
       
         
