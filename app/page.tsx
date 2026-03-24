@@ -2360,10 +2360,7 @@ const isWaitingForPartner = hasPairCreated && !hasPartnerConnected;
               </div>
             </div>
 
-            
-             
-              
-            
+           
           </div>
 
           <button onClick={onBack} style={secondaryButtonStyle}>
