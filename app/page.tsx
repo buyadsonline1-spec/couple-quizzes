@@ -303,6 +303,7 @@ type Screen =
   | "daily-pair-question"
   | "pair-streak-info"
   | "paywall";
+  | "pair-compatibility-info"
 
 
 
@@ -779,6 +780,180 @@ const TESTS: TestDefinition[] = [
     ],
   },
 ];
+
+type CompatibilityThemeResult = {
+  key: string;
+  title: string;
+  percent: number;
+};
+
+type CompatibilityProfile = {
+  overallPercent: number;
+  completedThemes: number;
+  totalThemes: number;
+  themes: CompatibilityThemeResult[];
+  strongSides: string[];
+  growthZones: string[];
+  pairType: string;
+  description: string;
+};
+
+function getThemeTitle(matchGroup: string) {
+  switch (matchGroup) {
+    case "communication":
+      return "Общение";
+    case "love":
+      return "Любовь";
+    case "conflicts":
+      return "Конфликты";
+    case "trust":
+      return "Доверие";
+    case "understanding":
+      return "Понимание";
+    case "romance":
+      return "Романтика";
+    case "space":
+      return "Личное пространство";
+    case "future":
+      return "Будущее";
+    case "life":
+      return "Быт";
+    case "jealousy":
+      return "Ревность";
+    default:
+      return matchGroup;
+  }
+}
+
+function calculatePollMatchPercent(
+  boyAnswers: number[] | undefined,
+  girlAnswers: number[] | undefined
+) {
+  if (!boyAnswers || !girlAnswers) return null;
+  if (!boyAnswers.length || !girlAnswers.length) return null;
+
+  const length = Math.min(boyAnswers.length, girlAnswers.length);
+  if (!length) return null;
+
+  let total = 0;
+
+  for (let i = 0; i < length; i++) {
+    const a = Number(boyAnswers[i]);
+    const b = Number(girlAnswers[i]);
+
+    if (!Number.isFinite(a) || !Number.isFinite(b)) continue;
+
+    const diff = Math.abs(a - b);
+
+    let score = 0;
+    if (diff === 0) score = 100;
+    else if (diff === 1) score = 75;
+    else if (diff === 2) score = 50;
+    else if (diff === 3) score = 25;
+    else score = 0;
+
+    total += score;
+  }
+
+  return Math.round(total / length);
+}
+
+function buildCompatibilityProfile(
+  pollAnswers: Record<string, number[]>
+): CompatibilityProfile {
+  const groups = [
+    "communication",
+    "love",
+    "conflicts",
+    "trust",
+    "understanding",
+    "romance",
+    "space",
+    "future",
+    "life",
+    "jealousy",
+  ];
+
+  const themes: CompatibilityThemeResult[] = [];
+
+  for (const group of groups) {
+    const boyAnswers = pollAnswers[`boy-${group}`];
+    const girlAnswers = pollAnswers[`girl-${group}`];
+
+    const percent = calculatePollMatchPercent(boyAnswers, girlAnswers);
+
+    if (percent !== null) {
+      themes.push({
+        key: group,
+        title: getThemeTitle(group),
+        percent,
+      });
+    }
+  }
+
+  const overallPercent = themes.length
+    ? Math.round(themes.reduce((sum, item) => sum + item.percent, 0) / themes.length)
+    : 0;
+
+  const sortedHigh = [...themes].sort((a, b) => b.percent - a.percent);
+  const sortedLow = [...themes].sort((a, b) => a.percent - b.percent);
+
+  const strongSides = sortedHigh.slice(0, 3).map((item) => item.title);
+  const growthZones = sortedLow.slice(0, 2).map((item) => item.title);
+
+  const topKeys = strongSides.join(" | ");
+  let pairType = "Уникальная пара";
+  let description =
+    "У вас есть свои сильные стороны и свой характер отношений. Продолжайте узнавать друг друга глубже.";
+
+  const themeMap = Object.fromEntries(themes.map((t) => [t.key, t.percent]));
+
+  const love = themeMap.love ?? 0;
+  const romance = themeMap.romance ?? 0;
+  const understanding = themeMap.understanding ?? 0;
+  const trust = themeMap.trust ?? 0;
+  const communication = themeMap.communication ?? 0;
+  const future = themeMap.future ?? 0;
+  const space = themeMap.space ?? 0;
+  const jealousy = themeMap.jealousy ?? 0;
+
+  if (love >= 80 && romance >= 75 && understanding >= 75) {
+    pairType = "Нежная и романтичная пара";
+    description =
+      "Вы хорошо чувствуете друг друга, цените близость, заботу и атмосферу в отношениях. Ваш союз строится на тепле, эмоциях и умении быть рядом.";
+  } else if (trust >= 80 && communication >= 75 && future >= 75) {
+    pairType = "Зрелая и надёжная пара";
+    description =
+      "Ваши отношения опираются на доверие, честность и умение договариваться. Вы хорошо смотрите в одну сторону и умеете строить общее будущее.";
+  } else if (space >= 75 && trust >= 75 && jealousy <= 55) {
+    pairType = "Свободная и осознанная пара";
+    description =
+      "Вы уважаете границы друг друга, цените личное пространство и строите отношения без лишнего давления. Это союз с доверием и внутренней свободой.";
+  } else if (overallPercent >= 80) {
+    pairType = "Гармоничная пара";
+    description =
+      "У вас высокий уровень совместимости по многим важным темам. Вы неплохо понимаете друг друга и умеете сохранять баланс в отношениях.";
+  } else if (overallPercent >= 65) {
+    pairType = "Перспективная пара";
+    description =
+      "У вас уже есть крепкая база, но некоторые различия ещё требуют внимания. При открытом диалоге ваша совместимость может стать ещё сильнее.";
+  } else {
+    pairType = "Контрастная пара";
+    description =
+      "Вы заметно различаетесь во взглядах, и это может создавать как притяжение, так и сложности. Ваш рост как пары зависит от диалога, принятия и гибкости.";
+  }
+
+  return {
+    overallPercent,
+    completedThemes: themes.length,
+    totalThemes: groups.length,
+    themes,
+    strongSides,
+    growthZones,
+    pairType,
+    description,
+  };
+}
 
 function launchLevelConfetti() {
   confetti({
@@ -1763,6 +1938,7 @@ function PairScreen({
   onBack,
   onOpenInvite,
   onOpenDailyQuestion,
+  onOpenCompatibilityInfo,
   t,
 }: {
   user: TgUser | null;
@@ -1773,6 +1949,7 @@ function PairScreen({
   onBack: () => void;
   onOpenInvite: () => void;
   onOpenDailyQuestion: () => void;
+  onOpenCompatibilityInfo: () => void;
   t: any;
 }) {
 
@@ -1784,6 +1961,7 @@ const hasFullPair = hasPairCreated && hasPartnerConnected;
 const isWaitingForPartner = hasPairCreated && !hasPartnerConnected;
 
   const pairStats = calculatePairStats(pairPollAnswers);
+  const compatibilityProfile = buildCompatibilityProfile(pairPollAnswers || {});
 
 
   function avatarCircle(name?: string, lastName?: string, photoUrl?: string) {
@@ -2095,96 +2273,129 @@ const isWaitingForPartner = hasPairCreated && !hasPartnerConnected;
             </div>
           </div>
 
-          <div style={{ ...cardBaseStyle(), padding: 18 }}>
-            <div style={{ fontSize: 22, fontWeight: 900, color: "#1f1d3a" }}>
-              {t.pair.compatibility}
-            </div>
+         <div style={{ ...cardBaseStyle(), padding: 18 }}>
+  <div
+    style={{
+      display: "flex",
+      justifyContent: "space-between",
+      alignItems: "flex-start",
+      gap: 10,
+    }}
+  >
+    <div>
+      <div style={{ fontSize: 22, fontWeight: 900, color: "#1f1d3a" }}>
+        {t.pair.compatibility}
+      </div>
 
-            <div
-              style={{
-                marginTop: 14,
-                padding: "18px 16px",
-                borderRadius: 18,
-                background: "rgba(255,255,255,0.24)",
-                textAlign: "center",
-              }}
-            >
-              <div
-                style={{
-                  fontSize: 34,
-                  fontWeight: 900,
-                  color: "#6b46ff",
-                }}
-              >
-                {pairStats.total !== null ? `${pairStats.total}%` : "—"}
-              </div>
-
-              <div
-                style={{
-                  marginTop: 8,
-                  color: "#4d466c",
-                  fontSize: 14,
-                  lineHeight: 1.45,
-                }}
-              >
-                {pairStats.total !== null
-                  ? `Общая совместимость по ${pairStats.completedThemes} темам`
-                  : "Совместимость появится, когда вы пройдёте общие парные опросы"}
-              </div>
-            </div>
-
-            {pairStats.total !== null && (
-              <div style={{ display: "grid", gap: 10, marginTop: 14 }}>
-                <div
-                  style={{
-                    padding: "12px 14px",
-                    borderRadius: 16,
-                    background: "rgba(255,255,255,0.24)",
-                  }}
-                >
-                  <div style={{ color: "#2c2647", fontWeight: 700 }}>
-                    Лучше всего совпали
-                  </div>
-                  <div style={{ marginTop: 6, color: "#1c1733", fontWeight: 900 }}>
-                    {pairStats.strongest
-                      .map((item) => `${item.label} (${item.score}%)`)
-                      .join(" • ")}
-                  </div>
-                </div>
-
-                <div
-                  style={{
-                    padding: "12px 14px",
-                    borderRadius: 16,
-                    background: "rgba(255,255,255,0.24)",
-                  }}
-                >
-                  <div style={{ color: "#2c2647", fontWeight: 700 }}>
-                    Есть над чем поработать
-                  </div>
-                  <div style={{ marginTop: 6, color: "#1c1733", fontWeight: 900 }}>
-                    {pairStats.weakest
-                      .map((item) => `${item.label} (${item.score}%)`)
-                      .join(" • ")}
-                  </div>
-                </div>
-              </div>
-            )}
-
-            <div style={{ display: "grid", gap: 10, marginTop: 14 }}>
-              <StatRow label="Очки" value={points} />
-              <StatRow label="Сравнено тем" value={pairStats.completedThemes} />
-            </div>
-          </div>
-        </>
-      )}
-
-      <button onClick={onBack} style={secondaryButtonStyle}>
-        {t.common.back}
-      </button>
+      <div
+        style={{
+          marginTop: 10,
+          fontSize: 14,
+          color: "#5a5378",
+          lineHeight: 1.45,
+        }}
+      >
+        {compatibilityProfile.completedThemes > 0
+          ? `Рассчитано по ${compatibilityProfile.completedThemes} из ${compatibilityProfile.totalThemes} тем`
+          : "Пройдите парные опросы, чтобы увидеть совместимость"}
+      </div>
     </div>
-  );
-}
+
+    <button
+      onClick={onOpenCompatibilityInfo}
+      type="button"
+      style={{
+        width: 34,
+        height: 34,
+        borderRadius: 999,
+        border: "1px solid rgba(143,107,255,0.22)",
+        background: "rgba(255,255,255,0.85)",
+        color: "#7c5cff",
+        fontSize: 16,
+        fontWeight: 800,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        cursor: "pointer",
+        boxShadow: "0 8px 20px rgba(124,92,255,0.10)",
+        flexShrink: 0,
+      }}
+    >
+      ℹ️
+    </button>
+  </div>
+
+  <div
+    style={{
+      marginTop: 14,
+      padding: "18px 16px",
+      borderRadius: 18,
+      background: "rgba(255,255,255,0.24)",
+      textAlign: "center",
+    }}
+  >
+    <div
+      style={{
+        fontSize: 34,
+        fontWeight: 900,
+        color: "#6b46ff",
+      }}
+    >
+      {compatibilityProfile.completedThemes > 0
+        ? `${compatibilityProfile.overallPercent}%`
+        : "—"}
+    </div>
+
+    <div
+      style={{
+        marginTop: 8,
+        color: "#4d466c",
+        fontSize: 14,
+        lineHeight: 1.45,
+      }}
+    >
+      {compatibilityProfile.completedThemes > 0
+        ? compatibilityProfile.pairType
+        : "Совместимость появится, когда вы пройдёте общие парные опросы"}
+    </div>
+  </div>
+      
+
+
+   {compatibilityProfile.completedThemes > 0 && (
+    <div style={{ display: "grid", gap: 10, marginTop: 14 }}>
+      <div
+        style={{
+          padding: "12px 14px",
+          borderRadius: 16,
+          background: "rgba(255,255,255,0.24)",
+        }}
+      >
+        <div style={{ color: "#2c2647", fontWeight: 700 }}>
+          Сильные стороны пары
+        </div>
+        <div style={{ marginTop: 6, color: "#1c1733", fontWeight: 900 }}>
+          {compatibilityProfile.strongSides.join(" • ")}
+        </div>
+      </div>
+
+      <div
+        style={{
+          padding: "12px 14px",
+          borderRadius: 16,
+          background: "rgba(255,255,255,0.24)",
+        }}
+      >
+        <div style={{ color: "#2c2647", fontWeight: 700 }}>
+          На что стоит обратить внимание
+        </div>
+        <div style={{ marginTop: 6, color: "#1c1733", fontWeight: 900 }}>
+          {compatibilityProfile.growthZones.join(" • ")}
+        </div>
+      </div>
+    </div>
+  )}
+</div>
 
 function PairInviteScreen({
   pair,
@@ -9459,6 +9670,13 @@ if (finishedAllTests && !appState.completionBonusesClaimed.tests) {
   <PairStreakInfoScreen
     appState={appState}
     onBack={() => setScreen("daily-pair-question")}
+  />
+)}
+
+{screen === "pair-compatibility-info" && (
+  <PairCompatibilityInfoScreen
+    appState={appState}
+    onBack={() => setScreen("pair")}
   />
 )}
 
