@@ -2218,23 +2218,23 @@ const isWaitingForPartner = hasPairCreated && !hasPartnerConnected;
           </div>
 
           <div
-            style={{
-              minWidth: 84,
-              height: 84,
-              borderRadius: 24,
-              background: "linear-gradient(135deg,#8f6bff,#ff76ba)",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              color: "#fff",
-              fontSize: 28,
-              fontWeight: 900,
-              boxShadow: "0 10px 30px rgba(143,107,255,0.28)",
-              flexShrink: 0,
-            }}
-          >
-            {pairLevel.level}
-          </div>
+  style={{
+    minWidth: 64,
+    height: 64,
+    borderRadius: 18,
+    background: "linear-gradient(135deg,#8f6bff,#ff76ba)",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    color: "#fff",
+    fontSize: 22,
+    fontWeight: 900,
+    boxShadow: "0 6px 18px rgba(143,107,255,0.22)",
+    flexShrink: 0,
+  }}
+>
+  {pairLevel.level}
+</div>
         </div>
 
         <div style={{ marginTop: 16 }}>
