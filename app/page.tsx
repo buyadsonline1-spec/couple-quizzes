@@ -1180,10 +1180,15 @@ const POLLS: Poll[] = POLL_THEMES.flatMap((item, index) => {
   return [
     {
       id: `boy-${item.key}`,
+
+      title: item.titleRu,
+      description: item.descriptionRu,
+
       titleRu: item.titleRu,
       titleEn: item.titleEn,
       descriptionRu: item.descriptionRu,
       descriptionEn: item.descriptionEn,
+
       reward: 60,
       gender: "boy" as const,
       page,
@@ -1193,10 +1198,15 @@ const POLLS: Poll[] = POLL_THEMES.flatMap((item, index) => {
     },
     {
       id: `girl-${item.key}`,
+
+      title: item.titleRu,
+      description: item.descriptionRu,
+
       titleRu: item.titleRu,
       titleEn: item.titleEn,
       descriptionRu: item.descriptionRu,
       descriptionEn: item.descriptionEn,
+
       reward: 60,
       gender: "girl" as const,
       page,
