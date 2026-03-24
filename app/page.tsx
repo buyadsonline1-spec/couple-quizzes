@@ -422,19 +422,40 @@ type PollQuestion = {
   options: string[];
 };
 
- type Poll = {
+type Poll = {
   id: string;
+
+  // старые (оставляем!)
   title: string;
   description: string;
+
+  // новые (добавляем)
+  titleRu?: string;
+  titleEn?: string;
+  descriptionRu?: string;
+  descriptionEn?: string;
+
   reward: number;
   gender: "boy" | "girl";
   page: number;
   theme?: string;
   matchGroup?: string;
+
   questions: {
     id: string;
+
+    // старое
     text: string;
+
+    // новое
+    textRu?: string;
+    textEn?: string;
+
     options: string[];
+
+    // новое
+    optionsRu?: string[];
+    optionsEn?: string[];
   }[];
 };
 
@@ -1040,74 +1061,115 @@ function createPollQuestions(
 }
 
   const POLL_THEMES = [
+    
   {
     key: "communication",
-    title: "Общение",
-    description: "Как ты общаешься, что тебе важно в разговорах и взаимопонимании.",
-    theme: "Общение",
+    titleRu: "Общение",
+    titleEn: "Communication",
+    descriptionRu:
+      "Как ты общаешься, что тебе важно в разговорах и взаимопонимании.",
+    descriptionEn:
+      "How you communicate and what matters most to you in conversations and mutual understanding.",
+    theme: "communication",
     matchGroup: "communication",
   },
   {
     key: "love",
-    title: "Любовь",
-    description: "Как ты чувствуешь любовь, заботу и эмоциональную близость.",
-    theme: "Любовь",
+    titleRu: "Любовь",
+    titleEn: "Love",
+    descriptionRu:
+      "Как ты чувствуешь любовь, заботу и эмоциональную близость.",
+    descriptionEn:
+      "How you experience love, care, and emotional closeness.",
+    theme: "love",
     matchGroup: "love",
   },
   {
     key: "conflicts",
-    title: "Конфликты",
-    description: "Как ты относишься к ссорам, примирению и компромиссам.",
-    theme: "Конфликты",
+    titleRu: "Конфликты",
+    titleEn: "Conflicts",
+    descriptionRu:
+      "Как ты относишься к ссорам, примирению и компромиссам.",
+    descriptionEn:
+      "How you handle arguments, making up, and compromise.",
+    theme: "conflicts",
     matchGroup: "conflicts",
   },
   {
     key: "trust",
-    title: "Доверие",
-    description: "Насколько для тебя важны честность, спокойствие и надёжность.",
-    theme: "Доверие",
+    titleRu: "Доверие",
+    titleEn: "Trust",
+    descriptionRu:
+      "Насколько для тебя важны честность, спокойствие и надёжность.",
+    descriptionEn:
+      "How important honesty, stability, and reliability are to you.",
+    theme: "trust",
     matchGroup: "trust",
   },
   {
     key: "understanding",
-    title: "Понимание",
-    description: "Насколько тебе важны эмпатия и эмоциональная близость.",
-    theme: "Понимание",
+    titleRu: "Понимание",
+    titleEn: "Understanding",
+    descriptionRu:
+      "Насколько тебе важны эмпатия и эмоциональная близость.",
+    descriptionEn:
+      "How important empathy and emotional closeness are to you.",
+    theme: "understanding",
     matchGroup: "understanding",
   },
   {
     key: "romance",
-    title: "Романтика",
-    description: "Про свидания, сюрпризы, страсть и атмосферу в отношениях.",
-    theme: "Романтика",
+    titleRu: "Романтика",
+    titleEn: "Romance",
+    descriptionRu:
+      "Про свидания, сюрпризы, страсть и атмосферу в отношениях.",
+    descriptionEn:
+      "About dates, surprises, passion, and the atmosphere in a relationship.",
+    theme: "romance",
     matchGroup: "romance",
   },
   {
     key: "space",
-    title: "Личное пространство",
-    description: "Сколько свободы, независимости и личного времени тебе нужно.",
-    theme: "Личное пространство",
+    titleRu: "Личное пространство",
+    titleEn: "Personal Space",
+    descriptionRu:
+      "Сколько свободы, независимости и личного времени тебе нужно.",
+    descriptionEn:
+      "How much freedom, independence, and personal time you need.",
+    theme: "space",
     matchGroup: "space",
   },
   {
     key: "future",
-    title: "Будущее",
-    description: "Про серьёзность отношений, планы и общие цели.",
-    theme: "Будущее",
+    titleRu: "Будущее",
+    titleEn: "Future",
+    descriptionRu:
+      "Про серьёзность отношений, планы и общие цели.",
+    descriptionEn:
+      "About commitment, plans, and shared goals.",
+    theme: "future",
     matchGroup: "future",
   },
   {
     key: "life",
-    title: "Быт",
-    description: "Как ты видишь совместную жизнь, обязанности и повседневность.",
-    theme: "Быт",
+    titleRu: "Быт",
+    titleEn: "Daily Life",
+    descriptionRu:
+      "Как ты видишь совместную жизнь, обязанности и повседневность.",
+    descriptionEn:
+      "How you see living together, responsibilities, and everyday life.",
+    theme: "life",
     matchGroup: "life",
   },
   {
     key: "jealousy",
-    title: "Ревность",
-    description: "Как ты относишься к ревности, границам и вниманию к другим людям.",
-    theme: "Ревность",
+    titleRu: "Ревность",
+    titleEn: "Jealousy",
+    descriptionRu:
+      "Как ты относишься к ревности, границам и вниманию к другим людям.",
+    descriptionEn:
+      "How you feel about jealousy, boundaries, and attention from other people.",
+    theme: "jealousy",
     matchGroup: "jealousy",
   },
 ] as const;
@@ -1118,8 +1180,10 @@ const POLLS: Poll[] = POLL_THEMES.flatMap((item, index) => {
   return [
     {
       id: `boy-${item.key}`,
-      title: item.title,
-      description: item.description,
+      titleRu: item.titleRu,
+      titleEn: item.titleEn,
+      descriptionRu: item.descriptionRu,
+      descriptionEn: item.descriptionEn,
       reward: 60,
       gender: "boy" as const,
       page,
@@ -1129,8 +1193,10 @@ const POLLS: Poll[] = POLL_THEMES.flatMap((item, index) => {
     },
     {
       id: `girl-${item.key}`,
-      title: item.title,
-      description: item.description,
+      titleRu: item.titleRu,
+      titleEn: item.titleEn,
+      descriptionRu: item.descriptionRu,
+      descriptionEn: item.descriptionEn,
       reward: 60,
       gender: "girl" as const,
       page,
@@ -4357,11 +4423,17 @@ setFinished(false);
       <div style={{ padding: 12, display: "grid", gap: 10 }}>
         <div style={{ ...cardBaseStyle(), padding: 14 }}>
           <div style={{ fontSize: 24, fontWeight: 900, color: "#1f1d3a" }}>
-            Опросы
-          </div>
-          <div style={{ marginTop: 6, color: "#3a345c", fontSize: 14 }}>
-           {genderFilter === "girl" ? "Твои опросы 👧" : "Твои опросы 👦"}
-          </div>
+  {t.polls.title}
+</div>
+<div style={{ marginTop: 6, color: "#3a345c", fontSize: 14 }}>
+  {market === "en"
+    ? genderFilter === "girl"
+      ? "Your polls 👧"
+      : "Your polls 👦"
+    : genderFilter === "girl"
+    ? "Твои опросы 👧"
+    : "Твои опросы 👦"}
+</div>
         </div>
 
         <div
@@ -4374,141 +4446,175 @@ setFinished(false);
           }}
         >
           <div style={{ fontSize: 14, fontWeight: 800, color: "#2c2647" }}>
-            Страница {page} из {totalPages}
-          </div>
-          <div style={{ fontSize: 13, color: "#5a5378" }}>
-            {visiblePolls.length} опросов
-          </div>
+  {market === "en"
+    ? `Page ${page} of ${totalPages}`
+    : `Страница ${page} из ${totalPages}`}
+</div>
+<div style={{ fontSize: 13, color: "#5a5378" }}>
+  {market === "en"
+    ? `${visiblePolls.length} polls`
+    : `${visiblePolls.length} опросов`}
+</div>
         </div>
 
         <div style={{ display: "grid", gap: 10 }}>
-          {visiblePolls.map((poll) => {
-            const completed = completedPollIds.includes(poll.id);
+  {visiblePolls.map((poll) => {
+    const completed = completedPollIds.includes(poll.id);
 
-            return (
-              <div key={poll.id} style={{ ...cardBaseStyle(), padding: 12 }}>
- 
- <div
-  style={{
-    display: "flex",
-    justifyContent: "space-between",
-    gap: 10,
-    alignItems: "flex-start",
-  }}
->
-  <div style={{ minWidth: 0 }}>
-    <div
-      style={{
-        fontSize: 17,
-        fontWeight: 900,
-        color: "#111111",
-        lineHeight: 1.2,
-      }}
-    >
-      {poll.title}
-    </div>
-  </div>
-
- <div
-  style={{
-    minWidth: 30,
-    height: 30,
-    borderRadius: 999,
-    background: "rgba(143,107,255,0.15)",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    color: "#6b46ff",
-    fontWeight: 900,
-    fontSize: 13,
-    flexShrink: 0,
-  }}
->
-  +{poll.reward}
-</div>
-</div>
-
-  <button
-    onClick={() => startPoll(poll.id)}
-    style={{
-      ...primaryButtonStyle,
-      width: "100%",
-      marginTop: 8,
-      padding: "11px 14px",
-      fontSize: 15,
-      opacity: completed ? 0.92 : 1,
-    }}
-  >
-    {completed ? "Пройти снова" : "Начать"}
-  </button>
-</div>
-            );
-          })}
-        </div>
-
+    return (
+      <div key={poll.id} style={{ ...cardBaseStyle(), padding: 12 }}>
         <div
           style={{
-            display: "grid",
-            gridTemplateColumns: "1fr 1fr",
+            display: "flex",
+            justifyContent: "space-between",
             gap: 10,
+            alignItems: "flex-start",
           }}
         >
-          <button
-            onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
-            disabled={page === 1}
-            style={{
-              ...secondaryButtonStyle,
-              marginTop: 0,
-              opacity: page === 1 ? 0.5 : 1,
-              cursor: page === 1 ? "not-allowed" : "pointer",
-            }}
-          >
-            ← Предыдущая
-          </button>
+          <div style={{ minWidth: 0 }}>
+            <div
+              style={{
+                fontSize: 17,
+                fontWeight: 900,
+                color: "#111111",
+                lineHeight: 1.2,
+              }}
+            >
+              {market === "en"
+                ? poll.titleEn ?? poll.title
+                : poll.titleRu ?? poll.title}
+            </div>
 
-          <button
-            onClick={() => setPage((prev) => Math.min(prev + 1, totalPages))}
-            disabled={page === totalPages}
+            <div
+              style={{
+                marginTop: 6,
+                fontSize: 13,
+                color: "#5a5378",
+                lineHeight: 1.35,
+              }}
+            >
+              {market === "en"
+                ? poll.descriptionEn ?? poll.description
+                : poll.descriptionRu ?? poll.description}
+            </div>
+          </div>
+
+          <div
             style={{
-              ...secondaryButtonStyle,
-              marginTop: 0,
-              opacity: page === totalPages ? 0.5 : 1,
-              cursor: page === totalPages ? "not-allowed" : "pointer",
+              minWidth: 30,
+              height: 30,
+              borderRadius: 999,
+              background: "rgba(143,107,255,0.15)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              color: "#6b46ff",
+              fontWeight: 900,
+              fontSize: 13,
+              flexShrink: 0,
             }}
           >
-            Следующая →
-          </button>
+            +{poll.reward}
+          </div>
         </div>
 
-        <button onClick={onBack} style={{ ...secondaryButtonStyle, marginTop: 0 }}>
-          {t.common.back}
+        <button
+          onClick={() => startPoll(poll.id)}
+          style={{
+            ...primaryButtonStyle,
+            width: "100%",
+            marginTop: 8,
+            padding: "11px 14px",
+            fontSize: 15,
+            opacity: completed ? 0.92 : 1,
+          }}
+        >
+          {market === "en"
+            ? completed
+              ? "Try again"
+              : "Start"
+            : completed
+            ? "Пройти снова"
+            : "Начать"}
         </button>
       </div>
     );
-  }
+  })}
+</div>
 
-  if (finished && activePoll) {
-    return (
-      <div style={{ padding: 14 }}>
-        <div style={{ ...cardBaseStyle(), padding: 16 }}>
-          <div style={{ fontSize: 28, fontWeight: 900, color: "#1f1d3a" }}>
-            Готово 🎉
-          </div>
-          <div style={{ marginTop: 10, color: "#3a345c", lineHeight: 1.5 }}>
-            Ты завершил опрос <b>{activePoll.title}</b> и получаешь{" "}
-            <b>+{activePoll.reward} очков</b>.
-          </div>
+<div
+  style={{
+    display: "grid",
+    gridTemplateColumns: "1fr 1fr",
+    gap: 10,
+  }}
+>
+  <button
+    onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
+    disabled={page === 1}
+    style={{
+      ...secondaryButtonStyle,
+      marginTop: 0,
+      opacity: page === 1 ? 0.5 : 1,
+      cursor: page === 1 ? "not-allowed" : "pointer",
+    }}
+  >
+    {market === "en" ? "← Previous" : "← Предыдущая"}
+  </button>
 
-          <button
-            onClick={handleFinish}
-            style={{ ...primaryButtonStyle, width: "100%", marginTop: 14 }}
-          >
-            Забрать очки
-          </button>
-        </div>
+  <button
+    onClick={() => setPage((prev) => Math.min(prev + 1, totalPages))}
+    disabled={page === totalPages}
+    style={{
+      ...secondaryButtonStyle,
+      marginTop: 0,
+      opacity: page === totalPages ? 0.5 : 1,
+      cursor: page === totalPages ? "not-allowed" : "pointer",
+    }}
+  >
+    {market === "en" ? "Next →" : "Следующая →"}
+  </button>
+</div>
+
+<button onClick={onBack} style={{ ...secondaryButtonStyle, marginTop: 0 }}>
+  {t.common.back}
+</button>
       </div>
     );
   }
+
+ if (finished && activePoll) {
+  return (
+    <div style={{ padding: 14 }}>
+      <div style={{ ...cardBaseStyle(), padding: 16 }}>
+        <div style={{ fontSize: 28, fontWeight: 900, color: "#1f1d3a" }}>
+          {market === "en" ? "Done 🎉" : "Готово 🎉"}
+        </div>
+        <div style={{ marginTop: 10, color: "#3a345c", lineHeight: 1.5 }}>
+          {market === "en" ? (
+            <>
+              You completed the poll{" "}
+              <b>{activePoll.titleEn ?? activePoll.title}</b> and earned{" "}
+              <b>+{activePoll.reward} points</b>.
+            </>
+          ) : (
+            <>
+              Ты завершил опрос <b>{activePoll.title}</b> и получаешь{" "}
+              <b>+{activePoll.reward} очков</b>.
+            </>
+          )}
+        </div>
+
+        <button
+          onClick={handleFinish}
+          style={{ ...primaryButtonStyle, width: "100%", marginTop: 14 }}
+        >
+          {market === "en" ? "Claim points" : "Забрать очки"}
+        </button>
+      </div>
+    </div>
+  );
+}
 
   if (!activePoll || !currentQuestion) return null;
 
