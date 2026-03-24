@@ -2207,9 +2207,14 @@ const isWaitingForPartner = hasPairCreated && !hasPartnerConnected;
 )}
 
 
+{/* ===== КНОПКА НАЗАД ===== */}
 <button onClick={onBack} style={secondaryButtonStyle}>
   {t.common.back}
 </button>
+
+</div>   // ⬅️ внешний контейнер PairScreen
+);
+}        // ⬅️ конец функции PairScreen
 
 function PairCompatibilityInfoScreen({
   appState,
