@@ -2083,7 +2083,7 @@ const isWaitingForPartner = hasPairCreated && !hasPartnerConnected;
   </>
 ) : (
   <>
-  
+
     <div style={{ ...cardBaseStyle(), padding: 18 }}>
       <div
         style={{
@@ -2248,7 +2248,7 @@ const isWaitingForPartner = hasPairCreated && !hasPartnerConnected;
           >
             <div
               style={{
-                width: `${pairLevel.progress}%`,
+                width: `${pairLevel.progressPercent}%`,
                 height: "100%",
                 borderRadius: 999,
                 background: "linear-gradient(90deg,#8f6bff,#ff76ba)",
