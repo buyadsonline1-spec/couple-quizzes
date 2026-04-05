@@ -6,11 +6,8 @@ import { REWARD_CATEGORIES_RU } from "@/config/rewards-ru";
 import { REWARD_CATEGORIES_EN } from "@/config/rewards-en";
 const [market, setMarket] = useState<"ru" | "en">(getMarket());
 
-useEffect(() => {
-  if (window.location.search.includes("lang=en")) {
-    setMarket("en");
-  }
-}, []);
+
+
 
 const t = market === "en" ? TEXT_EN : TEXT_RU;
 
