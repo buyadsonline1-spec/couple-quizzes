@@ -8959,12 +8959,21 @@ function getTelegramUserSafe(fallbackUser: TgUser | null): TgUser | null {
 export default function Page() {
 
   const [appState, setAppState] = useState<AppState>(DEFAULT_STATE);
-  const [selectedLang, setSelectedLang] = useState<"ru" | "en">("ru");
+  const [selectedLang, setSelectedLang] = useState<"ru" | "en" | null>(null);
 
  const market = getMarket();
   const t = market === "en" ? TEXT_EN : TEXT_RU;
   const REWARD_CATEGORIES =
     market === "en" ? REWARD_CATEGORIES_EN : REWARD_CATEGORIES_RU;
+
+    useEffect(() => {
+  if (typeof window === "undefined") return;
+
+  const saved = window.localStorage.getItem("couple-lang");
+  if (saved === "ru" || saved === "en") {
+    setSelectedLang(saved);
+  }
+}, []);
 
   
 
@@ -10189,39 +10198,53 @@ if (finishedAllTests && !appState.completionBonusesClaimed.tests) {
 
         {screen === "welcome" && (
   <WelcomeScreen
-    onStart={() =>
-  setScreen(appState.profile.gender ? "menu" : "language-select")
-}  
+   onStart={() =>
+  setScreen(
+    appState.profile.gender
+      ? "menu"
+      : selectedLang
+      ? "gender-select"
+      : "language-select"
+  )
+}
   />
 )}
 
 {screen === "language-select" && (
-  <LanguageSelectScreen
-    value={selectedLang}
-    onSelect={(lang) => {
-      setSelectedLang(lang);
-      if (typeof window !== "undefined") {
-        window.localStorage.setItem("couple-quizzes-lang", lang);
-      }
-    }}
-    onContinue={() => setScreen("gender-select")}
-    onBack={() => setScreen("welcome")}
-  />
-)}
+  <div style={{ padding: 16, display: "grid", gap: 14 }}>
+    <div style={{ ...cardBaseStyle(), padding: 18, textAlign: "center" }}>
+      <div style={{ fontSize: 28, fontWeight: 900 }}>
+        Choose language
+      </div>
+    </div>
 
-   {screen === "gender-select" && (
-  <GenderSelectScreen
-    onSelect={(gender) => {
-      setAppState((prev) => ({
-        ...prev,
-        profile: {
-          ...prev.profile,
-          gender,
-        },
-      }));
-      setScreen("menu");
-    }}
-  />
+    <button
+      onClick={() => {
+        setSelectedLang("ru");
+        localStorage.setItem("couple-lang", "ru");
+      }}
+      style={{ ...primaryButtonStyle }}
+    >
+      🇷🇺 Русский
+    </button>
+
+    <button
+      onClick={() => {
+        setSelectedLang("en");
+        localStorage.setItem("couple-lang", "en");
+      }}
+      style={{ ...primaryButtonStyle }}
+    >
+      🇬🇧 English
+    </button>
+
+    <button
+      onClick={() => setScreen("gender-select")}
+      style={{ ...primaryButtonStyle }}
+    >
+      Continue
+    </button>
+  </div>
 )}
 
 {screen === "menu" && (
