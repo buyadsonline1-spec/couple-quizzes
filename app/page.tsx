@@ -8961,10 +8961,10 @@ export default function Page() {
   const [appState, setAppState] = useState<AppState>(DEFAULT_STATE);
   const [selectedLang, setSelectedLang] = useState<"ru" | "en" | null>(null);
 
- const market = getMarket();
-  const t = market === "en" ? TEXT_EN : TEXT_RU;
-  const REWARD_CATEGORIES =
-    market === "en" ? REWARD_CATEGORIES_EN : REWARD_CATEGORIES_RU;
+const market = selectedLang;
+const t = market === "en" ? TEXT_EN : TEXT_RU;
+const REWARD_CATEGORIES =
+  market === "en" ? REWARD_CATEGORIES_EN : REWARD_CATEGORIES_RU;
 
     useEffect(() => {
   if (typeof window === "undefined") return;
