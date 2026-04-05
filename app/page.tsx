@@ -1463,7 +1463,7 @@ function createPollQuestions(
   });
 
   switch (theme) {
-    case "Общение":
+    case "communication":
       return gender === "boy"
         ? [
             make("q1", "Мне проще говорить о проблеме прямо, чем намекать.", "It is easier for me to talk about a problem directly than to hint at it."),
@@ -1482,7 +1482,7 @@ function createPollQuestions(
             make("q6", "После сложного разговора мне важно чувствовать тепло и близость.", "After a difficult conversation, it is important for me to feel warmth and closeness."),
           ];
 
-    case "Любовь":
+case "love":
       return gender === "boy"
         ? [
             make("q1", "Для меня любовь — это прежде всего поддержка в жизни.", "For me, love is прежде всего support in life."),
@@ -1501,7 +1501,7 @@ function createPollQuestions(
             make("q6", "Мне важно чувствовать, что отношения — это не привычка, а живое чувство.", "It is important for me to feel that a relationship is not just a habit, but a living feeling."),
           ];
 
-    case "Конфликты":
+    case "conflicts":
       return gender === "boy"
         ? [
             make("q1", "Во время ссоры мне нужно немного времени, чтобы остыть.", "During an argument, I need a little time to cool down."),
@@ -1520,7 +1520,7 @@ function createPollQuestions(
             make("q6", "Даже в ссоре я хочу чувствовать, что мы всё ещё на одной стороне.", "Even during a fight, I want to feel that we are still on the same side."),
           ];
 
-    case "Доверие":
+    case "trust":
       return gender === "boy"
         ? [
             make("q1", "Для меня доверие — это честность даже в неприятных темах.", "For me, trust means honesty even in uncomfortable topics."),
@@ -1539,7 +1539,7 @@ function createPollQuestions(
             make("q6", "Для меня доверие — это когда не нужно угадывать истинное отношение человека.", "For me, trust is when I do not have to guess a person's true attitude."),
           ];
 
-    case "Понимание":
+    case "understanding":
       return gender === "boy"
         ? [
             make("q1", "Мне важно, чтобы партнёр пытался понять мою логику, а не только эмоции.", "It is important to me that my partner tries to understand my logic, not only emotions."),
@@ -1558,7 +1558,7 @@ function createPollQuestions(
             make("q6", "Когда меня действительно понимают, я чувствую близость сильнее.", "When I am truly understood, I feel closeness more strongly."),
           ];
 
-    case "Романтика":
+    case "romance":
       return gender === "boy"
         ? [
             make("q1", "Мне нравятся отношения, в которых есть лёгкость, флирт и страсть.", "I like relationships that have lightness, flirting, and passion."),
@@ -1577,7 +1577,7 @@ function createPollQuestions(
             make("q6", "Я люблю, когда даже обычный день можно сделать немного волшебным.", "I love when even an ordinary day can be made a little magical."),
           ];
 
-    case "Личное пространство":
+   case "space":
       return gender === "boy"
         ? [
             make("q1", "Мне важно иметь время только для себя без чувства вины.", "It is important for me to have time just for myself without guilt."),
@@ -1596,7 +1596,7 @@ function createPollQuestions(
             make("q6", "Для меня близость и свобода могут спокойно существовать вместе.", "For me, closeness and freedom can peacefully exist together."),
           ];
 
-    case "Будущее":
+   case "future":
       return gender === "boy"
         ? [
             make("q1", "Мне важно понимать, к чему ведут отношения.", "It is important for me to understand where the relationship is heading."),
@@ -1615,7 +1615,7 @@ function createPollQuestions(
             make("q6", "Я хочу видеть рядом человека, с которым можно строить жизнь.", "I want to see beside me a person with whom I can build a life."),
           ];
 
-    case "Быт":
+    case "life":
       return gender === "boy"
         ? [
             make("q1", "Мне важно, чтобы обязанности в быту распределялись справедливо.", "It is important to me that household responsibilities are shared fairly."),
@@ -1634,7 +1634,7 @@ function createPollQuestions(
             make("q6", "Я чувствую больше тепла в отношениях, когда есть взаимная помощь в обычной жизни.", "I feel more warmth in a relationship when there is mutual help in ordinary life."),
           ];
 
-    case "Ревность":
+   case "jealousy":
       return gender === "boy"
         ? [
             make("q1", "Я считаю важным доверять партнёру без постоянных подозрений.", "I think it is important to trust a partner without constant suspicion."),
@@ -5232,6 +5232,17 @@ const totalPages = Math.ceil(filteredPolls.length / POLLS_PER_PAGE);
 
 const activePoll = POLLS.find((poll) => poll.id === activePollId) || null;
   const currentQuestion = activePoll?.questions[currentQuestionIndex] || null;
+
+  if (activePoll && activePoll.questions.length === 0) {
+  return (
+    <div style={{ padding: 20 }}>
+      <button onClick={() => setActivePollId(null)}>Назад</button>
+      <div style={{ marginTop: 16, opacity: 0.7 }}>
+        В этом опросе пока нет вопросов
+      </div>
+    </div>
+  );
+}
 
   function startPoll(pollId: string) {
     setActivePollId(pollId);
