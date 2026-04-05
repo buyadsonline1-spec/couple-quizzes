@@ -8968,6 +8968,15 @@ export default function Page() {
   const t = market === "en" ? TEXT_EN : TEXT_RU;
 
   const [appState, setAppState] = useState<AppState>(DEFAULT_STATE);
+  const [selectedLang, setSelectedLang] = useState<"ru" | "en">("ru");
+  useEffect(() => {
+  if (typeof window === "undefined") return;
+
+  const savedLang = window.localStorage.getItem("couple-quizzes-lang");
+  if (savedLang === "ru" || savedLang === "en") {
+    setSelectedLang(savedLang);
+  }
+}, []);
 
  
 
@@ -9597,7 +9606,6 @@ const [showPaymentChoice, setShowPaymentChoice] = useState(false);
 const TRIBUTE_LINK = "https://t.me/tribute/app?startapp=sMuC";
   
   const [screen, setScreen] = useState<Screen>("welcome");
-  const [selectedLang, setSelectedLang] = useState<"ru" | "en">("ru");
   const [paywallBackScreen, setPaywallBackScreen] = useState<Screen>("menu");
   const [user, setUser] = useState<TgUser | null>(null);
   const [showDailyBonus, setShowDailyBonus] = useState(true);
@@ -9630,14 +9638,8 @@ useEffect(() => {
   }
 }, [showCompletionBonus]);
 
-useEffect(() => {
-  if (typeof window === "undefined") return;
 
-  const savedLang = window.localStorage.getItem("couple-quizzes-lang");
-  if (savedLang === "ru" || savedLang === "en") {
-    setSelectedLang(savedLang);
-  }
-}, []);
+
 
 
 
