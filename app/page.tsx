@@ -8969,7 +8969,7 @@ const REWARD_CATEGORIES =
     useEffect(() => {
   if (typeof window === "undefined") return;
 
-  const saved = window.localStorage.getItem("couple-lang");
+  const saved = window.localStorage.getItem("couple-quizzes-lang");
   if (saved === "ru" || saved === "en") {
     setSelectedLang(saved);
   }
@@ -10247,6 +10247,21 @@ if (finishedAllTests && !appState.completionBonusesClaimed.tests) {
       Continue
     </button>
   </div>
+)}
+
+{screen === "gender-select" && (
+  <GenderSelectScreen
+    onSelect={(gender) => {
+      setAppState((prev) => ({
+        ...prev,
+        profile: {
+          ...prev.profile,
+          gender,
+        },
+      }));
+      setScreen("menu");
+    }}
+  />
 )}
 
 {screen === "menu" && (
