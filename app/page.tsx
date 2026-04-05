@@ -294,6 +294,7 @@ declare global {
 type Screen =
   | "welcome"
   | "start"
+  | "language-select"
   | "menu"
   | "polls"
   | "polls-boy"
@@ -4164,6 +4165,85 @@ function PollsEntryScreen({
 
       <button onClick={onBack} style={secondaryButtonStyle}>
         {t.common.back}
+      </button>
+    </div>
+  );
+}
+
+function LanguageSelectScreen({
+  value,
+  onSelect,
+  onContinue,
+  onBack,
+}: {
+  value: "ru" | "en";
+  onSelect: (lang: "ru" | "en") => void;
+  onContinue: () => void;
+  onBack: () => void;
+}) {
+  const isRu = value === "ru";
+  const title = isRu ? "Выберите язык" : "Choose language";
+  const subtitle = isRu
+    ? "Сначала выбери язык приложения"
+    : "First choose the app language";
+
+  return (
+    <div style={{ padding: 16, display: "grid", gap: 14 }}>
+      <div style={{ ...cardBaseStyle(), padding: 18, textAlign: "center" }}>
+        <div style={{ fontSize: 28, fontWeight: 900, color: "#1f1d3a" }}>
+          {title}
+        </div>
+        <div
+          style={{
+            marginTop: 8,
+            color: "#3a345c",
+            fontSize: 15,
+            lineHeight: 1.45,
+          }}
+        >
+          {subtitle}
+        </div>
+      </div>
+
+      <button
+        onClick={() => onSelect("ru")}
+        style={{
+          ...primaryButtonStyle,
+          width: "100%",
+          opacity: value === "ru" ? 1 : 0.78,
+          boxShadow:
+            value === "ru"
+              ? "0 14px 34px rgba(107,70,255,0.28)"
+              : primaryButtonStyle.boxShadow,
+        }}
+      >
+        🇷🇺 Русский
+      </button>
+
+      <button
+        onClick={() => onSelect("en")}
+        style={{
+          ...primaryButtonStyle,
+          width: "100%",
+          opacity: value === "en" ? 1 : 0.78,
+          boxShadow:
+            value === "en"
+              ? "0 14px 34px rgba(107,70,255,0.28)"
+              : primaryButtonStyle.boxShadow,
+        }}
+      >
+        🇬🇧 English
+      </button>
+
+      <button
+        onClick={onContinue}
+        style={{ ...primaryButtonStyle, width: "100%" }}
+      >
+        {value === "en" ? "Start" : "Старт"}
+      </button>
+
+      <button onClick={onBack} style={secondaryButtonStyle}>
+        {value === "en" ? "Back" : "Назад"}
       </button>
     </div>
   );
@@ -9517,6 +9597,7 @@ const [showPaymentChoice, setShowPaymentChoice] = useState(false);
 const TRIBUTE_LINK = "https://t.me/tribute/app?startapp=sMuC";
   
   const [screen, setScreen] = useState<Screen>("welcome");
+  const [selectedLang, setSelectedLang] = useState<"ru" | "en">("ru");
   const [paywallBackScreen, setPaywallBackScreen] = useState<Screen>("menu");
   const [user, setUser] = useState<TgUser | null>(null);
   const [showDailyBonus, setShowDailyBonus] = useState(true);
@@ -9548,6 +9629,15 @@ useEffect(() => {
     launchLevelConfetti();
   }
 }, [showCompletionBonus]);
+
+useEffect(() => {
+  if (typeof window === "undefined") return;
+
+  const savedLang = window.localStorage.getItem("couple-quizzes-lang");
+  if (savedLang === "ru" || savedLang === "en") {
+    setSelectedLang(savedLang);
+  }
+}, []);
 
 
 
@@ -10108,8 +10198,22 @@ if (finishedAllTests && !appState.completionBonusesClaimed.tests) {
         {screen === "welcome" && (
   <WelcomeScreen
     onStart={() =>
-      setScreen(appState.profile.gender ? "menu" : "gender-select")
-    }
+  setScreen(appState.profile.gender ? "menu" : "language-select")
+}  
+  />
+)}
+
+{screen === "language-select" && (
+  <LanguageSelectScreen
+    value={selectedLang}
+    onSelect={(lang) => {
+      setSelectedLang(lang);
+      if (typeof window !== "undefined") {
+        window.localStorage.setItem("couple-quizzes-lang", lang);
+      }
+    }}
+    onContinue={() => setScreen("gender-select")}
+    onBack={() => setScreen("welcome")}
   />
 )}
 
