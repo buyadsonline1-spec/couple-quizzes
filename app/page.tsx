@@ -10,6 +10,12 @@ import confetti from "canvas-confetti";
 import { TEXT_RU } from "@/config/text-ru";
 import { TEXT_EN } from "@/config/text-en";
 
+const market = getMarket();
+const t = market === "en" ? TEXT_EN : TEXT_RU;
+
+const REWARD_CATEGORIES =
+  market === "en" ? REWARD_CATEGORIES_EN : REWARD_CATEGORIES_RU;
+
 
 const TEXTS = {
   ru: {
@@ -2999,7 +3005,7 @@ function PairInviteScreen({
   onCreateInvite: () => Promise<void>;
   onJoinByCode: (code: string) => Promise<void>;
 }) {
-  const market = selectedLang;
+  
 const t = market === "en" ? TEXT_EN : TEXT_RU;
 const REWARD_CATEGORIES =
   market === "en" ? REWARD_CATEGORIES_EN : REWARD_CATEGORIES_RU;
@@ -8955,16 +8961,7 @@ export default function Page() {
   const [appState, setAppState] = useState<AppState>(DEFAULT_STATE);
   const [selectedLang, setSelectedLang] = useState<"ru" | "en">("ru");
 
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-
-    const savedLang = window.localStorage.getItem("couple-quizzes-lang");
-    if (savedLang === "ru" || savedLang === "en") {
-      setSelectedLang(savedLang);
-    }
-  }, []);
-
-  const market = selectedLang;
+ const market = getMarket();
   const t = market === "en" ? TEXT_EN : TEXT_RU;
   const REWARD_CATEGORIES =
     market === "en" ? REWARD_CATEGORIES_EN : REWARD_CATEGORIES_RU;
