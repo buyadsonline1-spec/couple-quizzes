@@ -4,15 +4,7 @@ import { CSSProperties, useEffect, useMemo, useState } from "react";
 import { getMarket } from "@/config/markets";
 import { REWARD_CATEGORIES_RU } from "@/config/rewards-ru";
 import { REWARD_CATEGORIES_EN } from "@/config/rewards-en";
-const [market, setMarket] = useState<"ru" | "en">(getMarket());
 
-
-
-
-const t = market === "en" ? TEXT_EN : TEXT_RU;
-
-const REWARD_CATEGORIES =
-  market === "en" ? REWARD_CATEGORIES_EN : REWARD_CATEGORIES_RU;
 import { supabase } from "@/lib/supabase";
 import confetti from "canvas-confetti";
 import { TEXT_RU } from "@/config/text-ru";
@@ -3007,8 +2999,10 @@ function PairInviteScreen({
   onCreateInvite: () => Promise<void>;
   onJoinByCode: (code: string) => Promise<void>;
 }) {
-  const market = getMarket();
+  const market = selectedLang;
 const t = market === "en" ? TEXT_EN : TEXT_RU;
+const REWARD_CATEGORIES =
+  market === "en" ? REWARD_CATEGORIES_EN : REWARD_CATEGORIES_RU;
   const [joinCode, setJoinCode] = useState("");
   const [joining, setJoining] = useState(false);
   const [creating, setCreating] = useState(false);
@@ -8958,20 +8952,24 @@ function getTelegramUserSafe(fallbackUser: TgUser | null): TgUser | null {
 
 export default function Page() {
 
-  
   const [appState, setAppState] = useState<AppState>(DEFAULT_STATE);
   const [selectedLang, setSelectedLang] = useState<"ru" | "en">("ru");
+
   useEffect(() => {
-  if (typeof window === "undefined") return;
+    if (typeof window === "undefined") return;
 
-  const savedLang = window.localStorage.getItem("couple-quizzes-lang");
-  if (savedLang === "ru" || savedLang === "en") {
-    setSelectedLang(savedLang);
-  }
-}, []);
+    const savedLang = window.localStorage.getItem("couple-quizzes-lang");
+    if (savedLang === "ru" || savedLang === "en") {
+      setSelectedLang(savedLang);
+    }
+  }, []);
 
-const market = getMarket();
-const t = market === "en" ? TEXT_EN : TEXT_RU;
+  const market = selectedLang;
+  const t = market === "en" ? TEXT_EN : TEXT_RU;
+  const REWARD_CATEGORIES =
+    market === "en" ? REWARD_CATEGORIES_EN : REWARD_CATEGORIES_RU;
+
+  
 
  
 
