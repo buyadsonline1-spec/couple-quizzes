@@ -4,11 +4,13 @@ import { CSSProperties, useEffect, useMemo, useState } from "react";
 import { getMarket } from "@/config/markets";
 import { REWARD_CATEGORIES_RU } from "@/config/rewards-ru";
 import { REWARD_CATEGORIES_EN } from "@/config/rewards-en";
-const market =
+const forcedLang =
   typeof window !== "undefined" &&
   window.location.search.includes("lang=en")
     ? "en"
-    : getMarket();
+    : null;
+
+const market = forcedLang ?? getMarket();
 const t = market === "en" ? TEXT_EN : TEXT_RU;
 
 const REWARD_CATEGORIES =
