@@ -2001,8 +2001,7 @@ function getPairLevelInfo(points: number): PairLevelInfo {
     }
   }
 
-  const market = getMarket();
-const t = market === "en" ? TEXT_EN : TEXT_RU;
+  
   const currentLevelPoints = current.points;
   const nextLevelPoints = next ? next.points : null;
   const progressInLevel = safePoints - currentLevelPoints;
@@ -8959,11 +8958,7 @@ function getTelegramUserSafe(fallbackUser: TgUser | null): TgUser | null {
 
 export default function Page() {
 
-  const market = getMarket();
-  console.log("MARKET:", market);
   
-  const t = market === "en" ? TEXT_EN : TEXT_RU;
-
   const [appState, setAppState] = useState<AppState>(DEFAULT_STATE);
   const [selectedLang, setSelectedLang] = useState<"ru" | "en">("ru");
   useEffect(() => {
@@ -8974,6 +8969,9 @@ export default function Page() {
     setSelectedLang(savedLang);
   }
 }, []);
+
+const market = getMarket();
+const t = market === "en" ? TEXT_EN : TEXT_RU;
 
  
 
