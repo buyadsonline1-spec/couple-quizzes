@@ -1,8 +1,10 @@
-export type Market = "ru" | "en";
+export function getMarket(): "ru" | "en" {
+  if (typeof window !== "undefined") {
+    const saved = window.localStorage.getItem("couple-quizzes-lang");
+    if (saved === "ru" || saved === "en") {
+      return saved;
+    }
+  }
 
-export function getMarket(): Market {
-  if (typeof window === "undefined") return "ru";
-
-  const value = new URLSearchParams(window.location.search).get("market");
-  return value === "en" ? "en" : "ru";
+  return "ru";
 }

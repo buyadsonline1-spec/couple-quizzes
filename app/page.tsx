@@ -10221,7 +10221,8 @@ if (finishedAllTests && !appState.completionBonusesClaimed.tests) {
     <button
       onClick={() => {
         setSelectedLang("ru");
-        localStorage.setItem("couple-lang", "ru");
+        localStorage.setItem("couple-quizzes-lang", "ru");
+        setScreen("gender-select");
       }}
       style={{ ...primaryButtonStyle }}
     >
@@ -10231,7 +10232,8 @@ if (finishedAllTests && !appState.completionBonusesClaimed.tests) {
     <button
       onClick={() => {
         setSelectedLang("en");
-        localStorage.setItem("couple-lang", "en");
+        localStorage.setItem("couple-quizzes-lang", "en");
+        setScreen("gender-select");
       }}
       style={{ ...primaryButtonStyle }}
     >
