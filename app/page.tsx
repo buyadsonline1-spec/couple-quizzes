@@ -420,7 +420,11 @@ dailyPairStreak: {
 type PollQuestion = {
   id: string;
   text: string;
+  textRu: string;
+  textEn: string;
   options: string[];
+  optionsRu: string[];
+  optionsEn: string[];
 };
 
 type Poll = {
@@ -441,26 +445,7 @@ type Poll = {
   theme?: string;
   matchGroup?: string;
 
-  questions: {
-
-
-
-
-
-    id: string;
-    text: string;
-
-
-    textRu?: string;
-
-
-
-
-    textEn?: string;
-    options: string[];
-    optionsRu?: string[];
-    optionsEn?: string[];
-  }[];
+  questions: PollQuestion[];
 };
 
 type RewardItem = {
@@ -500,13 +485,21 @@ type TestKind = "scale" | "love-language" | "personality";
 type TestQuestion = {
   id: string;
   text: string;
+  textRu: string;
+  textEn: string;
   options: string[];
+  optionsRu: string[];
+  optionsEn: string[];
 };
 
 type TestDefinition = {
   id: string;
   title: string;
+  titleRu: string;
+  titleEn: string;
   description: string;
+  descriptionRu: string;
+  descriptionEn: string;
   reward: number;
   kind: TestKind;
   questions: TestQuestion[];
@@ -579,202 +572,632 @@ const STORAGE_KEY = "couple-quizzes-miniapp-v6";
 const WHEEL_SPIN_COST = 2000;
 
 
+const SCALE_OPTIONS_RU = ["Никогда", "Редко", "Иногда", "Часто", "Всегда"];
+const SCALE_OPTIONS_EN = ["Never", "Rarely", "Sometimes", "Often", "Always"];
+
 const TESTS: TestDefinition[] = [
   {
     id: "trust-level",
-    title: "Уровень доверия к партнёру",
-    description: "Покажет, насколько спокойно и уверенно ты чувствуешь себя в отношениях.",
+    title:
+      market === "en"
+        ? "Trust Level in a Relationship"
+        : "Уровень доверия к партнёру",
+    titleRu: "Уровень доверия к партнёру",
+    titleEn: "Trust Level in a Relationship",
+    description:
+      market === "en"
+        ? "Shows how calm, secure, and confident you feel in your relationship."
+        : "Покажет, насколько спокойно и уверенно ты чувствуешь себя в отношениях.",
+    descriptionRu:
+      "Покажет, насколько спокойно и уверенно ты чувствуешь себя в отношениях.",
+    descriptionEn:
+      "Shows how calm, secure, and confident you feel in your relationship.",
     reward: 60,
     kind: "scale",
     questions: [
       {
         id: "t1",
-        text: "Мне комфортно делиться с партнёром своими переживаниями.",
-        options: ["Никогда", "Редко", "Иногда", "Часто", "Всегда"],
+        text:
+          market === "en"
+            ? "I feel comfortable sharing my worries with my partner."
+            : "Мне комфортно делиться с партнёром своими переживаниями.",
+        textRu: "Мне комфортно делиться с партнёром своими переживаниями.",
+        textEn: "I feel comfortable sharing my worries with my partner.",
+        options: market === "en" ? SCALE_OPTIONS_EN : SCALE_OPTIONS_RU,
+        optionsRu: SCALE_OPTIONS_RU,
+        optionsEn: SCALE_OPTIONS_EN,
       },
       {
         id: "t2",
-        text: "Я не боюсь, что партнёр осудит мои чувства.",
-        options: ["Никогда", "Редко", "Иногда", "Часто", "Всегда"],
+        text:
+          market === "en"
+            ? "I am not afraid that my partner will judge my feelings."
+            : "Я не боюсь, что партнёр осудит мои чувства.",
+        textRu: "Я не боюсь, что партнёр осудит мои чувства.",
+        textEn: "I am not afraid that my partner will judge my feelings.",
+        options: market === "en" ? SCALE_OPTIONS_EN : SCALE_OPTIONS_RU,
+        optionsRu: SCALE_OPTIONS_RU,
+        optionsEn: SCALE_OPTIONS_EN,
       },
       {
         id: "t3",
-        text: "Я верю словам партнёра без лишних сомнений.",
-        options: ["Никогда", "Редко", "Иногда", "Часто", "Всегда"],
+        text:
+          market === "en"
+            ? "I trust my partner's words without unnecessary doubt."
+            : "Я верю словам партнёра без лишних сомнений.",
+        textRu: "Я верю словам партнёра без лишних сомнений.",
+        textEn: "I trust my partner's words without unnecessary doubt.",
+        options: market === "en" ? SCALE_OPTIONS_EN : SCALE_OPTIONS_RU,
+        optionsRu: SCALE_OPTIONS_RU,
+        optionsEn: SCALE_OPTIONS_EN,
       },
       {
         id: "t4",
-        text: "Мне спокойно, когда партнёр проводит время без меня.",
-        options: ["Никогда", "Редко", "Иногда", "Часто", "Всегда"],
+        text:
+          market === "en"
+            ? "I feel calm when my partner spends time without me."
+            : "Мне спокойно, когда партнёр проводит время без меня.",
+        textRu: "Мне спокойно, когда партнёр проводит время без меня.",
+        textEn: "I feel calm when my partner spends time without me.",
+        options: market === "en" ? SCALE_OPTIONS_EN : SCALE_OPTIONS_RU,
+        optionsRu: SCALE_OPTIONS_RU,
+        optionsEn: SCALE_OPTIONS_EN,
       },
       {
         id: "t5",
-        text: "Я чувствую себя в безопасности рядом с партнёром.",
-        options: ["Никогда", "Редко", "Иногда", "Часто", "Всегда"],
+        text:
+          market === "en"
+            ? "I feel safe when I am with my partner."
+            : "Я чувствую себя в безопасности рядом с партнёром.",
+        textRu: "Я чувствую себя в безопасности рядом с партнёром.",
+        textEn: "I feel safe when I am with my partner.",
+        options: market === "en" ? SCALE_OPTIONS_EN : SCALE_OPTIONS_RU,
+        optionsRu: SCALE_OPTIONS_RU,
+        optionsEn: SCALE_OPTIONS_EN,
       },
       {
         id: "t6",
-        text: "Если возникает проблема, я верю, что мы сможем её обсудить.",
-        options: ["Никогда", "Редко", "Иногда", "Часто", "Всегда"],
+        text:
+          market === "en"
+            ? "If a problem comes up, I believe we can talk it through."
+            : "Если возникает проблема, я верю, что мы сможем её обсудить.",
+        textRu: "Если возникает проблема, я верю, что мы сможем её обсудить.",
+        textEn: "If a problem comes up, I believe we can talk it through.",
+        options: market === "en" ? SCALE_OPTIONS_EN : SCALE_OPTIONS_RU,
+        optionsRu: SCALE_OPTIONS_RU,
+        optionsEn: SCALE_OPTIONS_EN,
       },
       {
         id: "t7",
-        text: "Я не жду подвоха от партнёра.",
-        options: ["Никогда", "Редко", "Иногда", "Часто", "Всегда"],
+        text:
+          market === "en"
+            ? "I do not expect tricks or betrayal from my partner."
+            : "Я не жду подвоха от партнёра.",
+        textRu: "Я не жду подвоха от партнёра.",
+        textEn: "I do not expect tricks or betrayal from my partner.",
+        options: market === "en" ? SCALE_OPTIONS_EN : SCALE_OPTIONS_RU,
+        optionsRu: SCALE_OPTIONS_RU,
+        optionsEn: SCALE_OPTIONS_EN,
       },
       {
         id: "t8",
-        text: "Мне легко быть собой в этих отношениях.",
-        options: ["Никогда", "Редко", "Иногда", "Часто", "Всегда"],
+        text:
+          market === "en"
+            ? "It is easy for me to be myself in this relationship."
+            : "Мне легко быть собой в этих отношениях.",
+        textRu: "Мне легко быть собой в этих отношениях.",
+        textEn: "It is easy for me to be myself in this relationship.",
+        options: market === "en" ? SCALE_OPTIONS_EN : SCALE_OPTIONS_RU,
+        optionsRu: SCALE_OPTIONS_RU,
+        optionsEn: SCALE_OPTIONS_EN,
       },
     ],
   },
+
   {
     id: "love-language",
-    title: "Язык любви",
-    description: "Определит, как тебе приятнее всего чувствовать любовь и заботу.",
+    title: market === "en" ? "Love Language" : "Язык любви",
+    titleRu: "Язык любви",
+    titleEn: "Love Language",
+    description:
+      market === "en"
+        ? "Helps determine how you most naturally feel love and care."
+        : "Определит, как тебе приятнее всего чувствовать любовь и заботу.",
+    descriptionRu:
+      "Определит, как тебе приятнее всего чувствовать любовь и заботу.",
+    descriptionEn:
+      "Helps determine how you most naturally feel love and care.",
     reward: 60,
     kind: "love-language",
     questions: [
       {
         id: "l1",
-        text: "Что приятнее получить от партнёра?",
-        options: [
+        text:
+          market === "en"
+            ? "What would feel nicest to receive from your partner?"
+            : "Что приятнее получить от партнёра?",
+        textRu: "Что приятнее получить от партнёра?",
+        textEn: "What would feel nicest to receive from your partner?",
+        options:
+          market === "en"
+            ? [
+                "Warm words and compliments",
+                "Hugs and touch",
+                "A gift or surprise",
+                "Quality time together",
+                "Help with everyday things",
+              ]
+            : [
+                "Тёплые слова и комплименты",
+                "Объятия и прикосновения",
+                "Подарок или сюрприз",
+                "Совместное время только вдвоём",
+                "Помощь в делах",
+              ],
+        optionsRu: [
           "Тёплые слова и комплименты",
           "Объятия и прикосновения",
           "Подарок или сюрприз",
           "Совместное время только вдвоём",
           "Помощь в делах",
         ],
+        optionsEn: [
+          "Warm words and compliments",
+          "Hugs and touch",
+          "A gift or surprise",
+          "Quality time together",
+          "Help with everyday things",
+        ],
       },
       {
         id: "l2",
-        text: "Когда тебе особенно хорошо в отношениях?",
-        options: [
+        text:
+          market === "en"
+            ? "When do you feel especially happy in a relationship?"
+            : "Когда тебе особенно хорошо в отношениях?",
+        textRu: "Когда тебе особенно хорошо в отношениях?",
+        textEn: "When do you feel especially happy in a relationship?",
+        options:
+          market === "en"
+            ? [
+                "When I am praised and supported",
+                "When I am hugged and kissed",
+                "When I get unexpected gifts",
+                "When I get full attention",
+                "When I am helped without asking",
+              ]
+            : [
+                "Когда меня хвалят и поддерживают",
+                "Когда меня обнимают и целуют",
+                "Когда делают неожиданные подарки",
+                "Когда уделяют мне всё внимание",
+                "Когда помогают без просьб",
+              ],
+        optionsRu: [
           "Когда меня хвалят и поддерживают",
           "Когда меня обнимают и целуют",
           "Когда делают неожиданные подарки",
           "Когда уделяют мне всё внимание",
           "Когда помогают без просьб",
         ],
+        optionsEn: [
+          "When I am praised and supported",
+          "When I am hugged and kissed",
+          "When I get unexpected gifts",
+          "When I get full attention",
+          "When I am helped without asking",
+        ],
       },
       {
         id: "l3",
-        text: "Что ты запоминаешь сильнее всего?",
-        options: [
+        text:
+          market === "en"
+            ? "What do you remember the most?"
+            : "Что ты запоминаешь сильнее всего?",
+        textRu: "Что ты запоминаешь сильнее всего?",
+        textEn: "What do you remember the most?",
+        options:
+          market === "en"
+            ? [
+                "Beautiful words",
+                "Tender gestures",
+                "Material signs of attention",
+                "Time spent together",
+                "Real care shown through actions",
+              ]
+            : [
+                "Красивые слова",
+                "Нежные жесты",
+                "Материальные знаки внимания",
+                "Проведённое вместе время",
+                "Реальную заботу в действиях",
+              ],
+        optionsRu: [
           "Красивые слова",
           "Нежные жесты",
           "Материальные знаки внимания",
           "Проведённое вместе время",
           "Реальную заботу в действиях",
         ],
+        optionsEn: [
+          "Beautiful words",
+          "Tender gestures",
+          "Material signs of attention",
+          "Time spent together",
+          "Real care shown through actions",
+        ],
       },
       {
         id: "l4",
-        text: "Как тебе легче почувствовать любовь?",
-        options: [
+        text:
+          market === "en"
+            ? "What makes it easiest for you to feel loved?"
+            : "Как тебе легче почувствовать любовь?",
+        textRu: "Как тебе легче почувствовать любовь?",
+        textEn: "What makes it easiest for you to feel loved?",
+        options:
+          market === "en"
+            ? [
+                "Hearing it in words",
+                "Feeling it physically",
+                "Receiving something symbolic",
+                "Spending longer time together",
+                "Seeing help and involvement",
+              ]
+            : [
+                "Услышать это словами",
+                "Почувствовать физически",
+                "Получить что-то символичное",
+                "Побыть рядом подольше",
+                "Увидеть помощь и участие",
+              ],
+        optionsRu: [
           "Услышать это словами",
           "Почувствовать физически",
           "Получить что-то символичное",
           "Побыть рядом подольше",
           "Увидеть помощь и участие",
         ],
+        optionsEn: [
+          "Hearing it in words",
+          "Feeling it physically",
+          "Receiving something symbolic",
+          "Spending longer time together",
+          "Seeing help and involvement",
+        ],
       },
       {
         id: "l5",
-        text: "Что тебя расстраивает сильнее всего, когда этого не хватает?",
-        options: [
+        text:
+          market === "en"
+            ? "What upsets you the most when it is missing?"
+            : "Что тебя расстраивает сильнее всего, когда этого не хватает?",
+        textRu: "Что тебя расстраивает сильнее всего, когда этого не хватает?",
+        textEn: "What upsets you the most when it is missing?",
+        options:
+          market === "en"
+            ? [
+                "Support and words",
+                "Tenderness",
+                "Gifts and surprises",
+                "Time together",
+                "Help and care",
+              ]
+            : [
+                "Поддержки и слов",
+                "Нежности",
+                "Подарков и сюрпризов",
+                "Времени вместе",
+                "Помощи и заботы",
+              ],
+        optionsRu: [
           "Поддержки и слов",
           "Нежности",
           "Подарков и сюрпризов",
           "Времени вместе",
           "Помощи и заботы",
         ],
+        optionsEn: [
+          "Support and words",
+          "Tenderness",
+          "Gifts and surprises",
+          "Time together",
+          "Help and care",
+        ],
       },
       {
         id: "l6",
-        text: "Что для тебя романтичнее?",
-        options: [
+        text:
+          market === "en"
+            ? "What feels more romantic to you?"
+            : "Что для тебя романтичнее?",
+        textRu: "Что для тебя романтичнее?",
+        textEn: "What feels more romantic to you?",
+        options:
+          market === "en"
+            ? [
+                "A sincere confession",
+                "Long hugs",
+                "An unexpected gift",
+                "An evening for two",
+                "Being cared for through actions",
+              ]
+            : [
+                "Искреннее признание",
+                "Долгие объятия",
+                "Неожиданный подарок",
+                "Вечер вдвоём",
+                "Когда о тебе заботятся делом",
+              ],
+        optionsRu: [
           "Искреннее признание",
           "Долгие объятия",
           "Неожиданный подарок",
           "Вечер вдвоём",
           "Когда о тебе заботятся делом",
         ],
+        optionsEn: [
+          "A sincere confession",
+          "Long hugs",
+          "An unexpected gift",
+          "An evening for two",
+          "Being cared for through actions",
+        ],
       },
     ],
   },
+
   {
     id: "personality-strengths",
-    title: "Сильные стороны личности",
-    description: "Покажет, какая твоя энергия сильнее всего проявляется в жизни и отношениях.",
+    title:
+      market === "en"
+        ? "Personal Strengths"
+        : "Сильные стороны личности",
+    titleRu: "Сильные стороны личности",
+    titleEn: "Personal Strengths",
+    description:
+      market === "en"
+        ? "Shows which of your inner strengths stands out the most in life and relationships."
+        : "Покажет, какая твоя энергия сильнее всего проявляется в жизни и отношениях.",
+    descriptionRu:
+      "Покажет, какая твоя энергия сильнее всего проявляется в жизни и отношениях.",
+    descriptionEn:
+      "Shows which of your inner strengths stands out the most in life and relationships.",
     reward: 60,
     kind: "personality",
     questions: [
       {
         id: "p1",
-        text: "В сложной ситуации ты чаще...",
-        options: [
+        text:
+          market === "en"
+            ? "In a difficult situation, you are more likely to..."
+            : "В сложной ситуации ты чаще...",
+        textRu: "В сложной ситуации ты чаще...",
+        textEn: "In a difficult situation, you are more likely to...",
+        options:
+          market === "en"
+            ? [
+                "Support others",
+                "Take responsibility",
+                "Try to keep warmth and romance",
+                "Stay calm",
+                "Energize everyone around you",
+              ]
+            : [
+                "Поддерживаешь других",
+                "Берёшь ответственность на себя",
+                "Стараешься сохранить романтику и тепло",
+                "Сохраняешь спокойствие",
+                "Быстро заряжаешь всех энергией",
+              ],
+        optionsRu: [
           "Поддерживаешь других",
           "Берёшь ответственность на себя",
           "Стараешься сохранить романтику и тепло",
           "Сохраняешь спокойствие",
           "Быстро заряжаешь всех энергией",
         ],
+        optionsEn: [
+          "Support others",
+          "Take responsibility",
+          "Try to keep warmth and romance",
+          "Stay calm",
+          "Energize everyone around you",
+        ],
       },
       {
         id: "p2",
-        text: "Люди чаще ценят в тебе...",
-        options: [
+        text:
+          market === "en"
+            ? "People most often value in you..."
+            : "Люди чаще ценят в тебе...",
+        textRu: "Люди чаще ценят в тебе...",
+        textEn: "People most often value in you...",
+        options:
+          market === "en"
+            ? [
+                "Kindness",
+                "Confidence",
+                "Sensitivity",
+                "Reliability",
+                "Charisma",
+              ]
+            : [
+                "Доброту",
+                "Уверенность",
+                "Чувственность",
+                "Надёжность",
+                "Харизму",
+              ],
+        optionsRu: [
           "Доброту",
           "Уверенность",
           "Чувственность",
           "Надёжность",
           "Харизму",
         ],
+        optionsEn: [
+          "Kindness",
+          "Confidence",
+          "Sensitivity",
+          "Reliability",
+          "Charisma",
+        ],
       },
       {
         id: "p3",
-        text: "В отношениях ты больше про...",
-        options: [
+        text:
+          market === "en"
+            ? "In relationships, you are mostly about..."
+            : "В отношениях ты больше про...",
+        textRu: "В отношениях ты больше про...",
+        textEn: "In relationships, you are mostly about...",
+        options:
+          market === "en"
+            ? [
+                "Care",
+                "Strength of character",
+                "Romance",
+                "Stability",
+                "Emotion and drive",
+              ]
+            : [
+                "Заботу",
+                "Силу характера",
+                "Романтику",
+                "Стабильность",
+                "Эмоции и драйв",
+              ],
+        optionsRu: [
           "Заботу",
           "Силу характера",
           "Романтику",
           "Стабильность",
           "Эмоции и драйв",
         ],
+        optionsEn: [
+          "Care",
+          "Strength of character",
+          "Romance",
+          "Stability",
+          "Emotion and drive",
+        ],
       },
       {
         id: "p4",
-        text: "Какой твой главный плюс?",
-        options: [
+        text:
+          market === "en"
+            ? "What is your biggest strength?"
+            : "Какой твой главный плюс?",
+        textRu: "Какой твой главный плюс?",
+        textEn: "What is your biggest strength?",
+        options:
+          market === "en"
+            ? [
+                "Empathy",
+                "Determination",
+                "Tenderness",
+                "Balance",
+                "Energy",
+              ]
+            : [
+                "Эмпатия",
+                "Решительность",
+                "Нежность",
+                "Уравновешенность",
+                "Энергичность",
+              ],
+        optionsRu: [
           "Эмпатия",
           "Решительность",
           "Нежность",
           "Уравновешенность",
           "Энергичность",
         ],
+        optionsEn: [
+          "Empathy",
+          "Determination",
+          "Tenderness",
+          "Balance",
+          "Energy",
+        ],
       },
       {
         id: "p5",
-        text: "Когда рядом близкий человек, ты чаще...",
-        options: [
+        text:
+          market === "en"
+            ? "When someone close is рядом, you more often..."
+            : "Когда рядом близкий человек, ты чаще...",
+        textRu: "Когда рядом близкий человек, ты чаще...",
+        textEn: "When someone close is nearby, you more often...",
+        options:
+          market === "en"
+            ? [
+                "Support",
+                "Protect",
+                "Inspire",
+                "Calm",
+                "Charge with energy",
+              ]
+            : [
+                "Поддерживаешь",
+                "Защищаешь",
+                "Вдохновляешь",
+                "Успокаиваешь",
+                "Заряжаешь",
+              ],
+        optionsRu: [
           "Поддерживаешь",
           "Защищаешь",
           "Вдохновляешь",
           "Успокаиваешь",
           "Заряжаешь",
         ],
+        optionsEn: [
+          "Support",
+          "Protect",
+          "Inspire",
+          "Calm",
+          "Charge with energy",
+        ],
       },
       {
         id: "p6",
-        text: "Твой идеальный образ себя — это...",
-        options: [
+        text:
+          market === "en"
+            ? "Your ideal self-image is..."
+            : "Твой идеальный образ себя — это...",
+        textRu: "Твой идеальный образ себя — это...",
+        textEn: "Your ideal self-image is...",
+        options:
+          market === "en"
+            ? [
+                "A caring person",
+                "A strong personality",
+                "A romantic soul",
+                "A calm and wise person",
+                "A bright source of energy",
+              ]
+            : [
+                "Заботливый человек",
+                "Сильная личность",
+                "Романтичная натура",
+                "Спокойный и мудрый человек",
+                "Яркий источник энергии",
+              ],
+        optionsRu: [
           "Заботливый человек",
           "Сильная личность",
           "Романтичная натура",
           "Спокойный и мудрый человек",
           "Яркий источник энергии",
+        ],
+        optionsEn: [
+          "A caring person",
+          "A strong personality",
+          "A romantic soul",
+          "A calm and wise person",
+          "A bright source of energy",
         ],
       },
     ],
@@ -1013,228 +1436,225 @@ function createPollQuestions(
   theme: string,
   gender: "boy" | "girl"
 ): PollQuestion[] {
+  const optionsRu = [
+    "Полностью согласен",
+    "Скорее согласен",
+    "Сложно сказать",
+    "Скорее не согласен",
+    "Совсем не согласен",
+  ];
 
-  const options = [
-  "Полностью согласен",
-  "Скорее согласен",
-  "Сложно сказать",
-  "Скорее не согласен",
-  "Совсем не согласен",
-];
+  const optionsEn = [
+    "Strongly agree",
+    "Somewhat agree",
+    "Not sure",
+    "Somewhat disagree",
+    "Strongly disagree",
+  ];
+
+  const make = (id: string, textRu: string, textEn: string): PollQuestion => ({
+    id,
+    text: market === "en" ? textEn : textRu,
+    textRu,
+    textEn,
+    options: market === "en" ? optionsEn : optionsRu,
+    optionsRu,
+    optionsEn,
+  });
 
   switch (theme) {
-
-    
-
-
     case "Общение":
       return gender === "boy"
         ? [
-            { id: "q1", text: "Мне проще говорить о проблеме прямо, чем намекать.", options },
-            { id: "q2", text: "Я ценю, когда разговор короткий и по делу.", options },
-            { id: "q3", text: "Мне важно, чтобы партнёр говорил честно без игр и молчания.", options },
-            { id: "q4", text: "Если что-то не нравится, лучше сказать сразу.", options },
-            { id: "q5", text: "Я уважаю спокойный разговор без лишней драмы.", options },
-            { id: "q6", text: "Мне важно чувствовать, что меня слушают, а не перебивают.", options },
+            make("q1", "Мне проще говорить о проблеме прямо, чем намекать.", "It is easier for me to talk about a problem directly than to hint at it."),
+            make("q2", "Я ценю, когда разговор короткий и по делу.", "I appreciate conversations that are brief and to the point."),
+            make("q3", "Мне важно, чтобы партнёр говорил честно без игр и молчания.", "It matters to me that my partner speaks honestly without games or silent treatment."),
+            make("q4", "Если что-то не нравится, лучше сказать сразу.", "If something feels wrong, it is better to say it right away."),
+            make("q5", "Я уважаю спокойный разговор без лишней драмы.", "I value calm conversations without unnecessary drama."),
+            make("q6", "Мне важно чувствовать, что меня слушают, а не перебивают.", "It is important for me to feel heard rather than interrupted."),
           ]
         : [
-            { id: "q1", text: "Мне важно, чтобы со мной говорили мягко и внимательно.", options },
-            { id: "q2", text: "Я замечаю не только слова, но и тон общения.", options },
-            { id: "q3", text: "Мне важно обсуждать чувства, а не только факты.", options },
-            { id: "q4", text: "Я ценю, когда партнёр сам инициирует откровенный разговор.", options },
-            { id: "q5", text: "Мне важно, чтобы мои эмоции не обесценивали.", options },
-            { id: "q6", text: "После сложного разговора мне важно чувствовать тепло и близость.", options },
+            make("q1", "Мне важно, чтобы со мной говорили мягко и внимательно.", "It is important to me that people speak to me gently and attentively."),
+            make("q2", "Я замечаю не только слова, но и тон общения.", "I notice not only words, but also the tone of communication."),
+            make("q3", "Мне важно обсуждать чувства, а не только факты.", "It is important to me to discuss feelings, not just facts."),
+            make("q4", "Я ценю, когда партнёр сам инициирует откровенный разговор.", "I appreciate it when my partner initiates an open conversation first."),
+            make("q5", "Мне важно, чтобы мои эмоции не обесценивали.", "It matters to me that my emotions are not dismissed."),
+            make("q6", "После сложного разговора мне важно чувствовать тепло и близость.", "After a difficult conversation, it is important for me to feel warmth and closeness."),
           ];
 
     case "Любовь":
       return gender === "boy"
         ? [
-            { id: "q1", text: "Для меня любовь — это прежде всего поддержка в жизни.", options },
-            { id: "q2", text: "Я показываю любовь больше поступками, чем словами.", options },
-            { id: "q3", text: "Мне важно чувствовать уважение так же сильно, как нежность.", options },
-            { id: "q4", text: "Когда меня ценят, я сильнее раскрываюсь в отношениях.", options },
-            { id: "q5", text: "Мне важно знать, что мы команда в любых обстоятельствах.", options },
-            { id: "q6", text: "Любовь для меня — это когда рядом спокойно и надёжно.", options },
+            make("q1", "Для меня любовь — это прежде всего поддержка в жизни.", "For me, love is прежде всего support in life."),
+            make("q2", "Я показываю любовь больше поступками, чем словами.", "I show love more through actions than words."),
+            make("q3", "Мне важно чувствовать уважение так же сильно, как нежность.", "It is important for me to feel respect as strongly as tenderness."),
+            make("q4", "Когда меня ценят, я сильнее раскрываюсь в отношениях.", "When I feel valued, I open up more in a relationship."),
+            make("q5", "Мне важно знать, что мы команда в любых обстоятельствах.", "It is important for me to know that we are a team in any situation."),
+            make("q6", "Любовь для меня — это когда рядом спокойно и надёжно.", "For me, love is when being together feels calm and secure."),
           ]
         : [
-            { id: "q1", text: "Для меня любовь — это забота, внимание и эмоциональная близость.", options },
-            { id: "q2", text: "Я чувствую любовь сильнее, когда мне говорят тёплые слова.", options },
-            { id: "q3", text: "Мне важно ощущать нежность не только в особые моменты, но и в мелочах.", options },
-            { id: "q4", text: "Когда мной искренне интересуются, я чувствую себя любимой.", options },
-            { id: "q5", text: "Любовь для меня — это когда меня принимают вместе с эмоциями.", options },
-            { id: "q6", text: "Мне важно чувствовать, что отношения — это не привычка, а живое чувство.", options },
+            make("q1", "Для меня любовь — это забота, внимание и эмоциональная близость.", "For me, love is care, attention, and emotional closeness."),
+            make("q2", "Я чувствую любовь сильнее, когда мне говорят тёплые слова.", "I feel love more strongly when I hear warm words."),
+            make("q3", "Мне важно ощущать нежность не только в особые моменты, но и в мелочах.", "It is important for me to feel tenderness not only in special moments, but also in small everyday things."),
+            make("q4", "Когда мной искренне интересуются, я чувствую себя любимой.", "When someone takes a genuine interest in me, I feel loved."),
+            make("q5", "Любовь для меня — это когда меня принимают вместе с эмоциями.", "For me, love is being accepted together with my emotions."),
+            make("q6", "Мне важно чувствовать, что отношения — это не привычка, а живое чувство.", "It is important for me to feel that a relationship is not just a habit, but a living feeling."),
           ];
 
     case "Конфликты":
       return gender === "boy"
         ? [
-            { id: "q1", text: "Во время ссоры мне нужно немного времени, чтобы остыть.", options },
-            { id: "q2", text: "Я лучше решаю конфликт спокойно, без крика и давления.", options },
-            { id: "q3", text: "Мне трудно продолжать разговор, если на меня давят эмоциями.", options },
-            { id: "q4", text: "Я считаю важным обсуждать не только чувства, но и конкретное решение.", options },
-            { id: "q5", text: "После конфликта мне важно быстро вернуть нормальное общение.", options },
-            { id: "q6", text: "Я легче иду на примирение, когда со мной разговаривают уважительно.", options },
+            make("q1", "Во время ссоры мне нужно немного времени, чтобы остыть.", "During an argument, I need a little time to cool down."),
+            make("q2", "Я лучше решаю конфликт спокойно, без крика и давления.", "I handle conflict better calmly, without yelling or pressure."),
+            make("q3", "Мне трудно продолжать разговор, если на меня давят эмоциями.", "It is hard for me to continue talking when strong emotions are pushed onto me."),
+            make("q4", "Я считаю важным обсуждать не только чувства, но и конкретное решение.", "I think it is important to discuss not only feelings, but also a concrete solution."),
+            make("q5", "После конфликта мне важно быстро вернуть нормальное общение.", "After a conflict, it is important for me to return to normal communication fairly quickly."),
+            make("q6", "Я легче иду на примирение, когда со мной разговаривают уважительно.", "It is easier for me to reconcile when I am spoken to respectfully."),
           ]
         : [
-            { id: "q1", text: "Во время ссоры мне важно, чтобы мои чувства не игнорировали.", options },
-            { id: "q2", text: "Мне легче мириться, когда партнёр сам делает шаг навстречу.", options },
-            { id: "q3", text: "В конфликте мне важно не только решение, но и то, как со мной говорят.", options },
-            { id: "q4", text: "Мне тяжело, когда после ссоры партнёр уходит в молчание.", options },
-            { id: "q5", text: "После конфликта мне важно услышать, что меня поняли.", options },
-            { id: "q6", text: "Даже в ссоре я хочу чувствовать, что мы всё ещё на одной стороне.", options },
+            make("q1", "Во время ссоры мне важно, чтобы мои чувства не игнорировали.", "During an argument, it is important to me that my feelings are not ignored."),
+            make("q2", "Мне легче мириться, когда партнёр сам делает шаг навстречу.", "It is easier for me to make up when my partner takes the first step."),
+            make("q3", "В конфликте мне важно не только решение, но и то, как со мной говорят.", "In conflict, not only the solution matters to me, but also how I am spoken to."),
+            make("q4", "Мне тяжело, когда после ссоры партнёр уходит в молчание.", "It is hard for me when my partner goes silent after an argument."),
+            make("q5", "После конфликта мне важно услышать, что меня поняли.", "After a conflict, it is important for me to hear that I was understood."),
+            make("q6", "Даже в ссоре я хочу чувствовать, что мы всё ещё на одной стороне.", "Even during a fight, I want to feel that we are still on the same side."),
           ];
 
     case "Доверие":
       return gender === "boy"
         ? [
-            { id: "q1", text: "Для меня доверие — это честность даже в неприятных темах.", options },
-            { id: "q2", text: "Мне важно, чтобы в отношениях не было скрытности без причины.", options },
-            { id: "q3", text: "Я сильнее доверяю, когда слова совпадают с действиями.", options },
-            { id: "q4", text: "Мне важно чувствовать, что партнёр на моей стороне даже в сложные периоды.", options },
-            { id: "q5", text: "Доверие для меня строится постепенно, а не появляется сразу.", options },
-            { id: "q6", text: "Мне трудно быть открытым, если я чувствую подозрение в свой адрес.", options },
+            make("q1", "Для меня доверие — это честность даже в неприятных темах.", "For me, trust means honesty even in uncomfortable topics."),
+            make("q2", "Мне важно, чтобы в отношениях не было скрытности без причины.", "It is important to me that there is no unnecessary secrecy in a relationship."),
+            make("q3", "Я сильнее доверяю, когда слова совпадают с действиями.", "I trust more when words match actions."),
+            make("q4", "Мне важно чувствовать, что партнёр на моей стороне даже в сложные периоды.", "It is important for me to feel that my partner is on my side even during difficult times."),
+            make("q5", "Доверие для меня строится постепенно, а не появляется сразу.", "For me, trust is built gradually, not instantly."),
+            make("q6", "Мне трудно быть открытым, если я чувствую подозрение в свой адрес.", "It is difficult for me to be open when I feel suspected."),
           ]
         : [
-            { id: "q1", text: "Для меня доверие — это чувство безопасности рядом с человеком.", options },
-            { id: "q2", text: "Мне важно, чтобы со мной были искренними даже в мелочах.", options },
-            { id: "q3", text: "Я легче доверяю, когда вижу постоянство и внимание.", options },
-            { id: "q4", text: "Мне важно, чтобы мои переживания не использовали против меня.", options },
-            { id: "q5", text: "Я чувствую доверие, когда могу быть собой без страха осуждения.", options },
-            { id: "q6", text: "Для меня доверие — это когда не нужно угадывать истинное отношение человека.", options },
+            make("q1", "Для меня доверие — это чувство безопасности рядом с человеком.", "For me, trust is the feeling of safety next to a person."),
+            make("q2", "Мне важно, чтобы со мной были искренними даже в мелочах.", "It is important for me that people are sincere with me even in small things."),
+            make("q3", "Я легче доверяю, когда вижу постоянство и внимание.", "I trust more easily when I see consistency and care."),
+            make("q4", "Мне важно, чтобы мои переживания не использовали против меня.", "It matters to me that my vulnerabilities are not used against me."),
+            make("q5", "Я чувствую доверие, когда могу быть собой без страха осуждения.", "I feel trust when I can be myself without fear of judgment."),
+            make("q6", "Для меня доверие — это когда не нужно угадывать истинное отношение человека.", "For me, trust is when I do not have to guess a person's true attitude."),
           ];
 
     case "Понимание":
       return gender === "boy"
         ? [
-            { id: "q1", text: "Мне важно, чтобы партнёр пытался понять мою логику, а не только эмоции.", options },
-            { id: "q2", text: "Я ценю, когда меня не перебивают и дают договорить мысль до конца.", options },
-            { id: "q3", text: "Мне важно, чтобы мои усилия замечали, даже если я мало говорю о них.", options },
-            { id: "q4", text: "Я чувствую понимание, когда меня не заставляют быть другим человеком.", options },
-            { id: "q5", text: "Мне важно, чтобы мои способы проявлять чувства тоже считались значимыми.", options },
-            { id: "q6", text: "Когда меня понимают без давления, я становлюсь более открытым.", options },
+            make("q1", "Мне важно, чтобы партнёр пытался понять мою логику, а не только эмоции.", "It is important to me that my partner tries to understand my logic, not only emotions."),
+            make("q2", "Я ценю, когда меня не перебивают и дают договорить мысль до конца.", "I appreciate it when I am not interrupted and can finish my thought."),
+            make("q3", "Мне важно, чтобы мои усилия замечали, даже если я мало говорю о них.", "It matters to me that my efforts are noticed even if I do not talk about them much."),
+            make("q4", "Я чувствую понимание, когда меня не заставляют быть другим человеком.", "I feel understood when I am not pressured to be someone else."),
+            make("q5", "Мне важно, чтобы мои способы проявлять чувства тоже считались значимыми.", "It is important to me that my ways of showing feelings are also seen as meaningful."),
+            make("q6", "Когда меня понимают без давления, я становлюсь более открытым.", "When I am understood without pressure, I become more open."),
           ]
         : [
-            { id: "q1", text: "Мне важно, чтобы партнёр замечал моё состояние без длинных объяснений.", options },
-            { id: "q2", text: "Я чувствую понимание, когда мои эмоции не называют пустяком.", options },
-            { id: "q3", text: "Мне важно, чтобы ко мне относились бережно в чувствительных темах.", options },
-            { id: "q4", text: "Я ценю, когда партнёр замечает, что со мной что-то не так, и спрашивает сам.", options },
-            { id: "q5", text: "Мне важно, чтобы мою реакцию сначала старались понять, а не критиковать.", options },
-            { id: "q6", text: "Когда меня по-настоящему понимают, я чувствую глубокую близость.", options },
+            make("q1", "Мне важно, чтобы партнёр замечал моё состояние даже без слов.", "It is important to me that my partner notices how I feel even without words."),
+            make("q2", "Я чувствую понимание, когда мои чувства принимают всерьёз.", "I feel understood when my feelings are taken seriously."),
+            make("q3", "Мне важно, чтобы со мной были бережны в трудные моменты.", "It matters to me that I am treated gently in difficult moments."),
+            make("q4", "Я ценю, когда партнёр умеет слушать, а не сразу давать советы.", "I appreciate it when my partner can listen instead of immediately giving advice."),
+            make("q5", "Мне важно чувствовать эмоциональный отклик, а не только формальное участие.", "It is important for me to feel emotional response, not just formal involvement."),
+            make("q6", "Когда меня действительно понимают, я чувствую близость сильнее.", "When I am truly understood, I feel closeness more strongly."),
           ];
 
     case "Романтика":
       return gender === "boy"
         ? [
-            { id: "q1", text: "Для меня романтика — это не только слова, но и красивые поступки.", options },
-            { id: "q2", text: "Мне нравится радовать любимую неожиданными приятными мелочами.", options },
-            { id: "q3", text: "Я считаю, что романтика важна даже в долгих отношениях.", options },
-            { id: "q4", text: "Мне приятно, когда романтическая атмосфера возникает естественно, без давления.", options },
-            { id: "q5", text: "Я ценю моменты, когда можно побыть вдвоём и отключиться от всего.", options },
-            { id: "q6", text: "Романтика для меня — это когда между нами есть особое чувство, а не формальность.", options },
+            make("q1", "Мне нравятся отношения, в которых есть лёгкость, флирт и страсть.", "I like relationships that have lightness, flirting, and passion."),
+            make("q2", "Я ценю неожиданные романтичные моменты больше, чем формальности.", "I value unexpected romantic moments more than formal gestures."),
+            make("q3", "Для меня романтика — это не только слова, но и атмосфера.", "For me, romance is not only words, but also atmosphere."),
+            make("q4", "Мне важно чувствовать взаимное влечение в отношениях.", "It is important for me to feel mutual attraction in a relationship."),
+            make("q5", "Я люблю, когда отношения сохраняют искру даже со временем.", "I like when a relationship keeps its spark over time."),
+            make("q6", "Романтика для меня делает отношения живыми и особенными.", "For me, romance makes a relationship feel alive and special."),
           ]
         : [
-            { id: "q1", text: "Мне важно, чтобы в отношениях была нежность и романтическое внимание.", options },
-            { id: "q2", text: "Я люблю, когда мне устраивают маленькие приятные сюрпризы.", options },
-            { id: "q3", text: "Для меня романтика — это когда человек старается ради наших моментов.", options },
-            { id: "q4", text: "Мне важны красивые жесты, даже если они совсем небольшие.", options },
-            { id: "q5", text: "Я ценю атмосферу, в которой можно почувствовать себя особенной.", options },
-            { id: "q6", text: "Романтика делает отношения для меня живыми и глубокими.", options },
+            make("q1", "Мне важны красивые мелочи, сюрпризы и знаки внимания.", "Beautiful little things, surprises, and thoughtful gestures matter to me."),
+            make("q2", "Я чувствую романтику в атмосфере, взглядах и настроении момента.", "I feel romance in the atmosphere, looks, and mood of the moment."),
+            make("q3", "Мне нравится, когда партнёр старается делать что-то особенное для нас.", "I like it when my partner tries to do something special for us."),
+            make("q4", "Для меня романтика — это способ чувствовать себя желанной и любимой.", "For me, romance is a way to feel desired and loved."),
+            make("q5", "Мне важно, чтобы в отношениях оставалось место для нежности и восхищения.", "It is important to me that there is still room for tenderness and admiration in a relationship."),
+            make("q6", "Я люблю, когда даже обычный день можно сделать немного волшебным.", "I love when even an ordinary day can be made a little magical."),
           ];
 
     case "Личное пространство":
       return gender === "boy"
         ? [
-            { id: "q1", text: "Мне важно иметь время на свои дела без чувства вины.", options },
-            { id: "q2", text: "Даже в близких отношениях мне нужно личное пространство.", options },
-            { id: "q3", text: "Я лучше чувствую себя в отношениях, когда мне доверяют без постоянного контроля.", options },
-            { id: "q4", text: "Мне важно, чтобы мои увлечения уважали, даже если не разделяют.", options },
-            { id: "q5", text: "Иногда мне нужно побыть одному, чтобы восстановиться.", options },
-            { id: "q6", text: "Личное пространство не мешает любви, а делает её здоровее.", options },
+            make("q1", "Мне важно иметь время только для себя без чувства вины.", "It is important for me to have time just for myself without guilt."),
+            make("q2", "Я считаю нормальным, когда у каждого есть свои интересы отдельно от пары.", "I think it is normal when each person has their own interests outside the couple."),
+            make("q3", "Мне легче быть в отношениях, когда мои границы уважают.", "It is easier for me to be in a relationship when my boundaries are respected."),
+            make("q4", "Мне важно, чтобы близость не превращалась в полный контроль.", "It is important to me that closeness does not turn into total control."),
+            make("q5", "Я ценю доверие, когда не нужно отчитываться за каждый шаг.", "I value trust when I do not need to explain every step."),
+            make("q6", "Личное пространство помогает мне сохранять внутренний баланс.", "Personal space helps me keep inner balance."),
           ]
         : [
-            { id: "q1", text: "Мне важно, чтобы у каждого в паре оставалось своё пространство.", options },
-            { id: "q2", text: "Я хочу чувствовать близость, но без ощущения, что меня контролируют.", options },
-            { id: "q3", text: "Мне важно иметь свои интересы и время для себя.", options },
-            { id: "q4", text: "Я ценю отношения, в которых можно быть рядом и не терять себя.", options },
-            { id: "q5", text: "Личное пространство помогает мне сохранять внутренний баланс.", options },
-            { id: "q6", text: "Мне комфортнее в отношениях, где уважают мои границы.", options },
+            make("q1", "Мне важно, чтобы у каждого из нас оставалось своё пространство.", "It is important to me that each of us keeps some personal space."),
+            make("q2", "Я спокойно отношусь к тому, что партнёр хочет побыть один.", "I am okay with my partner wanting some time alone."),
+            make("q3", "Мне важно чувствовать доверие, а не контроль.", "It is important for me to feel trust, not control."),
+            make("q4", "Я считаю, что любовь не должна лишать человека свободы.", "I believe love should not take away a person's freedom."),
+            make("q5", "Мне комфортнее в отношениях, где уважают границы и личное время.", "I feel more comfortable in relationships where boundaries and personal time are respected."),
+            make("q6", "Для меня близость и свобода могут спокойно существовать вместе.", "For me, closeness and freedom can peacefully exist together."),
           ];
 
     case "Будущее":
       return gender === "boy"
         ? [
-            { id: "q1", text: "Мне важно понимать, к чему движутся наши отношения.", options },
-            { id: "q2", text: "Я спокойнее в отношениях, когда у нас есть общие планы.", options },
-            { id: "q3", text: "Мне важно обсуждать серьёзные темы заранее, а не в последний момент.", options },
-            { id: "q4", text: "Я хочу быть уверен, что мы смотрим в одну сторону.", options },
-            { id: "q5", text: "Для меня важно строить отношения с реальной перспективой.", options },
-            { id: "q6", text: "Когда партнёр говорит о нашем будущем, я чувствую больше уверенности.", options },
+            make("q1", "Мне важно понимать, к чему ведут отношения.", "It is important for me to understand where the relationship is heading."),
+            make("q2", "Я спокойнее чувствую себя, когда у пары есть общие планы.", "I feel calmer when a couple has shared plans."),
+            make("q3", "Мне важно, чтобы взгляды на серьёзность отношений совпадали.", "It is important to me that our views on how serious the relationship is match."),
+            make("q4", "Я думаю о будущем охотнее, если чувствую стабильность рядом.", "I think about the future more easily when I feel stability beside me."),
+            make("q5", "Для меня важно обсуждать большие решения вместе.", "It is important to me to discuss big decisions together."),
+            make("q6", "Я хочу чувствовать, что мы движемся в одном направлении.", "I want to feel that we are moving in the same direction."),
           ]
         : [
-            { id: "q1", text: "Мне важно чувствовать, что у наших отношений есть будущее.", options },
-            { id: "q2", text: "Я ценю, когда партнёр сам говорит о совместных планах.", options },
-            { id: "q3", text: "Мне важно понимать, какое место я занимаю в жизни любимого человека.", options },
-            { id: "q4", text: "Я спокойнее, когда мы можем открыто обсуждать серьёзные шаги.", options },
-            { id: "q5", text: "Для меня важно не просто быть вместе сейчас, но и видеть перспективу.", options },
-            { id: "q6", text: "Когда со мной обсуждают будущее, я чувствую себя нужной и значимой.", options },
+            make("q1", "Мне важно чувствовать, что отношения могут перерасти во что-то серьёзное.", "It is important for me to feel that the relationship can grow into something serious."),
+            make("q2", "Я хочу понимать, есть ли у нас общее видение будущего.", "I want to understand whether we share a vision of the future."),
+            make("q3", "Мне важно, чтобы важные планы обсуждались вместе.", "It is important to me that important plans are discussed together."),
+            make("q4", "Я чувствую себя спокойнее, когда понимаю намерения партнёра.", "I feel calmer when I understand my partner's intentions."),
+            make("q5", "Для меня важно, чтобы отношения не стояли на месте слишком долго.", "It is important to me that the relationship does not stay stagnant for too long."),
+            make("q6", "Я хочу видеть рядом человека, с которым можно строить жизнь.", "I want to see beside me a person with whom I can build a life."),
           ];
 
     case "Быт":
       return gender === "boy"
         ? [
-            { id: "q1", text: "Для меня важно, чтобы бытовые обязанности были распределены справедливо.", options },
-            { id: "q2", text: "Я считаю, что комфорт в отношениях строится и на повседневных мелочах.", options },
-            { id: "q3", text: "Мне важно, чтобы в быту было меньше претензий и больше договорённостей.", options },
-            { id: "q4", text: "Я ценю, когда партнёр замечает мои усилия в обычной жизни.", options },
-            { id: "q5", text: "Для меня бытовая совместимость влияет на качество отношений.", options },
-            { id: "q6", text: "Мне проще жить вместе, когда дома есть порядок и уважение к привычкам друг друга.", options },
+            make("q1", "Мне важно, чтобы обязанности в быту распределялись справедливо.", "It is important to me that household responsibilities are shared fairly."),
+            make("q2", "Я ценю комфорт и спокойствие в повседневной жизни.", "I value comfort and calm in everyday life."),
+            make("q3", "Мне важно, чтобы дома было ощущение порядка и уюта.", "It is important to me that home feels orderly and cozy."),
+            make("q4", "Я считаю, что бытовые мелочи сильно влияют на отношения.", "I think everyday household details strongly affect a relationship."),
+            make("q5", "Мне важно, чтобы партнёр умел договариваться по бытовым вопросам.", "It is important to me that my partner can communicate and compromise about household matters."),
+            make("q6", "Совместная жизнь для меня — это ещё и про командность в обычных делах.", "For me, living together is also about teamwork in ordinary things."),
           ]
         : [
-            { id: "q1", text: "Мне важно, чтобы быт не превращался только в мою ответственность.", options },
-            { id: "q2", text: "Я ценю, когда партнёр сам замечает, где нужна помощь.", options },
-            { id: "q3", text: "Для меня важно, чтобы домашние дела воспринимались как общее дело.", options },
-            { id: "q4", text: "Мне приятно, когда мои бытовые усилия замечают и ценят.", options },
-            { id: "q5", text: "Я считаю, что забота в быту — это тоже проявление любви.", options },
-            { id: "q6", text: "Комфорт дома для меня очень влияет на настроение в отношениях.", options },
+            make("q1", "Мне важно, чтобы забота проявлялась и в повседневных мелочах.", "It is important to me that care shows up in everyday little things."),
+            make("q2", "Я ценю, когда бытовые вопросы не ложатся только на одного человека.", "I value it when daily responsibilities do not fall on just one person."),
+            make("q3", "Мне важно чувствовать, что дом — это общее пространство, а не чья-то обязанность.", "It is important to me to feel that home is a shared space, not one person's duty."),
+            make("q4", "Для меня бытовая гармония влияет на эмоциональную близость.", "For me, harmony in daily life affects emotional closeness."),
+            make("q5", "Мне важно, чтобы партнёр замечал, что нужно сделать без постоянных напоминаний.", "It matters to me that my partner notices what needs to be done without constant reminders."),
+            make("q6", "Я чувствую больше тепла в отношениях, когда есть взаимная помощь в обычной жизни.", "I feel more warmth in a relationship when there is mutual help in ordinary life."),
           ];
 
     case "Ревность":
       return gender === "boy"
         ? [
-            { id: "q1", text: "Я спокойнее в отношениях, когда между нами есть ясность и открытость.", options },
-            { id: "q2", text: "Мне неприятно, когда меня специально провоцируют на ревность.", options },
-            { id: "q3", text: "Я считаю, что доверие важнее постоянных проверок.", options },
-            { id: "q4", text: "Мне важно, чтобы партнёр уважал границы общения с другими людьми.", options },
-            { id: "q5", text: "Я легче сохраняю спокойствие, когда чувствую уверенность в отношениях.", options },
-            { id: "q6", text: "Ревность не должна быть способом доказательства любви.", options },
+            make("q1", "Я считаю важным доверять партнёру без постоянных подозрений.", "I think it is important to trust a partner without constant suspicion."),
+            make("q2", "Мне некомфортно, когда ревность превращается в контроль.", "I feel uncomfortable when jealousy turns into control."),
+            make("q3", "Для меня границы важнее, чем запреты.", "For me, boundaries matter more than prohibitions."),
+            make("q4", "Я считаю, что внимание к другим людям не всегда угрожает отношениям.", "I believe that attention to other people does not always threaten a relationship."),
+            make("q5", "Мне важно, чтобы доверие было сильнее поводов для ревности.", "It is important to me that trust is stronger than reasons for jealousy."),
+            make("q6", "Спокойствие в отношениях для меня важнее драматичных проверок чувств.", "Calmness in a relationship is more important to me than dramatic tests of feelings."),
           ]
         : [
-            { id: "q1", text: "Мне важно чувствовать себя единственной и значимой в отношениях.", options },
-            { id: "q2", text: "Я болезненнее воспринимаю ситуации, где не хватает ясности и внимания.", options },
-            { id: "q3", text: "Мне спокойнее, когда партнёр сам умеет расставлять границы с другими.", options },
-            { id: "q4", text: "Я не люблю, когда меня заставляют ревновать ради реакции.", options },
-            { id: "q5", text: "Уверенность в чувствах сильно снижает мою ревность.", options },
-            { id: "q6", text: "Для меня важно, чтобы в отношениях было больше поводов для доверия, чем для тревоги.", options },
+            make("q1", "Мне важно чувствовать себя особенной и выбранной в отношениях.", "It is important for me to feel special and chosen in a relationship."),
+            make("q2", "Я спокойнее, когда в отношениях есть ясные границы с другими людьми.", "I feel calmer when there are clear boundaries with other people in a relationship."),
+            make("q3", "Для меня ревность чаще связана со страхом потери, чем с желанием контролировать.", "For me, jealousy is more often connected to fear of loss than to a desire to control."),
+            make("q4", "Мне важно чувствовать, что партнёр сам бережёт мои чувства.", "It is important for me to feel that my partner protects my feelings on their own."),
+            make("q5", "Я легче справляюсь с ревностью, когда со мной честны и открыты.", "I cope with jealousy more easily when people are honest and open with me."),
+            make("q6", "Для меня спокойствие в отношениях рождается из уважения и определённости.", "For me, peace in a relationship comes from respect and clarity."),
           ];
 
     default:
-      return gender === "boy"
-        ? [
-            { id: "q1", text: "Мне важно чувствовать уважение и поддержку в отношениях.", options },
-            { id: "q2", text: "Я ценю честность и спокойствие в общении.", options },
-            { id: "q3", text: "Мне важно, чтобы отношения развивались в сторону близости и доверия.", options },
-            { id: "q4", text: "Я хочу, чтобы в паре учитывались чувства обоих людей.", options },
-            { id: "q5", text: "Для меня важны стабильность и надёжность в отношениях.", options },
-            { id: "q6", text: "Я считаю, что хорошие отношения строятся на взаимном уважении.", options },
-          ]
-        : [
-            { id: "q1", text: "Мне важно чувствовать заботу и эмоциональную близость в отношениях.", options },
-            { id: "q2", text: "Я ценю тёплое и внимательное отношение каждый день.", options },
-            { id: "q3", text: "Мне важно, чтобы в отношениях было доверие и открытость.", options },
-            { id: "q4", text: "Я хочу, чтобы мои чувства в паре замечали и уважали.", options },
-            { id: "q5", text: "Для меня важны нежность, принятие и безопасность рядом с человеком.", options },
-            { id: "q6", text: "Я считаю, что крепкие отношения строятся на любви и взаимном уважении.", options },
-          ];
+      return [];
   }
 }
 
