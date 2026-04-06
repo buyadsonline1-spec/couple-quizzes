@@ -7782,7 +7782,7 @@ const canClaimWeeklyReward =
       </div>
 
       <button onClick={onBack} style={{ ...secondaryButtonStyle, marginTop: 0 }}>
-        {t.top.back}
+        {t.common.back}
       </button>
     </div>
   );

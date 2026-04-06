@@ -2,14 +2,15 @@ export const TEXT_RU = {
   appName: "Couple Quizzes",
 
   menu: {
-    polls: "Опросы",
-    games: "Игры",
-    tests: "Тесты",
-    rewards: "Очки и призы",
-    pair: "Пара",
-    topPlayers: "Топ игроков",
-    profile: "Профиль и статистика",
-  },
+  polls: "Опросы",
+  games: "Игры",
+  tests: "Тесты",
+  rewards: "Очки и призы",
+  pair: "Пара",
+  top: "Топ игроков",
+  topPlayers: "Топ игроков",
+  profile: "Профиль и статистика",
+},
 
   common: {
     back: "Назад",
@@ -89,15 +90,24 @@ export const TEXT_RU = {
     yourBalance: "Ваш баланс",
   },
 
-  pair: {
-    title: "Пара",
-    subtitle: "Ваш прогресс как пары",
-    level: "Уровень",
-    compatibility: "Совместимость",
-    totalPoints: "Всего очков пары",
-    nextLevel: "До следующего уровня",
-    noPairYet: "Пара еще не подключена",
-  },
+ pair: {
+  title: "Пара",
+  subtitle: "Ваш прогресс как пары",
+  level: "Уровень",
+  compatibility: "Совместимость",
+  totalPoints: "Всего очков пары",
+  nextLevel: "До следующего уровня",
+  noPairYet: "Пара еще не подключена",
+
+  inPair: "Вы в паре",
+  you: "Ты",
+  partner: "Партнёр",
+  currentLevel: "Текущий уровень",
+  dailyQuestion: "Вопрос дня",
+  streakInfo: "Серия",
+  pairInvite: "Пригласить партнёра",
+  pairConnected: "Пара подключена",
+},
 
   referrals: {
     title: "Пригласить друзей",

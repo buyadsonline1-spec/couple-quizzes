@@ -2,15 +2,15 @@ export const TEXT_EN = {
   appName: "Couple Quizzes",
 
   menu: {
-    polls: "Polls",
-    games: "Games",
-    tests: "Tests",
-    rewards: "Points & Rewards",
-    pair: "Pair",
-      top: "Top Players",
-    topPlayers: "Top Players",
-    profile: "Profile & Stats",
-  },
+  polls: "Polls",
+  games: "Games",
+  tests: "Tests",
+  rewards: "Points & Rewards",
+  pair: "Pair",
+  top: "Top Players",
+  topPlayers: "Top Players",
+  profile: "Profile & Stats",
+},
 
   common: {
     back: "Back",
@@ -90,15 +90,24 @@ export const TEXT_EN = {
     yourBalance: "Your balance",
   },
 
-  pair: {
-    title: "Pair",
-    subtitle: "Your progress as a couple",
-    level: "Level",
-    compatibility: "Compatibility",
-    totalPoints: "Total couple points",
-    nextLevel: "To the next level",
-    noPairYet: "No pair connected yet",
-  },
+ pair: {
+  title: "Pair",
+  subtitle: "Your progress as a couple",
+  level: "Level",
+  compatibility: "Compatibility",
+  totalPoints: "Total couple points",
+  nextLevel: "To the next level",
+  noPairYet: "No pair connected yet",
+
+  inPair: "You are in a pair",
+  you: "You",
+  partner: "Partner",
+  currentLevel: "Current level",
+  dailyQuestion: "Question of the Day",
+  streakInfo: "Streak",
+  pairInvite: "Invite partner",
+  pairConnected: "Pair connected",
+},
 
   referrals: {
     title: "Invite Friends",
