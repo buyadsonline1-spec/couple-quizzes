@@ -2206,62 +2206,59 @@ const isWaitingForPartner = hasPairCreated && !hasPartnerConnected;
         {t.pair.dailyQuestion}
       </button>
 
-    {!hasFullPair ? (
-  <>
-    <div style={{ ...cardBaseStyle(), padding: 18 }}>
-      <div
-        style={{
-          display: "inline-flex",
-          alignItems: "center",
-          gap: 8,
-          padding: "8px 12px",
-          borderRadius: 999,
-          background: "rgba(255,255,255,0.30)",
-          color: "#3b3158",
-          fontSize: 13,
-          fontWeight: 800,
-        }}
-      >
-        {t.pair.statusNotConnected}
-      </div>
-
-      <div
-        style={{
-          marginTop: 14,
-          fontSize: 22,
-          fontWeight: 900,
-          color: "#1f1d3a",
-        }}
-      >
-        {t.pair.noPairTitle}
-      </div>
-
-      <div
-        style={{
-          marginTop: 8,
-          color: "#4b446a",
-          lineHeight: 1.45,
-          fontSize: 14,
-        }}
-      >
-        {t.pair.noPairText}
-      </div>
-
-      <button
-        onClick={onOpenInvite}
-        style={{
-          ...primaryButtonStyle,
-          width: "100%",
-          marginTop: 14,
-        }}
-      >
-        {t.pair.invitePartner}
-      </button>
+   {!hasPairCreated ? (
+  <div style={{ ...cardBaseStyle(), padding: 18 }}>
+    <div
+      style={{
+        display: "inline-flex",
+        alignItems: "center",
+        gap: 8,
+        padding: "8px 12px",
+        borderRadius: 999,
+        background: "rgba(255,255,255,0.30)",
+        color: "#3b3158",
+        fontSize: 13,
+        fontWeight: 800,
+      }}
+    >
+      {t.pair.statusNotConnected}
     </div>
-  </>
+
+    <div
+      style={{
+        marginTop: 14,
+        fontSize: 22,
+        fontWeight: 900,
+        color: "#1f1d3a",
+      }}
+    >
+      {t.pair.noPairTitle}
+    </div>
+
+    <div
+      style={{
+        marginTop: 8,
+        color: "#4b446a",
+        lineHeight: 1.45,
+        fontSize: 14,
+      }}
+    >
+      {t.pair.noPairText}
+    </div>
+
+    <button
+      onClick={onOpenInvite}
+      style={{
+        ...primaryButtonStyle,
+        width: "100%",
+        marginTop: 14,
+      }}
+    >
+      {t.pair.invitePartner}
+    </button>
+  </div>
 ) : (
   <>
-
     <div style={{ ...cardBaseStyle(), padding: 18 }}>
       <div
         style={{
@@ -2276,7 +2273,7 @@ const isWaitingForPartner = hasPairCreated && !hasPartnerConnected;
           fontWeight: 800,
         }}
       >
-        {t.pair.statusConnected}
+        {hasPartnerConnected ? t.pair.statusConnected : "Приглашение создано"}
       </div>
 
       <div
@@ -2287,8 +2284,21 @@ const isWaitingForPartner = hasPairCreated && !hasPartnerConnected;
           color: "#1f1d3a",
         }}
       >
-        Вы в паре
+        {hasPartnerConnected ? "Вы в паре" : "Пара создана"}
       </div>
+
+      {!hasPartnerConnected && (
+        <div
+          style={{
+            marginTop: 8,
+            color: "#4b446a",
+            lineHeight: 1.45,
+            fontSize: 14,
+          }}
+        >
+          Отправь код или ссылку партнёру, чтобы он подключился к вашей паре.
+        </div>
+      )}
 
       <div style={{ display: "grid", gap: 12, marginTop: 16 }}>
         <div
@@ -2331,11 +2341,33 @@ const isWaitingForPartner = hasPairCreated && !hasPartnerConnected;
             gap: 12,
           }}
         >
-          {avatarCircle(
-            pair.partner?.firstName,
-            pair.partner?.lastName,
-            pair.partner?.photoUrl
-          )}
+          {hasPartnerConnected
+            ? avatarCircle(
+                pair.partner?.firstName,
+                pair.partner?.lastName,
+                pair.partner?.photoUrl
+              )
+            : (
+              <div
+                style={{
+                  width: 58,
+                  height: 58,
+                  borderRadius: 999,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  background: "rgba(255,255,255,0.34)",
+                  color: "#201a39",
+                  fontWeight: 900,
+                  fontSize: 24,
+                  border: "2px solid rgba(255,255,255,0.42)",
+                  flexShrink: 0,
+                }}
+              >
+                ⏳
+              </div>
+            )}
+
           <div>
             <div style={{ color: "#2c2647", fontWeight: 700 }}>Партнёр</div>
             <div
@@ -2346,15 +2378,35 @@ const isWaitingForPartner = hasPairCreated && !hasPartnerConnected;
                 fontSize: 16,
               }}
             >
-              {pair.partner?.firstName || "Подключён"}
-              {pair.partner?.lastName ? ` ${pair.partner.lastName}` : ""}
+              {hasPartnerConnected
+                ? `${pair.partner?.firstName || "Подключён"}${
+                    pair.partner?.lastName ? ` ${pair.partner.lastName}` : ""
+                  }`
+                : "Ожидаем подключения"}
             </div>
             <div style={{ marginTop: 4, color: "#5a5378", fontSize: 13 }}>
-              {pair.partner?.username ? `@${pair.partner.username}` : "Без username"}
+              {hasPartnerConnected
+                ? pair.partner?.username
+                  ? `@${pair.partner.username}`
+                  : "Без username"
+                : "Партнёр ещё не присоединился"}
             </div>
           </div>
         </div>
       </div>
+
+      {!hasPartnerConnected && (
+        <button
+          onClick={onOpenInvite}
+          style={{
+            ...primaryButtonStyle,
+            width: "100%",
+            marginTop: 14,
+          }}
+        >
+          {t.pair.invitePartner}
+        </button>
+      )}
     </div>
 
     <div style={{ ...cardBaseStyle(), padding: 18 }}>
@@ -2396,23 +2448,23 @@ const isWaitingForPartner = hasPairCreated && !hasPartnerConnected;
           </div>
 
           <div
-  style={{
-    minWidth: 64,
-    height: 64,
-    borderRadius: 18,
-    background: "linear-gradient(135deg,#8f6bff,#ff76ba)",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    color: "#fff",
-    fontSize: 22,
-    fontWeight: 900,
-    boxShadow: "0 6px 18px rgba(143,107,255,0.22)",
-    flexShrink: 0,
-  }}
->
-  {pairLevel.level}
-</div>
+            style={{
+              minWidth: 64,
+              height: 64,
+              borderRadius: 18,
+              background: "linear-gradient(135deg,#8f6bff,#ff76ba)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              color: "#fff",
+              fontSize: 22,
+              fontWeight: 900,
+              boxShadow: "0 6px 18px rgba(143,107,255,0.22)",
+              flexShrink: 0,
+            }}
+          >
+            {pairLevel.level}
+          </div>
         </div>
 
         <div style={{ marginTop: 16 }}>
