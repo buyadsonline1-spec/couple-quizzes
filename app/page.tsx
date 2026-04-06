@@ -17,7 +17,7 @@ const REWARD_CATEGORIES =
   market === "en" ? REWARD_CATEGORIES_EN : REWARD_CATEGORIES_RU;
 
 
-  
+
 
 declare global {
   interface Window {
@@ -5025,7 +5025,7 @@ function MainMenu({
         <MenuButton label={t.menu.tests} emoji="🧠" onClick={() => onNavigate("tests")} />
         <MenuButton label={t.menu.rewards} emoji="🎡" onClick={() => onNavigate("rewards")} />
         <MenuButton label={t.menu.pair} emoji="💕" onClick={() => onNavigate("pair")} />
-        <MenuButton label={t.menu.top} emoji="🏆" onClick={() => onNavigate("top")} />
+        <MenuButton label={t.menu.topPlayers} emoji="🏆" onClick={() => onNavigate("top")} />
 
         <div style={{ gridColumn: "1 / -1" }}>
           <MenuButton label={t.menu.profile}

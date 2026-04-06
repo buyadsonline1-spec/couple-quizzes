@@ -7,6 +7,7 @@ export const TEXT_EN = {
     tests: "Tests",
     rewards: "Points & Rewards",
     pair: "Pair",
+      top: "Top Players",
     topPlayers: "Top Players",
     profile: "Profile & Stats",
   },
