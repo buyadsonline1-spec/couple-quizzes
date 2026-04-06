@@ -2182,7 +2182,7 @@ const isWaitingForPartner = hasPairCreated && !hasPartnerConnected;
   }
 
   return (
-    <div style={{ padding: 16, display: "grid", gap: 14 }}>
+    <div style={{ padding: 16, display: "grid", gap: 6 }}>
       <div style={{ ...cardBaseStyle(), padding: 18 }}>
         <div style={{ fontSize: 28, fontWeight: 900, color: "#1f1d3a" }}>
   {t.pair.title}
