@@ -10,9 +10,17 @@ const webAppUrl = process.env.WEB_APP_URL;
 if (!token) throw new Error("TELEGRAM_BOT_TOKEN is not set");
 if (!webAppUrl) throw new Error("WEB_APP_URL is not set");
 
-const bot = new TelegramBot(token, { polling: true });
+const bot = new TelegramBot(token, {
+  polling: {
+    autoStart: false,
+    interval: 300,
+    params: {
+      timeout: 10,
+    },
+  },
+});
 
-console.log("🤖 Bot started");
+console.log("🤖 Bot init");
 
 // =======================
 // 🔘 КНОПКА В МЕНЮ TG
@@ -41,47 +49,56 @@ async function setMenuButton() {
   }
 }
 
-setMenuButton();
+
 
 // =======================
 // 🚀 /start
 // =======================
-bot.on("message", async (msg) => {
+bot.onText(/^\/start(?:\s+.*)?$/, async (msg) => {
   try {
-    console.log("📩 Message:", msg.text);
+    console.log("📩 /start received:", msg.text, "chat:", msg.chat.id);
 
-    if (!msg.text) return;
-
-    if (msg.text === "/start" || msg.text.startsWith("/start ")) {
-      await bot.sendMessage(
-        msg.chat.id,
-        `💖 Добро пожаловать в Couple Quizzes!
+    await bot.sendMessage(
+      msg.chat.id,
+      `💖 Добро пожаловать в Couple Quizzes!
 
 Здесь вы можете:
-• проходить тесты и опросы для пары  
-• проверять вашу совместимость  
-• получать очки и награды  
-• выигрывать реальные призы  
+• проходить тесты и опросы для пары
+• проверять вашу совместимость
+• получать очки и награды
+• выигрывать реальные призы
 
 Нажми кнопку ниже, чтобы открыть приложение 👇`,
-        {
-          reply_markup: {
-            inline_keyboard: [
-              [
-                {
-                  text: "💖 Открыть Couple Quizzes",
-                  web_app: {
-                    url: webAppUrl,
-                  },
+      {
+        reply_markup: {
+          inline_keyboard: [
+            [
+              {
+                text: "💖 Открыть Couple Quizzes",
+                web_app: {
+                  url: webAppUrl,
                 },
-              ],
+              },
             ],
-          },
-        }
-      );
-    }
+          ],
+        },
+      }
+    );
+
+    console.log("✅ START message sent");
   } catch (error) {
     console.error("❌ START HANDLER ERROR:", error);
+  }
+});
+
+// =======================
+// 🧾 ВСЕ СООБЩЕНИЯ — ЛОГ
+// =======================
+bot.on("message", async (msg) => {
+  try {
+    console.log("📨 Incoming message:", msg.text);
+  } catch (error) {
+    console.error("❌ MESSAGE LOG ERROR:", error);
   }
 });
 
@@ -133,3 +150,33 @@ bot.on("successful_payment", async (msg) => {
     console.error("❌ PAYMENT HANDLER ERROR:", error);
   }
 });
+
+// =======================
+// ⚠️ ОШИБКИ POLLING
+// =======================
+bot.on("polling_error", (error) => {
+  console.error("❌ POLLING ERROR:", error.message);
+});
+
+bot.on("webhook_error", (error) => {
+  console.error("❌ WEBHOOK ERROR:", error.message);
+});
+
+// =======================
+// ▶️ СТАРТ
+// =======================
+async function startBot() {
+  try {
+    await bot.deleteWebHook();
+    console.log("✅ Webhook deleted");
+
+    await setMenuButton();
+
+    await bot.startPolling();
+    console.log("✅ Bot started with polling");
+  } catch (error) {
+    console.error("❌ BOT START ERROR:", error);
+  }
+}
+
+startBot();
