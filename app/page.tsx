@@ -3492,6 +3492,8 @@ const t = market === "en" ? TEXT_EN : TEXT_RU;
     }>
   >([]);
 
+  const [historyExpanded, setHistoryExpanded] = useState(false);
+
   useEffect(() => {
     async function loadTodayAnswers() {
       if (!pair.pairId) return;
@@ -3519,6 +3521,10 @@ const t = market === "en" ? TEXT_EN : TEXT_RU;
     todayAnswers.find((row) => row.telegram_id !== currentUserId) ?? null;
 
   const bothAnswered = !!myAnswer && !!partnerAnswer;
+
+  const visibleHistory = historyExpanded
+  ? appState.dailyPairHistory
+  : appState.dailyPairHistory.slice(0, 1);
 
   async function saveAnswer(answerIndex: number) {
     if (!pair.pairId || !user?.id) {
@@ -3936,13 +3942,42 @@ const t = market === "en" ? TEXT_EN : TEXT_RU;
         )}
 
       {appState.dailyPairHistory.length > 0 && (
-        <div style={{ ...cardBaseStyle(), padding: 14 }}>
-          <div style={{ fontSize: 18, fontWeight: 900, color: "#1f1d3a" }}>
-            История
-          </div>
+  <div style={{ ...cardBaseStyle(), padding: 14 }}>
+    <div
+      style={{
+        display: "flex",
+        justifyContent: "space-between",
+        alignItems: "center",
+        gap: 12,
+      }}
+    >
+      <div style={{ fontSize: 18, fontWeight: 900, color: "#1f1d3a" }}>
+        История
+      </div>
 
-          <div style={{ display: "grid", gap: 8, marginTop: 12 }}>
-            {appState.dailyPairHistory.slice(0, 7).map((item) => {
+      {appState.dailyPairHistory.length > 1 && (
+        <button
+          type="button"
+          onClick={() => setHistoryExpanded((prev) => !prev)}
+          style={{
+            border: "none",
+            background: "rgba(255,255,255,0.78)",
+            color: "#6f54ff",
+            fontSize: 12,
+            fontWeight: 800,
+            padding: "6px 10px",
+            borderRadius: 999,
+            cursor: "pointer",
+            boxShadow: "0 6px 14px rgba(124,92,255,0.10)",
+          }}
+        >
+          {historyExpanded ? "Свернуть" : "Показать всё"}
+        </button>
+      )}
+    </div>
+
+         <div style={{ display: "grid", gap: 8, marginTop: 12 }}>
+  {visibleHistory.map((item) => {
               const historyQuestion =
                 DAILY_PAIR_QUESTIONS.find((q) => q.id === item.questionId) || null;
 

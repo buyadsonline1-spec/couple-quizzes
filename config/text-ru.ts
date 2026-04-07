@@ -103,6 +103,7 @@ export const TEXT_RU = {
   you: "Ты",
   partner: "Партнёр",
   currentLevel: "Текущий уровень",
+  untilNext: "До следующего",
   dailyQuestion: "Вопрос дня",
   streakInfo: "Серия",
   pairInvite: "Пригласить партнёра",
