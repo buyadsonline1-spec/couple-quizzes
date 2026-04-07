@@ -2207,6 +2207,25 @@ function PairScreen({
       >
         {t.pair.dailyQuestion}
       </button>
+      <div
+  style={{
+    marginTop: 6,
+    fontSize: 13,
+    color: "#4b446a",
+  }}
+>
+  Отвечайте вместе каждый день и получайте бонусы 💞
+</div>
+<div
+  style={{
+    marginTop: 6,
+    fontSize: 12,
+    color: "#6b5cff",
+    fontWeight: 700,
+  }}
+>
+  🔥 Серия: {appState?.dailyPairStreak?.current || 0} дней
+</div>
 
       {!hasPairCreated ? (
         <div style={{ marginTop: 10 }}>
@@ -2265,32 +2284,27 @@ function PairScreen({
         <>
           <div style={{ marginTop: 10 }}>
             <div style={{ ...cardBaseStyle(), padding: 18 }}>
-              <div
-                style={{
-                  display: "inline-flex",
-                  alignItems: "center",
-                  gap: 8,
-                  padding: "8px 12px",
-                  borderRadius: 999,
-                  background: "rgba(255,255,255,0.30)",
-                  color: "#3b3158",
-                  fontSize: 13,
-                  fontWeight: 800,
-                }}
-              >
-                {hasFullPair ? t.pair.statusConnected : "Приглашение создано"}
-              </div>
+             
 
               <div
-                style={{
-                  marginTop: 14,
-                  fontSize: 22,
-                  fontWeight: 900,
-                  color: "#1f1d3a",
-                }}
-              >
-                {hasFullPair ? "Вы в паре" : "Пара создана"}
-              </div>
+  style={{
+    fontSize: 22,
+    fontWeight: 900,
+    color: "#1f1d3a",
+  }}
+>
+  {hasFullPair ? "Вы в паре 💕" : "Вы создали пару 💞"}
+</div>
+
+<div
+  style={{
+    marginTop: 6,
+    fontSize: 13,
+    color: "#4b446a",
+  }}
+>
+  Продолжайте узнавать друг друга 💫
+</div>
 
               {!hasPartnerConnected && (
                 <div
@@ -2347,7 +2361,7 @@ function PairScreen({
                         wordBreak: "break-word",
                       }}
                     >
-                      {user?.username ? `@${user.username}` : "Без username"}
+                      {user?.username && `@${user.username}`}
                     </div>
                   </div>
                 </div>
@@ -2409,7 +2423,7 @@ function PairScreen({
                               ? ` ${pair.partner.lastName}`
                               : ""
                           }`
-                        : "Ожидаем подключения"}
+                        : "Партнёр ещё не подключился"}
                     </div>
                     <div
                       style={{
@@ -2420,10 +2434,8 @@ function PairScreen({
                       }}
                     >
                       {hasPartnerConnected
-                        ? pair.partner?.username
-                          ? `@${pair.partner.username}`
-                          : "Без username"
-                        : "Партнёр ещё не присоединился"}
+  ? pair.partner?.username && `@${pair.partner.username}`
+  : "Партнёр ещё не присоединился"}
                     </div>
                   </div>
                 </div>
@@ -2585,8 +2597,20 @@ function PairScreen({
                     }}
                   >
                     {compatibilityProfile.completedThemes > 0
-                      ? `Рассчитано по ${compatibilityProfile.completedThemes} из ${compatibilityProfile.totalThemes} тем`
-                      : "Пройдите парные опросы, чтобы увидеть совместимость"}
+  ? `Рассчитано по ${compatibilityProfile.completedThemes} из ${compatibilityProfile.totalThemes} тем`
+  : "Пройдите парные опросы и узнайте, насколько вы подходите друг другу 💞"}
+  {compatibilityProfile.completedThemes === 0 && (
+  <button
+    onClick={() => setScreen("polls")}
+    style={{
+      ...primaryButtonStyle,
+      width: "100%",
+      marginTop: 12,
+    }}
+  >
+    Пройти опросы
+  </button>
+)}
                   </div>
                 </div>
 
