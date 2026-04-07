@@ -2608,7 +2608,7 @@ function PairScreen({
   : "Пройдите парные опросы и узнайте, насколько вы подходите друг другу 💞"}
   {compatibilityProfile.completedThemes === 0 && (
   <button
-    onClick={() => setScreen("polls")}
+    onClick={onOpenPolls}
     style={{
       ...primaryButtonStyle,
       width: "100%",
