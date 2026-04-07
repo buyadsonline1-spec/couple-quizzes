@@ -2113,6 +2113,7 @@ function PairScreen({
   points,
   pairLevel,
   pairPollAnswers,
+  dailyPairStreak,
   onBack,
   onOpenInvite,
   onOpenDailyQuestion,
@@ -2124,6 +2125,10 @@ function PairScreen({
   points: number;
   pairLevel: ReturnType<typeof getPairLevelInfo>;
   pairPollAnswers: Record<string, number[]>;
+  dailyPairStreak: {
+    current: number;
+    reachedMilestones: number[];
+  };
   onBack: () => void;
   onOpenInvite: () => void;
   onOpenDailyQuestion: () => void;
@@ -2224,7 +2229,7 @@ function PairScreen({
     fontWeight: 700,
   }}
 >
-  🔥 Серия: {appState?.dailyPairStreak?.current || 0} дней
+  🔥 Серия: {dailyPairStreak?.current || 0} дней
 </div>
 
       {!hasPairCreated ? (
@@ -10280,16 +10285,17 @@ if (finishedAllTests && !appState.completionBonusesClaimed.tests) {
 {screen === "pair" && (
   <PairScreen
   t={t}
-    user={user}
-    pair={appState.pair}
-    points={appState.points}
-    pairLevel={getPairLevelInfo(animatedPairPoints)}
-    pairPollAnswers={appState.pairPollAnswers}
-    onBack={() => setScreen("menu")}
-    onOpenInvite={() => setScreen("pair-invite")}
-    onOpenDailyQuestion={() => setScreen("daily-pair-question")}
-    onOpenCompatibilityInfo={() => setScreen("pair-compatibility-info")}
-  />
+  user={user}
+  pair={appState.pair}
+  points={appState.points}
+  pairLevel={getPairLevelInfo(animatedPairPoints)}
+  pairPollAnswers={appState.pairPollAnswers}
+  dailyPairStreak={appState.dailyPairStreak}
+  onBack={() => setScreen("menu")}
+  onOpenInvite={() => setScreen("pair-invite")}
+  onOpenDailyQuestion={() => setScreen("daily-pair-question")}
+  onOpenCompatibilityInfo={() => setScreen("pair-compatibility-info")}
+/>
 )}
 
 {screen === "pair-invite" && (
