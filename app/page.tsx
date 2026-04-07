@@ -2118,6 +2118,7 @@ function PairScreen({
   onOpenInvite,
   onOpenDailyQuestion,
   onOpenCompatibilityInfo,
+  onOpenPolls,
   t,
 }: {
   user: TgUser | null;
@@ -2133,6 +2134,7 @@ function PairScreen({
   onOpenInvite: () => void;
   onOpenDailyQuestion: () => void;
   onOpenCompatibilityInfo: () => void;
+  onOpenPolls: () => void;
   t: any;
 }) {
   const hasPairCreated = !!pair.pairId;
@@ -10295,6 +10297,7 @@ if (finishedAllTests && !appState.completionBonusesClaimed.tests) {
   onOpenInvite={() => setScreen("pair-invite")}
   onOpenDailyQuestion={() => setScreen("daily-pair-question")}
   onOpenCompatibilityInfo={() => setScreen("pair-compatibility-info")}
+  onOpenPolls={() => setScreen("polls")}
 />
 )}
 
