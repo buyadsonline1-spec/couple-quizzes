@@ -5833,12 +5833,41 @@ function handleLoveQuestionFinish() {
         );
       })}
 
-      <button
+
+      <div
+  style={{
+    display: "flex",
+    justifyContent: "space-between",
+    marginTop: 12,
+    gap: 8,
+  }}
+>
+  {page === 2 && (
+    <button
+      onClick={() => setPage(1)}
+      style={{ ...secondaryButtonStyle, flex: 1 }}
+    >
+      ← Назад
+    </button>
+  )}
+
+  {page === 1 && (
+    <button
+      onClick={() => setPage(2)}
+      style={{ ...primaryButtonStyle, flex: 1 }}
+    >
+      Ещё →
+    </button>
+  )}
+</div>
+
+<button
   onClick={onBack}
   style={{ ...secondaryButtonStyle, marginTop: 0, padding: "10px 16px" }}
 >
         {t.common.back}
       </button>
+
     </div>
   );
 }
