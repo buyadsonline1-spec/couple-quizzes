@@ -8131,7 +8131,7 @@ const t = market === "en" ? TEXT_EN : TEXT_RU;
   const fullName =
     [user?.first_name, user?.last_name].filter(Boolean).join(" ") ||
     "Пользователь";
-  const username = user?.username ? `@${user.username}` : "@telegram_user";
+    
  const pairStats = calculatePairStats(pairPollAnswers);
 
 
@@ -8175,9 +8175,41 @@ const t = market === "en" ? TEXT_EN : TEXT_RU;
             <div style={{ fontSize: 24, fontWeight: 900, color: "#1f1d3a" }}>
               {fullName}
             </div>
-            <div style={{ marginTop: 4, color: "#4d466c", fontSize: 15 }}>
-              {username}
-            </div>
+            {isPremium ? (
+  <div
+    style={{
+      marginTop: 6,
+      display: "inline-flex",
+      alignItems: "center",
+      gap: 6,
+      padding: "6px 10px",
+      borderRadius: 999,
+      background: "rgba(255,255,255,0.30)",
+      color: "#3b3158",
+      fontSize: 12,
+      fontWeight: 800,
+    }}
+  >
+    ✨ Premium активен
+  </div>
+) : (
+  <button
+    onClick={() => onNavigate("paywall")}
+    style={{
+      marginTop: 6,
+      padding: "6px 10px",
+      fontSize: 12,
+      borderRadius: 999,
+      border: "none",
+      background: "linear-gradient(135deg,#8f6bff,#ff76ba)",
+      color: "#fff",
+      fontWeight: 700,
+      cursor: "pointer",
+    }}
+  >
+    Разблокировать Premium ✨
+  </button>
+)}
             {isPremium && (
   <div
     style={{
