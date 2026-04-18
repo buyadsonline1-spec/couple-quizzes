@@ -226,6 +226,7 @@ type Game = {
   title: string;
   description: string;
   reward: number;
+    comingSoon?: boolean;
   questions: {
     id: string;
     text: string;
@@ -1602,6 +1603,7 @@ const GAMES: Game[] = [
     questions: [],
   },    
 ];
+
 
 
 const BOTTLE_TASKS: BottleTask[] = [
@@ -5616,6 +5618,19 @@ const t = market === "en" ? TEXT_EN : TEXT_RU;
   value: number;
 } | null>(null);
 const [cardFlipped, setCardFlipped] = useState(false);
+const [page, setPage] = useState(1);
+const gamesPage1 = GAMES;
+
+const gamesPage2: Game[] = [
+  {
+    id: "ai-psychologist",
+    title: "ИИ психолог",
+    description: "ИИ разберёт ваши отношения",
+    reward: 0,
+    questions: [],
+    comingSoon: true,
+  },
+];
 
  
 
@@ -5731,7 +5746,7 @@ function handleLoveQuestionFinish() {
         </div>
       </div>
 
-      {GAMES.map((game) => {
+    {(page === 1 ? gamesPage1 : gamesPage2).map((game) => {
         const completed = completedGameIds.includes(game.id);
 
         return (
@@ -5781,9 +5796,28 @@ function handleLoveQuestionFinish() {
   {game.description}
 </div>
 
+{game.comingSoon && (
+  <div
+    style={{
+      marginTop: 6,
+      fontSize: 12,
+      color: "#6b5cff",
+      fontWeight: 700,
+    }}
+  >
+    Скоро будет доступно 🧠
+  </div>
+)}
 
             <button
-              onClick={() => startGame(game.id)}
+              onClick={() => {
+  if (game.comingSoon) {
+    alert("Скоро будет доступно 🧠");
+    return;
+  }
+
+  startGame(game.id);
+}}
               style={{
   ...primaryButtonStyle,
   width: "100%",
@@ -8131,7 +8165,7 @@ const t = market === "en" ? TEXT_EN : TEXT_RU;
   const fullName =
     [user?.first_name, user?.last_name].filter(Boolean).join(" ") ||
     "Пользователь";
-    
+
  const pairStats = calculatePairStats(pairPollAnswers);
 
 
