@@ -5912,14 +5912,7 @@ function handleLoveQuestionFinish() {
 )}
 
             <button
-              onClick={() => {
-  if (game.comingSoon) {
-    alert("Скоро будет доступно 🧠");
-    return;
-  }
-
-  startGame(game.id);
-}}
+              onClick={() => startGame(game.id)}
               style={{
   ...primaryButtonStyle,
   width: "100%",
