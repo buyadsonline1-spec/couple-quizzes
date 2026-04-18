@@ -5731,7 +5731,8 @@ const gamesPage2: Game[] = [
 
  
 
-  const activeGame = GAMES.find((game) => game.id === activeGameId) || null;
+  const allGames = [...gamesPage1, ...gamesPage2];
+const activeGame = allGames.find((game) => game.id === activeGameId) || null;
 
 if (activeGame?.id === "90-questions") {
   return (
