@@ -5738,6 +5738,18 @@ const gamesPage2: Game[] = [
   const allGames = [...gamesPage1, ...gamesPage2];
 const activeGame = allGames.find((game) => game.id === activeGameId) || null;
 
+if (activeGameId === "ai-psychologist") {
+  return (
+    <div style={{ padding: 20 }}>
+      <div style={{ fontSize: 24 }}>РАБОТАЕТ ПСИХОЛОГ 🧠</div>
+
+      <button onClick={() => setActiveGameId(null)}>
+        Назад
+      </button>
+    </div>
+  );
+}
+
 if (activeGame?.id === "90-questions") {
   return (
     <LoveQuestionsGameScreen
