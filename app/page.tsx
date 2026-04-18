@@ -5857,6 +5857,18 @@ function handleLoveQuestionFinish() {
     {(page === 1 ? gamesPage1 : gamesPage2).map((game) => {
         const completed = completedGameIds.includes(game.id);
 
+        if (activeGame?.id === "ai-psychologist") {
+  return (
+    <div style={{ padding: 20 }}>
+      <div style={{ fontSize: 24 }}>РАБОТАЕТ ПСИХОЛОГ 🧠</div>
+
+      <button onClick={() => setActiveGameId(null)}>
+        Назад
+      </button>
+    </div>
+  );
+}
+
         return (
           <div key={game.id} style={{ ...cardBaseStyle(), padding: 12 }}>
             <div
