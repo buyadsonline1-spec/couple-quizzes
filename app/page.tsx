@@ -1604,6 +1604,45 @@ const GAMES: Game[] = [
   },    
 ];
 
+const AI_PSYCHOLOGIST_QUESTIONS = [
+  {
+    id: "communication-1",
+    category: "communication",
+    text: "Как часто вам трудно спокойно поговорить друг с другом?",
+    options: ["Редко", "Иногда", "Часто"],
+  },
+  {
+    id: "trust-1",
+    category: "trust",
+    text: "Бывает ли в ваших отношениях недоверие?",
+    options: ["Нет", "Иногда", "Да"],
+  },
+  {
+    id: "conflicts-1",
+    category: "conflicts",
+    text: "Как часто мелочи перерастают в ссору?",
+    options: ["Редко", "Иногда", "Часто"],
+  },
+  {
+    id: "closeness-1",
+    category: "closeness",
+    text: "Чувствуете ли вы эмоциональную близость друг к другу?",
+    options: ["Да", "Иногда", "Нет"],
+  },
+  {
+    id: "support-1",
+    category: "support",
+    text: "Чувствуете ли вы поддержку от партнёра?",
+    options: ["Да", "Иногда", "Нет"],
+  },
+  {
+    id: "resentment-1",
+    category: "resentment",
+    text: "Как часто вы копите обиды и не проговариваете их?",
+    options: ["Редко", "Иногда", "Часто"],
+  },
+];
+
 
 
 const BOTTLE_TASKS: BottleTask[] = [
@@ -1738,6 +1777,62 @@ const PAIR_LEVELS = [
   { level: 7, title: "Идеальный союз", points: 3500 },
   { level: 8, title: "Легенды любви", points: 5000 },
 ] as const;
+
+function getAiPsychologistResult(answers: number[]) {
+  let problemScore = 0;
+
+  answers.forEach((value, index) => {
+    const q = AI_PSYCHOLOGIST_QUESTIONS[index];
+    if (!q) return;
+
+    // Для позитивных вопросов переворачиваем шкалу
+    const isPositive =
+      q.category === "closeness" || q.category === "support";
+
+    const normalized = isPositive ? 2 - value : value;
+    problemScore += normalized;
+  });
+
+  if (problemScore >= 9) {
+    return {
+      title: "Есть напряжение, которое лучше не игнорировать",
+      subtitle: "Сейчас у пары есть заметные точки напряжения",
+      description:
+        "Похоже, вам не всегда хватает спокойного диалога, доверия или чувства безопасности рядом друг с другом. Это не значит, что отношения плохие — скорее, им сейчас особенно нужны внимание, честный разговор и бережность.",
+      advice: [
+        "Обсудите одну тему без спора и взаимных обвинений",
+        "Спросите друг друга: чего мне сейчас не хватает в отношениях?",
+        "Не копите обиды — проговорите хотя бы одну из них спокойно",
+      ],
+    };
+  }
+
+  if (problemScore >= 5) {
+    return {
+      title: "В целом всё неплохо, но есть над чем поработать",
+      subtitle: "У пары есть хороший потенциал",
+      description:
+        "У вас уже есть база, но некоторые моменты периодически создают дистанцию или недопонимание. Хорошая новость в том, что это можно быстро улучшить через честный контакт и внимание к чувствам друг друга.",
+      advice: [
+        "Выделите вечер на спокойный разговор без телефонов",
+        "Обсудите, что помогает вам чувствовать близость",
+        "Старайтесь замечать не только проблемы, но и сильные стороны пары",
+      ],
+    };
+  }
+
+  return {
+    title: "У вашей пары хорошая эмоциональная база",
+    subtitle: "Между вами есть близость и опора",
+    description:
+      "Похоже, вы умеете слышать друг друга и в ваших отношениях уже есть доверие, поддержка и контакт. Это сильная основа, которую важно продолжать укреплять маленькими действиями каждый день.",
+    advice: [
+      "Продолжайте говорить о чувствах открыто",
+      "Поддерживайте ритуалы близости — разговоры, свидания, заботу",
+      "Не забывайте замечать хорошее друг в друге",
+    ],
+  };
+}
 
 function getPairLevelInfo(points: number): PairLevelInfo {
   const safePoints = Math.max(0, points);
@@ -5608,6 +5703,8 @@ function GamesScreen({
   const market = getMarket();
 const t = market === "en" ? TEXT_EN : TEXT_RU;
   const [activeGameId, setActiveGameId] = useState<string | null>(null);
+  const [aiStep, setAiStep] = useState(0);
+const [aiAnswers, setAiAnswers] = useState<number[]>([]);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [selectedOptionIndex, setSelectedOptionIndex] = useState<number | null>(null);
   const [correctAnswers, setCorrectAnswers] = useState(0);
@@ -5625,10 +5722,10 @@ const gamesPage2: Game[] = [
   {
     id: "ai-psychologist",
     title: "ИИ психолог",
-    description: "ИИ разберёт ваши отношения",
-    reward: 0,
+    description: "Ответьте на несколько вопросов и получите разбор вашей пары",
+    reward: 10,
     questions: [],
-    comingSoon: true,
+
   },
 ];
 
@@ -5666,7 +5763,12 @@ if (activeGame?.id === "90-questions") {
     setFinished(false);
     setBottleRewardGiven(false);
     setCardFlipped(false);
+  
+     if (gameId === "ai-psychologist") {
+    setAiStep(0);
+    setAiAnswers([]);
   }
+}
 
   function showFloatingReward(value: number) {
   const id = Date.now();
@@ -5836,7 +5938,7 @@ function handleLoveQuestionFinish() {
 <div
   style={{
     display: "flex",
-    
+
     gap: 8,
     marginTop: 12,
   }}
@@ -5860,6 +5962,7 @@ function handleLoveQuestionFinish() {
           ...secondaryButtonStyle,
           flex: 1,
           padding: "10px 16px",
+          background: "rgba(255,255,255,0.95)"
         }}
       >
         Следующая →
@@ -5892,6 +5995,181 @@ function handleLoveQuestionFinish() {
   )}
 </div>
 
+    </div>
+  );
+}
+
+if (activeGame?.id === "ai-psychologist") {
+  const currentQuestion = AI_PSYCHOLOGIST_QUESTIONS[aiStep];
+  const isFinished = aiStep >= AI_PSYCHOLOGIST_QUESTIONS.length;
+  const result = getAiPsychologistResult(aiAnswers);
+
+  function handleAiAnswer(answerIndex: number) {
+    const nextAnswers = [...aiAnswers, answerIndex];
+    const nextStep = aiStep + 1;
+
+    setAiAnswers(nextAnswers);
+    setAiStep(nextStep);
+
+    if (nextStep >= AI_PSYCHOLOGIST_QUESTIONS.length) {
+      const rewardKey = "game-ai-psychologist";
+      if (!playedGameRewardKeys.includes(rewardKey)) {
+        onClaimStepReward(rewardKey);
+      }
+    }
+  }
+
+  return (
+    <div style={{ padding: 16, display: "grid", gap: 14 }}>
+      <div style={{ ...cardBaseStyle(), padding: 18 }}>
+        <div style={{ fontSize: 28, fontWeight: 900, color: "#1f1d3a" }}>
+          ИИ психолог 🧠
+        </div>
+
+        <div
+          style={{
+            marginTop: 8,
+            color: "#4b446a",
+            lineHeight: 1.45,
+            fontSize: 14,
+          }}
+        >
+          Ответьте на несколько вопросов, и психолог поможет понять,
+          что сейчас происходит в ваших отношениях.
+        </div>
+      </div>
+
+      {!isFinished ? (
+        <div style={{ ...cardBaseStyle(), padding: 18 }}>
+          <div
+            style={{
+              fontSize: 13,
+              color: "#6b5cff",
+              fontWeight: 800,
+            }}
+          >
+            Вопрос {aiStep + 1} из {AI_PSYCHOLOGIST_QUESTIONS.length}
+          </div>
+
+          <div
+            style={{
+              marginTop: 10,
+              fontSize: 22,
+              fontWeight: 900,
+              color: "#1f1d3a",
+              lineHeight: 1.35,
+            }}
+          >
+            {currentQuestion.text}
+          </div>
+
+          <div style={{ display: "grid", gap: 10, marginTop: 16 }}>
+            {currentQuestion.options.map((option, index) => (
+              <button
+                key={option}
+                onClick={() => handleAiAnswer(index)}
+                style={{
+                  ...secondaryButtonStyle,
+                  width: "100%",
+                  textAlign: "left",
+                  padding: "14px 16px",
+                  fontWeight: 700,
+                }}
+              >
+                {option}
+              </button>
+            ))}
+          </div>
+        </div>
+      ) : (
+        <>
+          <div style={{ ...cardBaseStyle(), padding: 18 }}>
+            <div
+              style={{
+                fontSize: 13,
+                color: "#6b5cff",
+                fontWeight: 800,
+              }}
+            >
+              Ваш результат
+            </div>
+
+            <div
+              style={{
+                marginTop: 10,
+                fontSize: 24,
+                fontWeight: 900,
+                color: "#1f1d3a",
+                lineHeight: 1.3,
+              }}
+            >
+              {result.title}
+            </div>
+
+            <div
+              style={{
+                marginTop: 8,
+                fontSize: 14,
+                color: "#5a5378",
+                fontWeight: 700,
+                lineHeight: 1.4,
+              }}
+            >
+              {result.subtitle}
+            </div>
+
+            <div
+              style={{
+                marginTop: 14,
+                color: "#4b446a",
+                fontSize: 14,
+                lineHeight: 1.55,
+              }}
+            >
+              {result.description}
+            </div>
+          </div>
+
+          <div style={{ ...cardBaseStyle(), padding: 18 }}>
+            <div style={{ fontSize: 18, fontWeight: 900, color: "#1f1d3a" }}>
+              Что можно сделать уже сейчас 💞
+            </div>
+
+            <div style={{ display: "grid", gap: 10, marginTop: 14 }}>
+              {result.advice.map((item) => (
+                <div
+                  key={item}
+                  style={{
+                    padding: "12px 14px",
+                    borderRadius: 16,
+                    background: "rgba(255,255,255,0.26)",
+                    color: "#40395f",
+                    lineHeight: 1.45,
+                    fontSize: 14,
+                    fontWeight: 700,
+                  }}
+                >
+                  • {item}
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <button
+            onClick={() => startGame("ai-psychologist")}
+            style={{ ...primaryButtonStyle, width: "100%" }}
+          >
+            Пройти ещё раз
+          </button>
+        </>
+      )}
+
+      <button
+        onClick={() => setActiveGameId(null)}
+        style={{ ...secondaryButtonStyle, width: "100%" }}
+      >
+        Назад к играм
+      </button>
     </div>
   );
 }
