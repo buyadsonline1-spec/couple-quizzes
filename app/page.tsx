@@ -5845,30 +5845,46 @@ function handleLoveQuestionFinish() {
     <>
       <button
         onClick={onBack}
-        style={{ ...secondaryButtonStyle, flex: 1, padding: "10px 16px" }}
+        style={{
+          ...secondaryButtonStyle,
+          flex: 1,
+          padding: "10px 16px",
+        }}
       >
-        {t.common.back}
+        Назад
       </button>
 
       <button
         onClick={() => setPage(2)}
-        style={{ ...primaryButtonStyle, flex: 1, padding: "10px 16px" }}
+        style={{
+          ...secondaryButtonStyle,
+          flex: 1,
+          padding: "10px 16px",
+        }}
       >
-        Ещё →
+        Следующая →
       </button>
     </>
   ) : (
     <>
       <button
         onClick={() => setPage(1)}
-        style={{ ...secondaryButtonStyle, flex: 1, padding: "10px 16px" }}
+        style={{
+          ...secondaryButtonStyle,
+          flex: 1,
+          padding: "10px 16px",
+        }}
       >
-        ← 1 страница
+        ← Предыдущая
       </button>
 
       <button
         onClick={onBack}
-        style={{ ...primaryButtonStyle, flex: 1, padding: "10px 16px" }}
+        style={{
+          ...secondaryButtonStyle,
+          flex: 1,
+          padding: "10px 16px",
+        }}
       >
         В меню
       </button>
