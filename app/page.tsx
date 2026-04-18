@@ -1643,6 +1643,9 @@ const AI_PSYCHOLOGIST_QUESTIONS = [
   },
 ];
 
+const AI_PSYCHOLOGIST_AVATAR =
+  "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=200&q=80";
+
 
 
 const BOTTLE_TASKS: BottleTask[] = [
@@ -5704,6 +5707,7 @@ function GamesScreen({
 const t = market === "en" ? TEXT_EN : TEXT_RU;
   const [activeGameId, setActiveGameId] = useState<string | null>(null);
   const [aiStep, setAiStep] = useState(0);
+  const [showAiAnswers, setShowAiAnswers] = useState(true);
 const [aiAnswers, setAiAnswers] = useState<number[]>([]);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [selectedOptionIndex, setSelectedOptionIndex] = useState<number | null>(null);
@@ -5768,6 +5772,7 @@ if (activeGame?.id === "90-questions") {
      if (gameId === "ai-psychologist") {
     setAiStep(0);
     setAiAnswers([]);
+    setShowAiAnswers(true);
   }
 }
 
@@ -5993,25 +5998,35 @@ function handleLoveQuestionFinish() {
   );
 }
 
-if (activeGame?.id === "ai-psychologist") {
+
+
+  if (activeGame?.id === "ai-psychologist") {
   const currentQuestion = AI_PSYCHOLOGIST_QUESTIONS[aiStep];
   const isFinished = aiStep >= AI_PSYCHOLOGIST_QUESTIONS.length;
   const result = getAiPsychologistResult(aiAnswers);
 
+  // 👇 ВОТ СЮДА ВСТАВИТЬ
   function handleAiAnswer(answerIndex: number) {
-    const nextAnswers = [...aiAnswers, answerIndex];
-    const nextStep = aiStep + 1;
+    setShowAiAnswers(false);
 
-    setAiAnswers(nextAnswers);
-    setAiStep(nextStep);
+    setTimeout(async () => {
+      const nextAnswers = [...aiAnswers, answerIndex];
+      const nextStep = aiStep + 1;
 
-    if (nextStep >= AI_PSYCHOLOGIST_QUESTIONS.length) {
-      const rewardKey = "game-ai-psychologist";
-      if (!playedGameRewardKeys.includes(rewardKey)) {
-        onClaimStepReward(rewardKey);
+      setAiAnswers(nextAnswers);
+      setAiStep(nextStep);
+
+      if (nextStep >= AI_PSYCHOLOGIST_QUESTIONS.length) {
+        const rewardKey = "game-ai-psychologist";
+        if (!playedGameRewardKeys.includes(rewardKey)) {
+          await onClaimStepReward(rewardKey);
+        }
+      } else {
+        setShowAiAnswers(true);
       }
-    }
+    }, 250);
   }
+
 
   return (
     <div style={{ padding: 16, display: "grid", gap: 14 }}>
