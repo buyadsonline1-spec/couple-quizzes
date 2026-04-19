@@ -5709,6 +5709,8 @@ const t = market === "en" ? TEXT_EN : TEXT_RU;
   const [aiStep, setAiStep] = useState(0);
   const [showAiAnswers, setShowAiAnswers] = useState(true);
 const [aiAnswers, setAiAnswers] = useState<number[]>([]);
+const [aiTyping, setAiTyping] = useState(false);
+const [lastAiAnswerIndex, setLastAiAnswerIndex] = useState<number | null>(null);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [selectedOptionIndex, setSelectedOptionIndex] = useState<number | null>(null);
   const [correctAnswers, setCorrectAnswers] = useState(0);
@@ -5743,26 +5745,29 @@ if (activeGameId === "ai-psychologist") {
   const isFinished = aiStep >= AI_PSYCHOLOGIST_QUESTIONS.length;
   const result = getAiPsychologistResult(aiAnswers);
 
-  function handleAiAnswer(answerIndex: number) {
-    setShowAiAnswers(false);
+ function handleAiAnswer(answerIndex: number) {
+  setLastAiAnswerIndex(answerIndex);
+  setShowAiAnswers(false);
+  setAiTyping(true);
 
-    setTimeout(async () => {
-      const nextAnswers = [...aiAnswers, answerIndex];
-      const nextStep = aiStep + 1;
+  setTimeout(async () => {
+    const nextAnswers = [...aiAnswers, answerIndex];
+    const nextStep = aiStep + 1;
 
-      setAiAnswers(nextAnswers);
-      setAiStep(nextStep);
+    setAiAnswers(nextAnswers);
+    setAiStep(nextStep);
+    setAiTyping(false);
 
-      if (nextStep >= AI_PSYCHOLOGIST_QUESTIONS.length) {
-        const rewardKey = "game-ai-psychologist";
-        if (!playedGameRewardKeys.includes(rewardKey)) {
-          await onClaimStepReward(rewardKey);
-        }
-      } else {
-        setShowAiAnswers(true);
+    if (nextStep >= AI_PSYCHOLOGIST_QUESTIONS.length) {
+      const rewardKey = "game-ai-psychologist";
+      if (!playedGameRewardKeys.includes(rewardKey)) {
+        await onClaimStepReward(rewardKey);
       }
-    }, 250);
-  }
+    } else {
+      setShowAiAnswers(true);
+    }
+  }, 900);
+}
 
   return (
     <div
@@ -5804,13 +5809,18 @@ if (activeGameId === "ai-psychologist") {
   src={AI_PSYCHOLOGIST_AVATAR}
   alt="Психолог"
   style={{
-    width: 90,
-    height: 90,
-    borderRadius: 999,
-    objectFit: "cover",
-    border: "3px solid rgba(255,255,255,0.5)",
-    flexShrink: 0,
-  }}
+  width: 96,
+  height: 96,
+  borderRadius: 999,
+  objectFit: "cover",
+  border: "3px solid rgba(255,255,255,0.55)",
+  boxShadow: aiTyping
+    ? "0 0 0 10px rgba(143,107,255,0.10), 0 10px 30px rgba(143,107,255,0.22)"
+    : "0 10px 24px rgba(143,107,255,0.16)",
+  flexShrink: 0,
+  transform: aiTyping ? "scale(1.04)" : "scale(1)",
+  transition: "all 0.35s ease",
+}}
 />
 
             <div
@@ -5842,6 +5852,33 @@ if (activeGameId === "ai-psychologist") {
               >
                 {currentAiQuestion.text}
               </div>
+
+              {lastAiAnswerIndex !== null && (
+  <div
+    style={{
+      display: "flex",
+      justifyContent: "flex-end",
+      marginTop: 2,
+    }}
+  >
+    <div
+      style={{
+        maxWidth: "78%",
+        padding: "12px 14px",
+        borderRadius: 18,
+        borderTopRightRadius: 8,
+        background: "linear-gradient(135deg,#8f6bff,#ff76ba)",
+        color: "#fff",
+        fontSize: 14,
+        fontWeight: 700,
+        lineHeight: 1.35,
+        boxShadow: "0 10px 24px rgba(143,107,255,0.18)",
+      }}
+    >
+      {AI_PSYCHOLOGIST_QUESTIONS[Math.max(aiStep - 1, 0)]?.options[lastAiAnswerIndex]}
+    </div>
+  </div>
+)}
             </div>
           </div>
 
@@ -5866,26 +5903,53 @@ if (activeGameId === "ai-psychologist") {
               Выберите ответ
             </div>
 
-            {showAiAnswers && (
-              <div style={{ display: "grid", gap: 10 }}>
-                {currentAiQuestion.options.map((option, index) => (
-                  <button
-                    key={option}
-                    onClick={() => handleAiAnswer(index)}
-                    style={{
-                      ...secondaryButtonStyle,
-                      width: "100%",
-                      textAlign: "left",
-                      padding: "14px 16px",
-                      fontWeight: 700,
-                      fontSize: 15,
-                    }}
-                  >
-                    {option}
-                  </button>
-                ))}
-              </div>
-            )}
+            {aiTyping ? (
+  <div
+    style={{
+      display: "flex",
+      alignItems: "center",
+      gap: 8,
+      color: "#6b5cff",
+      fontSize: 14,
+      fontWeight: 700,
+      padding: "10px 4px 4px",
+    }}
+  >
+    <span
+      style={{
+        width: 8,
+        height: 8,
+        borderRadius: 999,
+        background: "#8f6bff",
+        display: "inline-block",
+        opacity: 0.7,
+        animation: "pulse 1s infinite",
+      }}
+    />
+    Психолог печатает...
+  </div>
+) : (
+  showAiAnswers && (
+    <div style={{ display: "grid", gap: 10 }}>
+      {currentAiQuestion.options.map((option, index) => (
+        <button
+          key={option}
+          onClick={() => handleAiAnswer(index)}
+          style={{
+            ...secondaryButtonStyle,
+            width: "100%",
+            textAlign: "left",
+            padding: "14px 16px",
+            fontWeight: 700,
+            fontSize: 15,
+          }}
+        >
+          {option}
+        </button>
+      ))}
+    </div>
+  )
+)}
           </div>
         </>
       ) : (
@@ -6036,10 +6100,12 @@ if (activeGame?.id === "90-questions") {
     setCardFlipped(false);
   
      if (gameId === "ai-psychologist") {
-    setAiStep(0);
-    setAiAnswers([]);
-    setShowAiAnswers(true);
-  }
+  setAiStep(0);
+  setAiAnswers([]);
+  setShowAiAnswers(true);
+  setAiTyping(false);
+  setLastAiAnswerIndex(null);
+}
 }
 
   function showFloatingReward(value: number) {
@@ -6283,27 +6349,29 @@ function handleLoveQuestionFinish() {
   const isFinished = aiStep >= AI_PSYCHOLOGIST_QUESTIONS.length;
   const result = getAiPsychologistResult(aiAnswers);
 
-  // 👇 ВОТ СЮДА ВСТАВИТЬ
-  function handleAiAnswer(answerIndex: number) {
-    setShowAiAnswers(false);
+ function handleAiAnswer(answerIndex: number) {
+  setLastAiAnswerIndex(answerIndex);
+  setShowAiAnswers(false);
+  setAiTyping(true);
 
-    setTimeout(async () => {
-      const nextAnswers = [...aiAnswers, answerIndex];
-      const nextStep = aiStep + 1;
+  setTimeout(async () => {
+    const nextAnswers = [...aiAnswers, answerIndex];
+    const nextStep = aiStep + 1;
 
-      setAiAnswers(nextAnswers);
-      setAiStep(nextStep);
+    setAiAnswers(nextAnswers);
+    setAiStep(nextStep);
+    setAiTyping(false);
 
-      if (nextStep >= AI_PSYCHOLOGIST_QUESTIONS.length) {
-        const rewardKey = "game-ai-psychologist";
-        if (!playedGameRewardKeys.includes(rewardKey)) {
-          await onClaimStepReward(rewardKey);
-        }
-      } else {
-        setShowAiAnswers(true);
+    if (nextStep >= AI_PSYCHOLOGIST_QUESTIONS.length) {
+      const rewardKey = "game-ai-psychologist";
+      if (!playedGameRewardKeys.includes(rewardKey)) {
+        await onClaimStepReward(rewardKey);
       }
-    }, 250);
-  }
+    } else {
+      setShowAiAnswers(true);
+    }
+  }, 900);
+}
 
 
   return (
