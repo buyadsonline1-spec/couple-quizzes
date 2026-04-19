@@ -1684,8 +1684,37 @@ const AI_PSYCHOLOGIST_QUESTIONS = [
   },
 ];
 
-const AI_PSYCHOLOGIST_AVATAR =
-  "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=200&q=80";
+const AI_PSYCHOLOGIST_AVATARS = {
+  neutral: "/psychologist/neutral.png",
+  thinking: "/psychologist/thinking.png",
+  worried: "/psychologist/worried.png",
+  happy: "/psychologist/happy.png",
+};
+
+function getAiPsychologistEmotion(params: {
+  aiTyping: boolean;
+  isFinished: boolean;
+  aiStep: number;
+}) {
+  const { aiTyping, isFinished, aiStep } = params;
+
+  if (aiTyping) return "thinking";
+  if (isFinished) return "happy";
+
+  const current = AI_PSYCHOLOGIST_QUESTIONS[aiStep];
+
+  if (!current) return "neutral";
+
+  if (
+    current.category === "trust" ||
+    current.category === "conflicts" ||
+    current.category === "resentment"
+  ) {
+    return "worried";
+  }
+
+  return "neutral";
+}
 
 
 
@@ -5854,6 +5883,17 @@ if (activeGameId === "ai-psychologist") {
   const isFinished = aiStep >= AI_PSYCHOLOGIST_QUESTIONS.length;
   const result = getAiPsychologistResult(aiAnswers);
 
+  const psychologistEmotion = getAiPsychologistEmotion({
+  aiTyping,
+  isFinished,
+  aiStep,
+});
+
+const psychologistAvatar =
+  AI_PSYCHOLOGIST_AVATARS[
+    psychologistEmotion as keyof typeof AI_PSYCHOLOGIST_AVATARS
+  ];
+
  function handleAiAnswer(answerIndex: number) {
   setLastAiAnswerIndex(answerIndex);
   setShowAiAnswers(false);
@@ -5915,7 +5955,7 @@ if (activeGameId === "ai-psychologist") {
             }}
           >
             <img
-  src={AI_PSYCHOLOGIST_AVATAR}
+  src={psychologistAvatar}
   alt="Психолог"
   style={{
   width: 96,
@@ -6047,8 +6087,8 @@ if (activeGameId === "ai-psychologist") {
               }}
             >
               <img
-                src={AI_PSYCHOLOGIST_AVATAR}
-                alt="Психолог"
+  src={AI_PSYCHOLOGIST_AVATARS.happy}
+  alt="Психолог"
                 style={{
                   width: 54,
                   height: 54,
