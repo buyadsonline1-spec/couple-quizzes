@@ -1944,46 +1944,7 @@ function getAiPsychologistResult(answers: number[]) {
   };
 }
 
-<div style={{ ...cardBaseStyle(), padding: 18 }}>
-  <div style={{ fontSize: 18, fontWeight: 900, color: "#1f1d3a" }}>
-    Разбор по темам 📊
-  </div>
 
-  <div style={{ display: "grid", gap: 10, marginTop: 14 }}>
-    {result.zones.map((zone) => (
-      <div
-        key={zone.key}
-        style={{
-          padding: "12px 14px",
-          borderRadius: 16,
-          background: "rgba(255,255,255,0.26)",
-        }}
-      >
-        <div
-          style={{
-            fontSize: 15,
-            fontWeight: 800,
-            color: "#1f1d3a",
-            textTransform: "capitalize",
-          }}
-        >
-          {zone.title}
-        </div>
-
-        <div
-          style={{
-            marginTop: 4,
-            fontSize: 13,
-            color: "#5a5378",
-            fontWeight: 700,
-          }}
-        >
-          {zone.label}
-        </div>
-      </div>
-    ))}
-  </div>
-</div>
 
 function getPairLevelInfo(points: number): PairLevelInfo {
   const safePoints = Math.max(0, points);
@@ -6632,6 +6593,47 @@ function handleLoveQuestionFinish() {
               ))}
             </div>
           </div>
+
+          <div style={{ ...cardBaseStyle(), padding: 18 }}>
+  <div style={{ fontSize: 18, fontWeight: 900, color: "#1f1d3a" }}>
+    Разбор по темам 📊
+  </div>
+
+  <div style={{ display: "grid", gap: 10, marginTop: 14 }}>
+    {result.zones.map((zone) => (
+      <div
+        key={zone.key}
+        style={{
+          padding: "12px 14px",
+          borderRadius: 16,
+          background: "rgba(255,255,255,0.26)",
+        }}
+      >
+        <div
+          style={{
+            fontSize: 15,
+            fontWeight: 800,
+            color: "#1f1d3a",
+            textTransform: "capitalize",
+          }}
+        >
+          {zone.title}
+        </div>
+
+        <div
+          style={{
+            marginTop: 4,
+            fontSize: 13,
+            color: "#5a5378",
+            fontWeight: 700,
+          }}
+        >
+          {zone.label}
+        </div>
+      </div>
+    ))}
+  </div>
+</div>
 
           <button
             onClick={() => startGame("ai-psychologist")}
