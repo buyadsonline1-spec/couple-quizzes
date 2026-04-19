@@ -5853,32 +5853,7 @@ if (activeGameId === "ai-psychologist") {
                 {currentAiQuestion.text}
               </div>
 
-              {lastAiAnswerIndex !== null && (
-  <div
-    style={{
-      display: "flex",
-      justifyContent: "flex-end",
-      marginTop: 2,
-    }}
-  >
-    <div
-      style={{
-        maxWidth: "78%",
-        padding: "12px 14px",
-        borderRadius: 18,
-        borderTopRightRadius: 8,
-        background: "linear-gradient(135deg,#8f6bff,#ff76ba)",
-        color: "#fff",
-        fontSize: 14,
-        fontWeight: 700,
-        lineHeight: 1.35,
-        boxShadow: "0 10px 24px rgba(143,107,255,0.18)",
-      }}
-    >
-      {AI_PSYCHOLOGIST_QUESTIONS[Math.max(aiStep - 1, 0)]?.options[lastAiAnswerIndex]}
-    </div>
-  </div>
-)}
+             
             </div>
           </div>
 
