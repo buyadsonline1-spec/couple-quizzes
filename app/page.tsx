@@ -1612,11 +1612,25 @@ const AI_PSYCHOLOGIST_QUESTIONS = [
     options: ["Редко", "Иногда", "Часто"],
   },
   {
+    id: "communication-2",
+    category: "communication",
+    text: "Как часто один из вас чувствует, что его не слышат?",
+    options: ["Редко", "Иногда", "Часто"],
+  },
+
+  {
     id: "trust-1",
     category: "trust",
     text: "Бывает ли в ваших отношениях недоверие?",
     options: ["Нет", "Иногда", "Да"],
   },
+  {
+    id: "trust-2",
+    category: "trust",
+    text: "Как часто вам хочется что-то скрыть друг от друга, чтобы избежать конфликта?",
+    options: ["Редко", "Иногда", "Часто"],
+  },
+
   {
     id: "conflicts-1",
     category: "conflicts",
@@ -1624,11 +1638,25 @@ const AI_PSYCHOLOGIST_QUESTIONS = [
     options: ["Редко", "Иногда", "Часто"],
   },
   {
+    id: "conflicts-2",
+    category: "conflicts",
+    text: "После конфликта вам легко восстановить близость?",
+    options: ["Да", "Иногда", "Нет"],
+  },
+
+  {
     id: "closeness-1",
     category: "closeness",
     text: "Чувствуете ли вы эмоциональную близость друг к другу?",
     options: ["Да", "Иногда", "Нет"],
   },
+  {
+    id: "closeness-2",
+    category: "closeness",
+    text: "Как часто вам не хватает тепла, внимания или нежности в отношениях?",
+    options: ["Редко", "Иногда", "Часто"],
+  },
+
   {
     id: "support-1",
     category: "support",
@@ -1636,10 +1664,23 @@ const AI_PSYCHOLOGIST_QUESTIONS = [
     options: ["Да", "Иногда", "Нет"],
   },
   {
+    id: "support-2",
+    category: "support",
+    text: "Как часто вы чувствуете, что тянете отношения на себе?",
+    options: ["Редко", "Иногда", "Часто"],
+  },
+
+  {
     id: "resentment-1",
     category: "resentment",
     text: "Как часто вы копите обиды и не проговариваете их?",
     options: ["Редко", "Иногда", "Часто"],
+  },
+  {
+    id: "resentment-2",
+    category: "resentment",
+    text: "Есть ли у вас темы, к которым неприятно возвращаться, но они до сих пор болят?",
+    options: ["Нет", "Иногда", "Да"],
   },
 ];
 
@@ -1782,60 +1823,167 @@ const PAIR_LEVELS = [
 ] as const;
 
 function getAiPsychologistResult(answers: number[]) {
-  let problemScore = 0;
+  const positiveCategories = new Set(["closeness", "support"]);
+
+  const categoryScores: Record<string, number> = {
+    communication: 0,
+    trust: 0,
+    conflicts: 0,
+    closeness: 0,
+    support: 0,
+    resentment: 0,
+  };
+
+  const categoryCounts: Record<string, number> = {
+    communication: 0,
+    trust: 0,
+    conflicts: 0,
+    closeness: 0,
+    support: 0,
+    resentment: 0,
+  };
 
   answers.forEach((value, index) => {
     const q = AI_PSYCHOLOGIST_QUESTIONS[index];
     if (!q) return;
 
-    // Для позитивных вопросов переворачиваем шкалу
-    const isPositive =
-      q.category === "closeness" || q.category === "support";
+    let normalized = value;
 
-    const normalized = isPositive ? 2 - value : value;
-    problemScore += normalized;
+    if (positiveCategories.has(q.category)) {
+      normalized = 2 - value;
+    }
+
+    categoryScores[q.category] += normalized;
+    categoryCounts[q.category] += 1;
   });
 
-  if (problemScore >= 9) {
-    return {
-      title: "Есть напряжение, которое лучше не игнорировать",
-      subtitle: "Сейчас у пары есть заметные точки напряжения",
-      description:
-        "Похоже, вам не всегда хватает спокойного диалога, доверия или чувства безопасности рядом друг с другом. Это не значит, что отношения плохие — скорее, им сейчас особенно нужны внимание, честный разговор и бережность.",
-      advice: [
-        "Обсудите одну тему без спора и взаимных обвинений",
-        "Спросите друг друга: чего мне сейчас не хватает в отношениях?",
-        "Не копите обиды — проговорите хотя бы одну из них спокойно",
-      ],
-    };
+  const averages = Object.fromEntries(
+    Object.keys(categoryScores).map((key) => [
+      key,
+      categoryCounts[key] ? categoryScores[key] / categoryCounts[key] : 0,
+    ])
+  ) as Record<string, number>;
+
+  const sortedProblemZones = Object.entries(averages)
+    .sort((a, b) => b[1] - a[1])
+    .map(([key]) => key);
+
+  const mainZone = sortedProblemZones[0];
+  const secondZone = sortedProblemZones[1];
+
+  const categoryTitles: Record<string, string> = {
+    communication: "общение",
+    trust: "доверие",
+    conflicts: "конфликты",
+    closeness: "близость",
+    support: "поддержка",
+    resentment: "обиды",
+  };
+
+  const overallScore =
+    Object.values(averages).reduce((sum, value) => sum + value, 0) /
+    Object.values(averages).length;
+
+  let title = "";
+  let subtitle = "";
+  let description = "";
+  let advice: string[] = [];
+
+  if (overallScore >= 1.35) {
+    title = "Сейчас в отношениях есть заметное напряжение";
+    subtitle = `Главные зоны риска: ${categoryTitles[mainZone]} и ${categoryTitles[secondZone]}`;
+    description =
+      "По ответам видно, что вам сейчас может не хватать ощущения безопасности, ясности и лёгкого контакта. Это не означает, что отношения плохие, но говорит о накопившемся напряжении, которое лучше не игнорировать.";
+    advice = [
+      "Выберите одну конкретную проблему и обсудите только её, не смешивая всё сразу",
+      "Спросите друг друга: что сейчас ранит меня сильнее всего?",
+      "Дайте друг другу не защиту, а сначала понимание и подтверждение чувств",
+    ];
+  } else if (overallScore >= 0.8) {
+    title = "У пары хороший потенциал, но есть уязвимые места";
+    subtitle = `Больше внимания стоит дать теме: ${categoryTitles[mainZone]}`;
+    description =
+      "Ваши отношения не выглядят кризисными, но в них есть повторяющиеся моменты, которые постепенно создают дистанцию. При желании это можно довольно быстро улучшить через более честный диалог и взаимную поддержку.";
+    advice = [
+      "Раз в неделю устраивайте спокойный разговор без телефонов и спешки",
+      "Проговорите, что помогает каждому из вас чувствовать близость",
+      "Замечайте не только проблемы, но и то, что у вас уже получается хорошо",
+    ];
+  } else {
+    title = "У вашей пары довольно здоровая эмоциональная база";
+    subtitle = "Между вами уже есть опора, которую важно сохранять";
+    description =
+      "По ответам видно, что в отношениях достаточно контакта, поддержки и способности договариваться. Это хорошая основа, и сейчас для вас важнее не 'спасать' отношения, а продолжать бережно укреплять то, что уже работает.";
+    advice = [
+      "Сохраняйте привычку говорить друг с другом открыто",
+      "Поддерживайте тёплые ритуалы: свидания, разговоры, маленькую заботу",
+      "Периодически обсуждайте не только проблемы, но и желания в отношениях",
+    ];
   }
 
-  if (problemScore >= 5) {
-    return {
-      title: "В целом всё неплохо, но есть над чем поработать",
-      subtitle: "У пары есть хороший потенциал",
-      description:
-        "У вас уже есть база, но некоторые моменты периодически создают дистанцию или недопонимание. Хорошая новость в том, что это можно быстро улучшить через честный контакт и внимание к чувствам друг друга.",
-      advice: [
-        "Выделите вечер на спокойный разговор без телефонов",
-        "Обсудите, что помогает вам чувствовать близость",
-        "Старайтесь замечать не только проблемы, но и сильные стороны пары",
-      ],
-    };
-  }
+  const zones = Object.entries(averages)
+    .sort((a, b) => b[1] - a[1])
+    .map(([key, value]) => ({
+      key,
+      title: categoryTitles[key],
+      score: value,
+      label:
+        value >= 1.35
+          ? "Нужно внимание"
+          : value >= 0.8
+          ? "Есть над чем работать"
+          : "Сильная зона",
+    }));
 
   return {
-    title: "У вашей пары хорошая эмоциональная база",
-    subtitle: "Между вами есть близость и опора",
-    description:
-      "Похоже, вы умеете слышать друг друга и в ваших отношениях уже есть доверие, поддержка и контакт. Это сильная основа, которую важно продолжать укреплять маленькими действиями каждый день.",
-    advice: [
-      "Продолжайте говорить о чувствах открыто",
-      "Поддерживайте ритуалы близости — разговоры, свидания, заботу",
-      "Не забывайте замечать хорошее друг в друге",
-    ],
+    title,
+    subtitle,
+    description,
+    advice,
+    zones,
   };
 }
+
+<div style={{ ...cardBaseStyle(), padding: 18 }}>
+  <div style={{ fontSize: 18, fontWeight: 900, color: "#1f1d3a" }}>
+    Разбор по темам 📊
+  </div>
+
+  <div style={{ display: "grid", gap: 10, marginTop: 14 }}>
+    {result.zones.map((zone) => (
+      <div
+        key={zone.key}
+        style={{
+          padding: "12px 14px",
+          borderRadius: 16,
+          background: "rgba(255,255,255,0.26)",
+        }}
+      >
+        <div
+          style={{
+            fontSize: 15,
+            fontWeight: 800,
+            color: "#1f1d3a",
+            textTransform: "capitalize",
+          }}
+        >
+          {zone.title}
+        </div>
+
+        <div
+          style={{
+            marginTop: 4,
+            fontSize: 13,
+            color: "#5a5378",
+            fontWeight: 700,
+          }}
+        >
+          {zone.label}
+        </div>
+      </div>
+    ))}
+  </div>
+</div>
 
 function getPairLevelInfo(points: number): PairLevelInfo {
   const safePoints = Math.max(0, points);
