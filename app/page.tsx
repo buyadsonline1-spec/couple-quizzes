@@ -5739,12 +5739,266 @@ const gamesPage2: Game[] = [
 const activeGame = allGames.find((game) => game.id === activeGameId) || null;
 
 if (activeGameId === "ai-psychologist") {
-  return (
-    <div style={{ padding: 20 }}>
-      <div style={{ fontSize: 24 }}>РАБОТАЕТ ПСИХОЛОГ 🧠</div>
+  const currentAiQuestion = AI_PSYCHOLOGIST_QUESTIONS[aiStep];
+  const isFinished = aiStep >= AI_PSYCHOLOGIST_QUESTIONS.length;
+  const result = getAiPsychologistResult(aiAnswers);
 
-      <button onClick={() => setActiveGameId(null)}>
-        Назад
+  function handleAiAnswer(answerIndex: number) {
+    setShowAiAnswers(false);
+
+    setTimeout(async () => {
+      const nextAnswers = [...aiAnswers, answerIndex];
+      const nextStep = aiStep + 1;
+
+      setAiAnswers(nextAnswers);
+      setAiStep(nextStep);
+
+      if (nextStep >= AI_PSYCHOLOGIST_QUESTIONS.length) {
+        const rewardKey = "game-ai-psychologist";
+        if (!playedGameRewardKeys.includes(rewardKey)) {
+          await onClaimStepReward(rewardKey);
+        }
+      } else {
+        setShowAiAnswers(true);
+      }
+    }, 250);
+  }
+
+  return (
+    <div
+      style={{
+        minHeight: "100vh",
+        padding: 16,
+        display: "flex",
+        flexDirection: "column",
+        gap: 14,
+      }}
+    >
+      <div style={{ ...cardBaseStyle(), padding: 18 }}>
+        <div style={{ fontSize: 28, fontWeight: 900, color: "#1f1d3a" }}>
+          ИИ психолог 🧠
+        </div>
+
+        <div
+          style={{
+            marginTop: 8,
+            color: "#4b446a",
+            lineHeight: 1.45,
+            fontSize: 14,
+          }}
+        >
+          Небольшой диалог поможет понять, что сейчас происходит в ваших отношениях.
+        </div>
+      </div>
+
+      {!isFinished ? (
+        <>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "flex-start",
+              gap: 12,
+            }}
+          >
+            <img
+              src={AI_PSYCHOLOGIST_AVATAR}
+              alt="Психолог"
+              style={{
+                width: 54,
+                height: 54,
+                borderRadius: 999,
+                objectFit: "cover",
+                border: "2px solid rgba(255,255,255,0.45)",
+                flexShrink: 0,
+              }}
+            />
+
+            <div
+              style={{
+                ...cardBaseStyle(),
+                padding: 16,
+                flex: 1,
+                borderTopLeftRadius: 12,
+              }}
+            >
+              <div
+                style={{
+                  fontSize: 12,
+                  color: "#6b5cff",
+                  fontWeight: 800,
+                }}
+              >
+                Психолог · вопрос {aiStep + 1} из {AI_PSYCHOLOGIST_QUESTIONS.length}
+              </div>
+
+              <div
+                style={{
+                  marginTop: 8,
+                  fontSize: 20,
+                  fontWeight: 900,
+                  color: "#1f1d3a",
+                  lineHeight: 1.35,
+                }}
+              >
+                {currentAiQuestion.text}
+              </div>
+            </div>
+          </div>
+
+          <div style={{ flex: 1 }} />
+
+          <div
+            style={{
+              ...cardBaseStyle(),
+              padding: 14,
+              position: "sticky",
+              bottom: 0,
+            }}
+          >
+            <div
+              style={{
+                fontSize: 13,
+                color: "#5a5378",
+                fontWeight: 700,
+                marginBottom: 10,
+              }}
+            >
+              Выберите ответ
+            </div>
+
+            {showAiAnswers && (
+              <div style={{ display: "grid", gap: 10 }}>
+                {currentAiQuestion.options.map((option, index) => (
+                  <button
+                    key={option}
+                    onClick={() => handleAiAnswer(index)}
+                    style={{
+                      ...secondaryButtonStyle,
+                      width: "100%",
+                      textAlign: "left",
+                      padding: "14px 16px",
+                      fontWeight: 700,
+                      fontSize: 15,
+                    }}
+                  >
+                    {option}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        </>
+      ) : (
+        <>
+          <div style={{ ...cardBaseStyle(), padding: 18 }}>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 12,
+              }}
+            >
+              <img
+                src={AI_PSYCHOLOGIST_AVATAR}
+                alt="Психолог"
+                style={{
+                  width: 54,
+                  height: 54,
+                  borderRadius: 999,
+                  objectFit: "cover",
+                  border: "2px solid rgba(255,255,255,0.45)",
+                  flexShrink: 0,
+                }}
+              />
+
+              <div>
+                <div
+                  style={{
+                    fontSize: 12,
+                    color: "#6b5cff",
+                    fontWeight: 800,
+                  }}
+                >
+                  Анализ готов
+                </div>
+
+                <div
+                  style={{
+                    marginTop: 4,
+                    fontSize: 22,
+                    fontWeight: 900,
+                    color: "#1f1d3a",
+                    lineHeight: 1.3,
+                  }}
+                >
+                  {result.title}
+                </div>
+              </div>
+            </div>
+
+            <div
+              style={{
+                marginTop: 12,
+                fontSize: 14,
+                color: "#5a5378",
+                fontWeight: 700,
+                lineHeight: 1.4,
+              }}
+            >
+              {result.subtitle}
+            </div>
+
+            <div
+              style={{
+                marginTop: 14,
+                color: "#4b446a",
+                fontSize: 14,
+                lineHeight: 1.55,
+              }}
+            >
+              {result.description}
+            </div>
+          </div>
+
+          <div style={{ ...cardBaseStyle(), padding: 18 }}>
+            <div style={{ fontSize: 18, fontWeight: 900, color: "#1f1d3a" }}>
+              Что можно сделать уже сейчас 💞
+            </div>
+
+            <div style={{ display: "grid", gap: 10, marginTop: 14 }}>
+              {result.advice.map((item) => (
+                <div
+                  key={item}
+                  style={{
+                    padding: "12px 14px",
+                    borderRadius: 16,
+                    background: "rgba(255,255,255,0.26)",
+                    color: "#40395f",
+                    lineHeight: 1.45,
+                    fontSize: 14,
+                    fontWeight: 700,
+                  }}
+                >
+                  • {item}
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <button
+            onClick={() => startGame("ai-psychologist")}
+            style={{ ...primaryButtonStyle, width: "100%" }}
+          >
+            Пройти ещё раз
+          </button>
+        </>
+      )}
+
+      <button
+        onClick={() => setActiveGameId(null)}
+        style={{ ...secondaryButtonStyle, width: "100%" }}
+      >
+        Назад к играм
       </button>
     </div>
   );
