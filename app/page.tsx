@@ -5780,7 +5780,7 @@ if (activeGameId === "ai-psychologist") {
       }}
     >
       <div style={{ ...cardBaseStyle(), padding: 14 }}>
-        <div style={{ fontSize: 20, fontWeight: 900, color: "#1f1d3a" }}>
+        <div style={{ fontSize: 22, fontWeight: 900, color: "#1f1d3a" }}>
           ИИ психолог 🧠
         </div>
 
