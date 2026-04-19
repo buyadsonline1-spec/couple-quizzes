@@ -5774,8 +5774,8 @@ if (activeGameId === "ai-psychologist") {
         gap: 14,
       }}
     >
-      <div style={{ ...cardBaseStyle(), padding: 18 }}>
-        <div style={{ fontSize: 28, fontWeight: 900, color: "#1f1d3a" }}>
+      <div style={{ ...cardBaseStyle(), padding: 14 }}>
+        <div style={{ fontSize: 24, fontWeight: 900, color: "#1f1d3a" }}>
           ИИ психолог 🧠
         </div>
 
@@ -5784,7 +5784,7 @@ if (activeGameId === "ai-psychologist") {
             marginTop: 8,
             color: "#4b446a",
             lineHeight: 1.45,
-            fontSize: 14,
+            fontSize: 13,
           }}
         >
           Небольшой диалог поможет понять, что сейчас происходит в ваших отношениях.
@@ -5801,17 +5801,17 @@ if (activeGameId === "ai-psychologist") {
             }}
           >
             <img
-              src={AI_PSYCHOLOGIST_AVATAR}
-              alt="Психолог"
-              style={{
-                width: 54,
-                height: 54,
-                borderRadius: 999,
-                objectFit: "cover",
-                border: "2px solid rgba(255,255,255,0.45)",
-                flexShrink: 0,
-              }}
-            />
+  src={AI_PSYCHOLOGIST_AVATAR}
+  alt="Психолог"
+  style={{
+    width: 90,
+    height: 90,
+    borderRadius: 999,
+    objectFit: "cover",
+    border: "3px solid rgba(255,255,255,0.5)",
+    flexShrink: 0,
+  }}
+/>
 
             <div
               style={{
