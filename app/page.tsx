@@ -8818,7 +8818,7 @@ const canClaimWeeklyReward =
             fontSize: 13,
           }}
         >
-          Пары из топа получают <b>+500 очков</b> 
+          Пары из топа получают <b>+1000 очков</b>
         </div>
 
        <div
