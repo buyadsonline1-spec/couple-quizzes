@@ -6305,7 +6305,7 @@ function handleLoveQuestionFinish() {
           ...secondaryButtonStyle,
           flex: 1,
           padding: "10px 16px",
-          background: "rgba(255,255,255,0.95)"
+        
         }}
       >
         Следующая →
