@@ -5901,7 +5901,7 @@ if (activeGameId === "ai-psychologist") {
         animation: "pulse 1s infinite",
       }}
     />
-    Психолог печатает...
+    Анализирую ваш ответ...
   </div>
 ) : (
   showAiAnswers && (
