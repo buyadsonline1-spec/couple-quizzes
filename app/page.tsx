@@ -8669,6 +8669,8 @@ const allPairs = leaderboard.map((row, index) => ({
   isCurrentPair: row.pair_id === pair.pairId,
 }));
 
+
+
 const visiblePairs = topExpanded
   ? allPairs.slice(0, 10)
   : allPairs.slice(0, 3);
@@ -8720,19 +8722,7 @@ const canClaimWeeklyReward =
               const isTop2 = pairRow.place === 2;
               const isTop3 = pairRow.place === 3;
 
-              {allPairs.length > 3 && (
-  <button
-    onClick={() => setTopExpanded((prev) => !prev)}
-    style={{
-      ...secondaryButtonStyle,
-      width: "100%",
-      marginTop: 12,
-      padding: "10px 16px",
-    }}
-  >
-    {topExpanded ? "Свернуть рейтинг" : "Показать топ-10"}
-  </button>
-)}
+          
 
               return (
                 <div             
@@ -8864,6 +8854,20 @@ const canClaimWeeklyReward =
     style={{ ...primaryButtonStyle, width: "100%", marginTop: 12 }}
   >
     {t.top.weeklyReward}
+  </button>
+)}
+
+{allPairs.length > 3 && (
+  <button
+    onClick={() => setTopExpanded((prev) => !prev)}
+    style={{
+      ...secondaryButtonStyle,
+      width: "100%",
+      marginTop: 12,
+      padding: "10px 16px",
+    }}
+  >
+    {topExpanded ? "Свернуть рейтинг" : "Показать топ-10"}
   </button>
 )}
       </div>
