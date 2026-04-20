@@ -8723,6 +8723,20 @@ const canClaimWeeklyReward =
           const isTop2 = pairRow.place === 2;
           const isTop3 = pairRow.place === 3;
 
+          {allPairs.length > 3 && (
+        <button
+          onClick={() => setTopExpanded((prev) => !prev)}
+          style={{
+            ...secondaryButtonStyle,
+            width: "100%",
+            marginTop: 12,
+            padding: "10px 16px",
+          }}
+        >
+          {topExpanded ? "Свернуть рейтинг" : "Показать топ-10"}
+        </button>
+      )}
+
           return (
             <div
               key={pairRow.id}
@@ -8812,19 +8826,7 @@ const canClaimWeeklyReward =
         })}
       </div>
 
-      {allPairs.length > 3 && (
-        <button
-          onClick={() => setTopExpanded((prev) => !prev)}
-          style={{
-            ...secondaryButtonStyle,
-            width: "100%",
-            marginTop: 12,
-            padding: "10px 16px",
-          }}
-        >
-          {topExpanded ? "Свернуть рейтинг" : "Показать топ-10"}
-        </button>
-      )}
+      
     </>
   )}
 </div>
