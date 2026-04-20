@@ -8657,43 +8657,39 @@ function TopPlayersScreen({
   onClaimWeeklyReward: () => void;
   t: any;
 }) {
+  const currentWeekKey = getCurrentWeekKey();
+  const previousWeekKey = getPreviousWeekKey();
+  const [topExpanded, setTopExpanded] = useState(false);
 
+  const allPairs = leaderboard.map((row, index) => ({
+    ...row,
+    place: index + 1,
+    isCurrentPair: row.pair_id === pair.pairId,
+  }));
 
- const currentWeekKey = getCurrentWeekKey();
-const previousWeekKey = getPreviousWeekKey();
-const [topExpanded, setTopExpanded] = useState(false);
+  const visiblePairs = topExpanded
+    ? allPairs.slice(0, 10)
+    : allPairs.slice(0, 3);
 
-const allPairs = leaderboard.map((row, index) => ({
-  ...row,
-  place: index + 1,
-  isCurrentPair: row.pair_id === pair.pairId,
-}));
+  const previousWeekPairs = previousLeaderboard.map((row, index) => ({
+    ...row,
+    place: index + 1,
+    isCurrentPair: row.pair_id === pair.pairId,
+  }));
 
+  const currentPairRow = allPairs.find((row) => row.isCurrentPair);
+  const previousWeekPairRow = previousWeekPairs.find((row) => row.isCurrentPair);
 
+  const wasTopThreeLastWeek =
+    previousWeekPairRow?.place === 1 ||
+    previousWeekPairRow?.place === 2 ||
+    previousWeekPairRow?.place === 3;
 
-const visiblePairs = topExpanded
-  ? allPairs.slice(0, 10)
-  : allPairs.slice(0, 3);
+  const alreadyClaimedLastWeek =
+    weeklyTopRewardClaimedWeek === previousWeekKey;
 
-const previousWeekPairs = previousLeaderboard.map((row, index) => ({
-  ...row,
-  place: index + 1,
-  isCurrentPair: row.pair_id === pair.pairId,
-}));
-
-const currentPairRow = allPairs.find((row) => row.isCurrentPair);
-const previousWeekPairRow = previousWeekPairs.find((row) => row.isCurrentPair);
-
-const wasTopThreeLastWeek =
-  previousWeekPairRow?.place === 1 ||
-  previousWeekPairRow?.place === 2 ||
-  previousWeekPairRow?.place === 3;
-
-const alreadyClaimedLastWeek =
-  weeklyTopRewardClaimedWeek === previousWeekKey;
-
-const canClaimWeeklyReward =
-  wasTopThreeLastWeek && !alreadyClaimedLastWeek;
+  const canClaimWeeklyReward =
+    wasTopThreeLastWeek && !alreadyClaimedLastWeek;
 
   return (
     <div style={{ padding: 12, display: "grid", gap: 10 }}>
@@ -8701,61 +8697,153 @@ const canClaimWeeklyReward =
         <div style={{ fontSize: 24, fontWeight: 900, color: "#1f1d3a" }}>
           🏆 {t.top.title}
         </div>
-        <div style={{ marginTop: 4, color: "#3a345c", fontSize: 13, lineHeight: 1.4 }}>
+        <div
+          style={{
+            marginTop: 4,
+            color: "#3a345c",
+            fontSize: 13,
+            lineHeight: 1.4,
+          }}
+        >
           {t.top.subtitle}
         </div>
       </div>
 
-    <div style={{ ...cardBaseStyle(), padding: 14 }}>
-  <div style={{ fontSize: 18, fontWeight: 900, color: "#1f1d3a" }}>
-    Рейтинг
-  </div>
+      <div style={{ ...cardBaseStyle(), padding: 14 }}>
+        <div style={{ fontSize: 18, fontWeight: 900, color: "#1f1d3a" }}>
+          Рейтинг
+        </div>
 
-  {allPairs.length === 0 ? (
-  <div
-    style={{
-      marginTop: 10,
-      color: "#4a4468",
-      lineHeight: 1.45,
-      fontSize: 14,
-    }}
-  >
-    {t.top.noData}
-  </div>
-) : (
-  <>
-    <div style={{ display: "grid", gap: 8, marginTop: 12 }}>
-      {visiblePairs.map((pairRow) => {
-        const isTop1 = pairRow.place === 1;
-        const isTop2 = pairRow.place === 2;
-        const isTop3 = pairRow.place === 3;
-
-        return (
-          <div key={pairRow.id}>
-            ...
+        {allPairs.length === 0 ? (
+          <div
+            style={{
+              marginTop: 10,
+              color: "#4a4468",
+              lineHeight: 1.45,
+              fontSize: 14,
+            }}
+          >
+            {t.top.noData}
           </div>
-        );
-      })}
-    </div>
+        ) : (
+          <>
+            <div style={{ display: "grid", gap: 8, marginTop: 12 }}>
+              {visiblePairs.map((pairRow) => {
+                const isTop1 = pairRow.place === 1;
+                const isTop2 = pairRow.place === 2;
+                const isTop3 = pairRow.place === 3;
 
-    {allPairs.length > 3 && (
-      <button
-        onClick={() => setTopExpanded((prev) => !prev)}
-        style={{
-          ...secondaryButtonStyle,
-          width: "100%",
-          marginTop: 12,
-          padding: "10px 16px",
-        }}
-      >
-        {topExpanded ? "Свернуть рейтинг" : "Показать топ-10"}
-      </button>
-    )}
-  </>
-)}
-      
-   
-</div>
+                return (
+                  <div
+                    key={pairRow.id}
+                    style={{
+                      padding: "10px 12px",
+                      borderRadius: 16,
+                      background: pairRow.isCurrentPair
+                        ? "rgba(255,255,255,0.34)"
+                        : "rgba(255,255,255,0.24)",
+                      border: pairRow.isCurrentPair
+                        ? "2px solid rgba(108,58,255,0.42)"
+                        : "1px solid transparent",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 10,
+                      width: "100%",
+                      boxSizing: "border-box",
+                      overflow: "hidden",
+                    }}
+                  >
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 10,
+                        minWidth: 0,
+                        flex: 1,
+                      }}
+                    >
+                      <div
+                        style={{
+                          width: 34,
+                          height: 34,
+                          borderRadius: 999,
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          fontWeight: 900,
+                          fontSize: 14,
+                          color: "#1f1d3a",
+                          background: isTop1
+                            ? "linear-gradient(135deg, #ffd54f, #ffb300)"
+                            : isTop2
+                            ? "linear-gradient(135deg, #f1f1f1, #cfcfcf)"
+                            : isTop3
+                            ? "linear-gradient(135deg, #ffcc80, #ff9e80)"
+                            : "rgba(255,255,255,0.45)",
+                        }}
+                      >
+                        {pairRow.place}
+                      </div>
+
+                      <div style={{ minWidth: 0 }}>
+                        <div
+                          style={{
+                            fontWeight: 900,
+                            color: "#241b40",
+                            whiteSpace: "nowrap",
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                          }}
+                        >
+                          {pairRow.pair_title}
+                          {pairRow.isCurrentPair ? " (Вы)" : ""}
+                        </div>
+
+                        <div
+                          style={{
+                            marginTop: 3,
+                            fontSize: 12,
+                            color: "#4d466c",
+                          }}
+                        >
+                          {isTop1 ? "Лидеры недели" : `Место #${pairRow.place}`}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div
+                      style={{
+                        flexShrink: 0,
+                        textAlign: "right",
+                        color: "#241b40",
+                        fontWeight: 900,
+                        fontSize: 15,
+                        whiteSpace: "nowrap",
+                      }}
+                    >
+                      ⭐ {pairRow.total_points}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            {allPairs.length > 3 && (
+              <button
+                onClick={() => setTopExpanded((prev) => !prev)}
+                style={{
+                  ...secondaryButtonStyle,
+                  width: "100%",
+                  marginTop: 12,
+                  padding: "10px 16px",
+                }}
+              >
+                {topExpanded ? "Свернуть рейтинг" : "Показать топ-10"}
+              </button>
+            )}
+          </>
+        )}
+      </div>
 
       <div style={{ ...cardBaseStyle(), padding: 14 }}>
         <div style={{ fontSize: 18, fontWeight: 900, color: "#1f1d3a" }}>
@@ -8773,37 +8861,38 @@ const canClaimWeeklyReward =
           Пары из топа получают <b>+1000 очков</b>
         </div>
 
-       <div
-  style={{
-    marginTop: 10,
-    padding: "12px 14px",
-    borderRadius: 16,
-    background: "rgba(255,255,255,0.24)",
-    color: "#241b40",
-    fontWeight: 800,
-    fontSize: 14,
-  }}
->
-  {wasTopThreeLastWeek
-    ? alreadyClaimedLastWeek
-      ? "Награда за прошлую неделю уже получена ✅"
-      : "Ваша пара вошла в топ-3 по итогам прошлой недели! Можно забрать награду 🎉"
-    : "Награда появляется только после завершения недели и только для пар из топ-3 прошлой недели"}
-</div>
+        <div
+          style={{
+            marginTop: 10,
+            padding: "12px 14px",
+            borderRadius: 16,
+            background: "rgba(255,255,255,0.24)",
+            color: "#241b40",
+            fontWeight: 800,
+            fontSize: 14,
+          }}
+        >
+          {wasTopThreeLastWeek
+            ? alreadyClaimedLastWeek
+              ? "Награда за прошлую неделю уже получена ✅"
+              : "Ваша пара вошла в топ-3 по итогам прошлой недели! Можно забрать награду 🎉"
+            : "Награда появляется только после завершения недели и только для пар из топ-3 прошлой недели"}
+        </div>
 
-       {canClaimWeeklyReward && (
-  <button
-    onClick={onClaimWeeklyReward}
-    style={{ ...primaryButtonStyle, width: "100%", marginTop: 12 }}
-  >
-    {t.top.weeklyReward}
-  </button>
-)}
-
-
+        {canClaimWeeklyReward && (
+          <button
+            onClick={onClaimWeeklyReward}
+            style={{ ...primaryButtonStyle, width: "100%", marginTop: 12 }}
+          >
+            {t.top.weeklyReward}
+          </button>
+        )}
       </div>
 
-      <button onClick={onBack} style={{ ...secondaryButtonStyle, marginTop: 0 }}>
+      <button
+        onClick={onBack}
+        style={{ ...secondaryButtonStyle, marginTop: 0 }}
+      >
         {t.common.back}
       </button>
     </div>
