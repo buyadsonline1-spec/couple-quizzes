@@ -8712,123 +8712,49 @@ const canClaimWeeklyReward =
   </div>
 
   {allPairs.length === 0 ? (
-    <div style={{ marginTop: 10, color: "#4a4468", lineHeight: 1.45, fontSize: 14 }}>
-      {t.top.noData}
+  <div
+    style={{
+      marginTop: 10,
+      color: "#4a4468",
+      lineHeight: 1.45,
+      fontSize: 14,
+    }}
+  >
+    {t.top.noData}
+  </div>
+) : (
+  <>
+    <div style={{ display: "grid", gap: 8, marginTop: 12 }}>
+      {visiblePairs.map((pairRow) => {
+        const isTop1 = pairRow.place === 1;
+        const isTop2 = pairRow.place === 2;
+        const isTop3 = pairRow.place === 3;
+
+        return (
+          <div key={pairRow.id}>
+            ...
+          </div>
+        );
+      })}
     </div>
-  ) : (
-    <>
-      <div style={{ display: "grid", gap: 8, marginTop: 12 }}>
-        {visiblePairs.map((pairRow) => {
-          const isTop1 = pairRow.place === 1;
-          const isTop2 = pairRow.place === 2;
-          const isTop3 = pairRow.place === 3;
 
-          {allPairs.length > 3 && (
-        <button
-          onClick={() => setTopExpanded((prev) => !prev)}
-          style={{
-            ...secondaryButtonStyle,
-            width: "100%",
-            marginTop: 12,
-            padding: "10px 16px",
-          }}
-        >
-          {topExpanded ? "Свернуть рейтинг" : "Показать топ-10"}
-        </button>
-      )}
-
-          return (
-            <div
-              key={pairRow.id}
-              style={{
-                padding: "10px 12px",
-                borderRadius: 16,
-                background: pairRow.isCurrentPair
-                  ? "rgba(255,255,255,0.34)"
-                  : "rgba(255,255,255,0.24)",
-                border: pairRow.isCurrentPair
-                  ? "2px solid rgba(108,58,255,0.42)"
-                  : "1px solid transparent",
-                display: "flex",
-                alignItems: "center",
-                gap: 10,
-                width: "100%",
-                boxSizing: "border-box",
-                overflow: "hidden",
-              }}
-            >
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 10,
-                  minWidth: 0,
-                  flex: 1,
-                }}
-              >
-                <div
-                  style={{
-                    width: 34,
-                    height: 34,
-                    borderRadius: 999,
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    fontWeight: 900,
-                    fontSize: 14,
-                    color: "#1f1d3a",
-                    background: isTop1
-                      ? "linear-gradient(135deg, #ffd54f, #ffb300)"
-                      : isTop2
-                      ? "linear-gradient(135deg, #f1f1f1, #cfcfcf)"
-                      : isTop3
-                      ? "linear-gradient(135deg, #ffcc80, #ff9e80)"
-                      : "rgba(255,255,255,0.45)",
-                  }}
-                >
-                  {pairRow.place}
-                </div>
-
-                <div style={{ minWidth: 0 }}>
-                  <div
-                    style={{
-                      fontWeight: 900,
-                      color: "#241b40",
-                      whiteSpace: "nowrap",
-                      overflow: "hidden",
-                      textOverflow: "ellipsis",
-                    }}
-                  >
-                    {pairRow.pair_title}
-                    {pairRow.isCurrentPair ? " (Вы)" : ""}
-                  </div>
-
-                  <div style={{ marginTop: 3, fontSize: 12, color: "#4d466c" }}>
-                    {isTop1 ? "Лидеры недели" : `Место #${pairRow.place}`}
-                  </div>
-                </div>
-              </div>
-
-              <div
-                style={{
-                  flexShrink: 0,
-                  textAlign: "right",
-                  color: "#241b40",
-                  fontWeight: 900,
-                  fontSize: 15,
-                  whiteSpace: "nowrap",
-                }}
-              >
-                ⭐ {pairRow.total_points}
-              </div>
-            </div>
-          );
-        })}
-      </div>
-
+    {allPairs.length > 3 && (
+      <button
+        onClick={() => setTopExpanded((prev) => !prev)}
+        style={{
+          ...secondaryButtonStyle,
+          width: "100%",
+          marginTop: 12,
+          padding: "10px 16px",
+        }}
+      >
+        {topExpanded ? "Свернуть рейтинг" : "Показать топ-10"}
+      </button>
+    )}
+  </>
+)}
       
-    </>
-  )}
+   
 </div>
 
       <div style={{ ...cardBaseStyle(), padding: 14 }}>
