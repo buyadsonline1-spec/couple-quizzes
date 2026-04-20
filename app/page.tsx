@@ -8661,12 +8661,17 @@ function TopPlayersScreen({
 
  const currentWeekKey = getCurrentWeekKey();
 const previousWeekKey = getPreviousWeekKey();
+const [topExpanded, setTopExpanded] = useState(false);
 
 const allPairs = leaderboard.map((row, index) => ({
   ...row,
   place: index + 1,
   isCurrentPair: row.pair_id === pair.pairId,
 }));
+
+const visiblePairs = topExpanded
+  ? allPairs.slice(0, 10)
+  : allPairs.slice(0, 3);
 
 const previousWeekPairs = previousLeaderboard.map((row, index) => ({
   ...row,
@@ -8710,10 +8715,24 @@ const canClaimWeeklyReward =
           </div>
         ) : (
           <div style={{ display: "grid", gap: 8, marginTop: 12 }}>
-            {allPairs.map((pairRow) => {
+            {visiblePairs.map((pairRow) => {
               const isTop1 = pairRow.place === 1;
               const isTop2 = pairRow.place === 2;
               const isTop3 = pairRow.place === 3;
+
+              {allPairs.length > 3 && (
+  <button
+    onClick={() => setTopExpanded((prev) => !prev)}
+    style={{
+      ...secondaryButtonStyle,
+      width: "100%",
+      marginTop: 12,
+      padding: "10px 16px",
+    }}
+  >
+    {topExpanded ? "Свернуть рейтинг" : "Показать топ-10"}
+  </button>
+)}
 
               return (
                 <div             
