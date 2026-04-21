@@ -8339,6 +8339,7 @@ const t = market === "en" ? TEXT_EN : TEXT_RU;
   const [message, setMessage] = useState("");
   const [selectedRewardId, setSelectedRewardId] = useState<string | null>(null);
   const selectedReward = wonRewards.find((item) => item.id === selectedRewardId) || null;
+  const [showRewardScreen, setShowRewardScreen] = useState(false);
 
   const size = 320;
   const radius = 150;
@@ -8350,6 +8351,9 @@ const t = market === "en" ? TEXT_EN : TEXT_RU;
  
   async function handleSpin() {
     setSelectedRewardId(null);
+    setTimeout(() => {
+  setShowRewardScreen(true);
+}, 400); // чуть задержки для эффекта
     if (isSpinning) return;
     if (points < WHEEL_SPIN_COST) {
       setMessage("Недостаточно очков для вращения колеса.");
@@ -8545,26 +8549,108 @@ const t = market === "en" ? TEXT_EN : TEXT_RU;
         ) : null}
       </div>
 
-     {selectedReward && (
-  <button
-    onClick={() => {
-      const text = encodeURIComponent("Здравствуйте! Я выиграл приз в Couple Quizzes 🎁");
-      const managerUrl = `${MANAGER_CHAT_URL}?text=${text}`;
+     
 
-      if (typeof window !== "undefined" && window.Telegram?.WebApp?.openTelegramLink) {
-        window.Telegram.WebApp.openTelegramLink(managerUrl);
-      } else {
-        window.open(managerUrl, "_blank");
-      }
-    }}
+{showRewardScreen && selectedReward && (
+  <div
     style={{
-      ...primaryButtonStyle,
-      width: "100%",
-      marginTop: 12,
+      position: "fixed",
+      inset: 0,
+      background: "rgba(20,16,40,0.75)",
+      backdropFilter: "blur(6px)",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      zIndex: 9999,
+      padding: 16,
     }}
   >
-    Забрать приз 🎁
-  </button>
+    <div
+      style={{
+        width: "100%",
+        maxWidth: 360,
+        borderRadius: 24,
+        padding: 20,
+        background: "linear-gradient(135deg,#ffffff,#f6f3ff)",
+        textAlign: "center",
+        boxShadow: "0 20px 60px rgba(0,0,0,0.25)",
+        animation: "popIn 0.4s ease",
+      }}
+    >
+      {/* 🎉 Заголовок */}
+      <div style={{ fontSize: 26, fontWeight: 900 }}>
+        🎉 Поздравляем!
+      </div>
+
+      {/* 🎁 Приз */}
+      <div
+        style={{
+          marginTop: 12,
+          fontSize: 20,
+          fontWeight: 800,
+          color: "#6b5cff",
+        }}
+      >
+        {selectedReward.title}
+      </div>
+
+      {/* 💬 описание */}
+      <div
+        style={{
+          marginTop: 8,
+          fontSize: 14,
+          color: "#4b446a",
+          lineHeight: 1.4,
+        }}
+      >
+        Вы выиграли приз 🎁  
+        Напишите менеджеру, чтобы получить его
+      </div>
+
+      {/* 🔘 кнопка */}
+      <button
+        onClick={() => {
+          const text = encodeURIComponent(
+            `Здравствуйте! Я выиграл приз: ${selectedReward.title} 🎁`
+          );
+          const url = `${MANAGER_CHAT_URL}?text=${text}`;
+
+          if (
+  typeof window !== "undefined" &&
+  window.Telegram?.WebApp?.openTelegramLink
+) {
+  window.Telegram.WebApp.openTelegramLink(url);
+} else {
+  window.open(url, "_blank");
+}
+        }}
+        style={{
+          ...primaryButtonStyle,
+          width: "100%",
+          marginTop: 16,
+          padding: "14px",
+          fontSize: 16,
+        }}
+      >
+        Забрать приз 🎁
+      </button>
+
+      {/* ❌ закрыть */}
+      <button
+        onClick={() => setShowRewardScreen(false)}
+        style={{
+          marginTop: 10,
+          fontSize: 13,
+          color: "#6b5cff",
+          background: "none",
+          border: "none",
+          cursor: "pointer",
+        }}
+      >
+        Закрыть
+      </button>
+    </div>
+  </div>
 )}
 
       <div style={{ ...cardBaseStyle(), padding: 18 }}>
@@ -11081,6 +11167,16 @@ if (finishedAllTests && !appState.completionBonusesClaimed.tests) {
     100% {
       opacity: 0;
       transform: translateX(-50%) translateY(-60px) scale(1.05);
+    }
+  }
+    @keyframes popIn {
+    0% {
+      transform: scale(0.8);
+      opacity: 0;
+    }
+    100% {
+      transform: scale(1);
+      opacity: 1;
     }
   }
 `}</style>
