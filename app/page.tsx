@@ -12,6 +12,7 @@ import { TEXT_EN } from "@/config/text-en";
 
 const market = getMarket();
 const t = market === "en" ? TEXT_EN : TEXT_RU;
+const MANAGER_CHAT_URL = "https://t.me/Couple_quizzes_support";
 
 const REWARD_CATEGORIES =
   market === "en" ? REWARD_CATEGORIES_EN : REWARD_CATEGORIES_RU;
@@ -8337,6 +8338,7 @@ const t = market === "en" ? TEXT_EN : TEXT_RU;
   const [isSpinning, setIsSpinning] = useState(false);
   const [message, setMessage] = useState("");
   const [selectedRewardId, setSelectedRewardId] = useState<string | null>(null);
+  const selectedReward = wonRewards.find((item) => item.id === selectedRewardId) || null;
 
   const size = 320;
   const radius = 150;
@@ -8345,8 +8347,9 @@ const t = market === "en" ? TEXT_EN : TEXT_RU;
   const segmentAngle = 360 / count;
   
 
-
+ 
   async function handleSpin() {
+    setSelectedRewardId(null);
     if (isSpinning) return;
     if (points < WHEEL_SPIN_COST) {
       setMessage("Недостаточно очков для вращения колеса.");
@@ -8541,6 +8544,28 @@ const t = market === "en" ? TEXT_EN : TEXT_RU;
           </div>
         ) : null}
       </div>
+
+     {selectedReward && (
+  <button
+    onClick={() => {
+      const text = encodeURIComponent("Здравствуйте! Я выиграл приз в Couple Quizzes 🎁");
+      const managerUrl = `${MANAGER_CHAT_URL}?text=${text}`;
+
+      if (typeof window !== "undefined" && window.Telegram?.WebApp?.openTelegramLink) {
+        window.Telegram.WebApp.openTelegramLink(managerUrl);
+      } else {
+        window.open(managerUrl, "_blank");
+      }
+    }}
+    style={{
+      ...primaryButtonStyle,
+      width: "100%",
+      marginTop: 12,
+    }}
+  >
+    Забрать приз 🎁
+  </button>
+)}
 
       <div style={{ ...cardBaseStyle(), padding: 18 }}>
         <div style={{ fontSize: 22, fontWeight: 900, color: "#1f1d3a" }}>
