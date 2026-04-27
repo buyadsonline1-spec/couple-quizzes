@@ -182,6 +182,9 @@ type PollQuestion = {
   text: string;
   textRu: string;
   textEn: string;
+
+  image?: string;      // 👈 добавили
+
   options: string[];
   optionsRu: string[];
   optionsEn: string[];
@@ -1213,15 +1216,21 @@ function createPollQuestions(
     "Strongly disagree",
   ];
 
-  const make = (id: string, textRu: string, textEn: string): PollQuestion => ({
-    id,
-    text: market === "en" ? textEn : textRu,
-    textRu,
-    textEn,
-    options: market === "en" ? optionsEn : optionsRu,
-    optionsRu,
-    optionsEn,
-  });
+ const make = (
+  id: string,
+  textRu: string,
+  textEn: string,
+  image?: string
+): PollQuestion => ({
+  id,
+  text: market === "en" ? textEn : textRu,
+  textRu,
+  textEn,
+  image,
+  options: market === "en" ? optionsEn : optionsRu,
+  optionsRu,
+  optionsEn,
+});
 
   switch (theme) {
     case "communication":
@@ -5769,16 +5778,34 @@ setFinished(false);
       </div>
 
       <div style={{ ...cardBaseStyle(), padding: 14 }}>
-        <div
-          style={{
-            fontSize: 20,
-            fontWeight: 800,
-            color: "#211b3b",
-            lineHeight: 1.35,
-          }}
-        >
-          {currentQuestion.text}
-        </div>
+
+  {currentQuestion.image && (
+    <img
+      src={currentQuestion.image}
+      alt=""
+      style={{
+        width: "100%",
+        maxHeight: 220,
+        objectFit: "cover",
+        borderRadius: 22,
+        marginBottom: 14,
+        boxShadow: "0 14px 30px rgba(80, 50, 130, 0.18)",
+      }}
+    />
+  )}
+
+  <div
+    style={{
+      fontSize: 20,
+      fontWeight: 800,
+      color: "#211b3b",
+      lineHeight: 1.35,
+    }}
+  >
+    {currentQuestion.text}
+  </div>
+
+     
 
         <div style={{ display: "grid", gap: 9, marginTop: 14 }}>
           {currentQuestion.options.map((option, index) => {
@@ -8269,6 +8296,21 @@ function selectOption(optionIndex: number) {
       </div>
 
       <div style={{ ...cardBaseStyle(), padding: 18 }}>
+
+        {currentQuestion.image && (
+  <img
+    src={currentQuestion.image}
+    alt=""
+    style={{
+      width: "100%",
+      maxHeight: 220,
+      objectFit: "cover",
+      borderRadius: 22,
+      marginBottom: 14,
+      boxShadow: "0 14px 30px rgba(80, 50, 130, 0.18)",
+    }}
+  />
+)}
         <div
           style={{
             fontSize: 22,
@@ -8359,7 +8401,7 @@ const t = market === "en" ? TEXT_EN : TEXT_RU;
       setMessage("Недостаточно очков для вращения колеса.");
       return;
     }
-
+setShowRewardScreen(false);
     setMessage("");
     setSelectedRewardId(null);
     setIsSpinning(true);
