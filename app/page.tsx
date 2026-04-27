@@ -251,6 +251,7 @@ type TestQuestion = {
   text: string;
   textRu: string;
   textEn: string;
+  image?: string;
   options: string[];
   optionsRu: string[];
   optionsEn: string[];
