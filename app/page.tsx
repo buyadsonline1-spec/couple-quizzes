@@ -10047,6 +10047,12 @@ const REWARD_CATEGORIES =
 
   function getLiveTelegramUser(): TgUser | null {
   const tgUser = window.Telegram?.WebApp?.initDataUnsafe?.user;
+   const startParam =
+    window.Telegram?.WebApp?.initDataUnsafe?.start_param;
+
+  if (startParam === "welcome") {
+    console.log("Welcome user 🚀");
+  }
   if (!tgUser?.id) return null;
 
 
