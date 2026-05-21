@@ -36,9 +36,7 @@ async function setMenuButton() {
         menu_button: {
           type: "web_app",
           text: "Открыть Couple Quizzes",
-          web_app: {
-            url: webAppUrl,
-          },
+          url: `${webAppUrl}?startapp=welcome`,
         },
       }),
     });
