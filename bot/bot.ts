@@ -11,13 +11,7 @@ if (!token) throw new Error("TELEGRAM_BOT_TOKEN is not set");
 if (!webAppUrl) throw new Error("WEB_APP_URL is not set");
 
 const bot = new TelegramBot(token, {
-  polling: {
-    autoStart: false,
-    interval: 300,
-    params: {
-      timeout: 10,
-    },
-  },
+  polling: true,
 });
 
 console.log("🤖 Bot init");
@@ -170,8 +164,7 @@ async function startBot() {
 
     await setMenuButton();
 
-    await bot.startPolling();
-    console.log("✅ Bot started with polling");
+   
   } catch (error) {
     console.error("❌ BOT START ERROR:", error);
   }
