@@ -5108,6 +5108,8 @@ function DailyBonusModal({
             const isPast = day < currentDay;
             const isCurrent = day === currentDay;
             const isFuture = day > currentDay;
+            
+            
 
             return (
               <div
@@ -8384,6 +8386,7 @@ const t = market === "en" ? TEXT_EN : TEXT_RU;
   const selectedReward = wonRewards.find((item) => item.id === selectedRewardId) || null;
   const [showRewardScreen, setShowRewardScreen] = useState(false);
 
+
   const size = 320;
   const radius = 150;
   const center = size / 2;
@@ -8707,7 +8710,7 @@ setShowRewardScreen(false);
           </div>
         ) : (
           <div style={{ display: "grid", gap: 10, marginTop: 14 }}>
-            {[...wonRewards].reverse().map((reward, index) => (
+            {visibleRewards.map((reward, index) => (
               <div
                 key={`${reward.id}-${index}-${reward.wonAt}`}
                 style={{
@@ -8736,6 +8739,21 @@ setShowRewardScreen(false);
             ))}
           </div>
         )}
+        {wonRewards.length > 3 && (
+  <button
+    onClick={() => setRewardsExpanded((prev) => !prev)}
+    style={{
+      ...secondaryButtonStyle,
+      width: "100%",
+      marginTop: 12,
+      padding: "10px 16px",
+    }}
+  >
+    {rewardsExpanded
+      ? "Свернуть призы"
+      : "Показать все призы"}
+  </button>
+)}
       </div>
 
       <button onClick={onBack} style={secondaryButtonStyle}>
@@ -8844,6 +8862,11 @@ function TopPlayersScreen({
 
   const canClaimWeeklyReward =
     wasTopThreeLastWeek && !alreadyClaimedLastWeek;
+
+
+const visibleRewards = rewardsExpanded
+  ? [...wonRewards].reverse()
+  : [...wonRewards].reverse().slice(0, 3);
 
   return (
     <div style={{ padding: 12, display: "grid", gap: 10 }}>
@@ -10670,6 +10693,7 @@ const TRIBUTE_LINK = "https://t.me/tribute/app?startapp=sMuC";
   const [claimableDay, setClaimableDay] = useState(1);
   const [bonusClaimAvailable, setBonusClaimAvailable] = useState(true);
   const [showLevelUp, setShowLevelUp] = useState(false);
+  const [rewardsExpanded, setRewardsExpanded] = useState(false);
    const [animatedPairPoints, setAnimatedPairPoints] = useState(0);
   useEffect(() => {
   if (!mounted) return;
