@@ -8386,6 +8386,12 @@ const t = market === "en" ? TEXT_EN : TEXT_RU;
   const selectedReward = wonRewards.find((item) => item.id === selectedRewardId) || null;
   const [showRewardScreen, setShowRewardScreen] = useState(false);
 
+  const [rewardsExpanded, setRewardsExpanded] = useState(false);
+
+const visibleRewards = rewardsExpanded
+  ? [...wonRewards].reverse()
+  : [...wonRewards].reverse().slice(0, 3);
+
 
   const size = 320;
   const radius = 150;
@@ -8864,9 +8870,7 @@ function TopPlayersScreen({
     wasTopThreeLastWeek && !alreadyClaimedLastWeek;
 
 
-const visibleRewards = rewardsExpanded
-  ? [...wonRewards].reverse()
-  : [...wonRewards].reverse().slice(0, 3);
+    
 
   return (
     <div style={{ padding: 12, display: "grid", gap: 10 }}>
