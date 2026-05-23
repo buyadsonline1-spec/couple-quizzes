@@ -10588,7 +10588,10 @@ const syncWeeklyPairLeaderboard = async (nextState: AppState, currentUser?: TgUs
     weekKey,
     pairId,
     pairTitle,
-    totalPoints: nextState.pair.weeklyPoints || 0,
+    totalPoints:
+  nextState.pair.weeklyPoints ||
+  nextState.pair.totalPoints ||
+  0,
   });
 
   const rows = await loadWeeklyPairLeaderboard(weekKey);
