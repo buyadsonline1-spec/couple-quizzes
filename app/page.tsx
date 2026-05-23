@@ -4453,6 +4453,8 @@ function getCurrentWeekKey() {
   return `${now.getFullYear()}-W${week}`;
 }
 
+console.log("CURRENT WEEK:", getCurrentWeekKey());
+
 function getPreviousWeekKey() {
   const now = new Date();
   const day = now.getDay();
