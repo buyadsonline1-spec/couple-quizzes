@@ -307,6 +307,7 @@ type PairState = {
   partner: PairMember | null;
   createdByTelegramId: number | null;
   totalPoints: number;
+  weeklyPoints: number;
 };
 
 type DailyPairQuestion = {
@@ -1012,6 +1013,7 @@ function getThemeTitle(matchGroup: string) {
       return matchGroup;
   }
 }
+
 
 function calculatePollMatchPercent(
   boyAnswers: number[] | undefined,
@@ -2240,12 +2242,13 @@ playedGameRewardKeys: [],
   pollAnswers: {},
   pairPollAnswers: {},
 
-  pair: {
+ pair: {
   pairId: null,
   inviteCode: null,
   partner: null,
   createdByTelegramId: null,
   totalPoints: 0,
+  weeklyPoints: 0,
 },
 
   dailyPair: {
@@ -4915,6 +4918,8 @@ lastDailyBonusPopupDate:
     DEFAULT_STATE.pair.createdByTelegramId,
   totalPoints:
     parsed.pair?.totalPoints ?? DEFAULT_STATE.pair.totalPoints,
+  weeklyPoints:
+    parsed.pair?.weeklyPoints ?? DEFAULT_STATE.pair.weeklyPoints,
 },
 
   dailyPair: {
@@ -8870,7 +8875,7 @@ function TopPlayersScreen({
     wasTopThreeLastWeek && !alreadyClaimedLastWeek;
 
 
-    
+
 
   return (
     <div style={{ padding: 12, display: "grid", gap: 10 }}>
@@ -9529,6 +9534,7 @@ async function loadPairStateForUser(telegramId: number): Promise<PairState> {
   partner: null,
   createdByTelegramId: null,
   totalPoints: 0,
+  weeklyPoints: 0,
 };
 
 
@@ -9592,6 +9598,10 @@ return {
   partner,
   createdByTelegramId,
   totalPoints: pair.total_points ?? 0,
+weeklyPoints:
+  pair.weekly_points_week === getCurrentWeekKey()
+    ? pair.weekly_points ?? 0
+    : 0,
 };
 
 }
@@ -9604,7 +9614,7 @@ async function updatePairPoints(params: {
 
   const { data: pair, error: readError } = await supabase
     .from("pairs")
-    .select("total_points")
+    .select("total_points, weekly_points, weekly_points_week")
     .eq("id", pairId)
     .single();
 
@@ -9615,9 +9625,25 @@ async function updatePairPoints(params: {
 
   const nextPoints = Math.max(0, (pair.total_points ?? 0) + delta);
 
+  const currentWeekKey = getCurrentWeekKey();
+
+const currentWeeklyPoints =
+  pair.weekly_points_week === currentWeekKey
+    ? pair.weekly_points ?? 0
+    : 0;
+
+const nextWeeklyPoints = Math.max(
+  0,
+  currentWeeklyPoints + delta
+);
+
   const { error: updateError } = await supabase
     .from("pairs")
-    .update({ total_points: nextPoints })
+    .update({
+  total_points: nextPoints,
+  weekly_points: nextWeeklyPoints,
+  weekly_points_week: currentWeekKey,
+})
     .eq("id", pairId);
 
   if (updateError) {
@@ -10562,7 +10588,7 @@ const syncWeeklyPairLeaderboard = async (nextState: AppState, currentUser?: TgUs
     weekKey,
     pairId,
     pairTitle,
-    totalPoints: nextState.points,
+    totalPoints: nextState.pair.weeklyPoints || 0,
   });
 
   const rows = await loadWeeklyPairLeaderboard(weekKey);
