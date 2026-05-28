@@ -308,6 +308,11 @@ type PairState = {
   createdByTelegramId: number | null;
   totalPoints: number;
   weeklyPoints: number;
+  dailyTestsUsed: number;
+dailyPollsUsed: number;
+dailyGamesUsed: number;
+dailyLimitDate: string | null;
+isPremium?: boolean;
 };
 
 type DailyPairQuestion = {
@@ -2242,13 +2247,19 @@ playedGameRewardKeys: [],
   pollAnswers: {},
   pairPollAnswers: {},
 
- pair: {
+pair: {
   pairId: null,
   inviteCode: null,
   partner: null,
   createdByTelegramId: null,
   totalPoints: 0,
   weeklyPoints: 0,
+
+  dailyTestsUsed: 0,
+  dailyPollsUsed: 0,
+  dailyGamesUsed: 0,
+  dailyLimitDate: null,
+  isPremium: false,
 },
 
   dailyPair: {
@@ -4455,6 +4466,12 @@ function getCurrentWeekKey() {
 
 console.log("CURRENT WEEK:", getCurrentWeekKey());
 
+function getCurrentDayKey() {
+  const now = new Date();
+
+  return `${now.getFullYear()}-${now.getMonth() + 1}-${now.getDate()}`;
+}
+
 function getPreviousWeekKey() {
   const now = new Date();
   const day = now.getDay();
@@ -4922,6 +4939,25 @@ lastDailyBonusPopupDate:
     parsed.pair?.totalPoints ?? DEFAULT_STATE.pair.totalPoints,
   weeklyPoints:
     parsed.pair?.weeklyPoints ?? DEFAULT_STATE.pair.weeklyPoints,
+    dailyTestsUsed:
+  parsed.pair?.dailyTestsUsed ??
+  DEFAULT_STATE.pair.dailyTestsUsed,
+
+dailyPollsUsed:
+  parsed.pair?.dailyPollsUsed ??
+  DEFAULT_STATE.pair.dailyPollsUsed,
+
+dailyGamesUsed:
+  parsed.pair?.dailyGamesUsed ??
+  DEFAULT_STATE.pair.dailyGamesUsed,
+
+dailyLimitDate:
+  parsed.pair?.dailyLimitDate ??
+  DEFAULT_STATE.pair.dailyLimitDate,
+
+isPremium:
+  parsed.pair?.isPremium ??
+  DEFAULT_STATE.pair.isPremium,
 },
 
   dailyPair: {
@@ -5484,11 +5520,16 @@ function PollsScreen({
   completedPollIds,
   onBack,
   onCompletePoll,
+  pair,
+  showPaywall,
 }: {
   genderFilter: "boy" | "girl";
   completedPollIds: string[];
   onBack: () => void;
   onCompletePoll: (poll: Poll, answers: number[]) => void;
+
+  pair: PairState;
+  showPaywall: () => void;
 }) {
   const filteredPolls = POLLS.filter((p) => p.gender === genderFilter);
 
@@ -5524,12 +5565,20 @@ const activePoll = POLLS.find((poll) => poll.id === activePollId) || null;
   );
 }
 
-  function startPoll(pollId: string) {
-    setActivePollId(pollId);
-    setCurrentQuestionIndex(0);
-    setAnswers([]);
-    setFinished(false);
+ function startPoll(pollId: string) {
+  if (
+    !pair?.isPremium &&
+    (pair?.dailyPollsUsed ?? 0) >= 2
+  ) {
+    showPaywall();
+    return;
   }
+
+  setActivePollId(pollId);
+  setCurrentQuestionIndex(0);
+  setAnswers([]);
+  setFinished(false);
+}
 
  function handleSelect(optionIndex: number) {
   if (!activePoll || !currentQuestion) return;
@@ -8048,10 +8097,15 @@ function TestsScreen({
   completedTestIds,
   onBack,
   onCompleteTest,
+  pair,
+  showPaywall,
 }: {
   completedTestIds: string[];
   onBack: () => void;
   onCompleteTest: (test: TestDefinition) => void;
+
+  pair: PairState;
+  showPaywall: () => void;
 }) {
   const [activeTestId, setActiveTestId] = useState<string | null>(null);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
@@ -8063,12 +8117,22 @@ const t = market === "en" ? TEXT_EN : TEXT_RU;
   const activeTest = TESTS.find((item) => item.id === activeTestId) || null;
   const currentQuestion = activeTest?.questions[currentQuestionIndex] || null;
 
-  function startTest(testId: string) {
-    setActiveTestId(testId);
-    setCurrentQuestionIndex(0);
-    setAnswers([]);
-    setFinished(false);
-  }
+ 
+
+function startTest(testId: string) {
+if (
+  !pair?.isPremium &&
+  (pair?.dailyTestsUsed ?? 0)
+) {
+  showPaywall();
+  return;
+}
+
+  setActiveTestId(testId);
+  setCurrentQuestionIndex(0);
+  setAnswers([]);
+  setFinished(false);
+}
 
  
 function selectOption(optionIndex: number) {
@@ -8080,6 +8144,7 @@ function selectOption(optionIndex: number) {
   setAnswers(nextAnswers);
 
   const isLast = currentQuestionIndex === activeTest.questions.length - 1;
+
 
   setTimeout(() => {
     if (isLast) {
@@ -9530,13 +9595,19 @@ async function upsertWeeklyPairLeaderboardEntry(params: {
 
 
 async function loadPairStateForUser(telegramId: number): Promise<PairState> {
-  const emptyState: PairState = {
+const emptyState: PairState = {
   pairId: null,
   inviteCode: null,
   partner: null,
   createdByTelegramId: null,
   totalPoints: 0,
   weeklyPoints: 0,
+
+  dailyTestsUsed: 0,
+  dailyPollsUsed: 0,
+  dailyGamesUsed: 0,
+  dailyLimitDate: null,
+  isPremium: false,
 };
 
 
@@ -9546,8 +9617,10 @@ async function loadPairStateForUser(telegramId: number): Promise<PairState> {
     .select("pair_id")
     .eq("telegram_id", telegramId)
     .maybeSingle();
+    
 
   if (profileError || !profile?.pair_id) {
+    
     return emptyState;
   }
 
@@ -9560,6 +9633,25 @@ async function loadPairStateForUser(telegramId: number): Promise<PairState> {
   if (pairError || !pair) {
     return emptyState;
   }
+
+ const currentDayKey = getCurrentDayKey();
+
+if (pair.daily_limit_date !== currentDayKey) {
+  pair.daily_tests_used = 0;
+  pair.daily_polls_used = 0;
+  pair.daily_games_used = 0;
+  pair.daily_limit_date = currentDayKey;
+
+  await supabase
+    .from("pairs")
+    .update({
+      daily_tests_used: 0,
+      daily_polls_used: 0,
+      daily_games_used: 0,
+      daily_limit_date: currentDayKey,
+    })
+    .eq("id", pair.id);
+}
 
   const currentTelegramId = Number(telegramId);
   const partner1Id = pair.partner_1_telegram_id != null ? Number(pair.partner_1_telegram_id) : null;
@@ -9600,6 +9692,11 @@ return {
   partner,
   createdByTelegramId,
   totalPoints: pair.total_points ?? 0,
+  dailyTestsUsed: pair.daily_tests_used ?? 0,
+dailyPollsUsed: pair.daily_polls_used ?? 0,
+dailyGamesUsed: pair.daily_games_used ?? 0,
+dailyLimitDate: pair.daily_limit_date ?? null,
+isPremium: pair.is_premium ?? false,
 weeklyPoints:
   pair.weekly_points_week === getCurrentWeekKey()
     ? pair.weekly_points ?? 0
@@ -9904,7 +10001,11 @@ const referralStats = await loadReferralStats(user.id);
 
 setAppState((prev) => ({
   ...prev,
-  pair: nextPairState,
+  pair: {
+  ...nextPairState,
+  dailyPollsUsed:
+    (nextPairState.dailyPollsUsed ?? 0) + 1,
+},
   points: nextPairState.totalPoints || 0,
   pairPollAnswers: pairPollAnswersFromDb,
   dailyPairHistory: dailyPairHistoryFromDb,
@@ -10361,6 +10462,7 @@ const syncPairAfterPointsChange = async (
 
 
 const [previousWeeklyPairLeaderboard, setPreviousWeeklyPairLeaderboard] = useState<WeeklyPairLeaderboardRow[]>([]);
+const [showPremiumPaywall, setShowPremiumPaywall] = useState(false);
 
 
 
@@ -11181,6 +11283,7 @@ if (finishedAllTests && !appState.completionBonusesClaimed.tests) {
   let result: WonReward | null = null;
 
   if (!appState.pair.pairId) {
+    
     alert("Сначала нужно создать пару");
     return null;
   }
@@ -11215,7 +11318,11 @@ if (finishedAllTests && !appState.completionBonusesClaimed.tests) {
 
   setAppState((prev) => ({
     ...prev,
-    pair: refreshedPair,
+    pair: {
+  ...refreshedPair,
+  dailyGamesUsed:
+    (refreshedPair.dailyGamesUsed ?? 0) + 1,
+},
     points: refreshedPair.totalPoints || 0,
     stats: {
       ...prev.stats,
@@ -11428,6 +11535,8 @@ if (finishedAllTests && !appState.completionBonusesClaimed.tests) {
     completedPollIds={appState.completedPollIds}
      onBack={() => setScreen("menu")}
     onCompletePoll={handleCompletePoll}
+    pair={appState.pair}
+showPaywall={() => setShowPremiumPaywall(true)}
   />
 )}
 
@@ -11437,6 +11546,8 @@ if (finishedAllTests && !appState.completionBonusesClaimed.tests) {
     completedPollIds={appState.completedPollIds}
      onBack={() => setScreen("menu")}
     onCompletePoll={handleCompletePoll}
+    pair={appState.pair}
+showPaywall={() => setShowPremiumPaywall(true)}
   />
 )}
 
@@ -11457,6 +11568,8 @@ if (finishedAllTests && !appState.completionBonusesClaimed.tests) {
             completedTestIds={appState.completedTestIds}
             onBack={() => setScreen("menu")}
             onCompleteTest={handleCompleteTest}
+            pair={appState.pair}
+showPaywall={() => setShowPremiumPaywall(true)}
           />
         )}
 
