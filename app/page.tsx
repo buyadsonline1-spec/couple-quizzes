@@ -63,7 +63,8 @@ type Screen =
   | "daily-pair-question"
   | "pair-streak-info"
   | "paywall"
-  | "pair-compatibility-info";
+  | "pair-compatibility-info"
+  | "freePremium";
 
 
 
@@ -9152,6 +9153,126 @@ function TopPlayersScreen({
   );
 }
 
+function FreePremiumScreen({
+  onBack,
+}: {
+  onBack: () => void;
+}) {
+  return (
+    <div style={{ padding: 16, display: "grid", gap: 14 }}>
+      <div style={{ ...cardBaseStyle(), padding: 20 }}>
+        <div
+          style={{
+            fontSize: 26,
+            fontWeight: 900,
+            color: "#241b40",
+          }}
+        >
+          🎁 Premium бесплатно
+        </div>
+
+        <div
+          style={{
+            marginTop: 12,
+            lineHeight: 1.6,
+            color: "#4b446a",
+          }}
+        >
+          Подпишитесь на два наших канала и получите Premium бесплатно.
+        </div>
+
+        <button
+  onClick={() =>
+    window.open(
+      "https://t.me/+UEOCfzXBdI8wZTA8",
+      "_blank"
+    )
+  }
+  style={{
+    ...primaryButtonStyle,
+    width: "100%",
+    marginTop: 18,
+  }}
+>
+  💖 Канал про отношения
+</button>
+
+        <button
+  onClick={() =>
+    window.open(
+      "https://t.me/+VbnjVHz0pzsxMjlk",
+      "_blank"
+    )
+  }
+  style={{
+    ...primaryButtonStyle,
+    width: "100%",
+    marginTop: 10,
+  }}
+>
+  🎮 Couple Quizzes
+</button>
+
+        <button
+  onClick={async () => {
+    const tgUser =
+      window.Telegram?.WebApp?.initDataUnsafe?.user;
+
+    if (!tgUser?.id) {
+      alert("Не удалось определить Telegram");
+      return;
+    }
+
+    const response = await fetch(
+      "/api/check-free-premium",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          telegramId: tgUser.id,
+        }),
+      }
+    );
+
+    const result = await response.json();
+
+    if (result.success) {
+      alert("🎉 Premium активирован!");
+      window.location.reload();
+    } else {
+      alert(
+        "Подпишитесь на оба канала и попробуйте снова."
+      );
+    }
+  }}
+  style={{
+    width: "100%",
+    marginTop: 14,
+    padding: 14,
+    borderRadius: 18,
+    border: "none",
+    background: "#241b40",
+    color: "#fff",
+    fontWeight: 800,
+    cursor: "pointer",
+  }}
+>
+  ✅ Проверить и активировать Premium
+</button>
+      </div>
+
+      <button
+        onClick={onBack}
+        style={secondaryButtonStyle}
+      >
+        Назад
+      </button>
+    </div>
+  );
+}
+
 function ReferralsScreen({
   user,
   appState,
@@ -9374,22 +9495,56 @@ const t = market === "en" ? TEXT_EN : TEXT_RU;
     ✨ Premium активен
   </div>
 ) : (
-  <button
-    onClick={() => onNavigate("paywall")}
-    style={{
-      marginTop: 6,
-      padding: "6px 10px",
-      fontSize: 12,
-      borderRadius: 999,
-      border: "none",
-      background: "linear-gradient(135deg,#8f6bff,#ff76ba)",
-      color: "#fff",
-      fontWeight: 700,
-      cursor: "pointer",
-    }}
-  >
-    Разблокировать Premium ✨
-  </button>
+  <div style={{ marginTop: 6, display: "grid", gap: 8 }}>
+    <button
+      onClick={() => onNavigate("paywall")}
+      style={{
+        padding: "6px 10px",
+        fontSize: 12,
+        borderRadius: 999,
+        border: "none",
+        background: "linear-gradient(135deg,#8f6bff,#ff76ba)",
+        color: "#fff",
+        fontWeight: 700,
+        cursor: "pointer",
+      }}
+    >
+      Разблокировать Premium ✨
+    </button>
+
+    <button
+  onClick={() => onNavigate("freePremium")}
+  style={{
+    marginTop: 6,
+    padding: "6px 10px",
+    fontSize: 12,
+    borderRadius: 999,
+    border: "1px solid rgba(143,107,255,0.3)",
+    background: "rgba(255,255,255,0.4)",
+    color: "#241b40",
+    fontWeight: 700,
+    cursor: "pointer",
+  }}
+>
+  🎁 Получить бесплатно
+</button>
+
+    <button
+      onClick={() => onNavigate("freePremium")}
+      style={{
+        padding: "6px 10px",
+        fontSize: 12,
+        borderRadius: 999,
+        border: "1px solid rgba(143,107,255,0.25)",
+        background: "rgba(255,255,255,0.35)",
+        color: "#3b3158",
+        fontWeight: 700,
+        cursor: "pointer",
+      }}
+    >
+      🎁 Получить бесплатно
+    </button>
+  </div>
 )}
             {isPremium && (
   <div
@@ -11609,6 +11764,12 @@ showPaywall={() => setShowPremiumPaywall(true)}
   onBack={() => setScreen("menu")}
 />
 
+)}
+
+{screen === "freePremium" && (
+  <FreePremiumScreen
+    onBack={() => setScreen("profile")}
+  />
 )}
 
 
