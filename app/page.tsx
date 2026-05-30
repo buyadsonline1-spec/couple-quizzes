@@ -9526,24 +9526,10 @@ const t = market === "en" ? TEXT_EN : TEXT_RU;
     cursor: "pointer",
   }}
 >
-  🎁 Получить бесплатно
+  🎁 Получить Premium бесплатно
 </button>
 
-    <button
-      onClick={() => onNavigate("freePremium")}
-      style={{
-        padding: "6px 10px",
-        fontSize: 12,
-        borderRadius: 999,
-        border: "1px solid rgba(143,107,255,0.25)",
-        background: "rgba(255,255,255,0.35)",
-        color: "#3b3158",
-        fontWeight: 700,
-        cursor: "pointer",
-      }}
-    >
-      🎁 Получить бесплатно
-    </button>
+
   </div>
 )}
             {isPremium && (
