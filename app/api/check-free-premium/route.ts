@@ -48,19 +48,37 @@ export async function POST(req: Request) {
       });
     }
 
-    await supabaseAdmin
-      .from("subscriptions")
-      .upsert(
-        {
-          telegram_id: telegramId,
-          plan: "free_premium",
-          status: "active",
-          updated_at: new Date().toISOString(),
-        },
-        {
-          onConflict: "telegram_id",
-        }
-      );
+    const { error: subscriptionError } = await supabaseAdmin
+  .from("subscriptions")
+  .upsert(
+    {
+      telegram_id: Number(telegramId),
+      plan: "free_premium",
+      status: "active",
+      expires_at: null,
+      updated_at: new Date().toISOString(),
+    },
+    {
+      onConflict: "telegram_id",
+    }
+  );
+
+if (subscriptionError) {
+  console.error(
+    "FREE PREMIUM UPSERT ERROR:",
+    subscriptionError
+  );
+
+  return NextResponse.json(
+    {
+      success: false,
+      error: "Failed to activate Premium",
+    },
+    {
+      status: 500,
+    }
+  );
+}
 
     return NextResponse.json({
       success: true,
