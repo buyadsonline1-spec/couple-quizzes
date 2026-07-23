@@ -10339,14 +10339,15 @@ const REWARD_CATEGORIES =
 
  
 
-  const FREE_POLLS_LIMIT = 3;
-  const FREE_TESTS_LIMIT = 1;
-  const FREE_GAME_STEPS_LIMIT = 3;
+const FREE_ACTIONS_LIMIT = 3;
 
-  const freeAccessExhausted =
-    (appState.completedPollIds?.length ?? 0) >= FREE_POLLS_LIMIT &&
-    (appState.completedTestIds?.length ?? 0) >= FREE_TESTS_LIMIT &&
-    (appState.playedGameRewardKeys?.length ?? 0) >= FREE_GAME_STEPS_LIMIT;
+const freeActionsUsed =
+  (appState.completedPollIds?.length ?? 0) +
+  (appState.completedTestIds?.length ?? 0) +
+  (appState.playedGameRewardKeys?.length ?? 0);
+
+const freeAccessExhausted =
+  freeActionsUsed >= FREE_ACTIONS_LIMIT;
 
 
 
