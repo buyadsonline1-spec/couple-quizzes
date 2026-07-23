@@ -11887,7 +11887,11 @@ showPaywall={() => setShowPremiumPaywall(true)}
 </button>
 
       <button
-  onClick={() => setScreen(paywallBackScreen)}
+  onClick={() => {
+    setShowPaymentChoice(false);
+    setPaywallBackScreen("menu");
+    setScreen("menu");
+  }}
   style={{ ...secondaryButtonStyle, marginTop: 10 }}
 >
   {t.common.back}
