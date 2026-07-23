@@ -193,6 +193,7 @@ type PollQuestion = {
 
 type Poll = {
   id: string;
+  image: string;
 
 
   title: string;
@@ -260,6 +261,7 @@ type TestQuestion = {
 
 type TestDefinition = {
   id: string;
+  image?: string;
   title: string;
   titleRu: string;
   titleEn: string;
@@ -347,9 +349,16 @@ const WHEEL_SPIN_COST = 2000;
 const SCALE_OPTIONS_RU = ["Никогда", "Редко", "Иногда", "Часто", "Всегда"];
 const SCALE_OPTIONS_EN = ["Never", "Rarely", "Sometimes", "Often", "Always"];
 
+const TEST_IMAGES: Record<string, string> = {
+  "trust-level": "/images/tests/trust-level.png",
+  "love-language": "/images/tests/love-language.png",
+  "personality-strengths": "/images/tests/personality-strengths.png",
+};
+
 const TESTS: TestDefinition[] = [
   {
     id: "trust-level",
+    image: TEST_IMAGES["trust-level"],
     title:
       market === "en"
         ? "Trust Level in a Relationship"
@@ -468,6 +477,7 @@ const TESTS: TestDefinition[] = [
 
   {
     id: "love-language",
+     image: TEST_IMAGES["love-language"],
     title: market === "en" ? "Love Language" : "Язык любви",
     titleRu: "Язык любви",
     titleEn: "Love Language",
@@ -721,6 +731,7 @@ const TESTS: TestDefinition[] = [
 
   {
     id: "personality-strengths",
+      image: TEST_IMAGES["personality-strengths"],
     title:
       market === "en"
         ? "Personal Strengths"
@@ -1447,6 +1458,20 @@ case "love":
   }
 }
 
+const POLL_THEME_IMAGES: Record<string, string> = {
+  communication: "/images/poll-themes/communication.png",
+  love: "/images/poll-themes/love.png",
+  conflicts: "/images/poll-themes/conflicts.png",
+  trust: "/images/poll-themes/trust.png",
+  understanding: "/images/poll-themes/understanding.png",
+  romance: "/images/poll-themes/romance.png",
+  space: "/images/poll-themes/space.png",
+  future: "/images/poll-themes/future.png",
+  life: "/images/poll-themes/life.png",
+  jealousy: "/images/poll-themes/jealousy.png",
+};
+
+
   const POLL_THEMES = [
     
   {
@@ -1566,10 +1591,11 @@ const POLLS: Poll[] = POLL_THEMES.flatMap((item, index) => {
 
   return [
     {
-      id: `boy-${item.key}`,
+  id: `boy-${item.key}`,
+  image: POLL_THEME_IMAGES[item.theme],
 
-      title: item.titleRu,
-      description: item.descriptionRu,
+  title: item.titleRu,
+  description: item.descriptionRu,
 
       titleRu: item.titleRu,
       titleEn: item.titleEn,
@@ -1584,10 +1610,11 @@ const POLLS: Poll[] = POLL_THEMES.flatMap((item, index) => {
       questions: createPollQuestions(item.theme, "boy"),
     },
     {
-      id: `girl-${item.key}`,
+  id: `girl-${item.key}`,
+  image: POLL_THEME_IMAGES[item.theme],
 
-      title: item.titleRu,
-      description: item.descriptionRu,
+  title: item.titleRu,
+  description: item.descriptionRu,
 
       titleRu: item.titleRu,
       titleEn: item.titleEn,
@@ -5849,20 +5876,19 @@ setFinished(false);
 
       <div style={{ ...cardBaseStyle(), padding: 14 }}>
 
-  {currentQuestion.image && (
-    <img
-      src={currentQuestion.image}
-      alt=""
-      style={{
-        width: "100%",
-        maxHeight: 220,
-        objectFit: "cover",
-        borderRadius: 22,
-        marginBottom: 14,
-        boxShadow: "0 14px 30px rgba(80, 50, 130, 0.18)",
-      }}
-    />
-  )}
+ <img
+  src={activePoll.image}
+  alt={activePoll.title}
+  style={{
+    width: "100%",
+    height: 220,
+    objectFit: "cover",
+    borderRadius: 22,
+    marginBottom: 14,
+    display: "block",
+    boxShadow: "0 14px 30px rgba(80, 50, 130, 0.18)",
+  }}
+/>
 
   <div
     style={{
@@ -8226,6 +8252,19 @@ function selectOption(optionIndex: number) {
 
         return (
           <div key={test.id} style={{ ...cardBaseStyle(), padding: 12 }}>
+
+            <img
+  src={test.image}
+  alt={test.title}
+  style={{
+    width: "100%",
+    height: 150,
+    objectFit: "cover",
+    borderRadius: 18,
+    marginBottom: 12,
+    display: "block",
+  }}
+/>
   {/* ВЕРХ: название + бейдж */}
   <div
     style={{
@@ -8383,16 +8422,17 @@ function selectOption(optionIndex: number) {
 
       <div style={{ ...cardBaseStyle(), padding: 18 }}>
 
-        {currentQuestion.image && (
+     {activeTest.image && (
   <img
-    src={currentQuestion.image}
-    alt=""
+    src={activeTest.image}
+    alt={activeTest.title}
     style={{
       width: "100%",
-      maxHeight: 220,
+      height: 220,
       objectFit: "cover",
       borderRadius: 22,
       marginBottom: 14,
+      display: "block",
       boxShadow: "0 14px 30px rgba(80, 50, 130, 0.18)",
     }}
   />
