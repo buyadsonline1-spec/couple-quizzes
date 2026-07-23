@@ -8253,18 +8253,7 @@ function selectOption(optionIndex: number) {
         return (
           <div key={test.id} style={{ ...cardBaseStyle(), padding: 12 }}>
 
-            <img
-  src={test.image}
-  alt={test.title}
-  style={{
-    width: "100%",
-    height: 150,
-    objectFit: "cover",
-    borderRadius: 18,
-    marginBottom: 12,
-    display: "block",
-  }}
-/>
+           
   {/* ВЕРХ: название + бейдж */}
   <div
     style={{
