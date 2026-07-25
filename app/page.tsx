@@ -5,6 +5,7 @@ import { getMarket } from "@/config/markets";
 import { REWARD_CATEGORIES_RU } from "@/config/rewards-ru";
 import { REWARD_CATEGORIES_EN } from "@/config/rewards-en";
 
+import { confirmGiveawayAction } from "@/lib/giveaway";
 import { supabase } from "@/lib/supabase";
 import confetti from "canvas-confetti";
 import { TEXT_RU } from "@/config/text-ru";
@@ -24,6 +25,7 @@ declare global {
   interface Window {
     Telegram?: {
       WebApp?: {
+        initData?: string;
         openInvoice?: (url: string, callback?: (status: string) => void) => void;
         openTelegramLink?: (url: string) => void;
         ready?: () => void;
@@ -5652,14 +5654,18 @@ const activePoll = POLLS.find((poll) => poll.id === activePollId) || null;
     setCurrentQuestionIndex((prev) => prev + 1);
   }
 
-  function handleFinish() {
-    if (!activePoll) return;
-    onCompletePoll(activePoll, answers);
-    setActivePollId(null);
-setCurrentQuestionIndex(0);
-setAnswers([]);
-setFinished(false);
-  }
+  async function handleFinish() {
+  if (!activePoll) return;
+
+  onCompletePoll(activePoll, answers);
+
+  await confirmGiveawayAction("poll");
+
+  setActivePollId(null);
+  setCurrentQuestionIndex(0);
+  setAnswers([]);
+  setFinished(false);
+}
 
   if (!activePollId) {
     return (
@@ -8226,14 +8232,18 @@ function selectOption(optionIndex: number) {
     return getPersonalityResult(answers);
   }
 
-  function handleFinish() {
-    if (!activeTest) return;
-    onCompleteTest(activeTest);
-    setActiveTestId(null);
-    setCurrentQuestionIndex(0);
-    setAnswers([]);
-    setFinished(false);
-  }
+async function handleFinish() {
+  if (!activeTest) return;
+
+  onCompleteTest(activeTest);
+
+  await confirmGiveawayAction("test");
+
+  setActiveTestId(null);
+  setCurrentQuestionIndex(0);
+  setAnswers([]);
+  setFinished(false);
+}
 
   if (!activeTestId) {
   return (
