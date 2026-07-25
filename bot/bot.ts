@@ -4,6 +4,13 @@ import { supabaseAdmin } from "./supabase-admin";
 
 dotenv.config({ path: ".env.local" });
 
+const GIVEAWAY_END_AT = new Date("2026-08-01T12:00:00.000Z");
+// 12:00 UTC = 15:00 МСК
+
+function isGiveawayClosed(): boolean {
+  return new Date() >= GIVEAWAY_END_AT;
+}
+
 const token = process.env.TELEGRAM_BOT_TOKEN;
 const webAppUrl = process.env.WEB_APP_URL;
 const giveawayChannelRaw =
@@ -644,10 +651,28 @@ bot.on("callback_query", async (query) => {
     // Убирает бесконечную загрузку на кнопке.
     await bot.answerCallbackQuery(query.id);
 
+    if (
+  isGiveawayClosed() &&
+  (
+    query.data === "giveaway_join" ||
+    query.data === "giveaway_check"
+  )
+) {
+  await bot.sendMessage(
+    chatId,
+    `⏰ Розыгрыш завершён!
+
+Итоги подводятся 1 августа в 15:00 МСК. Победителей объявим в канале Couple Quizzes 💖`
+  );
+
+  return;
+}
+
     if (query.data === "giveaway_join") {
       const entry = await createGiveawayEntry(
         user
       );
+      
 
       const subscription =
         await checkSubscription(telegramId);
