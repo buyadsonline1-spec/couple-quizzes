@@ -718,34 +718,48 @@ bot.on("callback_query", async (query) => {
 
       if (!entry.app_action_verified) {
         await bot.sendMessage(
-          chatId,
-          `✅ Подписка подтверждена!
+  chatId,
+  `✅ Подписка подтверждена!
 
-Остался последний шаг: открой Couple Quizzes и пройди один тест или опрос.
+🎟 Ты получил +1 билет для участия в розыгрыше.
 
-После этого вернись сюда и снова нажми «Проверить участие».`,
+Увеличить количество билетов и свой шанс на выигрыш можно двумя способами:
+
+• пройти любой тест или опрос в Couple Quizzes
+• пригласить друзей по своей персональной ссылке`,
+  {
+    reply_markup: {
+      inline_keyboard: [
+        [
           {
-            reply_markup: {
-              inline_keyboard: [
-                [
-                  {
-                    text: "💖 Открыть Couple Quizzes",
-                    web_app: {
-                      url: `${webAppUrl}?startapp=giveaway`,
-                    },
-                  },
-                ],
-                [
-                  {
-                    text: "🔄 Проверить участие",
-                    callback_data:
-                      "giveaway_check",
-                  },
-                ],
-              ],
+            text: "💖 Открыть Couple Quizzes",
+            web_app: {
+              url: `${webAppUrl}?startapp=giveaway`,
             },
-          }
-        );
+          },
+        ],
+        [
+          {
+            text: "👥 Пригласить друзей",
+            url:
+              "https://t.me/share/url?" +
+              new URLSearchParams({
+                url: getPersonalGiveawayLink(telegramId),
+                text:
+                  "Участвуй в розыгрыше подарочных сертификатов от Couple Quizzes 💖",
+              }).toString(),
+          },
+        ],
+        [
+          {
+            text: "📊 Мои шансы",
+            callback_data: "giveaway_stats",
+          },
+        ],
+      ],
+    },
+  }
+);
 
         return;
       }
