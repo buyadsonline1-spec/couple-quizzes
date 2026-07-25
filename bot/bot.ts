@@ -462,12 +462,11 @@ async function sendGiveawayCard(
 
   await bot.sendMessage(
     chatId,
-    `🎁 Розыгрыш Couple Quizzes
+  `🎁 Розыгрыш подарочных сертификатов от Couple Quizzes
 
 🥇 1 место — Золотое яблоко, 5000 ₽
 🥈 2 место — Wildberries, 3000 ₽
 🥉 3 место — Яндекс Еда, 1500 ₽
-
 ${getParticipationStatusText(entry)}
 
 🎟 Твои билеты: ${entry.tickets}
@@ -555,8 +554,8 @@ bot.onText(
       }
 
       await bot.sendMessage(
-        msg.chat.id,
-        `💖 Добро пожаловать в Couple Quizzes!
+  msg.chat.id,
+  `💖 Добро пожаловать в Couple Quizzes!
 
 Здесь вы можете:
 • проходить тесты и опросы для пары
@@ -564,30 +563,32 @@ bot.onText(
 • получать очки и награды
 • выигрывать реальные призы
 
-Сейчас проходит большой розыгрыш трёх сертификатов 👇`,
-        {
-          reply_markup: {
-            inline_keyboard: [
-              [
-                {
-                  text: "🎁 Участвовать в розыгрыше",
-                  callback_data:
-                    "giveaway_join",
-                },
-              ],
-              [
-                {
-                  text: "💖 Открыть Couple Quizzes",
-                  web_app: {
-                    url: webAppUrl,
-                  },
-                },
-              ],
-            ],
-          },
-        }
-      );
+🎁 Розыгрыш подарочных сертификатов от Couple Quizzes
 
+🥇 1 место — Золотое яблоко, 5000 ₽
+🥈 2 место — Wildberries, 3000 ₽
+🥉 3 место — Яндекс Еда, 1500 ₽`,
+  {
+    reply_markup: {
+      inline_keyboard: [
+        [
+          {
+            text: "💖 Открыть Couple Quizzes",
+            web_app: {
+              url: webAppUrl,
+            },
+          },
+        ],
+        [
+          {
+            text: "🎁 Участвовать в розыгрыше",
+            callback_data: "giveaway_join",
+          },
+        ],
+      ],
+    },
+  }
+);
       console.log("✅ START message sent");
     } catch (error) {
       console.error(
