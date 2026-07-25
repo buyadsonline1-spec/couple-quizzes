@@ -553,7 +553,7 @@ bot.onText(
         }
       }
 
-      await bot.sendMessage(
+     await bot.sendMessage(
   msg.chat.id,
   `💖 Добро пожаловать в Couple Quizzes!
 
@@ -561,13 +561,7 @@ bot.onText(
 • проходить тесты и опросы для пары
 • проверять вашу совместимость
 • получать очки и награды
-• выигрывать реальные призы
-
-🎁 Розыгрыш подарочных сертификатов от Couple Quizzes
-
-🥇 1 место — Золотое яблоко, 5000 ₽
-🥈 2 место — Wildberries, 3000 ₽
-🥉 3 место — Яндекс Еда, 1500 ₽`,
+• выигрывать реальные призы`,
   {
     reply_markup: {
       inline_keyboard: [
@@ -589,6 +583,7 @@ bot.onText(
     },
   }
 );
+
       console.log("✅ START message sent");
     } catch (error) {
       console.error(
