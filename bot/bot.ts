@@ -136,11 +136,13 @@ async function getTelegramPhotoUrl(
   telegramId: number
 ): Promise<string | null> {
   try {
-    const photos = await bot.getUserProfilePhotos(
-      telegramId,
-      0,
-      1
-    );
+   const photos = await bot.getUserProfilePhotos(
+  telegramId,
+  {
+    offset: 0,
+    limit: 1,
+  }
+);
 
     const firstPhoto = photos.photos?.[0];
     const largestPhoto = firstPhoto?.[firstPhoto.length - 1];
