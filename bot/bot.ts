@@ -6,7 +6,17 @@ dotenv.config({ path: ".env.local" });
 
 const token = process.env.TELEGRAM_BOT_TOKEN;
 const webAppUrl = process.env.WEB_APP_URL;
-const giveawayChannel = process.env.GIVEAWAY_CHANNEL;
+const giveawayChannelRaw =
+  process.env.GIVEAWAY_CHANNEL?.trim();
+
+if (!giveawayChannelRaw) {
+  throw new Error("GIVEAWAY_CHANNEL is not set");
+}
+
+const giveawayChannel: string | number =
+  giveawayChannelRaw.startsWith("-100")
+    ? Number(giveawayChannelRaw)
+    : giveawayChannelRaw;
 const giveawayChannelUrl = process.env.GIVEAWAY_CHANNEL_URL;
 const botUsername =
   process.env.BOT_USERNAME?.replace(/^@/, "") || "couple_quizzes_bot";
@@ -19,9 +29,6 @@ if (!webAppUrl) {
   throw new Error("WEB_APP_URL is not set");
 }
 
-if (!giveawayChannel) {
-  throw new Error("GIVEAWAY_CHANNEL is not set");
-}
 
 if (!giveawayChannelUrl) {
   throw new Error("GIVEAWAY_CHANNEL_URL is not set");
@@ -110,19 +117,44 @@ async function checkSubscription(
 ): Promise<SubscriptionCheck> {
   try {
     const member = await bot.getChatMember(
-      giveawayChannel!,
+      giveawayChannel,
       telegramId
     );
 
+    console.log(
+      "🔎 SUBSCRIPTION CHECK:",
+      {
+        telegramId,
+        channel: giveawayChannel,
+        status: member.status,
+        isMember:
+          "is_member" in member
+            ? member.is_member
+            : undefined,
+      }
+    );
+
+    const subscribed =
+      member.status === "creator" ||
+      member.status === "administrator" ||
+      member.status === "member" ||
+      (
+        member.status === "restricted" &&
+        member.is_member === true
+      );
+
     return {
-      subscribed: isValidMemberStatus(member),
+      subscribed,
       status: member.status,
     };
   } catch (error) {
     console.error(
       "❌ CHECK SUBSCRIPTION ERROR:",
-      telegramId,
-      error
+      {
+        telegramId,
+        channel: giveawayChannel,
+        error,
+      }
     );
 
     return {
@@ -873,6 +905,25 @@ async function startBot(): Promise<void> {
     console.log("✅ Webhook deleted");
 
     await setMenuButton();
+
+    const giveawayChat = await bot.getChat(
+  giveawayChannel
+);
+
+console.log(
+  "✅ Giveaway channel connected:",
+  {
+    id: giveawayChat.id,
+    title:
+      "title" in giveawayChat
+        ? giveawayChat.title
+        : undefined,
+    username:
+      "username" in giveawayChat
+        ? giveawayChat.username
+        : undefined,
+  }
+);
 
     const me = await bot.getMe();
 
