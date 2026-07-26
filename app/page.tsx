@@ -5882,19 +5882,28 @@ const activePoll = POLLS.find((poll) => poll.id === activePollId) || null;
 
       <div style={{ ...cardBaseStyle(), padding: 14 }}>
 
- <img
-  src={activePoll.image}
-  alt={activePoll.title}
+ <div
   style={{
     width: "100%",
-    height: 220,
-    objectFit: "cover",
+    aspectRatio: "16 / 9",
+    overflow: "hidden",
     borderRadius: 22,
     marginBottom: 14,
-    display: "block",
     boxShadow: "0 14px 30px rgba(80, 50, 130, 0.18)",
   }}
-/>
+>
+  <img
+    src={activePoll.image}
+    alt={activePoll.title}
+    style={{
+      display: "block",
+      width: "100%",
+      height: "100%",
+      objectFit: "cover",
+      objectPosition: "center 38%",
+    }}
+  />
+</div>
 
   <div
     style={{
