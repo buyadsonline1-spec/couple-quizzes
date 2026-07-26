@@ -5582,7 +5582,7 @@ function PollsScreen({
 const t = market === "en" ? TEXT_EN : TEXT_RU;
 
 
-const POLLS_PER_PAGE = 4;
+const POLLS_PER_PAGE = 3;
 
 const startIndex = (page - 1) * POLLS_PER_PAGE;
 const endIndex = startIndex + POLLS_PER_PAGE;
