@@ -8453,6 +8453,61 @@ function selectOption(optionIndex: number) {
     return getPersonalityResult(answers);
   }
 
+  async function confirmGiveawayAction(
+  actionType: "poll" | "test"
+) {
+  try {
+    const initData =
+      window.Telegram?.WebApp?.initData;
+
+    if (!initData) {
+      console.error(
+        "GIVEAWAY: Telegram initData отсутствует"
+      );
+      return false;
+    }
+
+    const response = await fetch(
+      "/api/giveaway/complete-action",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          initData,
+          actionType,
+        }),
+      }
+    );
+
+    const result = await response.json();
+
+    if (!response.ok || !result.success) {
+      console.error(
+        "GIVEAWAY COMPLETE ACTION ERROR:",
+        result
+      );
+
+      return false;
+    }
+
+    console.log(
+      "GIVEAWAY TICKET ADDED:",
+      result.entry
+    );
+
+    return true;
+  } catch (error) {
+    console.error(
+      "GIVEAWAY REQUEST ERROR:",
+      error
+    );
+
+    return false;
+  }
+}
+
 async function handleFinish() {
   if (!activeTest) return;
 
@@ -8466,7 +8521,7 @@ async function handleFinish() {
   setFinished(false);
 }
 
-  if (!activeTestId) {
+if (!activeTestId) {
   return (
     <div style={{ padding: 10, display: "grid", gap: 8 }}>
       <div style={{ ...cardBaseStyle(), padding: 12 }}>
@@ -10641,6 +10696,45 @@ const freeAccessExhausted =
 }
 
 const [premiumLoading, setPremiumLoading] = useState(false);
+
+async function confirmGiveawayAction(
+  action: "poll" | "test"
+) {
+  try {
+    const telegramId =
+      window.Telegram?.WebApp?.initDataUnsafe?.user?.id;
+
+    if (!telegramId) {
+      console.error("GIVEAWAY: Telegram ID not found");
+      return false;
+    }
+
+    const response = await fetch("/api/giveaway/action", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        telegramId,
+        action,
+      }),
+    });
+
+    const result = await response.json();
+
+    if (!response.ok || !result.success) {
+      console.error("GIVEAWAY ACTION ERROR:", result);
+      return false;
+    }
+
+    console.log("GIVEAWAY TICKET ADDED:", result);
+
+    return true;
+  } catch (error) {
+    console.error("GIVEAWAY ACTION REQUEST ERROR:", error);
+    return false;
+  }
+}
 
 const handleBuyPremium = async () => {
   try {
