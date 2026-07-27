@@ -1587,14 +1587,72 @@ case "love":
       ["Yes", "No", "..."]
     ),
 
-    make(
+       make(
       "q7",
       "Будешь ли ты ревновать, если она расскажет тебе, что кто-то в неё влюблён?",
       "Will you be jealous if she tells you someone is in love with her?",
       ["Да", "Нет", "Всё, хватит"],
       ["Yes", "No", "Enough already"]
     ),
+  ]
+  : [
+    make(
+      "q1",
+      "Будешь ли ты ревновать, если он сохранит старые совместные фото с бывшей?",
+      "Will you be jealous if he keeps old photos with his ex?",
+      ["Да", "Нет", "Посмотрим!)"],
+      ["Yes", "No", "We'll see!)"]
+    ),
+
+    make(
+      "q2",
+      "Будешь ли ты ревновать, если он назовёт другую девушку красивее тебя?",
+      "Will you be jealous if he says another girl is prettier than you?",
+      ["Да", "Нет", "Пропускаю"],
+      ["Yes", "No", "Skip"]
+    ),
+
+    make(
+      "q3",
+      "Будешь ли ты ревновать, если бывшая сама ему напишет, а он ответит?",
+      "Will you be jealous if his ex texts him and he replies?",
+      ["Да", "Нет", "Он охерел??"],
+      ["Yes", "No", "Has he lost his mind??"]
+    ),
+
+    make(
+      "q4",
+      "Будешь ли ты ревновать, если он начнёт прятать от тебя переписки в телефоне?",
+      "Will you be jealous if he starts hiding chats from you?",
+      ["Да, конечно", "Нет, имеет право!!", "Пропускаю"],
+      ["Of course", "No, it's his right!", "Skip"]
+    ),
+
+    make(
+      "q5",
+      "Будешь ли ты ревновать, если он начнёт флиртовать с официанткой при тебе?",
+      "Will you be jealous if he flirts with a waitress in front of you?",
+      ["Да, ясен красен!!", "Нет", "Пропуск-попуск"],
+      ["Absolutely!", "No", "Skip"]
+    ),
+
+    make(
+      "q6",
+      "Будешь ли ты ревновать, если он начнёт заниматься в зале с тренером-девушкой?",
+      "Will you be jealous if he starts training with a female coach?",
+      ["Да", "Нет", "Типа нет (да)"],
+      ["Yes", "No", "Pretending no (actually yes)"]
+    ),
+
+    make(
+      "q7",
+      "Будешь ли ты ревновать, если он будет много переписываться с подругой?",
+      "Will you be jealous if he chats a lot with his female friend?",
+      ["Да", "Нет", "Пропускаю (боюсь)"],
+      ["Yes", "No", "Skip (I'm scared)"]
+    ),
   ];
+
 
     default:
       return [];
