@@ -10580,9 +10580,7 @@ export default function Page() {
 
   const [appState, setAppState] = useState<AppState>(DEFAULT_STATE);
   const [selectedLang, setSelectedLang] = useState<"ru" | "en">("ru");
-  const savedLang = localStorage.getItem("couple-lang") as "ru" | "en" | null;
-setSelectedLang(savedLang ?? "ru");
-
+  
 const market = selectedLang;
 const t = market === "en" ? TEXT_EN : TEXT_RU;
 const REWARD_CATEGORIES =
