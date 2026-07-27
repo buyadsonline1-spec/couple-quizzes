@@ -9506,16 +9506,21 @@ function FreePremiumScreen({
       }
     );
 
+
     const result = await response.json();
 
-    if (result.success) {
-      alert("🎉 Premium активирован!");
-      window.location.reload();
-    } else {
-      alert(
-        "Подпишитесь на оба канала и попробуйте снова."
-      );
-    }
+if (result.success) {
+  alert("🎉 Premium активирован!");
+  window.location.reload();
+} else {
+  console.error("FREE PREMIUM RESULT:", result);
+
+  alert(
+    result.error ||
+      `Канал отношений: ${result.relationStatus ?? "неизвестно"}\n` +
+        `Couple Quizzes: ${result.cqStatus ?? "неизвестно"}`
+  );
+}
   }}
   style={{
     width: "100%",

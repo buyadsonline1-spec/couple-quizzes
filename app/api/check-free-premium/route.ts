@@ -31,6 +31,9 @@ export async function POST(req: Request) {
       telegramId
     );
 
+    console.log("Relation status:", relationMember.status);
+console.log("CQ status:", cqMember.status);
+
     const allowedStatuses = [
       "member",
       "administrator",
@@ -69,6 +72,11 @@ if (subscriptionError) {
     subscriptionError
   );
 
+  console.log({
+  relation: relationMember.status,
+  cq: cqMember.status,
+});
+
   return NextResponse.json(
     {
       success: false,
@@ -85,15 +93,16 @@ if (subscriptionError) {
       subscribed: true,
     });
   } catch (error) {
-    console.error(error);
+  console.error("FREE PREMIUM ERROR:", error);
 
-    return NextResponse.json(
-      {
-        success: false,
-      },
-      {
-        status: 500,
-      }
-    );
-  }
+  return NextResponse.json(
+    {
+      success: false,
+      error: error instanceof Error ? error.message : String(error),
+    },
+    {
+      status: 500,
+    }
+  );
+}
 }
