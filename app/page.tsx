@@ -5821,7 +5821,14 @@ function startPoll(pollId: string) {
     pollId === "boy-jealousy" ||
     pollId === "girl-jealousy";
 
+  console.log("START POLL:", {
+    pollId,
+    isFreePoll,
+    isPremium: pair?.isPremium,
+  });
+
   if (!pair?.isPremium && !isFreePoll) {
+    console.log("OPEN PAYWALL");
     showPaywall();
     return;
   }
