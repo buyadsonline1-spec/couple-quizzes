@@ -1252,6 +1252,8 @@ function createPollQuestions(
   id: string,
   textRu: string,
   textEn: string,
+  customOptionsRu: string[] = optionsRu,
+  customOptionsEn: string[] = optionsEn,
   image?: string
 ): PollQuestion => ({
   id,
@@ -1259,30 +1261,128 @@ function createPollQuestions(
   textRu,
   textEn,
   image,
-  options: market === "en" ? optionsEn : optionsRu,
-  optionsRu,
-  optionsEn,
+  options: market === "en" ? customOptionsEn : customOptionsRu,
+  optionsRu: customOptionsRu,
+  optionsEn: customOptionsEn,
 });
 
   switch (theme) {
     case "communication":
       return gender === "boy"
         ? [
-            make("q1", "Мне проще говорить о проблеме прямо, чем намекать.", "It is easier for me to talk about a problem directly than to hint at it."),
-            make("q2", "Я ценю, когда разговор короткий и по делу.", "I appreciate conversations that are brief and to the point."),
-            make("q3", "Мне важно, чтобы партнёр говорил честно без игр и молчания.", "It matters to me that my partner speaks honestly without games or silent treatment."),
-            make("q4", "Если что-то не нравится, лучше сказать сразу.", "If something feels wrong, it is better to say it right away."),
-            make("q5", "Я уважаю спокойный разговор без лишней драмы.", "I value calm conversations without unnecessary drama."),
-            make("q6", "Мне важно чувствовать, что меня слушают, а не перебивают.", "It is important for me to feel heard rather than interrupted."),
-          ]
-        : [
-            make("q1", "Мне важно, чтобы со мной говорили мягко и внимательно.", "It is important to me that people speak to me gently and attentively."),
-            make("q2", "Я замечаю не только слова, но и тон общения.", "I notice not only words, but also the tone of communication."),
-            make("q3", "Мне важно обсуждать чувства, а не только факты.", "It is important to me to discuss feelings, not just facts."),
-            make("q4", "Я ценю, когда партнёр сам инициирует откровенный разговор.", "I appreciate it when my partner initiates an open conversation first."),
-            make("q5", "Мне важно, чтобы мои эмоции не обесценивали.", "It matters to me that my emotions are not dismissed."),
-            make("q6", "После сложного разговора мне важно чувствовать тепло и близость.", "After a difficult conversation, it is important for me to feel warmth and closeness."),
-          ];
+    make(
+      "q1",
+      "Можно ли твоей девушке ходить с подругами на вечеринки без тебя?",
+      "Can your girlfriend go to parties with her friends without you?",
+      ["Да", "Нет", "Зависит от..."],
+      ["Yes", "No", "It depends..."]
+    ),
+
+    make(
+      "q2",
+      "Можно ли твоей девушке не делиться с тобой своими планами?",
+      "Can your girlfriend keep her plans to herself?",
+      ["Да", "Нет", "Зависит от..."],
+      ["Yes", "No", "It depends..."]
+    ),
+
+    make(
+      "q3",
+      "Можно ли твоей девушке носить одежду, которая тебе не очень нравится?",
+      "Can your girlfriend wear clothes you do not really like?",
+      ["Да", "Нет", "Нет, но боюсь так ответить"],
+      ["Yes", "No", "No, but I am afraid to say that"]
+    ),
+
+    make(
+      "q4",
+      "Можно ли твоей девушке самостоятельно принимать важные решения без твоего согласия?",
+      "Can your girlfriend make important decisions without your approval?",
+      ["Да", "Нет", "Зависит от ситуации"],
+      ["Yes", "No", "It depends on the situation"]
+    ),
+
+    make(
+      "q5",
+      "Можно ли твоей девушке просматривать твои сообщения или телефон?",
+      "Can your girlfriend check your messages or phone?",
+      ["Да", "Нет", "Только после предварительной зачистки"],
+      ["Yes", "No", "Only after I clean everything up first"]
+    ),
+
+    make(
+      "q6",
+      "Можно ли твоей девушке рассказывать подругам о ваших интимных моментах?",
+      "Can your girlfriend tell her friends about your intimate moments?",
+      ["Да", "Нет", "Желательно"],
+      ["Yes", "No", "Preferably"]
+    ),
+
+    make(
+      "q7",
+      "Можно ли твоей девушке вести социальные сети так, как ей нравится, без оглядки на тебя?",
+      "Can your girlfriend use social media however she likes without considering your opinion?",
+      ["Да", "Якобы да", "Нет"],
+      ["Yes", "Supposedly yes", "No"]
+    ),
+  ]
+       : [
+    make(
+      "q1",
+      "Можно ли ему иметь близких подруг?",
+      "Can he have close female friends?",
+      ["Да", "Нет", "Пропускаю"],
+      ["Yes", "No", "Skip"]
+    ),
+
+    make(
+      "q2",
+      "Можно ли ему носить пирсинг?",
+      "Can he wear piercings?",
+      ["Да", "Нет", "Никогда!!"],
+      ["Yes", "No", "Never!!"]
+    ),
+
+    make(
+      "q3",
+      "Можно ли ему жить с родителями и не снимать квартиру?",
+      "Can he live with his parents instead of renting his own apartment?",
+      ["Да", "Нет", "Сам решит"],
+      ["Yes", "No", "It is his choice"]
+    ),
+
+    make(
+      "q4",
+      "Можно ли ему делить с тобой счёт 50/50?",
+      "Can he split the bill with you 50/50?",
+      ["Да", "Нет", "Зависит от ситуации"],
+      ["Yes", "No", "It depends"]
+    ),
+
+    make(
+      "q5",
+      "Можно ли ему активно вести Instagram и устраивать откровенные фотосессии?",
+      "Can he actively use Instagram and take revealing photos?",
+      ["Да", "Нет", "Я подумаю..."],
+      ["Yes", "No", "I will think about it..."]
+    ),
+
+    make(
+      "q6",
+      "Можно ли ему ревновать тебя к друзьям?",
+      "Can he be jealous of your friends?",
+      ["Да", "Нет", "Пропускаю точно!!"],
+      ["Yes", "No", "Definitely skipping!!"]
+    ),
+
+    make(
+      "q7",
+      "Можно ли ему сравнивать тебя с другими девушками?",
+      "Can he compare you to other girls?",
+      ["Да", "Нет", "А по яйцам??"],
+      ["Yes", "No", "How about a kick in the balls?"]
+    ),
+  ];
 
 case "love":
       return gender === "boy"
@@ -1438,22 +1538,63 @@ case "love":
 
    case "jealousy":
       return gender === "boy"
-        ? [
-            make("q1", "Я считаю важным доверять партнёру без постоянных подозрений.", "I think it is important to trust a partner without constant suspicion."),
-            make("q2", "Мне некомфортно, когда ревность превращается в контроль.", "I feel uncomfortable when jealousy turns into control."),
-            make("q3", "Для меня границы важнее, чем запреты.", "For me, boundaries matter more than prohibitions."),
-            make("q4", "Я считаю, что внимание к другим людям не всегда угрожает отношениям.", "I believe that attention to other people does not always threaten a relationship."),
-            make("q5", "Мне важно, чтобы доверие было сильнее поводов для ревности.", "It is important to me that trust is stronger than reasons for jealousy."),
-            make("q6", "Спокойствие в отношениях для меня важнее драматичных проверок чувств.", "Calmness in a relationship is more important to me than dramatic tests of feelings."),
-          ]
-        : [
-            make("q1", "Мне важно чувствовать себя особенной и выбранной в отношениях.", "It is important for me to feel special and chosen in a relationship."),
-            make("q2", "Я спокойнее, когда в отношениях есть ясные границы с другими людьми.", "I feel calmer when there are clear boundaries with other people in a relationship."),
-            make("q3", "Для меня ревность чаще связана со страхом потери, чем с желанием контролировать.", "For me, jealousy is more often connected to fear of loss than to a desire to control."),
-            make("q4", "Мне важно чувствовать, что партнёр сам бережёт мои чувства.", "It is important for me to feel that my partner protects my feelings on their own."),
-            make("q5", "Я легче справляюсь с ревностью, когда со мной честны и открыты.", "I cope with jealousy more easily when people are honest and open with me."),
-            make("q6", "Для меня спокойствие в отношениях рождается из уважения и определённости.", "For me, peace in a relationship comes from respect and clarity."),
-          ];
+       ? [
+    make(
+      "q1",
+      "Будешь ли ты ревновать, если увидишь, что она лайкает фотографии другого парня в соцсетях?",
+      "Will you be jealous if she likes another guy's photos on social media?",
+      ["Да", "Нет", "Посмотрим"],
+      ["Yes", "No", "We'll see"]
+    ),
+
+    make(
+      "q2",
+      "Будешь ли ты ревновать, если партнёрша будет общаться с бывшим?",
+      "Will you be jealous if your girlfriend keeps talking to her ex?",
+      ["Да", "Нет", "Поглядим"],
+      ["Yes", "No", "We'll see"]
+    ),
+
+    make(
+      "q3",
+      "Будешь ли ты ревновать, если она получит комплимент от другого мужчины?",
+      "Will you be jealous if another man compliments her?",
+      ["Да", "Нет", "Там будет видно)"],
+      ["Yes", "No", "We'll see)"]
+    ),
+
+    make(
+      "q4",
+      "Будешь ли ты ревновать, если она будет проводить много времени без тебя с другом-мужчиной?",
+      "Will you be jealous if she spends a lot of time alone with a male friend?",
+      ["Да", "Нет", "По ситуации)"],
+      ["Yes", "No", "Depends)"]
+    ),
+
+    make(
+      "q5",
+      "Будешь ли ты ревновать, если она поедет в отпуск с подругами без тебя?",
+      "Will you be jealous if she goes on vacation with her friends without you?",
+      ["Да", "Нет", "Будем смотреть"],
+      ["Yes", "No", "We'll see"]
+    ),
+
+    make(
+      "q6",
+      "Будешь ли ты ревновать, если она скажет, что у неё появились чувства к кому-то новому?",
+      "Will you be jealous if she says she has feelings for someone else?",
+      ["Да", "Нет", "..."],
+      ["Yes", "No", "..."]
+    ),
+
+    make(
+      "q7",
+      "Будешь ли ты ревновать, если она расскажет тебе, что кто-то в неё влюблён?",
+      "Will you be jealous if she tells you someone is in love with her?",
+      ["Да", "Нет", "Всё, хватит"],
+      ["Yes", "No", "Enough already"]
+    ),
+  ];
 
     default:
       return [];
@@ -1477,16 +1618,16 @@ const POLL_THEME_IMAGES: Record<string, string> = {
   const POLL_THEMES = [
     
   {
-    key: "communication",
-    titleRu: "Общение",
-    titleEn: "Communication",
-    descriptionRu:
-      "Как ты общаешься, что тебе важно в разговорах и взаимопонимании.",
-    descriptionEn:
-      "How you communicate and what matters most to you in conversations and mutual understanding.",
-    theme: "communication",
-    matchGroup: "communication",
-  },
+  key: "communication",
+  titleRu: "Можно ли твоему партнёру делать это?",
+  descriptionRu: "Установи границы дозволенного в отношениях",
+
+  titleEn: "Can your partner do this?",
+  descriptionEn: "Set the boundaries of what your partner can and cannot do",
+
+  theme: "communication",
+  matchGroup: "communication",
+},
   {
     key: "love",
     titleRu: "Любовь",
