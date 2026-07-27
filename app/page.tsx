@@ -5794,13 +5794,7 @@ const visiblePolls = filteredPolls.slice(startIndex, endIndex);
 const totalPages = Math.ceil(filteredPolls.length / POLLS_PER_PAGE);
 
 const activePoll = POLLS.find((poll) => poll.id === activePollId) || null;
-const isActivePollLocked =
-  activePoll &&
-  !pair?.isPremium &&
-  !(
-    activePoll.id.includes("communication") ||
-    activePoll.id.includes("jealousy")
-  );
+
   const currentQuestion = activePoll?.questions[currentQuestionIndex] || null;
 
   if (activePoll && activePoll.questions.length === 0) {
@@ -5821,14 +5815,7 @@ function startPoll(pollId: string) {
     pollId === "boy-jealousy" ||
     pollId === "girl-jealousy";
 
-  console.log("START POLL:", {
-    pollId,
-    isFreePoll,
-    isPremium: pair?.isPremium,
-  });
-
   if (!pair?.isPremium && !isFreePoll) {
-    console.log("OPEN PAYWALL");
     showPaywall();
     return;
   }
