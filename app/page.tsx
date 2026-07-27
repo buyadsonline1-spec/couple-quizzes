@@ -195,6 +195,7 @@ type PollQuestion = {
 
 type Poll = {
   id: string;
+  theme: string;
   image: string;
 
 
@@ -209,7 +210,7 @@ type Poll = {
   reward: number;
   gender: "boy" | "girl";
   page: number;
-  theme?: string;
+  
   matchGroup?: string;
 
   questions: PollQuestion[];
@@ -1686,6 +1687,17 @@ const POLL_THEME_IMAGES: Record<string, string> = {
   theme: "communication",
   matchGroup: "communication",
 },
+{
+    key: "jealousy",
+    titleRu: "Ревность",
+    titleEn: "Jealousy",
+    descriptionRu:
+      "Как ты относишься к ревности, границам и вниманию к другим людям.",
+    descriptionEn:
+      "How you feel about jealousy, boundaries, and attention from other people.",
+    theme: "jealousy",
+    matchGroup: "jealousy",
+  },
   {
     key: "love",
     titleRu: "Любовь",
@@ -1774,17 +1786,7 @@ const POLL_THEME_IMAGES: Record<string, string> = {
     theme: "life",
     matchGroup: "life",
   },
-  {
-    key: "jealousy",
-    titleRu: "Ревность",
-    titleEn: "Jealousy",
-    descriptionRu:
-      "Как ты относишься к ревности, границам и вниманию к другим людям.",
-    descriptionEn:
-      "How you feel about jealousy, boundaries, and attention from other people.",
-    theme: "jealousy",
-    matchGroup: "jealousy",
-  },
+  
 ] as const;
 
 const POLLS: Poll[] = POLL_THEMES.flatMap((item, index) => {
@@ -1792,11 +1794,12 @@ const POLLS: Poll[] = POLL_THEMES.flatMap((item, index) => {
 
   return [
     {
-  id: `boy-${item.key}`,
-  image: POLL_THEME_IMAGES[item.theme],
+      id: `boy-${item.key}`,
+      theme: item.theme,
+      image: POLL_THEME_IMAGES[item.theme],
 
-  title: item.titleRu,
-  description: item.descriptionRu,
+      title: item.titleRu,
+      description: item.descriptionRu,
 
       titleRu: item.titleRu,
       titleEn: item.titleEn,
@@ -1806,16 +1809,17 @@ const POLLS: Poll[] = POLL_THEMES.flatMap((item, index) => {
       reward: 60,
       gender: "boy" as const,
       page,
-      theme: item.theme,
+
       matchGroup: item.matchGroup,
       questions: createPollQuestions(item.theme, "boy"),
     },
     {
-  id: `girl-${item.key}`,
-  image: POLL_THEME_IMAGES[item.theme],
+      id: `girl-${item.key}`,
+      theme: item.theme,
+      image: POLL_THEME_IMAGES[item.theme],
 
-  title: item.titleRu,
-  description: item.descriptionRu,
+      title: item.titleRu,
+      description: item.descriptionRu,
 
       titleRu: item.titleRu,
       titleEn: item.titleEn,
@@ -1825,13 +1829,12 @@ const POLLS: Poll[] = POLL_THEMES.flatMap((item, index) => {
       reward: 60,
       gender: "girl" as const,
       page,
-      theme: item.theme,
+
       matchGroup: item.matchGroup,
       questions: createPollQuestions(item.theme, "girl"),
     },
   ];
 });
-
 
 const GAMES: Game[] = [
 
@@ -5791,6 +5794,13 @@ const visiblePolls = filteredPolls.slice(startIndex, endIndex);
 const totalPages = Math.ceil(filteredPolls.length / POLLS_PER_PAGE);
 
 const activePoll = POLLS.find((poll) => poll.id === activePollId) || null;
+const isActivePollLocked =
+  activePoll &&
+  !pair?.isPremium &&
+  !(
+    activePoll.id.includes("communication") ||
+    activePoll.id.includes("jealousy")
+  );
   const currentQuestion = activePoll?.questions[currentQuestionIndex] || null;
 
   if (activePoll && activePoll.questions.length === 0) {
@@ -5804,11 +5814,14 @@ const activePoll = POLLS.find((poll) => poll.id === activePollId) || null;
   );
 }
 
- function startPoll(pollId: string) {
-  if (
-    !pair?.isPremium &&
-    (pair?.dailyPollsUsed ?? 0) >= 2
-  ) {
+function startPoll(pollId: string) {
+  const isFreePoll =
+    pollId === "boy-communication" ||
+    pollId === "girl-communication" ||
+    pollId === "boy-jealousy" ||
+    pollId === "girl-jealousy";
+
+  if (!pair?.isPremium && !isFreePoll) {
     showPaywall();
     return;
   }
@@ -10566,7 +10579,9 @@ function getTelegramUserSafe(fallbackUser: TgUser | null): TgUser | null {
 export default function Page() {
 
   const [appState, setAppState] = useState<AppState>(DEFAULT_STATE);
-  const [selectedLang, setSelectedLang] = useState<"ru" | "en" | null>(null);
+  const [selectedLang, setSelectedLang] = useState<"ru" | "en">("ru");
+  const savedLang = localStorage.getItem("couple-lang") as "ru" | "en" | null;
+setSelectedLang(savedLang ?? "ru");
 
 const market = selectedLang;
 const t = market === "en" ? TEXT_EN : TEXT_RU;
@@ -11836,9 +11851,7 @@ if (finishedAllTests && !appState.completionBonusesClaimed.tests) {
   setScreen(
     appState.profile.gender
       ? "menu"
-      : selectedLang
-      ? "gender-select"
-      : "language-select"
+      : "gender-select"
   )
 }
   />
