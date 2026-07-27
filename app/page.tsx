@@ -5771,6 +5771,7 @@ function PollsScreen({
   onCompletePoll: (poll: Poll, answers: number[]) => void;
 
   pair: PairState;
+
   showPaywall: () => void;
 }) {
   const filteredPolls = POLLS.filter((p) => p.gender === genderFilter);
@@ -5815,10 +5816,10 @@ function startPoll(pollId: string) {
     pollId === "boy-jealousy" ||
     pollId === "girl-jealousy";
 
-  if (!pair?.isPremium && !isFreePoll) {
-    showPaywall();
-    return;
-  }
+ if (!pair?.isPremium && !isFreePoll) {
+  showPaywall();
+  return;
+}
 
   setActivePollId(pollId);
   setCurrentQuestionIndex(0);
@@ -12039,7 +12040,10 @@ if (finishedAllTests && !appState.completionBonusesClaimed.tests) {
      onBack={() => setScreen("menu")}
     onCompletePoll={handleCompletePoll}
     pair={appState.pair}
-showPaywall={() => setShowPremiumPaywall(true)}
+showPaywall={() => {
+  setPaywallBackScreen(screen);
+  setScreen("paywall");
+}}
   />
 )}
 
@@ -12050,7 +12054,10 @@ showPaywall={() => setShowPremiumPaywall(true)}
      onBack={() => setScreen("menu")}
     onCompletePoll={handleCompletePoll}
     pair={appState.pair}
-showPaywall={() => setShowPremiumPaywall(true)}
+showPaywall={() => {
+  setPaywallBackScreen(screen);
+  setScreen("paywall");
+}}
   />
 )}
 
@@ -12240,8 +12247,7 @@ showPaywall={() => setShowPremiumPaywall(true)}
       <button
   onClick={() => {
     setShowPaymentChoice(false);
-    setPaywallBackScreen("menu");
-    setScreen("menu");
+    setScreen(paywallBackScreen);
   }}
   style={{ ...secondaryButtonStyle, marginTop: 10 }}
 >
