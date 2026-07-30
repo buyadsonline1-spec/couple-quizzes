@@ -11153,7 +11153,7 @@ const syncPairAfterPointsChange = async (
 
 
 const [previousWeeklyPairLeaderboard, setPreviousWeeklyPairLeaderboard] = useState<WeeklyPairLeaderboardRow[]>([]);
-const [showPremiumPaywall, setShowPremiumPaywall] = useState(false);
+
 
 
 
@@ -12380,10 +12380,10 @@ if (finishedAllTests && !appState.completionBonusesClaimed.tests) {
     next === "games";
 
   if (!appState.isPremium && freeAccessExhausted && wantsContent) {
-    setPaywallBackScreen(next);
-    setScreen("paywall");
-    return;
-  }
+  setPaywallBackScreen("menu");
+  setScreen("paywall");
+  return;
+}
 
   setScreen(next);
 }}
@@ -12412,13 +12412,13 @@ showPaywall={() => {
   <PollsScreen
     genderFilter="girl"
     completedPollIds={appState.completedPollIds}
-     onBack={() => setScreen("menu")}
+    onBack={() => setScreen("menu")}
     onCompletePoll={handleCompletePoll}
     pair={appState.pair}
-showPaywall={() => {
-  setPaywallBackScreen(screen);
-  setScreen("paywall");
-}}
+    showPaywall={() => {
+      setPaywallBackScreen("menu");
+      setScreen("paywall");
+    }}
   />
 )}
 
@@ -12434,15 +12434,18 @@ showPaywall={() => {
 />
 )}
 
-              {screen === "tests" && (
-          <TestsScreen
-            completedTestIds={appState.completedTestIds}
-            onBack={() => setScreen("menu")}
-            onCompleteTest={handleCompleteTest}
-            pair={appState.pair}
-showPaywall={() => setShowPremiumPaywall(true)}
-          />
-        )}
+             {screen === "tests" && (
+  <TestsScreen
+    completedTestIds={appState.completedTestIds}
+    onBack={() => setScreen("menu")}
+    onCompleteTest={handleCompleteTest}
+    pair={appState.pair}
+    showPaywall={() => {
+      setPaywallBackScreen("menu");
+      setScreen("paywall");
+    }}
+  />
+)}
 
         {screen === "rewards" && (
           <RewardsScreen
@@ -12601,18 +12604,15 @@ showPaywall={() => setShowPremiumPaywall(true)}
       </div>
 
       <button
-  style={{ ...primaryButtonStyle, width: "100%", marginTop: 14 }}
-  onClick={() => setShowPaymentChoice(true)}
->
-  Получить полный доступ
-</button>
-
-      <button
   onClick={() => {
     setShowPaymentChoice(false);
-    setScreen(paywallBackScreen);
+    setScreen("menu");
   }}
-  style={{ ...secondaryButtonStyle, marginTop: 10 }}
+  style={{
+    ...secondaryButtonStyle,
+    width: "100%",
+    marginTop: 10,
+  }}
 >
   {t.common.back}
 </button>
