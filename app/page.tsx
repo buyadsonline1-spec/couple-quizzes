@@ -5,6 +5,8 @@ import { getMarket } from "@/config/markets";
 import { REWARD_CATEGORIES_RU } from "@/config/rewards-ru";
 import { REWARD_CATEGORIES_EN } from "@/config/rewards-en";
 
+
+
 import { confirmGiveawayAction } from "@/lib/giveaway";
 import { supabase } from "@/lib/supabase";
 import confetti from "canvas-confetti";
@@ -25,6 +27,7 @@ declare global {
   interface Window {
     Telegram?: {
       WebApp?: {
+    
         initData?: string;
         openInvoice?: (url: string, callback?: (status: string) => void) => void;
         openTelegramLink?: (url: string) => void;
@@ -5768,7 +5771,10 @@ function PollsScreen({
   genderFilter: "boy" | "girl";
   completedPollIds: string[];
   onBack: () => void;
-  onCompletePoll: (poll: Poll, answers: number[]) => void;
+  onCompletePoll: (
+  poll: Poll,
+  answers: number[]
+) => Promise<void>;
 
   pair: PairState;
 
@@ -5861,18 +5867,16 @@ function startPoll(pollId: string) {
     setCurrentQuestionIndex((prev) => prev + 1);
   }
 
-  async function handleFinish() {
+async function handleFinish() {
   if (!activePoll) return;
 
-  onCompletePoll(activePoll, answers);
-
-  await confirmGiveawayAction("poll");
+  await onCompletePoll(activePoll, answers);
 
   setActivePollId(null);
   setCurrentQuestionIndex(0);
   setAnswers([]);
   setFinished(false);
-}
+} 
 
   if (!activePollId) {
     return (
@@ -9218,6 +9222,8 @@ function TopPlayersScreen({
   weeklyTopRewardClaimedWeek,
   onBack,
   onClaimWeeklyReward,
+  onRefresh,
+  refreshing,
   t,
 }: {
   pair: PairState;
@@ -9226,8 +9232,58 @@ function TopPlayersScreen({
   weeklyTopRewardClaimedWeek: string | null;
   onBack: () => void;
   onClaimWeeklyReward: () => void;
+  onRefresh: () => Promise<void>;
+  refreshing: boolean;
   t: any;
 }) {
+
+  <div
+  style={{
+    display: "flex",
+    justifyContent: "flex-end",
+    marginBottom: 12,
+  }}
+>
+  <button
+    type="button"
+    onClick={onRefresh}
+    disabled={refreshing}
+    style={{
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      gap: 7,
+      minHeight: 38,
+      padding: "9px 14px",
+      border: "1px solid rgba(255, 255, 255, 0.16)",
+      borderRadius: 14,
+      background: "rgba(255, 255, 255, 0.1)",
+      color: "#ffffff",
+      fontSize: 13,
+      fontWeight: 800,
+      cursor: refreshing ? "default" : "pointer",
+      opacity: refreshing ? 0.65 : 1,
+      transition: "transform 0.15s ease, opacity 0.15s ease",
+      WebkitTapHighlightColor: "transparent",
+    }}
+  >
+    <span
+      style={{
+        display: "inline-block",
+        fontSize: 15,
+        lineHeight: 1,
+        animation: refreshing
+          ? "topRefreshSpin 0.8s linear infinite"
+          : "none",
+      }}
+    >
+      ↻
+    </span>
+
+    {refreshing ? "Обновление..." : "Обновить"}
+  </button>
+</div>
+
   const currentWeekKey = getCurrentWeekKey();
   const previousWeekKey = getPreviousWeekKey();
   const [topExpanded, setTopExpanded] = useState(false);
@@ -9284,9 +9340,60 @@ function TopPlayersScreen({
       </div>
 
       <div style={{ ...cardBaseStyle(), padding: 14 }}>
-        <div style={{ fontSize: 18, fontWeight: 900, color: "#1f1d3a" }}>
-          Рейтинг
-        </div>
+        <div
+  style={{
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: 10,
+  }}
+>
+  <div
+    style={{
+      fontSize: 18,
+      fontWeight: 900,
+      color: "#1f1d3a",
+    }}
+  >
+    Рейтинг
+  </div>
+
+  <button
+    type="button"
+    onClick={onRefresh}
+    disabled={refreshing}
+    style={{
+      border: "1px solid rgba(107,70,255,0.16)",
+      borderRadius: 12,
+      padding: "8px 11px",
+      background: "rgba(107,70,255,0.08)",
+      color: "#5a35eb",
+      fontSize: 12,
+      fontWeight: 900,
+      cursor: refreshing ? "default" : "pointer",
+      opacity: refreshing ? 0.6 : 1,
+      display: "inline-flex",
+      alignItems: "center",
+      justifyContent: "center",
+      gap: 6,
+      whiteSpace: "nowrap",
+    }}
+  >
+    <span
+      style={{
+        display: "inline-block",
+        lineHeight: 1,
+        animation: refreshing
+          ? "topRefreshSpin 0.8s linear infinite"
+          : "none",
+      }}
+    >
+      ↻
+    </span>
+
+    {refreshing ? "Обновляем" : "Обновить"}
+  </button>
+</div>
 
         {allPairs.length === 0 ? (
           <div
@@ -9469,6 +9576,19 @@ function TopPlayersScreen({
       >
         {t.common.back}
       </button>
+
+      <style>{`
+  @keyframes topRefreshSpin {
+    from {
+      transform: rotate(0deg);
+    }
+
+    to {
+      transform: rotate(360deg);
+    }
+  }
+`}</style>
+
     </div>
   );
 }
@@ -10015,6 +10135,71 @@ async function upsertTelegramProfile(user: TgUser) {
   }
 
   return data;
+}
+
+type GiveawayActionResult = {
+  success: boolean;
+  ticketAdded?: boolean;
+  tickets?: number;
+  message?: string;
+};
+
+async function completeGiveawayAction(
+  actionType: "poll" | "test"
+): Promise<GiveawayActionResult> {
+  try {
+    const initData = window.Telegram?.WebApp?.initData;
+
+    if (!initData) {
+      return {
+        success: false,
+        ticketAdded: false,
+        message: "Telegram initData не найден",
+      };
+    }
+
+    const response = await fetch("/api/giveaway/complete-action", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        initData,
+        actionType,
+      }),
+    });
+
+    const data = await response.json().catch(() => null);
+
+    if (!response.ok) {
+      return {
+        success: false,
+        ticketAdded: false,
+        message:
+          data?.message ||
+          data?.error ||
+          "Не удалось проверить выполнение задания",
+      };
+    }
+
+    return {
+      success: Boolean(data?.success),
+      ticketAdded: Boolean(data?.ticketAdded),
+      tickets:
+        typeof data?.tickets === "number"
+          ? data.tickets
+          : undefined,
+      message: data?.message,
+    };
+  } catch (error) {
+    console.error("COMPLETE GIVEAWAY ACTION ERROR:", error);
+
+    return {
+      success: false,
+      ticketAdded: false,
+      message: "Ошибка соединения с сервером",
+    };
+  }
 }
 
 async function loadWeeklyPairLeaderboard(weekKey: string): Promise<WeeklyPairLeaderboardRow[]> {
@@ -11324,6 +11509,7 @@ await refreshPairData({
 
 
 const [weeklyPairLeaderboard, setWeeklyPairLeaderboard] = useState<WeeklyPairLeaderboardRow[]>([]);
+const [topRefreshing, setTopRefreshing] = useState(false);
 
 const [showPaymentChoice, setShowPaymentChoice] = useState(false);
 
@@ -11575,50 +11761,50 @@ try {
  * 2. Синхронизируем её запись в таблице лидеров.
  * 3. Загружаем свежий топ.
  */
+
+
+const refreshTopLeaderboard = async () => {
+  if (!user?.id || topRefreshing) return;
+
+  try {
+    setTopRefreshing(true);
+
+    const refreshedPair = await loadPairStateForUser(user.id);
+
+    const nextState: AppState = {
+      ...appState,
+      pair: refreshedPair,
+      points: refreshedPair.totalPoints || 0,
+    };
+
+    await syncWeeklyPairLeaderboard(nextState, user);
+
+    const [currentRows, previousRows] = await Promise.all([
+      loadWeeklyPairLeaderboard(getCurrentWeekKey()),
+      loadWeeklyPairLeaderboard(getPreviousWeekKey()),
+    ]);
+
+    setAppState((prev) => ({
+      ...prev,
+      pair: refreshedPair,
+      points: refreshedPair.totalPoints || 0,
+    }));
+
+    setAnimatedPairPoints(refreshedPair.totalPoints || 0);
+    setWeeklyPairLeaderboard(currentRows);
+    setPreviousWeeklyPairLeaderboard(previousRows);
+  } catch (error) {
+    console.error("REFRESH TOP ERROR:", error);
+  } finally {
+    setTopRefreshing(false);
+  }
+};
+
 useEffect(() => {
   if (screen !== "top") return;
   if (!user?.id) return;
 
-  let cancelled = false;
-
-  async function refreshTopScreen() {
-    try {
-      const refreshedPair = await loadPairStateForUser(user!.id!);
-
-      const nextState: AppState = {
-        ...appState,
-        pair: refreshedPair,
-        points: refreshedPair.totalPoints || 0,
-      };
-
-      await syncWeeklyPairLeaderboard(nextState, user);
-
-      const [currentRows, previousRows] = await Promise.all([
-        loadWeeklyPairLeaderboard(getCurrentWeekKey()),
-        loadWeeklyPairLeaderboard(getPreviousWeekKey()),
-      ]);
-
-      if (cancelled) return;
-
-      setAppState((prev) => ({
-        ...prev,
-        pair: refreshedPair,
-        points: refreshedPair.totalPoints || 0,
-      }));
-
-      setAnimatedPairPoints(refreshedPair.totalPoints || 0);
-      setWeeklyPairLeaderboard(currentRows);
-      setPreviousWeeklyPairLeaderboard(previousRows);
-    } catch (error) {
-      console.error("REFRESH TOP SCREEN ERROR:", error);
-    }
-  }
-
-  refreshTopScreen();
-
-  return () => {
-    cancelled = true;
-  };
+  refreshTopLeaderboard();
 }, [screen, user?.id]);
 
 // Обновляем данные пары на остальных основных экранах
@@ -11633,31 +11819,18 @@ useEffect(() => {
   if (!user?.id) return;
   if (!screensToRefresh.includes(screen)) return;
 
-  let cancelled = false;
-
   async function refreshCurrentPair() {
     try {
-      const refreshedPair = await loadPairStateForUser(user!.id!);
-
-      if (cancelled) return;
-
-      setAppState((prev) => ({
-        ...prev,
-        pair: refreshedPair,
-        points: refreshedPair.totalPoints || 0,
-      }));
-
-      setAnimatedPairPoints(refreshedPair.totalPoints || 0);
+      await refreshPairData({
+        user,
+        setAppState,
+      });
     } catch (error) {
       console.error("REFRESH PAIR DATA ERROR:", error);
     }
   }
 
   refreshCurrentPair();
-
-  return () => {
-    cancelled = true;
-  };
 }, [screen, user?.id]);
 
 useEffect(() => {
@@ -11836,6 +12009,25 @@ if (nextPoints > previousPoints) {
   user,
   setAppState,
 });
+
+if (!alreadyCompleted) {
+  const giveawayResult = await completeGiveawayAction("test");
+
+  if (giveawayResult.ticketAdded) {
+    alert(
+      `🎟️ Вы получили +1 билет за прохождение теста!${
+        typeof giveawayResult.tickets === "number"
+          ? `\n\nВсего билетов: ${giveawayResult.tickets}`
+          : ""
+      }`
+    );
+  } else if (!giveawayResult.success) {
+    console.error(
+      "Билет за тест не начислен:",
+      giveawayResult.message
+    );
+  }
+}
 
 
 
@@ -12264,13 +12456,15 @@ showPaywall={() => setShowPremiumPaywall(true)}
    {screen === "top" && (
   <TopPlayersScreen
   t={t}
-    pair={appState.pair}
-    leaderboard={weeklyPairLeaderboard}
-    weeklyTopRewardClaimedWeek={appState.weeklyTopRewardClaimedWeek}
-    previousLeaderboard={previousWeeklyPairLeaderboard}
-    onBack={() => setScreen("menu")}
-    onClaimWeeklyReward={handleClaimWeeklyTopReward}
-  />
+  pair={appState.pair}
+  leaderboard={weeklyPairLeaderboard}
+  previousLeaderboard={previousWeeklyPairLeaderboard}
+  weeklyTopRewardClaimedWeek={appState.weeklyTopRewardClaimedWeek}
+  onBack={() => setScreen("menu")}
+  onClaimWeeklyReward={handleClaimWeeklyTopReward}
+  onRefresh={refreshTopLeaderboard}
+  refreshing={topRefreshing}
+/>
 )}
 
 
