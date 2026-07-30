@@ -8361,7 +8361,7 @@ function TestsScreen({
 }: {
   completedTestIds: string[];
   onBack: () => void;
-  onCompleteTest: (test: TestDefinition) => void;
+  onCompleteTest: (test: TestDefinition) => Promise<void>;
 
   pair: PairState;
   showPaywall: () => void;
@@ -11539,7 +11539,9 @@ console.log("PAIR STATE AFTER BOOTSTRAP:", nextPairState);
 let pairPollAnswersFromDb: Record<string, number[]> = {};
 
 if (nextPairState.pairId) {
-  pairPollAnswersFromDb = await loadPairPollAnswers(nextPairState.pairId);
+  pairPollAnswersFromDb = await loadPairPollAnswers(
+    nextPairState.pairId
+  );
 }
 
 setAppState((prev) => ({
@@ -11550,48 +11552,127 @@ setAppState((prev) => ({
   pairPollAnswers: pairPollAnswersFromDb,
 }));
 
+// Загружаем топ текущей и предыдущей недели при запуске приложения
+try {
+  const [currentRows, previousRows] = await Promise.all([
+    loadWeeklyPairLeaderboard(getCurrentWeekKey()),
+    loadWeeklyPairLeaderboard(getPreviousWeekKey()),
+  ]);
 
-
-
-    const weekKey = getCurrentWeekKey();
-const leaderboardRows = await loadWeeklyPairLeaderboard(weekKey);
-setWeeklyPairLeaderboard(leaderboardRows);
-
-
+  setWeeklyPairLeaderboard(currentRows);
+  setPreviousWeeklyPairLeaderboard(previousRows);
+} catch (error) {
+  console.error("BOOTSTRAP LEADERBOARD ERROR:", error);
+}
   }
 
   bootstrap();
 }, []);
 
-
-
+/*
+ * При открытии раздела "Топ":
+ * 1. Обновляем данные пары.
+ * 2. Синхронизируем её запись в таблице лидеров.
+ * 3. Загружаем свежий топ.
+ */
 useEffect(() => {
-  const screensToRefresh: Screen[] = ["menu", "pair", "profile", "rewards", "top"];
+  if (screen !== "top") return;
+  if (!user?.id) return;
+
+  let cancelled = false;
+
+  async function refreshTopScreen() {
+    try {
+      const refreshedPair = await loadPairStateForUser(user!.id!);
+
+      const nextState: AppState = {
+        ...appState,
+        pair: refreshedPair,
+        points: refreshedPair.totalPoints || 0,
+      };
+
+      await syncWeeklyPairLeaderboard(nextState, user);
+
+      const [currentRows, previousRows] = await Promise.all([
+        loadWeeklyPairLeaderboard(getCurrentWeekKey()),
+        loadWeeklyPairLeaderboard(getPreviousWeekKey()),
+      ]);
+
+      if (cancelled) return;
+
+      setAppState((prev) => ({
+        ...prev,
+        pair: refreshedPair,
+        points: refreshedPair.totalPoints || 0,
+      }));
+
+      setAnimatedPairPoints(refreshedPair.totalPoints || 0);
+      setWeeklyPairLeaderboard(currentRows);
+      setPreviousWeeklyPairLeaderboard(previousRows);
+    } catch (error) {
+      console.error("REFRESH TOP SCREEN ERROR:", error);
+    }
+  }
+
+  refreshTopScreen();
+
+  return () => {
+    cancelled = true;
+  };
+}, [screen, user?.id]);
+
+// Обновляем данные пары на остальных основных экранах
+useEffect(() => {
+  const screensToRefresh: Screen[] = [
+    "menu",
+    "pair",
+    "profile",
+    "rewards",
+  ];
 
   if (!user?.id) return;
   if (!screensToRefresh.includes(screen)) return;
 
-  refreshPairData({
-    user,
-    setAppState,
-  });
-}, [screen, user]);
+  let cancelled = false;
 
+  async function refreshCurrentPair() {
+    try {
+      const refreshedPair = await loadPairStateForUser(user!.id!);
 
+      if (cancelled) return;
 
-  useEffect(() => {
-    if (!mounted) return;
-    saveState(appState);
-  }, [appState, mounted]);
+      setAppState((prev) => ({
+        ...prev,
+        pair: refreshedPair,
+        points: refreshedPair.totalPoints || 0,
+      }));
 
-  const totalActivities = useMemo(() => {
-    return (
-      appState.stats.pollsCompleted +
-      appState.stats.gamesPlayed +
-      appState.stats.testsCompleted
-    );
-  }, [appState.stats]);
+      setAnimatedPairPoints(refreshedPair.totalPoints || 0);
+    } catch (error) {
+      console.error("REFRESH PAIR DATA ERROR:", error);
+    }
+  }
 
+  refreshCurrentPair();
+
+  return () => {
+    cancelled = true;
+  };
+}, [screen, user?.id]);
+
+useEffect(() => {
+  if (!mounted) return;
+
+  saveState(appState);
+}, [appState, mounted]);
+
+const totalActivities = useMemo(() => {
+  return (
+    appState.stats.pollsCompleted +
+    appState.stats.gamesPlayed +
+    appState.stats.testsCompleted
+  );
+}, [appState.stats]);
 
 
 
@@ -11613,6 +11694,69 @@ useEffect(() => {
     setBonusClaimAvailable(false);
     setShowDailyBonus(false);
   };
+
+  type GiveawayActionType = "poll" | "test";
+
+async function completeGiveawayAction(
+  actionType: GiveawayActionType
+): Promise<{
+  success: boolean;
+  ticketAdded: boolean;
+  tickets?: number;
+  message?: string;
+}> {
+  const initData = window.Telegram?.WebApp?.initData;
+
+  if (!initData) {
+    console.error("Telegram initData отсутствует");
+
+    return {
+      success: false,
+      ticketAdded: false,
+      message: "Не удалось подтвердить пользователя Telegram",
+    };
+  }
+
+  try {
+    const response = await fetch("/api/giveaway/complete-action", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        initData,
+        actionType,
+      }),
+    });
+
+    const result = await response.json();
+
+    if (!response.ok) {
+      console.error("GIVEAWAY ACTION ERROR:", result);
+
+      return {
+        success: false,
+        ticketAdded: false,
+        message: result?.error || "Не удалось начислить билет",
+      };
+    }
+
+    return {
+      success: result?.success === true,
+      ticketAdded: result?.ticketAdded === true,
+      tickets: result?.tickets,
+      message: result?.message,
+    };
+  } catch (error) {
+    console.error("GIVEAWAY REQUEST ERROR:", error);
+
+    return {
+      success: false,
+      ticketAdded: false,
+      message: "Ошибка соединения при начислении билета",
+    };
+  }
+}
 
  const handleCompletePoll = async (poll: Poll, answers: number[]) => {
   const alreadyCompleted = appState.completedPollIds.includes(poll.id);
@@ -11669,7 +11813,9 @@ if (nextPoints > previousPoints) {
   pairPollAnswers: pairPollAnswersFromDb,
   stats: {
     ...prev.stats,
-    pollsCompleted: prev.stats.pollsCompleted + 1,
+    pollsCompleted: alreadyCompleted
+  ? prev.stats.pollsCompleted
+  : prev.stats.pollsCompleted + 1,
   },
   completedPollIds: alreadyCompleted
     ? prev.completedPollIds
@@ -11691,6 +11837,8 @@ if (nextPoints > previousPoints) {
   setAppState,
 });
 
+
+
 const allPollIds = POLLS.map((item) => item.id);
 const nextCompletedPollIds = alreadyCompleted
   ? appState.completedPollIds
@@ -11699,6 +11847,25 @@ const nextCompletedPollIds = alreadyCompleted
 const finishedAllPolls = allPollIds.every((id) =>
   nextCompletedPollIds.includes(id)
 );
+
+if (!alreadyCompleted) {
+  const giveawayResult = await completeGiveawayAction("poll");
+
+  if (giveawayResult.ticketAdded) {
+    alert(
+      `🎟️ Вы получили +1 билет за прохождение опроса!${
+        typeof giveawayResult.tickets === "number"
+          ? `\n\nВсего билетов: ${giveawayResult.tickets}`
+          : ""
+      }`
+    );
+  } else if (!giveawayResult.success) {
+    console.error(
+      "Билет за опрос не начислен:",
+      giveawayResult.message
+    );
+  }
+}
 
 if (finishedAllPolls && !appState.completionBonusesClaimed.polls) {
   await claimCompletionBonus("polls");
@@ -11749,9 +11916,11 @@ if (nextPoints > previousPoints) {
       pair: nextPairState,
       points: nextPairState.totalPoints || 0,
       stats: {
-        ...prev.stats,
-        testsCompleted: prev.stats.testsCompleted + 1,
-      },
+  ...prev.stats,
+  testsCompleted: alreadyCompleted
+    ? prev.stats.testsCompleted
+    : prev.stats.testsCompleted + 1,
+},
       completedTestIds: alreadyCompleted
         ? prev.completedTestIds
         : [...prev.completedTestIds, test.id],
