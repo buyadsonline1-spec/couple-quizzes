@@ -105,6 +105,7 @@ type WonReward = {
 
 type AppState = {
   points: number;
+  soloPoints: number;
   isPremium: boolean;
  
 
@@ -341,6 +342,17 @@ type WeeklyPairLeaderboardRow = {
   week_key: string;
   pair_id: string;
   pair_title: string;
+  total_points: number;
+  updated_at: string;
+};
+
+type WeeklyUserLeaderboardRow = {
+  id: string;
+  week_key: string;
+  telegram_id: number;
+  display_name: string;
+  username: string | null;
+  photo_url: string | null;
   total_points: number;
   updated_at: string;
 };
@@ -2442,13 +2454,14 @@ const WHEEL_COLORS = [
 
 const DEFAULT_STATE: AppState = {
   points: 0,
+  soloPoints: 0,
   isPremium: false,
 
 
   referrals: {
-  invitedUsers: [],
-  totalReward: 0,
-},
+    invitedUsers: [],
+    totalReward: 0,
+  },
 
  
 loveQuestionsAnsweredIds: [],
@@ -4108,7 +4121,7 @@ const t = market === "en" ? TEXT_EN : TEXT_RU;
   setAppState((prev) => ({
     ...prev,
     pair: nextPairState,
-    points: nextPairState.totalPoints || 0,
+    
     dailyPairHistory: history,
     dailyPairStreak: streakData,
     dailyPairMatchBonusClaimedDates:
@@ -5091,13 +5104,26 @@ function loadState(): AppState {
     const raw = window.localStorage.getItem(STORAGE_KEY);
     if (!raw) return DEFAULT_STATE;
 
-    const parsed = JSON.parse(raw) as Partial<AppState>;
-  
-   return {
-  points: parsed.points ?? DEFAULT_STATE.points,
-  isPremium: DEFAULT_STATE.isPremium,
-  playedGameRewardKeys:
-  parsed.playedGameRewardKeys ?? DEFAULT_STATE.playedGameRewardKeys,
+    const parsed = JSON.parse(raw) as Partial<AppState> & {
+      points?: number;
+    };
+
+    return {
+      points:
+        parsed.points ??
+        DEFAULT_STATE.points,
+
+      soloPoints:
+        parsed.soloPoints ??
+        parsed.points ??
+        DEFAULT_STATE.soloPoints,
+
+      isPremium: DEFAULT_STATE.isPremium,
+
+      playedGameRewardKeys:
+        parsed.playedGameRewardKeys ??
+        DEFAULT_STATE.playedGameRewardKeys,
+
 
   completionBonusesClaimed: {
   polls:
@@ -9216,77 +9242,50 @@ setShowRewardScreen(false);
 }
 
 function TopPlayersScreen({
+  user,
   pair,
+
   leaderboard,
   previousLeaderboard,
+
+  userLeaderboard,
+  previousUserLeaderboard,
+
   weeklyTopRewardClaimedWeek,
+
   onBack,
   onClaimWeeklyReward,
   onRefresh,
   refreshing,
+
   t,
 }: {
+  user: TgUser | null;
   pair: PairState;
+
   leaderboard: WeeklyPairLeaderboardRow[];
   previousLeaderboard: WeeklyPairLeaderboardRow[];
+
+  userLeaderboard: WeeklyUserLeaderboardRow[];
+  previousUserLeaderboard: WeeklyUserLeaderboardRow[];
+
   weeklyTopRewardClaimedWeek: string | null;
+
   onBack: () => void;
   onClaimWeeklyReward: () => void;
   onRefresh: () => Promise<void>;
+
   refreshing: boolean;
   t: any;
 }) {
-
-  <div
-  style={{
-    display: "flex",
-    justifyContent: "flex-end",
-    marginBottom: 12,
-  }}
->
-  <button
-    type="button"
-    onClick={onRefresh}
-    disabled={refreshing}
-    style={{
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
-      gap: 7,
-      minHeight: 38,
-      padding: "9px 14px",
-      border: "1px solid rgba(255, 255, 255, 0.16)",
-      borderRadius: 14,
-      background: "rgba(255, 255, 255, 0.1)",
-      color: "#ffffff",
-      fontSize: 13,
-      fontWeight: 800,
-      cursor: refreshing ? "default" : "pointer",
-      opacity: refreshing ? 0.65 : 1,
-      transition: "transform 0.15s ease, opacity 0.15s ease",
-      WebkitTapHighlightColor: "transparent",
-    }}
-  >
-    <span
-      style={{
-        display: "inline-block",
-        fontSize: 15,
-        lineHeight: 1,
-        animation: refreshing
-          ? "topRefreshSpin 0.8s linear infinite"
-          : "none",
-      }}
-    >
-      ↻
-    </span>
-
-    {refreshing ? "Обновление..." : "Обновить"}
-  </button>
-</div>
-
-  const currentWeekKey = getCurrentWeekKey();
   const previousWeekKey = getPreviousWeekKey();
+
+  const [topMode, setTopMode] = useState<"solo" | "pair">("solo");
   const [topExpanded, setTopExpanded] = useState(false);
+
+  // -----------------------------
+  // ПАРНЫЙ РЕЙТИНГ
+  // -----------------------------
 
   const allPairs = leaderboard.map((row, index) => ({
     ...row,
@@ -9294,224 +9293,625 @@ function TopPlayersScreen({
     isCurrentPair: row.pair_id === pair.pairId,
   }));
 
-  const visiblePairs = topExpanded
-    ? allPairs.slice(0, 10)
-    : allPairs.slice(0, 3);
-
   const previousWeekPairs = previousLeaderboard.map((row, index) => ({
     ...row,
     place: index + 1,
     isCurrentPair: row.pair_id === pair.pairId,
   }));
 
-  const currentPairRow = allPairs.find((row) => row.isCurrentPair);
-  const previousWeekPairRow = previousWeekPairs.find((row) => row.isCurrentPair);
+  const currentPairRow = allPairs.find(
+    (row) => row.isCurrentPair
+  );
 
-  const wasTopThreeLastWeek =
-    previousWeekPairRow?.place === 1 ||
-    previousWeekPairRow?.place === 2 ||
-    previousWeekPairRow?.place === 3;
+  const previousWeekPairRow = previousWeekPairs.find(
+    (row) => row.isCurrentPair
+  );
+
+  // -----------------------------
+  // СОЛЬНЫЙ РЕЙТИНГ
+  // -----------------------------
+
+  const allUsers = userLeaderboard.map((row, index) => ({
+    ...row,
+    place: index + 1,
+    isCurrentUser:
+      Number(row.telegram_id) === Number(user?.id),
+  }));
+
+  const previousWeekUsers = previousUserLeaderboard.map(
+    (row, index) => ({
+      ...row,
+      place: index + 1,
+      isCurrentUser:
+        Number(row.telegram_id) === Number(user?.id),
+    })
+  );
+
+  const currentUserRow = allUsers.find(
+    (row) => row.isCurrentUser
+  );
+
+  const previousWeekUserRow = previousWeekUsers.find(
+    (row) => row.isCurrentUser
+  );
+
+  // После переключения вкладки сворачиваем рейтинг
+  const handleChangeMode = (mode: "solo" | "pair") => {
+    setTopMode(mode);
+    setTopExpanded(false);
+  };
+
+  const activeRows =
+    topMode === "solo" ? allUsers : allPairs;
+
+  const visibleRows = topExpanded
+    ? activeRows.slice(0, 10)
+    : activeRows.slice(0, 3);
+
+  // Пока награда недели остаётся только для парного топа
+  const wasPairTopThreeLastWeek = [1, 2, 3].includes(
+    previousWeekPairRow?.place ?? 0
+  );
 
   const alreadyClaimedLastWeek =
     weeklyTopRewardClaimedWeek === previousWeekKey;
 
   const canClaimWeeklyReward =
-    wasTopThreeLastWeek && !alreadyClaimedLastWeek;
+    topMode === "pair" &&
+    wasPairTopThreeLastWeek &&
+    !alreadyClaimedLastWeek;
 
+  function getPlaceBackground(place: number) {
+    if (place === 1) {
+      return "linear-gradient(135deg, #ffd54f, #ffb300)";
+    }
 
+    if (place === 2) {
+      return "linear-gradient(135deg, #f4f4f4, #c8c8c8)";
+    }
 
+    if (place === 3) {
+      return "linear-gradient(135deg, #ffcc80, #ff9e80)";
+    }
+
+    return "rgba(255,255,255,0.45)";
+  }
+
+  function getPlaceEmoji(place: number) {
+    if (place === 1) return "🥇";
+    if (place === 2) return "🥈";
+    if (place === 3) return "🥉";
+
+    return String(place);
+  }
 
   return (
-    <div style={{ padding: 12, display: "grid", gap: 10 }}>
-      <div style={{ ...cardBaseStyle(), padding: 14 }}>
-        <div style={{ fontSize: 24, fontWeight: 900, color: "#1f1d3a" }}>
-          🏆 {t.top.title}
-        </div>
+    <div
+      style={{
+        padding: 12,
+        display: "grid",
+        gap: 10,
+      }}
+    >
+      <style>
+        {`
+          @keyframes topRefreshSpin {
+            from {
+              transform: rotate(0deg);
+            }
+
+            to {
+              transform: rotate(360deg);
+            }
+          }
+        `}
+      </style>
+
+      {/* Заголовок */}
+
+      <div
+        style={{
+          ...cardBaseStyle(),
+          padding: 14,
+        }}
+      >
         <div
           style={{
-            marginTop: 4,
-            color: "#3a345c",
-            fontSize: 13,
-            lineHeight: 1.4,
+            display: "flex",
+            alignItems: "flex-start",
+            justifyContent: "space-between",
+            gap: 12,
           }}
         >
-          {t.top.subtitle}
+          <div style={{ minWidth: 0 }}>
+            <div
+              style={{
+                fontSize: 24,
+                fontWeight: 900,
+                color: "#1f1d3a",
+              }}
+            >
+              🏆 {t.top.title}
+            </div>
+
+            <div
+              style={{
+                marginTop: 4,
+                color: "#3a345c",
+                fontSize: 13,
+                lineHeight: 1.4,
+              }}
+            >
+              {topMode === "solo"
+                ? "Соревнуйся с другими игроками и поднимайся в личном рейтинге."
+                : "Зарабатывайте очки вместе и поднимайте вашу пару в рейтинге."}
+            </div>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => {
+              void onRefresh();
+            }}
+            disabled={refreshing}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: 6,
+              flexShrink: 0,
+              minHeight: 38,
+              padding: "9px 12px",
+              border: "1px solid rgba(108,58,255,0.18)",
+              borderRadius: 14,
+              background: "rgba(255,255,255,0.35)",
+              color: "#332b55",
+              fontSize: 12,
+              fontWeight: 900,
+              cursor: refreshing ? "default" : "pointer",
+              opacity: refreshing ? 0.65 : 1,
+              WebkitTapHighlightColor: "transparent",
+            }}
+          >
+            <span
+              style={{
+                display: "inline-block",
+                fontSize: 16,
+                lineHeight: 1,
+                animation: refreshing
+                  ? "topRefreshSpin 0.8s linear infinite"
+                  : "none",
+              }}
+            >
+              ↻
+            </span>
+
+            {refreshing ? "..." : "Обновить"}
+          </button>
+        </div>
+
+        {/* Переключатель рейтинга */}
+
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "1fr 1fr",
+            gap: 6,
+            marginTop: 16,
+            padding: 5,
+            borderRadius: 17,
+            background: "rgba(255,255,255,0.25)",
+          }}
+        >
+          <button
+            type="button"
+            onClick={() => handleChangeMode("solo")}
+            style={{
+              border: "none",
+              borderRadius: 13,
+              minHeight: 45,
+              padding: "10px 8px",
+              fontSize: 14,
+              fontWeight: 900,
+              cursor: "pointer",
+              transition:
+                "transform 0.15s ease, background 0.15s ease",
+              background:
+                topMode === "solo"
+                  ? "linear-gradient(135deg, #7657ff, #a36cff)"
+                  : "transparent",
+              color:
+                topMode === "solo"
+                  ? "#ffffff"
+                  : "#393253",
+              boxShadow:
+                topMode === "solo"
+                  ? "0 8px 18px rgba(108,58,255,0.22)"
+                  : "none",
+              WebkitTapHighlightColor: "transparent",
+            }}
+          >
+            👤 Сольный топ
+          </button>
+
+          <button
+            type="button"
+            onClick={() => handleChangeMode("pair")}
+            style={{
+              border: "none",
+              borderRadius: 13,
+              minHeight: 45,
+              padding: "10px 8px",
+              fontSize: 14,
+              fontWeight: 900,
+              cursor: "pointer",
+              transition:
+                "transform 0.15s ease, background 0.15s ease",
+              background:
+                topMode === "pair"
+                  ? "linear-gradient(135deg, #ff62a9, #ff7c86)"
+                  : "transparent",
+              color:
+                topMode === "pair"
+                  ? "#ffffff"
+                  : "#393253",
+              boxShadow:
+                topMode === "pair"
+                  ? "0 8px 18px rgba(255,98,169,0.22)"
+                  : "none",
+              WebkitTapHighlightColor: "transparent",
+            }}
+          >
+            💕 Парный топ
+          </button>
         </div>
       </div>
 
-      <div style={{ ...cardBaseStyle(), padding: 14 }}>
+      {/* Рейтинг */}
+
+      <div
+        style={{
+          ...cardBaseStyle(),
+          padding: 14,
+        }}
+      >
         <div
-  style={{
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "space-between",
-    gap: 10,
-  }}
->
-  <div
-    style={{
-      fontSize: 18,
-      fontWeight: 900,
-      color: "#1f1d3a",
-    }}
-  >
-    Рейтинг
-  </div>
-
-  <button
-    type="button"
-    onClick={onRefresh}
-    disabled={refreshing}
-    style={{
-      border: "1px solid rgba(107,70,255,0.16)",
-      borderRadius: 12,
-      padding: "8px 11px",
-      background: "rgba(107,70,255,0.08)",
-      color: "#5a35eb",
-      fontSize: 12,
-      fontWeight: 900,
-      cursor: refreshing ? "default" : "pointer",
-      opacity: refreshing ? 0.6 : 1,
-      display: "inline-flex",
-      alignItems: "center",
-      justifyContent: "center",
-      gap: 6,
-      whiteSpace: "nowrap",
-    }}
-  >
-    <span
-      style={{
-        display: "inline-block",
-        lineHeight: 1,
-        animation: refreshing
-          ? "topRefreshSpin 0.8s linear infinite"
-          : "none",
-      }}
-    >
-      ↻
-    </span>
-
-    {refreshing ? "Обновляем" : "Обновить"}
-  </button>
-</div>
-
-        {allPairs.length === 0 ? (
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            gap: 10,
+          }}
+        >
           <div
             style={{
-              marginTop: 10,
+              fontSize: 18,
+              fontWeight: 900,
+              color: "#1f1d3a",
+            }}
+          >
+            {topMode === "solo"
+              ? "👤 Рейтинг игроков"
+              : "💕 Рейтинг пар"}
+          </div>
+
+          <div
+            style={{
+              padding: "6px 9px",
+              borderRadius: 999,
+              background: "rgba(255,255,255,0.32)",
+              color: "#5d547b",
+              fontSize: 11,
+              fontWeight: 900,
+              whiteSpace: "nowrap",
+            }}
+          >
+            Текущая неделя
+          </div>
+        </div>
+
+        {activeRows.length === 0 ? (
+          <div
+            style={{
+              marginTop: 12,
+              padding: 14,
+              borderRadius: 16,
+              background: "rgba(255,255,255,0.22)",
               color: "#4a4468",
               lineHeight: 1.45,
               fontSize: 14,
+              textAlign: "center",
             }}
           >
-            {t.top.noData}
+            {topMode === "solo"
+              ? "В сольном рейтинге пока никого нет. Пройди первый тест, опрос или игру!"
+              : "В парном рейтинге пока никого нет. Подключи партнёра и начните зарабатывать очки вместе!"}
           </div>
         ) : (
           <>
-            <div style={{ display: "grid", gap: 8, marginTop: 12 }}>
-              {visiblePairs.map((pairRow) => {
-                const isTop1 = pairRow.place === 1;
-                const isTop2 = pairRow.place === 2;
-                const isTop3 = pairRow.place === 3;
+            <div
+              style={{
+                display: "grid",
+                gap: 8,
+                marginTop: 12,
+              }}
+            >
+              {topMode === "solo"
+                ? visibleRows.map((unknownRow) => {
+                    const userRow =
+                      unknownRow as WeeklyUserLeaderboardRow & {
+                        place: number;
+                        isCurrentUser: boolean;
+                      };
 
-                return (
-                  <div
-                    key={pairRow.id}
-                    style={{
-                      padding: "10px 12px",
-                      borderRadius: 16,
-                      background: pairRow.isCurrentPair
-                        ? "rgba(255,255,255,0.34)"
-                        : "rgba(255,255,255,0.24)",
-                      border: pairRow.isCurrentPair
-                        ? "2px solid rgba(108,58,255,0.42)"
-                        : "1px solid transparent",
-                      display: "flex",
-                      alignItems: "center",
-                      gap: 10,
-                      width: "100%",
-                      boxSizing: "border-box",
-                      overflow: "hidden",
-                    }}
-                  >
-                    <div
-                      style={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: 10,
-                        minWidth: 0,
-                        flex: 1,
-                      }}
-                    >
+                    const isTop1 = userRow.place === 1;
+
+                    return (
                       <div
+                        key={`${userRow.week_key}-${userRow.telegram_id}`}
                         style={{
-                          width: 34,
-                          height: 34,
-                          borderRadius: 999,
+                          padding: "10px 12px",
+                          borderRadius: 16,
+                          background: userRow.isCurrentUser
+                            ? "linear-gradient(135deg, rgba(118,87,255,0.16), rgba(255,255,255,0.38))"
+                            : "rgba(255,255,255,0.24)",
+                          border: userRow.isCurrentUser
+                            ? "2px solid rgba(108,58,255,0.42)"
+                            : "1px solid transparent",
                           display: "flex",
                           alignItems: "center",
-                          justifyContent: "center",
-                          fontWeight: 900,
-                          fontSize: 14,
-                          color: "#1f1d3a",
-                          background: isTop1
-                            ? "linear-gradient(135deg, #ffd54f, #ffb300)"
-                            : isTop2
-                            ? "linear-gradient(135deg, #f1f1f1, #cfcfcf)"
-                            : isTop3
-                            ? "linear-gradient(135deg, #ffcc80, #ff9e80)"
-                            : "rgba(255,255,255,0.45)",
+                          gap: 10,
+                          width: "100%",
+                          boxSizing: "border-box",
+                          overflow: "hidden",
                         }}
                       >
-                        {pairRow.place}
-                      </div>
-
-                      <div style={{ minWidth: 0 }}>
                         <div
                           style={{
+                            width: 36,
+                            height: 36,
+                            borderRadius: 999,
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            flexShrink: 0,
                             fontWeight: 900,
-                            color: "#241b40",
-                            whiteSpace: "nowrap",
-                            overflow: "hidden",
-                            textOverflow: "ellipsis",
+                            fontSize:
+                              userRow.place <= 3 ? 18 : 14,
+                            color: "#1f1d3a",
+                            background: getPlaceBackground(
+                              userRow.place
+                            ),
                           }}
                         >
-                          {pairRow.pair_title}
-                          {pairRow.isCurrentPair ? " (Вы)" : ""}
+                          {getPlaceEmoji(userRow.place)}
+                        </div>
+
+                        {userRow.photo_url ? (
+                          <img
+                            src={userRow.photo_url}
+                            alt={userRow.display_name}
+                            style={{
+                              width: 40,
+                              height: 40,
+                              borderRadius: 999,
+                              objectFit: "cover",
+                              flexShrink: 0,
+                              border:
+                                "2px solid rgba(255,255,255,0.55)",
+                            }}
+                          />
+                        ) : (
+                          <div
+                            style={{
+                              width: 40,
+                              height: 40,
+                              borderRadius: 999,
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                              flexShrink: 0,
+                              background:
+                                "linear-gradient(135deg, #9d81ff, #ff8bbd)",
+                              color: "#ffffff",
+                              fontSize: 15,
+                              fontWeight: 900,
+                            }}
+                          >
+                            {(userRow.display_name || "U")
+                              .trim()
+                              .charAt(0)
+                              .toUpperCase()}
+                          </div>
+                        )}
+
+                        <div
+                          style={{
+                            minWidth: 0,
+                            flex: 1,
+                          }}
+                        >
+                          <div
+                            style={{
+                              fontWeight: 900,
+                              color: "#241b40",
+                              whiteSpace: "nowrap",
+                              overflow: "hidden",
+                              textOverflow: "ellipsis",
+                            }}
+                          >
+                            {userRow.display_name}
+
+                            {userRow.isCurrentUser
+                              ? " (Вы)"
+                              : ""}
+                          </div>
+
+                          <div
+                            style={{
+                              marginTop: 3,
+                              fontSize: 12,
+                              color: "#4d466c",
+                              whiteSpace: "nowrap",
+                              overflow: "hidden",
+                              textOverflow: "ellipsis",
+                            }}
+                          >
+                            {isTop1
+                              ? "Лидер недели"
+                              : userRow.username
+                              ? `@${userRow.username.replace(
+                                  /^@/,
+                                  ""
+                                )}`
+                              : `Место #${userRow.place}`}
+                          </div>
                         </div>
 
                         <div
                           style={{
-                            marginTop: 3,
-                            fontSize: 12,
-                            color: "#4d466c",
+                            flexShrink: 0,
+                            textAlign: "right",
+                            color: "#241b40",
+                            fontWeight: 900,
+                            fontSize: 15,
+                            whiteSpace: "nowrap",
                           }}
                         >
-                          {isTop1 ? "Лидеры недели" : `Место #${pairRow.place}`}
+                          ⭐ {userRow.total_points}
                         </div>
                       </div>
-                    </div>
+                    );
+                  })
+                : visibleRows.map((unknownRow) => {
+                    const pairRow =
+                      unknownRow as WeeklyPairLeaderboardRow & {
+                        place: number;
+                        isCurrentPair: boolean;
+                      };
 
-                    <div
-                      style={{
-                        flexShrink: 0,
-                        textAlign: "right",
-                        color: "#241b40",
-                        fontWeight: 900,
-                        fontSize: 15,
-                        whiteSpace: "nowrap",
-                      }}
-                    >
-                      ⭐ {pairRow.total_points}
-                    </div>
-                  </div>
-                );
-              })}
+                    const isTop1 = pairRow.place === 1;
+
+                    return (
+                      <div
+                        key={pairRow.id}
+                        style={{
+                          padding: "10px 12px",
+                          borderRadius: 16,
+                          background: pairRow.isCurrentPair
+                            ? "linear-gradient(135deg, rgba(255,98,169,0.16), rgba(255,255,255,0.38))"
+                            : "rgba(255,255,255,0.24)",
+                          border: pairRow.isCurrentPair
+                            ? "2px solid rgba(255,98,169,0.42)"
+                            : "1px solid transparent",
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 10,
+                          width: "100%",
+                          boxSizing: "border-box",
+                          overflow: "hidden",
+                        }}
+                      >
+                        <div
+                          style={{
+                            width: 36,
+                            height: 36,
+                            borderRadius: 999,
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            flexShrink: 0,
+                            fontWeight: 900,
+                            fontSize:
+                              pairRow.place <= 3 ? 18 : 14,
+                            color: "#1f1d3a",
+                            background: getPlaceBackground(
+                              pairRow.place
+                            ),
+                          }}
+                        >
+                          {getPlaceEmoji(pairRow.place)}
+                        </div>
+
+                        <div
+                          style={{
+                            width: 42,
+                            height: 42,
+                            borderRadius: 999,
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            flexShrink: 0,
+                            background:
+                              "linear-gradient(135deg, #ff85bc, #ff8c86)",
+                            color: "#ffffff",
+                            fontSize: 19,
+                            fontWeight: 900,
+                            border:
+                              "2px solid rgba(255,255,255,0.55)",
+                          }}
+                        >
+                          💕
+                        </div>
+
+                        <div
+                          style={{
+                            minWidth: 0,
+                            flex: 1,
+                          }}
+                        >
+                          <div
+                            style={{
+                              fontWeight: 900,
+                              color: "#241b40",
+                              whiteSpace: "nowrap",
+                              overflow: "hidden",
+                              textOverflow: "ellipsis",
+                            }}
+                          >
+                            {pairRow.pair_title}
+
+                            {pairRow.isCurrentPair
+                              ? " (Вы)"
+                              : ""}
+                          </div>
+
+                          <div
+                            style={{
+                              marginTop: 3,
+                              fontSize: 12,
+                              color: "#4d466c",
+                            }}
+                          >
+                            {isTop1
+                              ? "Лидеры недели"
+                              : `Место #${pairRow.place}`}
+                          </div>
+                        </div>
+
+                        <div
+                          style={{
+                            flexShrink: 0,
+                            textAlign: "right",
+                            color: "#241b40",
+                            fontWeight: 900,
+                            fontSize: 15,
+                            whiteSpace: "nowrap",
+                          }}
+                        >
+                          ⭐ {pairRow.total_points}
+                        </div>
+                      </div>
+                    );
+                  })}
             </div>
 
-            {allPairs.length > 3 && (
+            {activeRows.length > 3 && (
               <button
-                onClick={() => setTopExpanded((prev) => !prev)}
+                type="button"
+                onClick={() =>
+                  setTopExpanded((prev) => !prev)
+                }
                 style={{
                   ...secondaryButtonStyle,
                   width: "100%",
@@ -9519,76 +9919,189 @@ function TopPlayersScreen({
                   padding: "10px 16px",
                 }}
               >
-                {topExpanded ? "Свернуть рейтинг" : "Показать топ-10"}
+                {topExpanded
+                  ? "Свернуть рейтинг"
+                  : "Показать топ-10"}
               </button>
             )}
           </>
         )}
       </div>
 
-      <div style={{ ...cardBaseStyle(), padding: 14 }}>
-        <div style={{ fontSize: 18, fontWeight: 900, color: "#1f1d3a" }}>
-          Награда недели
-        </div>
+      {/* Личное место пользователя или пары */}
 
+      {topMode === "solo" && (
         <div
           style={{
-            marginTop: 8,
-            color: "#4a4468",
-            lineHeight: 1.45,
-            fontSize: 13,
+            ...cardBaseStyle(),
+            padding: 14,
           }}
         >
-          Пары из топа получают <b>+1000 очков</b>
-        </div>
-
-        <div
-          style={{
-            marginTop: 10,
-            padding: "12px 14px",
-            borderRadius: 16,
-            background: "rgba(255,255,255,0.24)",
-            color: "#241b40",
-            fontWeight: 800,
-            fontSize: 14,
-          }}
-        >
-          {wasTopThreeLastWeek
-            ? alreadyClaimedLastWeek
-              ? "Награда за прошлую неделю уже получена ✅"
-              : "Ваша пара вошла в топ-3 по итогам прошлой недели! Можно забрать награду 🎉"
-            : "Награда появляется только после завершения недели и только для пар из топ-3 прошлой недели"}
-        </div>
-
-        {canClaimWeeklyReward && (
-          <button
-            onClick={onClaimWeeklyReward}
-            style={{ ...primaryButtonStyle, width: "100%", marginTop: 12 }}
+          <div
+            style={{
+              fontSize: 17,
+              fontWeight: 900,
+              color: "#1f1d3a",
+            }}
           >
-            {t.top.weeklyReward}
-          </button>
+            👤 Твоё место
+          </div>
+
+          <div
+            style={{
+              marginTop: 10,
+              padding: "12px 14px",
+              borderRadius: 16,
+              background: "rgba(255,255,255,0.25)",
+              color: "#30294d",
+              fontSize: 14,
+              fontWeight: 800,
+              lineHeight: 1.45,
+            }}
+          >
+            {currentUserRow
+              ? `Ты занимаешь ${currentUserRow.place}-е место и заработал ${currentUserRow.total_points} очков за текущую неделю.`
+              : "Ты пока не участвуешь в сольном рейтинге. Заработай первые очки!"}
+          </div>
+        </div>
+      )}
+
+      {topMode === "pair" && (
+        <div
+          style={{
+            ...cardBaseStyle(),
+            padding: 14,
+          }}
+        >
+          <div
+            style={{
+              fontSize: 17,
+              fontWeight: 900,
+              color: "#1f1d3a",
+            }}
+          >
+            💕 Место вашей пары
+          </div>
+
+          <div
+            style={{
+              marginTop: 10,
+              padding: "12px 14px",
+              borderRadius: 16,
+              background: "rgba(255,255,255,0.25)",
+              color: "#30294d",
+              fontSize: 14,
+              fontWeight: 800,
+              lineHeight: 1.45,
+            }}
+          >
+            {!pair.pairId
+              ? "Сначала подключи партнёра, чтобы участвовать в парном рейтинге."
+              : currentPairRow
+              ? `Ваша пара занимает ${currentPairRow.place}-е место и заработала ${currentPairRow.total_points} очков за текущую неделю.`
+              : "Ваша пара пока не появилась в рейтинге. Заработайте первые совместные очки!"}
+          </div>
+        </div>
+      )}
+
+      {/* Награда недели */}
+
+      <div
+        style={{
+          ...cardBaseStyle(),
+          padding: 14,
+        }}
+      >
+        <div
+          style={{
+            fontSize: 18,
+            fontWeight: 900,
+            color: "#1f1d3a",
+          }}
+        >
+          🎁 Награда недели
+        </div>
+
+        {topMode === "solo" ? (
+          <div
+            style={{
+              marginTop: 10,
+              padding: "12px 14px",
+              borderRadius: 16,
+              background: "rgba(255,255,255,0.24)",
+              color: "#4a4468",
+              lineHeight: 1.45,
+              fontSize: 14,
+              fontWeight: 700,
+            }}
+          >
+            Награды сольного рейтинга скоро появятся. Сейчас
+            можно соревноваться за место в топе.
+          </div>
+        ) : (
+          <>
+            <div
+              style={{
+                marginTop: 8,
+                color: "#4a4468",
+                lineHeight: 1.45,
+                fontSize: 13,
+              }}
+            >
+              Пары, занявшие первые три места, получают{" "}
+              <b>+500 очков</b>.
+            </div>
+
+            <div
+              style={{
+                marginTop: 10,
+                padding: "12px 14px",
+                borderRadius: 16,
+                background: "rgba(255,255,255,0.24)",
+                color: "#241b40",
+                fontWeight: 800,
+                fontSize: 14,
+                lineHeight: 1.45,
+              }}
+            >
+              {!pair.pairId
+                ? "Подключите партнёра, чтобы участвовать в парном рейтинге."
+                : wasPairTopThreeLastWeek
+                ? alreadyClaimedLastWeek
+                  ? "Награда за прошлую неделю уже получена ✅"
+                  : "Ваша пара вошла в топ-3 прошлой недели! Можно забрать награду 🎉"
+                : "Награда доступна только парам из топ-3 по итогам прошлой недели."}
+            </div>
+
+            {canClaimWeeklyReward && (
+              <button
+                type="button"
+                onClick={onClaimWeeklyReward}
+                style={{
+                  ...primaryButtonStyle,
+                  width: "100%",
+                  marginTop: 12,
+                }}
+              >
+                Забрать +500 очков
+              </button>
+            )}
+          </>
         )}
       </div>
 
       <button
+        type="button"
         onClick={onBack}
-        style={{ ...secondaryButtonStyle, marginTop: 0 }}
+        style={{
+          ...secondaryButtonStyle,
+          width: "100%",
+          marginTop: 0,
+        }}
       >
         {t.common.back}
       </button>
-
-      <style>{`
-  @keyframes topRefreshSpin {
-    from {
-      transform: rotate(0deg);
-    }
-
-    to {
-      transform: rotate(360deg);
-    }
-  }
-`}</style>
-
+      
     </div>
   );
 }
@@ -10218,6 +10731,28 @@ async function loadWeeklyPairLeaderboard(weekKey: string): Promise<WeeklyPairLea
   return data as WeeklyPairLeaderboardRow[];
 }
 
+async function loadWeeklyUserLeaderboard(
+  weekKey: string
+): Promise<WeeklyUserLeaderboardRow[]> {
+  const { data, error } = await supabase
+    .from("weekly_user_leaderboard")
+    .select("*")
+    .eq("week_key", weekKey)
+    .order("total_points", { ascending: false })
+    .limit(20);
+
+  if (error || !data) {
+    console.error(
+      "loadWeeklyUserLeaderboard error:",
+      error
+    );
+
+    return [];
+  }
+
+  return data as WeeklyUserLeaderboardRow[];
+}
+
 async function upsertWeeklyPairLeaderboardEntry(params: {
   weekKey: string;
   pairId: string;
@@ -10244,6 +10779,46 @@ async function upsertWeeklyPairLeaderboardEntry(params: {
   }
 }
 
+async function upsertWeeklyUserLeaderboardEntry(params: {
+  weekKey: string;
+  user: TgUser;
+  totalPoints: number;
+}) {
+  const { weekKey, user, totalPoints } = params;
+
+  if (!user.id) return;
+
+  const displayName =
+    [user.first_name, user.last_name]
+      .filter(Boolean)
+      .join(" ") ||
+    user.username ||
+    `Игрок ${user.id}`;
+
+  const { error } = await supabase
+    .from("weekly_user_leaderboard")
+    .upsert(
+      {
+        week_key: weekKey,
+        telegram_id: user.id,
+        display_name: displayName,
+        username: user.username ?? null,
+        photo_url: user.photo_url ?? null,
+        total_points: totalPoints,
+        updated_at: new Date().toISOString(),
+      },
+      {
+        onConflict: "week_key,telegram_id",
+      }
+    );
+
+  if (error) {
+    console.error(
+      "upsertWeeklyUserLeaderboardEntry error:",
+      error
+    );
+  }
+}
 
 async function loadPairStateForUser(telegramId: number): Promise<PairState> {
 const emptyState: PairState = {
@@ -10657,7 +11232,7 @@ setAppState((prev) => ({
   dailyPollsUsed:
     (nextPairState.dailyPollsUsed ?? 0) + 1,
 },
-  points: nextPairState.totalPoints || 0,
+  
   pairPollAnswers: pairPollAnswersFromDb,
   dailyPairHistory: dailyPairHistoryFromDb,
   dailyPairStreak: dailyPairStreakFromDb,
@@ -11134,7 +11709,7 @@ const syncPairAfterPointsChange = async (
   const nextState: AppState = {
     ...appState,
     pair: nextPairState,
-    points: nextPairState.totalPoints || 0,
+   
   };
 
   await syncWeeklyPairLeaderboard(nextState, user);
@@ -11274,18 +11849,30 @@ if (nextPoints > previousPoints) {
       };
     }
 
-    return {
-      ...prev,
-      pair: nextPairState,
-      points: nextPairState.totalPoints || 0,
-      stats: {
-        ...prev.stats,
-        gamesPlayed: prev.stats.gamesPlayed + 1,
-      },
-      completedGameIds: alreadyCompleted
-        ? prev.completedGameIds
-        : [...prev.completedGameIds, game.id],
-    };
+   return {
+  ...prev,
+
+  pair: nextPairState,
+
+  soloPoints: alreadyCompleted
+    ? prev.soloPoints
+    : prev.soloPoints + game.reward,
+
+  points: alreadyCompleted
+    ? prev.points
+    : prev.points + game.reward,
+
+  stats: {
+    ...prev.stats,
+    gamesPlayed: alreadyCompleted
+      ? prev.stats.gamesPlayed
+      : prev.stats.gamesPlayed + 1,
+  },
+
+  completedGameIds: alreadyCompleted
+    ? prev.completedGameIds
+    : [...prev.completedGameIds, game.id],
+};
   });
 
   if (leveledUpTo) {
@@ -11393,6 +11980,27 @@ const syncWeeklyPairLeaderboard = async (nextState: AppState, currentUser?: TgUs
   setWeeklyPairLeaderboard(rows);
 };
 
+const syncWeeklyUserLeaderboard = async (
+  points: number,
+  currentUser?: TgUser | null
+) => {
+  const actualUser = currentUser ?? user;
+
+  if (!actualUser?.id) return;
+
+  await upsertWeeklyUserLeaderboardEntry({
+    weekKey: getCurrentWeekKey(),
+    user: actualUser,
+    totalPoints: points,
+  });
+
+  const rows = await loadWeeklyUserLeaderboard(
+    getCurrentWeekKey()
+  );
+
+  setWeeklyUserLeaderboard(rows);
+};
+
 
 
 const handleJoinByCode = async (inviteCode: string) => {
@@ -11497,7 +12105,7 @@ console.log("CREATE PAIR ERROR:", createPairError);
  setAppState((prev) => ({
   ...prev,
   pair: nextPairState,
-  points: nextPairState.totalPoints || 0,
+ 
 }));
 
 await refreshPairData({
@@ -11509,6 +12117,15 @@ await refreshPairData({
 
 
 const [weeklyPairLeaderboard, setWeeklyPairLeaderboard] = useState<WeeklyPairLeaderboardRow[]>([]);
+const [
+  weeklyUserLeaderboard,
+  setWeeklyUserLeaderboard,
+] = useState<WeeklyUserLeaderboardRow[]>([]);
+
+const [
+  previousWeeklyUserLeaderboard,
+  setPreviousWeeklyUserLeaderboard,
+] = useState<WeeklyUserLeaderboardRow[]>([]);
 const [topRefreshing, setTopRefreshing] = useState(false);
 
 const [showPaymentChoice, setShowPaymentChoice] = useState(false);
@@ -11733,7 +12350,7 @@ if (nextPairState.pairId) {
 setAppState((prev) => ({
   ...prev,
   pair: nextPairState,
-  points: nextPairState.totalPoints || 0,
+  
   referrals: referralStats,
   pairPollAnswers: pairPollAnswersFromDb,
 }));
@@ -11978,11 +12595,20 @@ if (nextPoints > previousPoints) {
         title: newLevel.title,
       };
     }
+    
 
     return {
   ...prev,
+
   pair: nextPairState,
-  points: nextPairState.totalPoints || 0,
+
+  soloPoints: alreadyCompleted
+    ? prev.soloPoints
+    : prev.soloPoints + poll.reward,
+
+  points: alreadyCompleted
+    ? prev.points
+    : prev.points + poll.reward,
   pairPollAnswers: pairPollAnswersFromDb,
   stats: {
     ...prev.stats,
@@ -12010,6 +12636,8 @@ if (nextPoints > previousPoints) {
   setAppState,
 });
 
+
+
 if (!alreadyCompleted) {
   const giveawayResult = await completeGiveawayAction("test");
 
@@ -12027,6 +12655,17 @@ if (!alreadyCompleted) {
       giveawayResult.message
     );
   }
+}
+
+const nextSoloPoints = alreadyCompleted
+  ? appState.points
+  : appState.points + poll.reward;
+
+if (!alreadyCompleted && user?.id) {
+  await syncWeeklyUserLeaderboard(
+    nextSoloPoints,
+    user
+  );
 }
 
 
@@ -12106,7 +12745,14 @@ if (nextPoints > previousPoints) {
     return {
       ...prev,
       pair: nextPairState,
-      points: nextPairState.totalPoints || 0,
+
+soloPoints: alreadyCompleted
+  ? prev.soloPoints
+  : prev.soloPoints + test.reward,
+
+points: alreadyCompleted
+  ? prev.points
+  : prev.points + test.reward,
       stats: {
   ...prev.stats,
   testsCompleted: alreadyCompleted
@@ -12128,6 +12774,17 @@ if (nextPoints > previousPoints) {
   user,
   setAppState,
 });
+
+const nextSoloPoints = alreadyCompleted
+  ? appState.points
+  : appState.points + test.reward;
+
+if (!alreadyCompleted && user?.id) {
+  await syncWeeklyUserLeaderboard(
+    nextSoloPoints,
+    user
+  );
+}
 
 const allTestIds = TESTS.map((item) => item.id);
 const nextCompletedTestIds = alreadyCompleted
@@ -12456,18 +13113,32 @@ showPaywall={() => {
           />
         )}
 
-   {screen === "top" && (
+  {screen === "top" && (
   <TopPlayersScreen
-  t={t}
-  pair={appState.pair}
-  leaderboard={weeklyPairLeaderboard}
-  previousLeaderboard={previousWeeklyPairLeaderboard}
-  weeklyTopRewardClaimedWeek={appState.weeklyTopRewardClaimedWeek}
-  onBack={() => setScreen("menu")}
-  onClaimWeeklyReward={handleClaimWeeklyTopReward}
-  onRefresh={refreshTopLeaderboard}
+    user={user}
+    pair={appState.pair}
+
+    leaderboard={weeklyPairLeaderboard}
+    previousLeaderboard={previousWeeklyPairLeaderboard}
+
+    userLeaderboard={weeklyUserLeaderboard}
+    previousUserLeaderboard={previousWeeklyUserLeaderboard}
+
+    weeklyTopRewardClaimedWeek={
+      appState.weeklyTopRewardClaimedWeek
+    }
+
+    onClaimWeeklyReward={
+      handleClaimWeeklyTopReward
+    }
+
+     onRefresh={refreshTopLeaderboard}
+
   refreshing={topRefreshing}
-/>
+
+    onBack={() => setScreen("menu")}
+    t={t}
+  />
 )}
 
 
