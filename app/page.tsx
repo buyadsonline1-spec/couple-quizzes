@@ -10931,6 +10931,48 @@ weeklyPoints:
 
 }
 
+  async function addSoloPoints(params: {
+  telegramId: number;
+  delta: number;
+}): Promise<{
+  soloPoints: number;
+  soloWeeklyPoints: number;
+  soloWeeklyPointsWeek: string;
+} | null> {
+  const { telegramId, delta } = params;
+
+  const { data, error } = await supabase.rpc(
+    "add_user_solo_points",
+    {
+      p_telegram_id: telegramId,
+      p_delta: delta,
+      p_week_key: getCurrentWeekKey(),
+    }
+  );
+
+  if (error) {
+    console.error("addSoloPoints error:", error);
+    return null;
+  }
+
+  const row = Array.isArray(data) ? data[0] : data;
+
+  if (!row) {
+    console.error("addSoloPoints returned no data");
+    return null;
+  }
+
+  return {
+    soloPoints: Number(row.solo_points ?? 0),
+    soloWeeklyPoints: Number(
+      row.solo_weekly_points ?? 0
+    ),
+    soloWeeklyPointsWeek:
+      row.solo_weekly_points_week ??
+      getCurrentWeekKey(),
+  };
+}
+
 async function updatePairPoints(params: {
   pairId: string;
   delta: number;
@@ -10947,6 +10989,7 @@ async function updatePairPoints(params: {
     console.error("updatePairPoints read error:", readError);
     return null;
   }
+
 
   const nextPoints = Math.max(0, (pair.total_points ?? 0) + delta);
 
@@ -10978,6 +11021,7 @@ const nextWeeklyPoints = Math.max(
 
   return nextPoints;
 }
+
 
 
 async function savePollSubmission(params: {
@@ -12551,6 +12595,22 @@ async function completeGiveawayAction(
  const handleCompletePoll = async (poll: Poll, answers: number[]) => {
   const alreadyCompleted = appState.completedPollIds.includes(poll.id);
   const rewardToAdd = alreadyCompleted ? 0 : poll.reward;
+  let nextSoloPoints = appState.soloPoints;
+
+  if (rewardToAdd > 0 && user?.id) {
+  const soloResult = await addSoloPoints({
+    telegramId: user.id,
+    delta: rewardToAdd,
+  });
+
+  if (!soloResult) {
+    throw new Error(
+      "Не удалось начислить личные очки за опрос"
+    );
+  }
+
+  nextSoloPoints = soloResult.soloPoints;
+}
 
   let nextPairState = appState.pair;
   let leveledUpTo: { level: number; title: string } | null = null;
@@ -12602,13 +12662,8 @@ if (nextPoints > previousPoints) {
 
   pair: nextPairState,
 
-  soloPoints: alreadyCompleted
-    ? prev.soloPoints
-    : prev.soloPoints + poll.reward,
-
-  points: alreadyCompleted
-    ? prev.points
-    : prev.points + poll.reward,
+ soloPoints: nextSoloPoints,
+points: nextSoloPoints,
   pairPollAnswers: pairPollAnswersFromDb,
   stats: {
     ...prev.stats,
@@ -12638,35 +12693,9 @@ if (nextPoints > previousPoints) {
 
 
 
-if (!alreadyCompleted) {
-  const giveawayResult = await completeGiveawayAction("test");
 
-  if (giveawayResult.ticketAdded) {
-    alert(
-      `🎟️ Вы получили +1 билет за прохождение теста!${
-        typeof giveawayResult.tickets === "number"
-          ? `\n\nВсего билетов: ${giveawayResult.tickets}`
-          : ""
-      }`
-    );
-  } else if (!giveawayResult.success) {
-    console.error(
-      "Билет за тест не начислен:",
-      giveawayResult.message
-    );
-  }
-}
 
-const nextSoloPoints = alreadyCompleted
-  ? appState.points
-  : appState.points + poll.reward;
 
-if (!alreadyCompleted && user?.id) {
-  await syncWeeklyUserLeaderboard(
-    nextSoloPoints,
-    user
-  );
-}
 
 
 
@@ -12775,16 +12804,7 @@ points: alreadyCompleted
   setAppState,
 });
 
-const nextSoloPoints = alreadyCompleted
-  ? appState.points
-  : appState.points + test.reward;
 
-if (!alreadyCompleted && user?.id) {
-  await syncWeeklyUserLeaderboard(
-    nextSoloPoints,
-    user
-  );
-}
 
 const allTestIds = TESTS.map((item) => item.id);
 const nextCompletedTestIds = alreadyCompleted
