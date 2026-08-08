@@ -8648,6 +8648,7 @@ function TestsScreen({
   pair,
   isPremium,
   showPaywall,
+  onCheckDailyTestAccess,
 }: {
   completedTestIds: string[];
   onBack: () => void;
@@ -8658,6 +8659,12 @@ function TestsScreen({
   // колонку и всегда false, настоящий флаг — appState.isPremium.
   isPremium: boolean;
   showPaywall: () => void;
+  // Персональный дневной лимит теста — сервер сам знает premium-статус
+  // и атомарно списывает попытку. См. consumeDailyTestAccess.
+  onCheckDailyTestAccess: () => Promise<{
+    allowed: boolean;
+    isPremium: boolean;
+  } | null>;
 }) {
   const [activeTestId, setActiveTestId] = useState<string | null>(null);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
@@ -8671,14 +8678,22 @@ const t = market === "en" ? TEXT_EN : TEXT_RU;
 
  
 
-function startTest(testId: string) {
-if (
-  !isPremium &&
-  (pair?.dailyTestsUsed ?? 0)
-) {
-  showPaywall();
-  return;
-}
+async function startTest(testId: string) {
+  if (!isPremium) {
+    const access = await onCheckDailyTestAccess();
+
+    if (!access) {
+      // Не удалось проверить доступ (сеть/сервер недоступен) — не
+      // открываем тест, чтобы сбой не превратился в бесплатный проход
+      // мимо лимита.
+      return;
+    }
+
+    if (!access.allowed) {
+      showPaywall();
+      return;
+    }
+  }
 
   setActiveTestId(testId);
   setCurrentQuestionIndex(0);
@@ -10969,30 +10984,53 @@ const secondaryButtonStyle: CSSProperties = {
   width: "100%",
 };
 
-async function upsertTelegramProfile(user: TgUser) {
+// Профиль (имя/юзернейм/фото) теперь пишется только через
+// /api/profile/bootstrap: сервер сам достаёт эти поля из подписанного
+// initData, а не из тела запроса — значения TgUser здесь используются
+// только для раннего return, если Telegram user вообще недоступен.
+// RPC bootstrap_profile трогает исключительно display-поля, никогда
+// pair_id/solo_points/premium и т.д.
+async function upsertTelegramProfile(user: TgUser): Promise<{
+  telegramId: number;
+  pairId: string | null;
+  soloPoints: number;
+  soloWeeklyPoints: number;
+  soloWeeklyPointsWeek: string | null;
+} | null> {
   if (!user.id) return null;
 
-  const { data, error } = await supabase
-    .from("profiles")
-    .upsert(
-      {
-        telegram_id: user.id,
-        first_name: user.first_name ?? null,
-        last_name: user.last_name ?? null,
-        username: user.username ?? null,
-        photo_url: user.photo_url ?? null,
-      },
-      { onConflict: "telegram_id" }
-    )
-    .select()
-    .single();
+  const initData = window.Telegram?.WebApp?.initData;
 
-  if (error) {
-    console.error("upsertTelegramProfile error:", error);
+  if (!initData) {
+    console.error("upsertTelegramProfile: Telegram initData отсутствует");
     return null;
   }
 
-  return data;
+  try {
+    const response = await fetch("/api/profile/bootstrap", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ initData }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok || !data?.ok) {
+      console.error("upsertTelegramProfile error:", data);
+      return null;
+    }
+
+    return {
+      telegramId: Number(data.telegramId),
+      pairId: data.pairId ?? null,
+      soloPoints: Number(data.soloPoints ?? 0),
+      soloWeeklyPoints: Number(data.soloWeeklyPoints ?? 0),
+      soloWeeklyPointsWeek: data.soloWeeklyPointsWeek ?? null,
+    };
+  } catch (error) {
+    console.error("upsertTelegramProfile request error:", error);
+    return null;
+  }
 }
 
 type GiveawayActionResult = {
@@ -11212,24 +11250,15 @@ const emptyState: PairState = {
     return emptyState;
   }
 
- const currentDayKey = getCurrentDayKey();
-
-if (pair.daily_limit_date !== currentDayKey) {
-  pair.daily_tests_used = 0;
-  pair.daily_polls_used = 0;
-  pair.daily_games_used = 0;
-  pair.daily_limit_date = currentDayKey;
-
-  await supabase
-    .from("pairs")
-    .update({
-      daily_tests_used: 0,
-      daily_polls_used: 0,
-      daily_games_used: 0,
-      daily_limit_date: currentDayKey,
-    })
-    .eq("id", pair.id);
-}
+ // pairs.daily_tests_used/daily_polls_used/daily_games_used/daily_limit_date
+ // — legacy-поля, больше не источник истины и не пишем в них с клиента
+ // (это была неконтролируемая запись в pairs для ЛЮБОГО pair_id, п.6 в
+ // разборе). Реальный (персональный, не парный) дневной лимит теста
+ // теперь считает consume_daily_access на сервере — см.
+ // supabase/pairs_profiles_server_side.sql и
+ // app/api/activity/consume-daily-limit/route.ts. Значения ниже
+ // оставлены только для обратной совместимости типа PairState, нигде
+ // больше не используются для гейтинга.
 
   const currentTelegramId = Number(telegramId);
   const partner1Id = pair.partner_1_telegram_id != null ? Number(pair.partner_1_telegram_id) : null;
@@ -11370,6 +11399,47 @@ async function awardActivityPoints(params: {
 // последняя точка вызова. Все начисления PAIR-очков теперь идут только
 // через server-side RPC (spin_reward_wheel, claim_weekly_pair_top_reward,
 // submit_daily_pair_answer и т.д.), а не прямой записью с клиента.
+
+// Персональный (не парный) дневной лимит бесплатных тестов — раньше
+// был сломанный клиентский гейт "pair.dailyTestsUsed" (никогда не
+// инкрементировался с клиента, лимита фактически не было). Теперь
+// сервер сам atomically проверяет/списывает попытку и знает реальный
+// premium-статус — см. consume_daily_access в
+// supabase/pairs_profiles_server_side.sql.
+async function consumeDailyTestAccess(): Promise<{
+  allowed: boolean;
+  isPremium: boolean;
+} | null> {
+  const initData = window.Telegram?.WebApp?.initData;
+
+  if (!initData) {
+    console.error("consumeDailyTestAccess: Telegram initData отсутствует");
+    return null;
+  }
+
+  try {
+    const response = await fetch("/api/activity/consume-daily-limit", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ initData, activityType: "test" }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok || !data?.ok) {
+      console.error("consumeDailyTestAccess error:", data);
+      return null;
+    }
+
+    return {
+      allowed: Boolean(data.allowed),
+      isPremium: Boolean(data.isPremium),
+    };
+  } catch (error) {
+    console.error("consumeDailyTestAccess request error:", error);
+    return null;
+  }
+}
 
 
 
@@ -11604,73 +11674,57 @@ setAppState((prev) => ({
 }
 
 
+// telegramId только из подписанного initData (сервер извлекает сам) —
+// раньше currentTelegramId был обычным параметром функции, идущим от
+// клиента без проверки, из-за чего можно было подключиться к ЧУЖОЙ
+// паре под произвольным telegram_id. Вся проверка (код существует /
+// пара ещё не полная / не self-join) теперь внутри join_pair RPC.
 async function joinPairByInviteCode(
   telegramId: number,
   inviteCode: string
 ): Promise<PairState | null> {
-  const normalizedCode = inviteCode.trim().toUpperCase();
   const currentTelegramId = Number(telegramId);
+  const initData = window.Telegram?.WebApp?.initData;
 
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("pair_id")
-    .eq("telegram_id", currentTelegramId)
-    .maybeSingle();
-
-  if (profile?.pair_id) {
-    return loadPairStateForUser(currentTelegramId);
-  }
-
-  const { data: pair, error: pairError } = await supabase
-    .from("pairs")
-    .select("*")
-    .eq("invite_code", normalizedCode)
-    .maybeSingle();
-
-  if (pairError || !pair) {
-    console.error("joinPairByInviteCode: pair not found", pairError);
+  if (!initData) {
+    console.error("joinPairByInviteCode: Telegram initData отсутствует");
     return null;
   }
 
-  const createdById =
-    pair.created_by_telegram_id != null ? Number(pair.created_by_telegram_id) : null;
-  const partner1Id =
-    pair.partner_1_telegram_id != null ? Number(pair.partner_1_telegram_id) : null;
-  const partner2Id =
-    pair.partner_2_telegram_id != null ? Number(pair.partner_2_telegram_id) : null;
+  let data: any = null;
 
-  if (
-    createdById === currentTelegramId ||
-    partner1Id === currentTelegramId ||
-    partner2Id === currentTelegramId
-  ) {
-    alert("Нельзя подключить самого себя по своему приглашению");
+  try {
+    const response = await fetch("/api/pair/join", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        initData,
+        inviteCode: inviteCode.trim().toUpperCase(),
+      }),
+    });
+
+    data = await response.json();
+  } catch (error) {
+    console.error("joinPairByInviteCode request error:", error);
     return null;
   }
 
-  if (partner2Id) {
-    alert("Эта пара уже подключена");
-    return null;
-  }
+  if (!data?.ok) {
+    // already-in-pair — не ошибка: пользователь уже состоит в паре
+    // (например, повторный заход по инвайт-ссылке) — просто отдаём
+    // его текущее состояние без алерта, как и раньше.
+    if (data?.reason === "already-in-pair") {
+      return loadPairStateForUser(currentTelegramId);
+    }
 
-  const { error: updatePairError } = await supabase
-    .from("pairs")
-    .update({ partner_2_telegram_id: currentTelegramId })
-    .eq("id", pair.id)
-    .is("partner_2_telegram_id", null);
+    if (data?.reason === "self-join") {
+      alert("Нельзя подключить самого себя по своему приглашению");
+    } else if (data?.reason === "pair-full") {
+      alert("Эта пара уже подключена");
+    } else {
+      console.error("joinPairByInviteCode error:", data);
+    }
 
-  if (updatePairError) {
-    console.error("joinPairByInviteCode update pair error:", updatePairError);
-    return null;
-  }
-
-  const { error: updateProfileError } = await supabase
-    .from("profiles")
-    .update({ pair_id: pair.id })
-    .eq("telegram_id", currentTelegramId);
-
-  if (updateProfileError) {
-    console.error("joinPairByInviteCode update profile error:", updateProfileError);
     return null;
   }
 
@@ -12726,43 +12780,40 @@ const handleCreateInvite = async () => {
     return;
   }
 
-  console.log("CREATE INVITE state user:", user);
-console.log("CREATE INVITE tg user:", window.Telegram?.WebApp?.initDataUnsafe?.user);
+  // invite_code генерируется на сервере (create_pair RPC), а не
+  // Math.random() на клиенте; created_by_telegram_id/partner_1_telegram_id
+  // сервер берёт из подписанного initData, не из тела запроса — иначе
+  // пару можно было создать "от имени" произвольного telegram_id.
+  const initData = window.Telegram?.WebApp?.initData;
 
-  const inviteCode = Math.random().toString(36).slice(2, 8).toUpperCase();
+  if (!initData) {
+    alert("Не удалось подтвердить пользователя Telegram");
+    return;
+  }
 
-  const { data: createdPair, error: createPairError } = await supabase
-  .from("pairs")
-  .insert({
-    invite_code: inviteCode,
-    created_by_telegram_id: actualUser.id,
-    partner_1_telegram_id: actualUser.id,
-    partner_2_telegram_id: null,
-  })
-  .select()
-  .single();
+  let createData: any = null;
 
-console.log("CREATE PAIR RESULT:", createdPair);
-console.log("CREATE PAIR ERROR:", createPairError);
+  try {
+    const response = await fetch("/api/pair/create", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ initData }),
+    });
 
-  if (createPairError || !createdPair) {
-  console.error("create pair error:", createPairError);
-  alert(
-    `Не удалось создать приглашение: ${
-      createPairError?.message || "unknown error"
-    }`
-  );
-  return;
-}
+    createData = await response.json();
 
-  const { error: updateProfileError } = await supabase
-    .from("profiles")
-    .update({ pair_id: createdPair.id })
-    .eq("telegram_id", actualUser.id);
-
-  if (updateProfileError) {
-    console.error("update profile with pair_id error:", updateProfileError);
-    alert("Пара создана, но не удалось привязать её к профилю");
+    if (!response.ok || !createData?.ok) {
+      console.error("create pair error:", createData);
+      alert(
+        `Не удалось создать приглашение: ${
+          createData?.reason || "unknown error"
+        }`
+      );
+      return;
+    }
+  } catch (error) {
+    console.error("create pair request error:", error);
+    alert("Не удалось создать приглашение");
     return;
   }
 
@@ -12946,12 +12997,12 @@ setUser(currentUser);
 const profileFromDb = await upsertTelegramProfile(currentUser);
 
 const soloPointsFromDb = Number(
-  profileFromDb?.solo_points ?? 0
+  profileFromDb?.soloPoints ?? 0
 );
 
 const soloWeeklyPointsFromDb =
-  profileFromDb?.solo_weekly_points_week === getCurrentWeekKey()
-    ? Number(profileFromDb?.solo_weekly_points ?? 0)
+  profileFromDb?.soloWeeklyPointsWeek === getCurrentWeekKey()
+    ? Number(profileFromDb?.soloWeeklyPoints ?? 0)
     : 0;
 
 setAppState((prev) => ({
@@ -13969,6 +14020,7 @@ showPaywall={() => {
       setPaywallBackScreen("menu");
       setScreen("paywall");
     }}
+    onCheckDailyTestAccess={consumeDailyTestAccess}
   />
 )}
 
