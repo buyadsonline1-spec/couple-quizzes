@@ -33,7 +33,16 @@
 -- после деплоя и проверки, что всё работает через новые эндпоинты.
 
 -- ============================================================
--- 0. Целостность pairs: invite_code должен быть уникален (иначе
+-- 0. pgcrypto (gen_random_bytes) обычно живёт в схеме extensions, не
+--    в public — как и для spin_reward_wheel в wheel_reward_wheel.sql.
+--    Убеждаемся, что расширение есть, и добавляем схему в search_path
+--    ниже у create_pair (иначе gen_random_bytes не резолвится).
+-- ============================================================
+
+create extension if not exists pgcrypto with schema extensions;
+
+-- ============================================================
+-- 0.1. Целостность pairs: invite_code должен быть уникален (иначе
 --    серверная генерация с retry-на-коллизию не имеет смысла), и
 --    партнёры не могут быть одним и тем же telegram_id.
 -- ============================================================
@@ -124,7 +133,7 @@ create or replace function public.create_pair(
 returns jsonb
 language plpgsql
 security definer
-set search_path = public
+set search_path = public, extensions
 as $$
 declare
   v_profile record;
