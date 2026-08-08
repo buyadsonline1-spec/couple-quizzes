@@ -99,6 +99,14 @@ export const TEXT_EN = {
   nextLevel: "To the next level",
   noPairYet: "No pair connected yet",
 
+  // Used on the "Pair" screen when there's no pair yet / the partner
+  // hasn't joined (see PairScreen in app/page.tsx).
+  statusNotConnected: "Not connected",
+  noPairTitle: "Create a pair",
+  noPairText:
+    "Invite your partner to take polls, tests and games together.",
+  invitePartner: "Invite partner",
+
   inPair: "You are in a pair",
   you: "You",
   partner: "Partner",
