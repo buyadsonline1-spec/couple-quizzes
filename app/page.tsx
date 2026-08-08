@@ -3574,31 +3574,11 @@ const REWARD_CATEGORIES =
 
       {pair.inviteCode && (
         <div style={{ ...cardBaseStyle(), padding: 18 }}>
-          <div style={{ fontSize: 18, fontWeight: 900, color: "#1f1d3a" }}>
-            Твой код приглашения
-          </div>
-
-          <div
-            style={{
-              marginTop: 12,
-              padding: "12px 14px",
-              borderRadius: 16,
-              background: "rgba(255,255,255,0.24)",
-              color: "#241b40",
-              textAlign: "center",
-            }}
-          >
-            <div style={{ fontSize: 24, fontWeight: 900, letterSpacing: 1 }}>
-              {pair.inviteCode}
-            </div>
-          </div>
-
           <div
             style={{
               fontSize: 18,
               fontWeight: 900,
               color: "#1f1d3a",
-              marginTop: 14,
             }}
           >
             Ссылка-приглашение
@@ -10099,9 +10079,12 @@ function TopPlayersScreen({
         )}
       </div>
 
-      {/* Личное место пользователя или пары */}
+      {/* Личное место пользователя или пары — показываем только если
+          человек/пара НЕ виден(на) в уже отображённом списке выше
+          (иначе это дублирует то, что и так на экране). */}
 
-      {topMode === "solo" && (
+      {topMode === "solo" &&
+        !(currentUserRow && currentUserRow.place <= visibleRows.length) && (
         <div
           style={{
             ...cardBaseStyle(),
@@ -10137,7 +10120,8 @@ function TopPlayersScreen({
         </div>
       )}
 
-      {topMode === "pair" && (
+      {topMode === "pair" &&
+        !(currentPairRow && currentPairRow.place <= visibleRows.length) && (
         <div
           style={{
             ...cardBaseStyle(),
