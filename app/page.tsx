@@ -4063,93 +4063,110 @@ const t = market === "en" ? TEXT_EN : TEXT_RU;
       return;
     }
 
-   try {
-  setSaving(true);
+    const initData = window.Telegram?.WebApp?.initData;
 
-
-  await saveDailyPairAnswer({
-    pairId: pair.pairId,
-    date: today,
-    questionId: question.id,
-    telegramId: user.id,
-    answerIndex,
-  });
-
-  const rows = await loadDailyPairAnswersForDate({
-    pairId: pair.pairId,
-    date: today,
-  });
-
-  setTodayAnswers(
-    rows.map((row: any) => ({
-      telegram_id: Number(row.telegram_id),
-      question_id: String(row.question_id),
-      answer_index: Number(row.answer_index),
-    }))
-  );
-
-  if (rows.length >= 2) {
-  const history = await loadDailyPairHistory(pair.pairId);
-  const streakData = calculateDailyPairStreak(history);
-
-  const previousMilestones = appState.dailyPairStreak.reachedMilestones;
-  const newMilestone = streakData.reachedMilestones.find(
-    (m) => !previousMilestones.includes(m)
-  );
-
-  const streakBonus = newMilestone ? getStreakBonus(newMilestone) : 0;
-
-  const sameAnswer =
-    Number(rows[0]?.answer_index) === Number(rows[1]?.answer_index);
-
-  const alreadyClaimedMatchBonus =
-    appState.dailyPairMatchBonusClaimedDates.includes(today);
-
-  const matchBonus =
-    sameAnswer && !alreadyClaimedMatchBonus ? DAILY_PAIR_MATCH_BONUS : 0;
-
-  const totalBonus = streakBonus + matchBonus;
-
-  let nextPairState = pair;
-
-  if (totalBonus > 0) {
-    await updatePairPoints({
-      pairId: pair.pairId,
-      delta: totalBonus,
-    });
-
-    if (user?.id) {
-      nextPairState = await loadPairStateForUser(user.id);
+    if (!initData) {
+      alert("Не удалось подтвердить пользователя Telegram");
+      return;
     }
-  }
 
-  setAppState((prev) => ({
-    ...prev,
-    pair: nextPairState,
-    
-    dailyPairHistory: history,
-    dailyPairStreak: streakData,
-    dailyPairMatchBonusClaimedDates:
-      matchBonus > 0
-        ? [...prev.dailyPairMatchBonusClaimedDates, today]
-        : prev.dailyPairMatchBonusClaimedDates,
-  }));
+    try {
+      setSaving(true);
 
-  if (streakBonus > 0 && matchBonus > 0 && newMilestone) {
-    alert(
-      `🔥 Серия ${newMilestone} дней!\n+${streakBonus} очков\n💘 Совпадение ответов!\n+${matchBonus} очков`
-    );
-  } else if (streakBonus > 0 && newMilestone) {
-    alert(`🔥 Серия ${newMilestone} дней!\n+${streakBonus} очков`);
-  } else if (matchBonus > 0) {
-    alert(`💘 Вы совпали!\n+${matchBonus} очков`);
-  }
-}
+      // Дата, вопрос дня, серия, совпадение и вся сумма бонуса теперь
+      // считаются целиком на сервере (submit_daily_pair_answer) — сам
+      // ответ тоже пишется там же, чтобы его нельзя было подделать
+      // напрямую через daily_pair_answers.
+      let data: any = null;
 
-} finally {
-  setSaving(false);
-}
-   
+      try {
+        const response = await fetch("/api/pair/daily-answer", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ initData, answerIndex }),
+        });
+
+        data = await response.json();
+
+        if (!response.ok) {
+          console.error("saveAnswer error:", data);
+          alert("Не удалось сохранить ответ, попробуй ещё раз");
+          return;
+        }
+      } catch (error) {
+        console.error("saveAnswer request error:", error);
+        alert("Не удалось сохранить ответ, попробуй ещё раз");
+        return;
+      }
+
+      if (!data?.ok) {
+        if (data?.reason === "answer-locked") {
+          alert("Ответ на сегодня уже сохранён и его нельзя изменить");
+        } else {
+          console.error("Daily pair answer not accepted:", data?.reason);
+          alert("Не удалось сохранить ответ, попробуй ещё раз");
+        }
+        return;
+      }
+
+      // Читаем сегодняшние ответы заново — только для отображения (кто
+      // на что ответил), реальное начисление уже произошло на сервере.
+      const rows = await loadDailyPairAnswersForDate({
+        pairId: pair.pairId,
+        date: today,
+      });
+
+      setTodayAnswers(
+        rows.map((row: any) => ({
+          telegram_id: Number(row.telegram_id),
+          question_id: String(row.question_id),
+          answer_index: Number(row.answer_index),
+        }))
+      );
+
+      if (data.status === "both_answered") {
+        const history = await loadDailyPairHistory(pair.pairId);
+        const nextPairState = await loadPairStateForUser(user.id);
+
+        const currentStreak = Number(data.currentStreak ?? 0);
+        const newMilestones: number[] = Array.isArray(data.newMilestones)
+          ? data.newMilestones
+          : [];
+        const streakBonus = Number(data.streakBonus ?? 0);
+        const matchBonus = Number(data.matchBonus ?? 0);
+
+        setAppState((prev) => ({
+          ...prev,
+          pair: nextPairState,
+
+          dailyPairHistory: history,
+          dailyPairStreak: {
+            current: currentStreak,
+            reachedMilestones: [3, 5, 10, 15].filter(
+              (m) => m <= currentStreak
+            ),
+          },
+          dailyPairMatchBonusClaimedDates:
+            matchBonus > 0
+              ? [...prev.dailyPairMatchBonusClaimedDates, today]
+              : prev.dailyPairMatchBonusClaimedDates,
+        }));
+
+        const newMilestone = newMilestones[0] ?? null;
+
+        if (streakBonus > 0 && matchBonus > 0 && newMilestone) {
+          alert(
+            `🔥 Серия ${newMilestone} дней!\n+${streakBonus} очков\n💘 Совпадение ответов!\n+${matchBonus} очков`
+          );
+        } else if (streakBonus > 0 && newMilestone) {
+          alert(`🔥 Серия ${newMilestone} дней!\n+${streakBonus} очков`);
+        } else if (matchBonus > 0) {
+          alert(`💘 Вы совпали!\n+${matchBonus} очков`);
+        }
+      }
+    } finally {
+      setSaving(false);
+    }
   }
 
   const nextBonus = getNextStreakBonus(appState.dailyPairStreak.current);
@@ -11175,54 +11192,11 @@ async function awardActivityPoints(params: {
   };
 }
 
-async function updatePairPoints(params: {
-  pairId: string;
-  delta: number;
-}): Promise<number | null> {
-  const { pairId, delta } = params;
-
-  const { data: pair, error: readError } = await supabase
-    .from("pairs")
-    .select("total_points, weekly_points, weekly_points_week")
-    .eq("id", pairId)
-    .single();
-
-  if (readError || !pair) {
-    console.error("updatePairPoints read error:", readError);
-    return null;
-  }
-
-
-  const nextPoints = Math.max(0, (pair.total_points ?? 0) + delta);
-
-  const currentWeekKey = getCurrentWeekKey();
-
-const currentWeeklyPoints =
-  pair.weekly_points_week === currentWeekKey
-    ? pair.weekly_points ?? 0
-    : 0;
-
-const nextWeeklyPoints = Math.max(
-  0,
-  currentWeeklyPoints + delta
-);
-
-  const { error: updateError } = await supabase
-    .from("pairs")
-    .update({
-  total_points: nextPoints,
-  weekly_points: nextWeeklyPoints,
-  weekly_points_week: currentWeekKey,
-})
-    .eq("id", pairId);
-
-  if (updateError) {
-    console.error("updatePairPoints update error:", updateError);
-    return null;
-  }
-
-  return nextPoints;
-}
+// updatePairPoints() (клиентский read-then-write в pairs.total_points/
+// weekly_points через обычный .update()) удалён отсюда — это была
+// последняя точка вызова. Все начисления PAIR-очков теперь идут только
+// через server-side RPC (spin_reward_wheel, claim_weekly_pair_top_reward,
+// submit_daily_pair_answer и т.д.), а не прямой записью с клиента.
 
 
 
@@ -11271,33 +11245,6 @@ async function loadPairPollAnswers(pairId: string): Promise<Record<string, numbe
   }
 
   return result;
-}
-
-async function saveDailyPairAnswer(params: {
-  pairId: string;
-  date: string;
-  questionId: string;
-  telegramId: number;
-  answerIndex: number;
-}) {
-  const { pairId, date, questionId, telegramId, answerIndex } = params;
-
-  const { error } = await supabase
-    .from("daily_pair_answers")
-    .upsert(
-      {
-        pair_id: pairId,
-        answer_date: date,
-        question_id: questionId,
-        telegram_id: telegramId,
-        answer_index: answerIndex,
-      },
-      { onConflict: "answer_date,telegram_id" }
-    );
-
-  if (error) {
-    console.error("saveDailyPairAnswer error:", error);
-  }
 }
 
 async function loadDailyPairAnswersForDate(params: {
