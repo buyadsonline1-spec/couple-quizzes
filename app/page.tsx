@@ -5816,6 +5816,7 @@ function PollsScreen({
   onBack,
   onCompletePoll,
   pair,
+  isPremium,
   showPaywall,
 }: {
   genderFilter: "boy" | "girl";
@@ -5827,6 +5828,11 @@ function PollsScreen({
 ) => Promise<void>;
 
   pair: PairState;
+  // Настоящий источник Premium-статуса — appState.isPremium (таблица
+  // subscriptions). pair.isPremium читает несуществующую колонку
+  // pairs.is_premium и всегда равен false — не использовать для этой
+  // проверки.
+  isPremium: boolean;
 
   showPaywall: () => void;
 }) {
@@ -5872,7 +5878,7 @@ function startPoll(pollId: string) {
     pollId === "boy-jealousy" ||
     pollId === "girl-jealousy";
 
- if (!pair?.isPremium && !isFreePoll) {
+ if (!isPremium && !isFreePoll) {
   showPaywall();
   return;
 }
@@ -8470,6 +8476,7 @@ function TestsScreen({
   onBack,
   onCompleteTest,
   pair,
+  isPremium,
   showPaywall,
 }: {
   completedTestIds: string[];
@@ -8477,6 +8484,9 @@ function TestsScreen({
   onCompleteTest: (test: TestDefinition) => Promise<void>;
 
   pair: PairState;
+  // См. комментарий в PollsScreen — pair.isPremium читает несуществующую
+  // колонку и всегда false, настоящий флаг — appState.isPremium.
+  isPremium: boolean;
   showPaywall: () => void;
 }) {
   const [activeTestId, setActiveTestId] = useState<string | null>(null);
@@ -8493,7 +8503,7 @@ const t = market === "en" ? TEXT_EN : TEXT_RU;
 
 function startTest(testId: string) {
 if (
-  !pair?.isPremium &&
+  !isPremium &&
   (pair?.dailyTestsUsed ?? 0)
 ) {
   showPaywall();
@@ -13803,6 +13813,7 @@ if (finishedAllTests && !appState.completionBonusesClaimed.tests) {
      onBack={() => setScreen("menu")}
     onCompletePoll={handleCompletePoll}
     pair={appState.pair}
+    isPremium={appState.isPremium}
 showPaywall={() => {
   setPaywallBackScreen(screen);
   setScreen("paywall");
@@ -13817,6 +13828,7 @@ showPaywall={() => {
     onBack={() => setScreen("menu")}
     onCompletePoll={handleCompletePoll}
     pair={appState.pair}
+    isPremium={appState.isPremium}
     showPaywall={() => {
       setPaywallBackScreen("menu");
       setScreen("paywall");
@@ -13842,6 +13854,7 @@ showPaywall={() => {
     onBack={() => setScreen("menu")}
     onCompleteTest={handleCompleteTest}
     pair={appState.pair}
+    isPremium={appState.isPremium}
     showPaywall={() => {
       setPaywallBackScreen("menu");
       setScreen("paywall");
