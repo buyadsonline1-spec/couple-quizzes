@@ -87,7 +87,19 @@ set search_path = public
 as $$
 declare
   v_profile record;
-  v_pair record;
+
+  -- Явно типизированные переменные вместо record-доступа к полям pairs:
+  -- select ... into <typed var> делает assignment cast (безопасно
+  -- парсит значение под нужный тип), а прямое сравнение
+  -- record.field = bigint-параметр падает с "operator does not exist:
+  -- bigint = text", если реальный тип колонки в БД — не bigint.
+  v_pair_id uuid;
+  v_partner_1_telegram_id bigint;
+  v_partner_2_telegram_id bigint;
+  v_pair_total_points integer;
+  v_pair_weekly_points integer;
+  v_pair_weekly_points_week text;
+
   v_partner_telegram_id bigint;
 
   v_today date;
@@ -131,8 +143,10 @@ begin
     return jsonb_build_object('ok', false, 'reason', 'no-pair');
   end if;
 
-  select *
-    into v_pair
+  select id, partner_1_telegram_id, partner_2_telegram_id,
+         total_points, weekly_points, weekly_points_week
+    into v_pair_id, v_partner_1_telegram_id, v_partner_2_telegram_id,
+         v_pair_total_points, v_pair_weekly_points, v_pair_weekly_points_week
     from public.pairs
     where id = v_profile.pair_id
     for update;
@@ -142,16 +156,16 @@ begin
   end if;
 
   if
-    p_telegram_id is distinct from v_pair.partner_1_telegram_id
-    and p_telegram_id is distinct from v_pair.partner_2_telegram_id
+    p_telegram_id is distinct from v_partner_1_telegram_id
+    and p_telegram_id is distinct from v_partner_2_telegram_id
   then
     return jsonb_build_object('ok', false, 'reason', 'not-pair-member');
   end if;
 
   v_partner_telegram_id :=
     case
-      when v_pair.partner_1_telegram_id = p_telegram_id then v_pair.partner_2_telegram_id
-      else v_pair.partner_1_telegram_id
+      when v_partner_1_telegram_id = p_telegram_id then v_partner_2_telegram_id
+      else v_partner_1_telegram_id
     end;
 
   if v_partner_telegram_id is null then
@@ -167,7 +181,7 @@ begin
   select *
     into v_existing_answer
     from public.daily_pair_answers
-    where pair_id = v_pair.id
+    where pair_id = v_pair_id
       and telegram_id = p_telegram_id
       and answer_date = v_today;
 
@@ -181,14 +195,14 @@ begin
     insert into public.daily_pair_answers (
       pair_id, answer_date, question_id, telegram_id, answer_index
     ) values (
-      v_pair.id, v_today, v_question_id, p_telegram_id, p_answer_index
+      v_pair_id, v_today, v_question_id, p_telegram_id, p_answer_index
     );
   end if;
 
   select *
     into v_partner_answer
     from public.daily_pair_answers
-    where pair_id = v_pair.id
+    where pair_id = v_pair_id
       and telegram_id = v_partner_telegram_id
       and answer_date = v_today;
 
@@ -208,8 +222,8 @@ begin
   with recursive completed_days as (
     select a.answer_date
       from public.daily_pair_answers a
-      where a.pair_id = v_pair.id
-        and a.telegram_id in (v_pair.partner_1_telegram_id, v_pair.partner_2_telegram_id)
+      where a.pair_id = v_pair_id
+        and a.telegram_id in (v_partner_1_telegram_id, v_partner_2_telegram_id)
       group by a.answer_date
       having count(distinct a.telegram_id) = 2
   ),
@@ -240,7 +254,7 @@ begin
         end;
 
       insert into public.pair_reward_claims (pair_id, reward_key, reward_type, reward_points)
-      values (v_pair.id, v_reward_key, 'streak', v_reward_points)
+      values (v_pair_id, v_reward_key, 'streak', v_reward_points)
       on conflict (pair_id, reward_key) do nothing;
 
       get diagnostics v_rows = row_count;
@@ -257,7 +271,7 @@ begin
     v_reward_key := 'daily-match:' || v_today::text;
 
     insert into public.pair_reward_claims (pair_id, reward_key, reward_type, reward_points)
-    values (v_pair.id, v_reward_key, 'daily-match', 25)
+    values (v_pair_id, v_reward_key, 'daily-match', 25)
     on conflict (pair_id, reward_key) do nothing;
 
     get diagnostics v_rows = row_count;
@@ -272,11 +286,11 @@ begin
   if v_total_bonus > 0 then
     v_week_key := public.cq_week_key(v_today);
 
-    v_next_total := greatest(0, coalesce(v_pair.total_points, 0) + v_total_bonus);
+    v_next_total := greatest(0, coalesce(v_pair_total_points, 0) + v_total_bonus);
     v_next_weekly :=
       case
-        when v_pair.weekly_points_week = v_week_key
-          then greatest(0, coalesce(v_pair.weekly_points, 0) + v_total_bonus)
+        when v_pair_weekly_points_week = v_week_key
+          then greatest(0, coalesce(v_pair_weekly_points, 0) + v_total_bonus)
         else greatest(0, v_total_bonus)
       end;
 
@@ -284,12 +298,12 @@ begin
        set total_points = v_next_total,
            weekly_points = v_next_weekly,
            weekly_points_week = v_week_key
-     where id = v_pair.id
+     where id = v_pair_id
     returning total_points, weekly_points
       into v_next_total, v_next_weekly;
   else
-    v_next_total := coalesce(v_pair.total_points, 0);
-    v_next_weekly := coalesce(v_pair.weekly_points, 0);
+    v_next_total := coalesce(v_pair_total_points, 0);
+    v_next_weekly := coalesce(v_pair_weekly_points, 0);
   end if;
 
   return jsonb_build_object(
