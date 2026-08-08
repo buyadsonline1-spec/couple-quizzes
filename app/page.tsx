@@ -3134,7 +3134,7 @@ function PairScreen({
                   gap: 10,
                 }}
               >
-                <div>
+                <div style={{ flex: 1, minWidth: 0 }}>
                   <div
                     style={{ fontSize: 22, fontWeight: 900, color: "#1f1d3a" }}
                   >
@@ -3152,19 +3152,21 @@ function PairScreen({
                     {compatibilityProfile.completedThemes > 0
   ? `Рассчитано по ${compatibilityProfile.completedThemes} из ${compatibilityProfile.totalThemes} тем`
   : "Пройдите парные опросы и узнайте, насколько вы подходите друг другу 💞"}
-  {compatibilityProfile.completedThemes === 0 && (
-  <button
-    onClick={onOpenPolls}
-    style={{
-      ...primaryButtonStyle,
-      width: "100%",
-      marginTop: 12,
-    }}
-  >
-    Пройти опросы
-  </button>
-)}
                   </div>
+
+                  {compatibilityProfile.completedThemes === 0 && (
+                    <button
+                      type="button"
+                      onClick={onOpenPolls}
+                      style={{
+                        ...primaryButtonStyle,
+                        width: "100%",
+                        marginTop: 14,
+                      }}
+                    >
+                      Пройти опросы
+                    </button>
+                  )}
                 </div>
 
                 <button
@@ -3191,41 +3193,37 @@ function PairScreen({
                 </button>
               </div>
 
-              <div
-                style={{
-                  marginTop: 14,
-                  padding: "18px 16px",
-                  borderRadius: 18,
-                  background: "rgba(255,255,255,0.24)",
-                  textAlign: "center",
-                }}
-              >
+              {compatibilityProfile.completedThemes > 0 && (
                 <div
                   style={{
-                    fontSize: 34,
-                    fontWeight: 900,
-                    color: "#6b46ff",
+                    marginTop: 14,
+                    padding: "18px 16px",
+                    borderRadius: 18,
+                    background: "rgba(255,255,255,0.24)",
+                    textAlign: "center",
                   }}
                 >
-                  {compatibilityProfile.completedThemes > 0
-                    ? `${compatibilityProfile.overallPercent}%`
-                    : "—"}
-                </div>
+                  <div
+                    style={{
+                      fontSize: 34,
+                      fontWeight: 900,
+                      color: "#6b46ff",
+                    }}
+                  >
+                    {compatibilityProfile.overallPercent}%
+                  </div>
 
-                <div
-                  style={{
-                    marginTop: 8,
-                    color: "#4d466c",
-                    fontSize: 14,
-                    lineHeight: 1.45,
-                  }}
-                >
-                  {compatibilityProfile.completedThemes > 0
-                    ? compatibilityProfile.pairType
-                    : "Совместимость появится, когда вы пройдёте общие парные опросы"}
-                </div>
+                  <div
+                    style={{
+                      marginTop: 8,
+                      color: "#4d466c",
+                      fontSize: 14,
+                      lineHeight: 1.45,
+                    }}
+                  >
+                    {compatibilityProfile.pairType}
+                  </div>
 
-                {compatibilityProfile.completedThemes > 0 && (
                   <div
                     style={{
                       marginTop: 12,
@@ -3236,8 +3234,8 @@ function PairScreen({
                   >
                     Тем пройдено: {pairStats.completedThemes}
                   </div>
-                )}
-              </div>
+                </div>
+              )}
             </div>
           </div>
         </>
@@ -4111,10 +4109,18 @@ const t = market === "en" ? TEXT_EN : TEXT_RU;
 
       // Читаем сегодняшние ответы заново — только для отображения (кто
       // на что ответил), реальное начисление уже произошло на сервере.
-      const rows = await loadDailyPairAnswersForDate({
-        pairId: pair.pairId,
-        date: today,
-      });
+      // История грузится параллельно (не последовательно), а pair state
+      // не перезапрашиваем отдельным round-trip'ом — RPC уже вернул
+      // актуальные pairTotalPoints/pairWeeklyPoints в самом ответе.
+      const [rows, history] = await Promise.all([
+        loadDailyPairAnswersForDate({
+          pairId: pair.pairId,
+          date: today,
+        }),
+        data.status === "both_answered"
+          ? loadDailyPairHistory(pair.pairId)
+          : Promise.resolve(null),
+      ]);
 
       setTodayAnswers(
         rows.map((row: any) => ({
@@ -4125,8 +4131,14 @@ const t = market === "en" ? TEXT_EN : TEXT_RU;
       );
 
       if (data.status === "both_answered") {
-        const history = await loadDailyPairHistory(pair.pairId);
-        const nextPairState = await loadPairStateForUser(user.id);
+        const nextPairState =
+          data.pairTotalPoints != null
+            ? {
+                ...pair,
+                totalPoints: data.pairTotalPoints,
+                weeklyPoints: data.pairWeeklyPoints ?? pair.weeklyPoints,
+              }
+            : pair;
 
         const currentStreak = Number(data.currentStreak ?? 0);
         const newMilestones: number[] = Array.isArray(data.newMilestones)
@@ -4139,7 +4151,7 @@ const t = market === "en" ? TEXT_EN : TEXT_RU;
           ...prev,
           pair: nextPairState,
 
-          dailyPairHistory: history,
+          dailyPairHistory: history ?? [],
           dailyPairStreak: {
             current: currentStreak,
             reachedMilestones: [3, 5, 10, 15].filter(
@@ -12046,15 +12058,20 @@ const claimCompletionBonus = async (
     return false;
   }
 
+  // Сервер уже вернул актуальные pairTotalPoints/pairWeeklyPoints в
+  // ответе award_activity_points — не делаем лишний round-trip
+  // (loadPairStateForUser это 2 доп. запроса), просто мёржим их в
+  // локальный pair state. Полный перезапрос не нужен: остальные поля
+  // пары (партнёр, дневные лимиты и т.д.) от начисления очков не меняются.
   let nextPairState =
-    appState.pair;
-
-  if (appState.pair.pairId) {
-    nextPairState =
-      await loadPairStateForUser(
-        user.id
-      );
-  }
+    appState.pair.pairId && awardResult.pairTotalPoints != null
+      ? {
+          ...appState.pair,
+          totalPoints: awardResult.pairTotalPoints,
+          weeklyPoints:
+            awardResult.pairWeeklyPoints ?? appState.pair.weeklyPoints,
+        }
+      : appState.pair;
 
   const nextPairPoints =
     nextPairState.totalPoints || 0;
@@ -12184,15 +12201,17 @@ const claimGameStepReward = async (
     return false;
   }
 
+  // См. комментарий в claimCompletionBonus — сервер уже вернул
+  // pairTotalPoints/pairWeeklyPoints, лишний loadPairStateForUser не нужен.
   let nextPairState =
-    appState.pair;
-
-  if (appState.pair.pairId) {
-    nextPairState =
-      await loadPairStateForUser(
-        user.id
-      );
-  }
+    appState.pair.pairId && awardResult.pairTotalPoints != null
+      ? {
+          ...appState.pair,
+          totalPoints: awardResult.pairTotalPoints,
+          weeklyPoints:
+            awardResult.pairWeeklyPoints ?? appState.pair.weeklyPoints,
+        }
+      : appState.pair;
 
   const nextPairPoints =
     nextPairState.totalPoints || 0;
@@ -12306,15 +12325,19 @@ const handleCompleteGame = async (game: Game, score: number) => {
       nextSoloWeeklyPoints =
         awardResult.soloWeeklyPoints;
 
-      if (appState.pair.pairId) {
-        nextPairState =
-          await loadPairStateForUser(
-            user.id
-          );
+      // См. комментарий в claimCompletionBonus — сервер уже вернул
+      // pairTotalPoints/pairWeeklyPoints, лишний loadPairStateForUser не нужен.
+      if (appState.pair.pairId && awardResult.pairTotalPoints != null) {
+        nextPairState = {
+          ...appState.pair,
+          totalPoints: awardResult.pairTotalPoints,
+          weeklyPoints:
+            awardResult.pairWeeklyPoints ?? appState.pair.weeklyPoints,
+        };
       }
     }
   }
-  
+
 
 
   const previousPoints = appState.pair.totalPoints || 0;
@@ -13231,11 +13254,15 @@ if (rewardToAdd > 0 && user?.id) {
     nextSoloWeeklyPoints =
       awardResult.soloWeeklyPoints;
 
-    if (appState.pair.pairId) {
-      nextPairState =
-        await loadPairStateForUser(
-          user.id
-        );
+    // См. комментарий в claimCompletionBonus — сервер уже вернул
+    // pairTotalPoints/pairWeeklyPoints, лишний loadPairStateForUser не нужен.
+    if (appState.pair.pairId && awardResult.pairTotalPoints != null) {
+      nextPairState = {
+        ...appState.pair,
+        totalPoints: awardResult.pairTotalPoints,
+        weeklyPoints:
+          awardResult.pairWeeklyPoints ?? appState.pair.weeklyPoints,
+      };
     }
   }
 }
@@ -13375,11 +13402,15 @@ if (rewardToAdd > 0 && user?.id) {
     nextSoloWeeklyPoints =
       awardResult.soloWeeklyPoints;
 
-    if (appState.pair.pairId) {
-      nextPairState =
-        await loadPairStateForUser(
-          user.id
-        );
+    // См. комментарий в claimCompletionBonus — сервер уже вернул
+    // pairTotalPoints/pairWeeklyPoints, лишний loadPairStateForUser не нужен.
+    if (appState.pair.pairId && awardResult.pairTotalPoints != null) {
+      nextPairState = {
+        ...appState.pair,
+        totalPoints: awardResult.pairTotalPoints,
+        weeklyPoints:
+          awardResult.pairWeeklyPoints ?? appState.pair.weeklyPoints,
+      };
     }
   }
 }
