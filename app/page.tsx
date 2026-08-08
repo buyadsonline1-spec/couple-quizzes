@@ -11772,15 +11772,13 @@ const REWARD_CATEGORIES =
 
  
 
-const FREE_ACTIONS_LIMIT = 3;
-
-const freeActionsUsed =
-  (appState.completedPollIds?.length ?? 0) +
-  (appState.completedTestIds?.length ?? 0) +
-  (appState.playedGameRewardKeys?.length ?? 0);
-
-const freeAccessExhausted =
-  freeActionsUsed >= FREE_ACTIONS_LIMIT;
+// Раньше здесь был общий лимит "3 бесплатных действия на все разделы
+// сразу" — он блокировал вход в опросы/тесты/игры целиком после
+// суммарно 3 пройденных штук чего угодно, что конфликтовало с
+// изначальной задумкой (первые 2 опроса по порядку + 1 тест + по
+// одному ходу в каждой игре открыты всегда). Убрано: теперь решение о
+// paywall принимает каждый экран сам — PollsScreen (isFreePoll),
+// TestsScreen (dailyTestsUsed), GamesScreen (без ограничения).
 
 
 
@@ -13784,19 +13782,8 @@ if (finishedAllTests && !appState.completionBonusesClaimed.tests) {
     pairLevel={getPairLevelInfo(animatedPairPoints)}
     appState={appState}
    onNavigate={(next) => {
-  const wantsContent =
-    next === "polls" ||
-    next === "polls-boy" ||
-    next === "polls-girl" ||
-    next === "tests" ||
-    next === "games";
-
-  if (!appState.isPremium && freeAccessExhausted && wantsContent) {
-  setPaywallBackScreen("menu");
-  setScreen("paywall");
-  return;
-}
-
+  // Раздел открывается всегда — сам paywall (если нужен) показывает
+  // конкретный экран (PollsScreen/TestsScreen), а не общий счётчик.
   setScreen(next);
 }}
   />
@@ -14031,6 +14018,17 @@ showPaywall={() => {
       >
         149 ₽
       </div>
+
+      <button
+        onClick={() => setShowPaymentChoice(true)}
+        style={{
+          ...primaryButtonStyle,
+          width: "100%",
+          marginTop: 16,
+        }}
+      >
+        Разблокировать Premium
+      </button>
 
       <button
   onClick={() => {
