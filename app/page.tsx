@@ -14055,7 +14055,15 @@ showPaywall={() => {
   onOpenInvite={() => setScreen("pair-invite")}
   onOpenDailyQuestion={() => setScreen("daily-pair-question")}
   onOpenCompatibilityInfo={() => setScreen("pair-compatibility-info")}
-  onOpenPolls={() => setScreen("polls")}
+  onOpenPolls={() => {
+    // "polls" как единого экрана не существует — как и в MainMenu,
+    // опросы разделены на polls-boy/polls-girl по полу профиля.
+    if (!appState.profile.gender) {
+      setScreen("gender-select");
+      return;
+    }
+    setScreen(appState.profile.gender === "boy" ? "polls-boy" : "polls-girl");
+  }}
 />
 )}
 
@@ -14091,7 +14099,13 @@ showPaywall={() => {
   <PairCompatibilityInfoScreen
     appState={appState}
     onBack={() => setScreen("pair")}
-    onOpenPolls={() => setScreen("polls")}
+    onOpenPolls={() => {
+      if (!appState.profile.gender) {
+        setScreen("gender-select");
+        return;
+      }
+      setScreen(appState.profile.gender === "boy" ? "polls-boy" : "polls-girl");
+    }}
   />
 )}
 
