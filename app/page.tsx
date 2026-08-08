@@ -4,6 +4,11 @@ import { CSSProperties, useEffect, useMemo, useState } from "react";
 import { getMarket } from "@/config/markets";
 import { REWARD_CATEGORIES_RU } from "@/config/rewards-ru";
 import { REWARD_CATEGORIES_EN } from "@/config/rewards-en";
+import {
+  TEST_REWARD,
+  POLL_REWARD,
+  DAILY_BONUS_REWARDS,
+} from "@/config/reward-catalog";
 
 
 
@@ -94,20 +99,37 @@ type AppStats = {
   rewardsRedeemed: number;
 };
 
+type WheelOutcomeType = "prize" | "bonus_points" | "bonus_spin";
+
 type WonReward = {
-  id: string;
+  // Уникальный ключ выигрыша — именно spinId, а не itemId: один и тот
+  // же приз (например "wb500") можно выиграть больше одного раза.
+  spinId: string;
+  itemId: string;
   title: string;
   categoryId: string;
   categoryTitle: string;
   wonAt: string;
+  spentPoints: number;
+  spinsUsedToday: number;
+  spinsRemainingToday: number;
+  market: "ru" | "en";
+  // 70% вращений — это не настоящий приз, а один из двух видов бонуса:
+  // +500 очков сразу, либо +1 в банк бесплатных вращений (bonusSpinCredits) —
+  // следующее вращение из банка бесплатно и не тратит дневной лимит.
+  outcomeType: WheelOutcomeType;
+  bonusValue: number | null;
+  spinSource: "paid" | "bonus_credit";
+  bonusSpinCredits: number;
 };
 
 
 type AppState = {
   points: number;
   soloPoints: number;
+  soloWeeklyPoints: number;
   isPremium: boolean;
- 
+
 
   completionBonusesClaimed: {
   polls: boolean;
@@ -323,6 +345,7 @@ dailyPollsUsed: number;
 dailyGamesUsed: number;
 dailyLimitDate: string | null;
 isPremium?: boolean;
+  weeklyTopRewardClaimedWeek: string | null;
 };
 
 type DailyPairQuestion = {
@@ -359,7 +382,7 @@ type WeeklyUserLeaderboardRow = {
 
 
 
-const DAILY_REWARDS = [25, 50, 75, 100, 150, 200, 300, 400, 500];
+const DAILY_REWARDS = DAILY_BONUS_REWARDS;
 const STORAGE_KEY = "couple-quizzes-miniapp-v6";
 const WHEEL_SPIN_COST = 2000;
 
@@ -391,7 +414,7 @@ const TESTS: TestDefinition[] = [
       "Покажет, насколько спокойно и уверенно ты чувствуешь себя в отношениях.",
     descriptionEn:
       "Shows how calm, secure, and confident you feel in your relationship.",
-    reward: 60,
+    reward: TEST_REWARD,
     kind: "scale",
     questions: [
       {
@@ -507,7 +530,7 @@ const TESTS: TestDefinition[] = [
       "Определит, как тебе приятнее всего чувствовать любовь и заботу.",
     descriptionEn:
       "Helps determine how you most naturally feel love and care.",
-    reward: 60,
+    reward: TEST_REWARD,
     kind: "love-language",
     questions: [
       {
@@ -764,7 +787,7 @@ const TESTS: TestDefinition[] = [
       "Покажет, какая твоя энергия сильнее всего проявляется в жизни и отношениях.",
     descriptionEn:
       "Shows which of your inner strengths stands out the most in life and relationships.",
-    reward: 60,
+    reward: TEST_REWARD,
     kind: "personality",
     questions: [
       {
@@ -1821,7 +1844,7 @@ const POLLS: Poll[] = POLL_THEMES.flatMap((item, index) => {
       descriptionRu: item.descriptionRu,
       descriptionEn: item.descriptionEn,
 
-      reward: 60,
+      reward: POLL_REWARD,
       gender: "boy" as const,
       page,
 
@@ -1841,7 +1864,7 @@ const POLLS: Poll[] = POLL_THEMES.flatMap((item, index) => {
       descriptionRu: item.descriptionRu,
       descriptionEn: item.descriptionEn,
 
-      reward: 60,
+      reward: POLL_REWARD,
       gender: "girl" as const,
       page,
 
@@ -2455,6 +2478,7 @@ const WHEEL_COLORS = [
 const DEFAULT_STATE: AppState = {
   points: 0,
   soloPoints: 0,
+  soloWeeklyPoints: 0,
   isPremium: false,
 
 
@@ -2518,6 +2542,7 @@ pair: {
   dailyGamesUsed: 0,
   dailyLimitDate: null,
   isPremium: false,
+  weeklyTopRewardClaimedWeek: null,
 },
 
   dailyPair: {
@@ -5002,17 +5027,9 @@ function createSectorPath(
   ].join(" ");
 }
 
-function pickWeightedIndex(weights: number[]) {
-  const total = weights.reduce((sum, w) => sum + w, 0);
-  let random = Math.random() * total;
-
-  for (let i = 0; i < weights.length; i++) {
-    random -= weights[i];
-    if (random <= 0) return i;
-  }
-
-  return weights.length - 1;
-}
+// Приз колеса теперь выбирается атомарно на сервере (RPC
+// spin_reward_wheel, pgcrypto), а не здесь — раньше это делал
+// pickWeightedIndex() на клиенте, что позволяло подделать результат.
 
 function calculateMatch(a?: number[], b?: number[]) {
   if (!a?.length || !b?.length) return null;
@@ -5108,21 +5125,25 @@ function loadState(): AppState {
       points?: number;
     };
 
-    return {
-      points:
-        parsed.points ??
-        DEFAULT_STATE.points,
+ return {
+  points:
+    parsed.points ??
+    DEFAULT_STATE.points,
 
-      soloPoints:
-        parsed.soloPoints ??
-        parsed.points ??
-        DEFAULT_STATE.soloPoints,
+  soloPoints:
+    parsed.soloPoints ??
+    parsed.points ??
+    DEFAULT_STATE.soloPoints,
 
-      isPremium: DEFAULT_STATE.isPremium,
+  soloWeeklyPoints:
+    parsed.soloWeeklyPoints ??
+    DEFAULT_STATE.soloWeeklyPoints,
 
-      playedGameRewardKeys:
-        parsed.playedGameRewardKeys ??
-        DEFAULT_STATE.playedGameRewardKeys,
+  isPremium: DEFAULT_STATE.isPremium,
+
+  playedGameRewardKeys:
+    parsed.playedGameRewardKeys ??
+    DEFAULT_STATE.playedGameRewardKeys,
 
 
   completionBonusesClaimed: {
@@ -5229,6 +5250,9 @@ dailyLimitDate:
 isPremium:
   parsed.pair?.isPremium ??
   DEFAULT_STATE.pair.isPremium,
+weeklyTopRewardClaimedWeek:
+  parsed.pair?.weeklyTopRewardClaimedWeek ??
+  DEFAULT_STATE.pair.weeklyTopRewardClaimedWeek,
 },
 
   dailyPair: {
@@ -7760,354 +7784,413 @@ function NeverHaveIEverGameScreen({
 }) {
   const cards = [
     {
+      id: "nh1",
       type: "spicy",
       emoji: "😈",
       text: "Я никогда не играл(а) в карты на раздевание",
       task: "Если партнёр делал это — ему пора пыхтеть 😏",
     },
     {
+      id: "nh2",
       type: "funny",
       emoji: "🤣",
       text: "Я никогда не пел(а) вслух в душе",
       task: "Если партнёр делал это — поёт одну строчку любой песни",
     },
     {
+      id: "nh3",
       type: "romantic",
       emoji: "🔥",
       text: "Я никогда не устраивал(а) романтический сюрприз",
       task: "Если партнёр делал это — делится самой милой историей",
     },
     {
+      id: "nh4",
       type: "spicy",
       emoji: "😈",
       text: "Я никогда не писал(а) бывшему ночью",
       task: "Если партнёр делал это — рассказывает неловкую историю",
     },
     {
+      id: "nh5",
       type: "funny",
       emoji: "🤣",
       text: "Я никогда не засыпал(а) на свидании",
       task: "Если партнёр делал это — показывает это в лицах",
     },
     {
+      id: "nh6",
       type: "romantic",
       emoji: "🔥",
       text: "Я никогда не мечтал(а) о ленивом дне вдвоём без дел",
       task: "Если партнёр делал это — описывает этот день тремя словами",
     },
     {
+      id: "nh7",
       type: "spicy",
       emoji: "😈",
       text: "Я никогда не ревновал(а) без причины",
       task: "Если партнёр делал это — обнимает тебя 20 секунд",
     },
     {
+      id: "nh8",
       type: "funny",
       emoji: "🤣",
       text: "Я никогда не говорил(а) 'я в пути', ещё не выйдя из дома",
       task: "Если партнёр делал это — изображает очень виноватый вид 10 секунд",
     },
     {
+      id: "nh9",
       type: "romantic",
       emoji: "🔥",
       text: "Я никогда не представлял(а) наш идеальный совместный выходной",
       task: "Если партнёр делал это — быстро рассказывает свой вариант",
     },
     {
+      id: "nh10",
       type: "spicy",
       emoji: "😈",
       text: "Я никогда не флиртовал(а) ради шутки",
       task: "Если партнёр делал это — выполняет твоё мини-желание",
     },
     {
+      id: "nh11",
       type: "funny",
       emoji: "🤣",
       text: "Я никогда не путал(а) имя человека",
       task: "Если партнёр делал это — рассказывает самую неловкую ситуацию",
     },
     {
+      id: "nh12",
       type: "romantic",
       emoji: "🔥",
       text: "Я никогда не придумывал(а) милое прозвище для любимого человека",
       task: "Если партнёр делал это — придумывает тебе новое прямо сейчас",
     },
     {
+      id: "nh13",
       type: "spicy",
       emoji: "😈",
       text: "Я никогда не подглядывал(а) в чужой телефон",
       task: "Если партнёр делал это — честно признаётся, зачем",
     },
     {
+      id: "nh14",
       type: "funny",
       emoji: "🤣",
       text: "Я никогда не делал(а) вид, что слушаю, хотя мысли были в другом месте",
       task: "Если партнёр делал это — должен(на) очень внимательно слушать тебя 30 секунд",
     },
     {
+      id: "nh15",
       type: "romantic",
       emoji: "🔥",
       text: "Я никогда не влюблялся(ась) с первого взгляда",
       task: "Если партнёр делал это — делает тебе комплимент",
     },
     {
+      id: "nh16",
       type: "spicy",
       emoji: "😈",
       text: "Я никогда не хотел(а) поцеловать человека в первый же вечер",
       task: "Если партнёр делал это — улыбается максимально загадочно",
     },
     {
+      id: "nh17",
       type: "funny",
       emoji: "🤣",
       text: "Я никогда не танцевал(а) без музыки",
       task: "Если партнёр делал это — показывает 5 секунд танца",
     },
     {
+      id: "nh18",
       type: "romantic",
       emoji: "🔥",
       text: "Я никогда не хотел(а) устроить спонтанную поездку вдвоём",
       task: "Если партнёр делал это — называет место, куда хотел(а) бы поехать с тобой",
     },
     {
+      id: "nh19",
       type: "spicy",
       emoji: "😈",
       text: "Я никогда не писал(а) длинное сообщение и потом не удалял(а) его",
       task: "Если партнёр делал это — говорит, почему передумал(а)",
     },
     {
+      id: "nh20",
       type: "funny",
       emoji: "🤣",
       text: "Я никогда не удалял(а) фото из-за того, что плохо получился(ась)",
       task: "Если партнёр делал это — показывает свою самую смешную мину",
     },
     {
+      id: "nh21",
       type: "romantic",
       emoji: "🔥",
       text: "Я никогда не скучал(а) настолько, что пересматривал(а) фото человека",
       task: "Если партнёр делал это — признаётся, чьи фото так смотрел(а)",
     },
     {
+      id: "nh22",
       type: "spicy",
       emoji: "😈",
       text: "Я никогда не говорил(а) 'мне всё равно', когда было очень даже не всё равно",
       task: "Если партнёр делал это — говорит 3 вещи, которые ему(ей) не всё равно",
     },
     {
+      id: "nh23",
       type: "funny",
       emoji: "🤣",
       text: "Я никогда не выбирал(а) одежду дольше часа",
       task: "Если партнёр делал это — рассказывает про свой самый сложный выбор",
     },
     {
+      id: "nh24",
       type: "romantic",
       emoji: "🔥",
       text: "Я никогда не мечтал(а) проснуться у моря рядом с любимым человеком",
       task: "Если партнёр делал это — описывает такое утро одной фразой",
     },
     {
+      id: "nh25",
       type: "spicy",
       emoji: "😈",
       text: "Я никогда не ревновал(а) к прошлому партнёра",
       task: "Если партнёр делал это — честно признаётся, что именно задевало",
     },
     {
+      id: "nh26",
       type: "funny",
       emoji: "🤣",
       text: "Я никогда не опаздывал(а) на свидание больше чем на 30 минут",
       task: "Если партнёр делал это — извиняется максимально драматично",
     },
     {
+      id: "nh27",
       type: "romantic",
       emoji: "🔥",
       text: "Я никогда не делал(а) сюрприз без повода",
       task: "Если партнёр делал это — обещает маленький сюрприз в будущем",
     },
     {
+      id: "nh28",
       type: "spicy",
       emoji: "😈",
       text: "Я никогда не скрывал(а), что мне кто-то нравится",
       task: "Если партнёр делал это — показывает, как он(а) это обычно скрывает",
     },
     {
+      id: "nh29",
       type: "funny",
       emoji: "🤣",
       text: "Я никогда не делал(а) скриншот переписки",
       task: "Если партнёр делал это — делает максимально innocent face",
     },
     {
+      id: "nh30",
       type: "romantic",
       emoji: "🔥",
       text: "Я никогда не представлял(а) совместную жизнь через 10 лет",
       task: "Если партнёр делал это — рассказывает один такой образ",
     },
     {
+      id: "nh31",
       type: "spicy",
       emoji: "😈",
       text: "Я никогда не задерживал(а) ответ специально",
       task: "Если партнёр делал это — признаётся, зачем так делал(а)",
     },
     {
+      id: "nh32",
       type: "funny",
       emoji: "🤣",
       text: "Я никогда не делал(а) вид, что не заметил(а) сообщение",
       task: "Если партнёр делал это — признаётся, почему так бывает",
     },
     {
+      id: "nh33",
       type: "romantic",
       emoji: "🔥",
       text: "Я никогда не хотел(а) обнять человека сильнее, чем позволяли обстоятельства",
       task: "Если партнёр делал это — обнимает тебя прямо сейчас",
     },
     {
+      id: "nh34",
       type: "spicy",
       emoji: "😈",
       text: "Я никогда не устраивал(а) сцену ревности",
       task: "Если партнёр делал это — изображает свою ревность без слов",
     },
     {
+      id: "nh35",
       type: "funny",
       emoji: "🤣",
       text: "Я никогда не врал(а), что мне нравится подарок",
       task: "Если партнёр делал это — рассказывает про самый странный подарок",
     },
     {
+      id: "nh36",
       type: "romantic",
       emoji: "🔥",
       text: "Я никогда не думал(а): 'с этим человеком было бы очень спокойно'",
       task: "Если партнёр делал это — говорит, что для него(неё) значит спокойствие в любви",
     },
     {
+      id: "nh37",
       type: "spicy",
       emoji: "😈",
       text: "Я никогда не хотел(а) сбежать с вечеринки домой с кем-то вдвоём",
       task: "Если партнёр делал это — объясняет, что для него(неё) идеальный вечер",
     },
     {
+      id: "nh38",
       type: "funny",
       emoji: "🤣",
       text: "Я никогда не краснел(а) из-за комплимента",
       task: "Если партнёр делал это — получает от тебя новый комплимент",
     },
     {
+      id: "nh39",
       type: "romantic",
       emoji: "🔥",
       text: "Я никогда не хранил(а) мелочь на память о важном человеке",
       task: "Если партнёр делал это — рассказывает, что это была за вещь",
     },
     {
+      id: "nh40",
       type: "spicy",
       emoji: "😈",
       text: "Я никогда не хотел(а) пофлиртовать, просто чтобы проверить реакцию",
       task: "Если партнёр делал это — признаётся, что это было очень рискованно",
     },
     {
+      id: "nh41",
       type: "funny",
       emoji: "🤣",
       text: "Я никогда не пугался(ась) собственного сообщения на максимальной громкости",
       task: "Если партнёр делал это — изображает этот момент",
     },
     {
+      id: "nh42",
       type: "romantic",
       emoji: "🔥",
       text: "Я никогда не представлял(а), как мы выглядели бы в старости",
       task: "Если партнёр делал это — рассказывает одну милую деталь",
     },
     {
+      id: "nh43",
       type: "spicy",
       emoji: "😈",
       text: "Я никогда не писал(а) бывшему первым(ой) после расставания",
       task: "Если партнёр делал это — рассказывает, зачем это было",
     },
     {
+      id: "nh44",
       type: "funny",
       emoji: "🤣",
       text: "Я никогда не спотыкался(ась) на ровном месте на глазах у других",
       task: "Если партнёр делал это — показывает свой самый достойный выход из неловкости",
     },
     {
+      id: "nh45",
       type: "romantic",
       emoji: "🔥",
       text: "Я никогда не хотел(а) провести целый день вдвоём без телефонов",
       task: "Если партнёр делал это — описывает этот день одной фразой",
     },
     {
+      id: "nh46",
       type: "spicy",
       emoji: "😈",
       text: "Я никогда не делал(а) первый шаг в отношениях",
       task: "Если партнёр делал это — рассказывает, как это было",
     },
     {
+      id: "nh47",
       type: "funny",
       emoji: "🤣",
       text: "Я никогда не делал(а) виноватое лицо, чтобы выкрутиться",
       task: "Если партнёр делал это — показывает своё лучшее виноватое лицо",
     },
     {
+      id: "nh48",
       type: "romantic",
       emoji: "🔥",
       text: "Я никогда не переслушивал(а) песню из-за воспоминаний о человеке",
       task: "Если партнёр делал это — называет эту песню или её настроение",
     },
     {
+      id: "nh49",
       type: "spicy",
       emoji: "😈",
       text: "Я никогда не хотел(а) поцеловать кого-то неожиданно",
       task: "Если партнёр делал это — говорит, насколько это было спонтанно по шкале от 1 до 10",
     },
     {
+      id: "nh50",
       type: "funny",
       emoji: "🤣",
       text: "Я никогда не отправлял(а) сообщение не тому человеку",
       task: "Если партнёр делал это — рассказывает, что это было за сообщение",
     },
     {
+      id: "nh51",
       type: "romantic",
       emoji: "🔥",
       text: "Я никогда не мечтал(а) о красивом признании в любви",
       task: "Если партнёр делал это — делится одной такой идеей",
     },
     {
+      id: "nh52",
       type: "spicy",
       emoji: "😈",
       text: "Я никогда не вёл(вела) себя слишком гордо после ссоры",
       task: "Если партнёр делал это — говорит одну фразу для примирения",
     },
     {
+      id: "nh53",
       type: "funny",
       emoji: "🤣",
       text: "Я никогда не делал(а) вид, что всё нормально, когда было очень смешно",
       task: "Если партнёр делал это — пытается не засмеяться 5 секунд, глядя на тебя",
     },
     {
+      id: "nh54",
       type: "romantic",
       emoji: "🔥",
       text: "Я никогда не хотел(а) сказать человеку что-то очень нежное, но стеснялся(ась)",
       task: "Если партнёр делал это — говорит тебе это сейчас в мягкой форме",
     },
     {
+      id: "nh55",
       type: "spicy",
       emoji: "😈",
       text: "Я никогда не делал(а) вид, что мне неинтересно, хотя было очень интересно",
       task: "Если партнёр делал это — честно признаётся, когда так бывало",
     },
     {
+      id: "nh56",
       type: "funny",
       emoji: "🤣",
       text: "Я никогда не репетировал(а) разговор заранее в голове",
       task: "Если партнёр делал это — изображает, как это выглядит",
     },
     {
+      id: "nh57",
       type: "romantic",
       emoji: "🔥",
       text: "Я никогда не хотел(а) провести с человеком весь день, ничего особо не делая",
       task: "Если партнёр делал это — говорит, почему это для него(неё) ценно",
     },
     {
+      id: "nh58",
       type: "spicy",
       emoji: "😈",
       text: "Я никогда не делал(а) намёк вместо прямого признания",
       task: "Если партнёр делал это — признаётся, понял(а) ли кто-то этот намёк",
     },
     {
+      id: "nh59",
       type: "funny",
       emoji: "🤣",
       text: "Я никогда не терял(а) мысль посреди разговора",
@@ -8137,7 +8220,7 @@ function NeverHaveIEverGameScreen({
 async function handleComplete() {
   if (rewardClaimed || !card) return;
 
-  const rewardKey = `never-have:${card.text}`;
+  const rewardKey = `never-have:${card.id}`;
   await onClaimReward(rewardKey);
 
   setRewardClaimed(true);
@@ -8183,7 +8266,7 @@ function handleNext() {
   );
 }
 
-const rewardKey = `never-have:${card.text}`;
+const rewardKey = `never-have:${card.id}`;
 const alreadyPlayed = playedGameRewardKeys.includes(rewardKey);
 
 const categoryLabel =
@@ -8797,7 +8880,7 @@ function RewardsScreen({
   points: number;
   wonRewards: WonReward[];
   onBack: () => void;
-  onSpin: (categoryIndex: number) => Promise<WonReward | null>;
+  onSpin: () => Promise<WonReward | null>;
 }) {
 
   const market = getMarket();
@@ -8806,7 +8889,7 @@ const t = market === "en" ? TEXT_EN : TEXT_RU;
   const [isSpinning, setIsSpinning] = useState(false);
   const [message, setMessage] = useState("");
   const [selectedRewardId, setSelectedRewardId] = useState<string | null>(null);
-  const selectedReward = wonRewards.find((item) => item.id === selectedRewardId) || null;
+  const selectedReward = wonRewards.find((item) => item.spinId === selectedRewardId) || null;
   const [showRewardScreen, setShowRewardScreen] = useState(false);
 
   const [rewardsExpanded, setRewardsExpanded] = useState(false);
@@ -8815,35 +8898,96 @@ const visibleRewards = rewardsExpanded
   ? [...wonRewards].reverse()
   : [...wonRewards].reverse().slice(0, 3);
 
+  // Приз и очки решает сервер (spin_reward_wheel) — здесь мы только
+  // подбираем, из какого каталога (RU/EN) рисовать секторы колеса.
+  // До первого спина ориентируемся на язык интерфейса; как только
+  // приходит ответ сервера, переключаемся на реально закреплённый за
+  // пользователем reward_market (result.market), чтобы секторы и текст
+  // приза всегда совпадали с тем, что реально было разыграно.
+  const [effectiveMarket, setEffectiveMarket] = useState<"ru" | "en">(market);
+  const wheelCategories =
+    effectiveMarket === "en" ? REWARD_CATEGORIES_EN : REWARD_CATEGORIES_RU;
+
+  // "Бонус" — не настоящий приз (70% вращений), а служебный исход
+  // (+500 очков или +1 прокрут). У него нет записи в каталоге призов,
+  // поэтому для колеса добавляем этот сектор только для отображения.
+  const BONUS_DISPLAY_CATEGORY = {
+    id: "bonus",
+    title: "Бонус",
+    emoji: "🎁",
+  };
+  const wheelDisplayCategories = [...wheelCategories, BONUS_DISPLAY_CATEGORY];
+
+  // Известно только после первого спина в этой сессии (нет ещё
+  // отдельного bootstrap-эндпоинта, который отдавал бы это при
+  // открытии экрана) — но раз колесо теперь тратит личный SOLO-баланс,
+  // а не общий счёт пары, явно показываем лимит, чтобы не было
+  // непонятно, почему баланс пары не меняется.
+  const [spinsInfo, setSpinsInfo] = useState<{
+    used: number;
+    remaining: number;
+    bonusCredits: number;
+  } | null>(null);
 
   const size = 320;
   const radius = 150;
   const center = size / 2;
-  const count = REWARD_CATEGORIES.length;
+  const count = wheelDisplayCategories.length;
   const segmentAngle = 360 / count;
-  
 
- 
+
+
   async function handleSpin() {
-    setSelectedRewardId(null);
-    setTimeout(() => {
-  setShowRewardScreen(true);
-}, 400); // чуть задержки для эффекта
     if (isSpinning) return;
     if (points < WHEEL_SPIN_COST) {
       setMessage("Недостаточно очков для вращения колеса.");
       return;
     }
-setShowRewardScreen(false);
+
+    setShowRewardScreen(false);
     setMessage("");
     setSelectedRewardId(null);
     setIsSpinning(true);
 
-    const targetIndex = pickWeightedIndex(
-      REWARD_CATEGORIES.map((category) => category.weight),
-    );
+    // Сначала узнаём реальный результат у сервера, и только потом
+    // анимируем колесо к уже определённому сектору — иначе мы бы
+    // выбирали приз на клиенте, что как раз и было дырой в старой схеме.
+    const result = await onSpin();
+
+    if (!result) {
+      setIsSpinning(false);
+      setMessage("Не удалось прокрутить колесо. Попробуй ещё раз.");
+      return;
+    }
+
+    const resultCategories =
+      result.market === "en" ? REWARD_CATEGORIES_EN : REWARD_CATEGORIES_RU;
+    const resultDisplayCategories = [
+      ...resultCategories,
+      BONUS_DISPLAY_CATEGORY,
+    ];
+    setEffectiveMarket(result.market);
+    setSpinsInfo({
+      used: result.spinsUsedToday,
+      remaining: result.spinsRemainingToday,
+      bonusCredits: result.bonusSpinCredits,
+    });
+
+    // Реальный приз — крутим к его категории; любой из двух бонусов —
+    // к служебному сектору "Бонус" в конце (см. BONUS_DISPLAY_CATEGORY).
+    const targetIndex =
+      result.outcomeType === "prize"
+        ? Math.max(
+            0,
+            resultDisplayCategories.findIndex(
+              (category) => category.id === result.categoryId,
+            ),
+          )
+        : resultDisplayCategories.length - 1;
+    const resultSegmentAngle = 360 / resultDisplayCategories.length;
     const spins = 5;
-    const targetCenterAngle = targetIndex * segmentAngle + segmentAngle / 2;
+    const targetCenterAngle =
+      targetIndex * resultSegmentAngle + resultSegmentAngle / 2;
     const targetRotation = spins * 360 + (360 - targetCenterAngle);
 
     setRotation((prev) => {
@@ -8851,17 +8995,25 @@ setShowRewardScreen(false);
       return prev - normalizedPrev + targetRotation;
     });
 
-   setTimeout(async () => {
-  const result = await onSpin(targetIndex);
-  setIsSpinning(false);
+    setTimeout(() => {
+      setIsSpinning(false);
+      setSelectedRewardId(result.spinId);
 
-  if (result) {
-    setSelectedRewardId(result.id);
-    setMessage(
-      `Тебе выпал приз: ${result.title} (${result.categoryTitle})`,
-    );
-  }
-}, 4300);
+      if (result.outcomeType === "bonus_points") {
+        setMessage(`Бонус: +${result.bonusValue ?? 500} очков!`);
+      } else if (result.outcomeType === "bonus_spin") {
+        setMessage(
+          "Бонус: +1 бесплатный прокрут! Следующее вращение будет " +
+            "бесплатным и не потратит дневной лимит.",
+        );
+      } else {
+        setMessage(
+          `Тебе выпал приз: ${result.title} (${result.categoryTitle})`,
+        );
+      }
+
+      setShowRewardScreen(true);
+    }, 4300);
   }
 
   return (
@@ -8887,6 +9039,15 @@ setShowRewardScreen(false);
   >
     ⭐ Очков: {points}
   </div>
+
+  {spinsInfo && (
+    <div style={{ marginTop: 6, color: "#3a345c", fontSize: 13 }}>
+      Сегодня: {spinsInfo.used} / 3
+      {spinsInfo.bonusCredits > 0
+        ? ` · бесплатных прокрутов: ${spinsInfo.bonusCredits}`
+        : ""}
+    </div>
+  )}
 </div>
 
       <div style={{ ...cardBaseStyle(), padding: 18 }}>
@@ -8926,7 +9087,7 @@ setShowRewardScreen(false);
               filter: "drop-shadow(0 14px 30px rgba(72,56,120,0.22))",
             }}
           >
-            {REWARD_CATEGORIES.map((category, index) => {
+            {wheelDisplayCategories.map((category, index) => {
               const startAngle = index * segmentAngle;
               const endAngle = startAngle + segmentAngle;
               const midAngle = startAngle + segmentAngle / 2;
@@ -9139,18 +9300,18 @@ setShowRewardScreen(false);
           </div>
         ) : (
           <div style={{ display: "grid", gap: 10, marginTop: 14 }}>
-            {visibleRewards.map((reward, index) => (
+            {visibleRewards.map((reward) => (
               <div
-                key={`${reward.id}-${index}-${reward.wonAt}`}
+                key={reward.spinId}
                 style={{
                   padding: "12px 14px",
                   borderRadius: 16,
                   background:
-                    reward.id === selectedRewardId
+                    reward.spinId === selectedRewardId
                       ? "rgba(255,255,255,0.34)"
                       : "rgba(255,255,255,0.24)",
                   border:
-                    reward.id === selectedRewardId
+                    reward.spinId === selectedRewardId
                       ? "2px solid rgba(108,58,255,0.42)"
                       : "1px solid transparent",
                 }}
@@ -10484,7 +10645,7 @@ const t = market === "en" ? TEXT_EN : TEXT_RU;
     cursor: "pointer",
   }}
 >
-  🎁 Получить Premium тбесплатно
+  🎁 Получить Premium бесплатно
 </button>
 
 
@@ -10716,11 +10877,17 @@ async function completeGiveawayAction(
 }
 
 async function loadWeeklyPairLeaderboard(weekKey: string): Promise<WeeklyPairLeaderboardRow[]> {
+  // Сортировка должна побитово совпадать с ранжированием внутри RPC
+  // claim_weekly_pair_top_reward (total_points desc, updated_at asc,
+  // pair_id asc), иначе UI и сервер могут по-разному решить, кто занял
+  // 3-е место при равенстве очков.
   const { data, error } = await supabase
     .from("weekly_pair_leaderboard")
     .select("*")
     .eq("week_key", weekKey)
     .order("total_points", { ascending: false })
+    .order("updated_at", { ascending: true })
+    .order("pair_id", { ascending: true })
     .limit(20);
 
   if (error || !data) {
@@ -10834,6 +11001,7 @@ const emptyState: PairState = {
   dailyGamesUsed: 0,
   dailyLimitDate: null,
   isPremium: false,
+  weeklyTopRewardClaimedWeek: null,
 };
 
 
@@ -10927,49 +11095,89 @@ weeklyPoints:
   pair.weekly_points_week === getCurrentWeekKey()
     ? pair.weekly_points ?? 0
     : 0,
+weeklyTopRewardClaimedWeek: pair.weekly_top_reward_claimed_week ?? null,
 };
 
 }
 
-  async function addSoloPoints(params: {
-  telegramId: number;
-  delta: number;
-}): Promise<{
+type ActivityAwardResult = {
+  awarded: boolean;
   soloPoints: number;
   soloWeeklyPoints: number;
-  soloWeeklyPointsWeek: string;
-} | null> {
-  const { telegramId, delta } = params;
+  pairTotalPoints: number | null;
+  pairWeeklyPoints: number | null;
+};
 
-  const { data, error } = await supabase.rpc(
-    "add_user_solo_points",
-    {
-      p_telegram_id: telegramId,
-      p_delta: delta,
-      p_week_key: getCurrentWeekKey(),
-    }
-  );
+// Сумму (delta) и pairId сервер теперь определяет сам — клиент присылает
+// initData + activityType/id и не может повлиять на начисленную сумму
+// (см. app/api/activity/award/route.ts и config/reward-catalog.ts).
+async function awardActivityPoints(params: {
+  activityType:
+    | "test"
+    | "poll"
+    | "game"
+    | "game-step"
+    | "completion";
+  id: string;
+}): Promise<ActivityAwardResult | null> {
+  const { activityType, id } = params;
 
-  if (error) {
-    console.error("addSoloPoints error:", error);
+  const initData = window.Telegram?.WebApp?.initData;
+
+  if (!initData) {
+    console.error(
+      "awardActivityPoints: Telegram initData отсутствует"
+    );
     return null;
   }
 
-  const row = Array.isArray(data) ? data[0] : data;
+  let data: any = null;
 
-  if (!row) {
-    console.error("addSoloPoints returned no data");
+  try {
+    const response = await fetch("/api/activity/award", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ initData, activityType, id }),
+    });
+
+    data = await response.json();
+
+    if (!response.ok) {
+      console.error("awardActivityPoints error:", data);
+      return null;
+    }
+  } catch (error) {
+    console.error("awardActivityPoints request error:", error);
+    return null;
+  }
+
+  if (!data) {
+    console.error(
+      "awardActivityPoints returned no data"
+    );
     return null;
   }
 
   return {
-    soloPoints: Number(row.solo_points ?? 0),
-    soloWeeklyPoints: Number(
-      row.solo_weekly_points ?? 0
+    awarded: Boolean(data.awarded),
+
+    soloPoints: Number(
+      data.soloPoints ?? 0
     ),
-    soloWeeklyPointsWeek:
-      row.solo_weekly_points_week ??
-      getCurrentWeekKey(),
+
+    soloWeeklyPoints: Number(
+      data.soloWeeklyPoints ?? 0
+    ),
+
+    pairTotalPoints:
+      data.pairTotalPoints == null
+        ? null
+        : Number(data.pairTotalPoints),
+
+    pairWeeklyPoints:
+      data.pairWeeklyPoints == null
+        ? null
+        : Number(data.pairWeeklyPoints),
   };
 }
 
@@ -11271,12 +11479,9 @@ const referralStats = await loadReferralStats(user.id);
 
 setAppState((prev) => ({
   ...prev,
-  pair: {
-  ...nextPairState,
-  dailyPollsUsed:
-    (nextPairState.dailyPollsUsed ?? 0) + 1,
-},
-  
+
+  pair: nextPairState,
+
   pairPollAnswers: pairPollAnswersFromDb,
   dailyPairHistory: dailyPairHistoryFromDb,
   dailyPairStreak: dailyPairStreakFromDb,
@@ -11358,38 +11563,137 @@ async function joinPairByInviteCode(
   return loadPairStateForUser(currentTelegramId);
 }
 
-async function claimReferralReward(params: {
-  referrerTelegramId: number;
-  invitedTelegramId: number;
-}) {
-  const { referrerTelegramId, invitedTelegramId } = params;
+// referrerTelegramId и invitedTelegramId сервер теперь достаёт сам из
+// подписанного initData (invitedTelegramId = user.id, referrerTelegramId —
+// из start_param вида "ref_<id>"), а не принимает от клиента — иначе
+// можно было бы вызвать claim с любыми двумя существующими telegram_id
+// и приписать себе чужое приглашение. См. app/api/referral/claim/route.ts.
+async function claimReferralReward(initData: string) {
+  let data: any = null;
 
-  if (referrerTelegramId === invitedTelegramId) {
-    return { ok: false, reason: "self-referral" as const };
+  try {
+    const response = await fetch("/api/referral/claim", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ initData }),
+    });
+
+    data = await response.json();
+
+    if (!response.ok) {
+      console.error("claimReferralReward error:", data);
+      return { ok: false, reason: "request-error" as const };
+    }
+  } catch (error) {
+    console.error("claimReferralReward request error:", error);
+    return { ok: false, reason: "request-error" as const };
   }
 
-  const { data: existing } = await supabase
-    .from("referrals")
-    .select("id")
-    .eq("invited_telegram_id", invitedTelegramId)
-    .maybeSingle();
+  if (!data?.ok) {
+    console.log(
+      "Referral reward not granted:",
+      data?.reason
+    );
 
-  if (existing) {
-    return { ok: false, reason: "already-claimed" as const };
+    return {
+      ok: false,
+      reason:
+        data?.reason ??
+        "not-awarded",
+    };
   }
 
-  const { error } = await supabase.from("referrals").insert({
-    referrer_telegram_id: referrerTelegramId,
-    invited_telegram_id: invitedTelegramId,
-    reward_points: 200,
-  });
+  console.log(
+    "Referral reward granted:",
+    data
+  );
 
-  if (error) {
-    console.error("referral insert error", error);
-    return { ok: false, reason: "insert-failed" as const };
+  return {
+    ok: true,
+    reward:
+      Number(data.reward ?? 200),
+
+    soloPoints:
+      Number(data.soloPoints ?? 0),
+
+    soloWeeklyPoints:
+      Number(
+        data.soloWeeklyPoints ?? 0
+      ),
+  };
+}
+
+
+// Атомарная награда за топ-3 в парном рейтинге прошлой недели.
+// Неделя (previous/current) и размер награды вычисляются на сервере —
+// клиенту нельзя доверять эти значения (иначе можно было бы прислать
+// произвольный reward или выбрать выгодную неделю). Вся проверка места
+// в лидерборде, принадлежности пользователя паре и того, была ли уже
+// получена награда, плюс само начисление — одним атомарным запросом
+// в БД (см. RPC claim_weekly_pair_top_reward, блокировка строки пары),
+// чтобы исключить гонку при двойном клике или клейме от обоих партнёров.
+// pairId и telegramId сервер теперь достаёт сам (telegramId — из
+// подписанного initData, pairId — из profiles.pair_id этого telegramId),
+// клиент их больше не присылает. См. app/api/rewards/claim-weekly-top.
+async function claimWeeklyPairTopReward(): Promise<{
+  awarded: boolean;
+  reason: string;
+  reward?: number;
+  place?: number;
+  previousWeekKey?: string;
+  currentWeekKey?: string;
+  pairTotalPoints?: number;
+  pairWeeklyPoints?: number;
+  weeklyTopRewardClaimedWeek?: string;
+} | null> {
+  const initData = window.Telegram?.WebApp?.initData;
+
+  if (!initData) {
+    console.error(
+      "claimWeeklyPairTopReward: Telegram initData отсутствует"
+    );
+    return null;
   }
 
-  return { ok: true };
+  let data: any = null;
+
+  try {
+    const response = await fetch("/api/rewards/claim-weekly-top", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ initData }),
+    });
+
+    data = await response.json();
+
+    if (!response.ok) {
+      console.error("claimWeeklyPairTopReward error:", data);
+      return null;
+    }
+  } catch (error) {
+    console.error("claimWeeklyPairTopReward request error:", error);
+    return null;
+  }
+
+  if (!data) {
+    return null;
+  }
+
+  return {
+    awarded: Boolean(data.awarded),
+    reason: String(data.reason ?? "unknown"),
+    reward: data.reward == null ? undefined : Number(data.reward),
+    place: data.place == null ? undefined : Number(data.place),
+    previousWeekKey: data.previousWeekKey ?? undefined,
+    currentWeekKey: data.currentWeekKey ?? undefined,
+    pairTotalPoints:
+      data.pairTotalPoints == null ? undefined : Number(data.pairTotalPoints),
+    pairWeeklyPoints:
+      data.pairWeeklyPoints == null
+        ? undefined
+        : Number(data.pairWeeklyPoints),
+    weeklyTopRewardClaimedWeek: data.weeklyTopRewardClaimedWeek ?? undefined,
+  };
 }
 
 
@@ -11778,100 +12082,300 @@ const [previousWeeklyPairLeaderboard, setPreviousWeeklyPairLeaderboard] = useSta
 
 const claimCompletionBonus = async (
   type: "polls" | "tests" | "games"
-) => {
-  if (appState.completionBonusesClaimed[type]) {
+): Promise<boolean> => {
+  if (!user?.id) {
+    console.error(
+      "claimCompletionBonus: Telegram user отсутствует"
+    );
     return false;
   }
 
-let nextPairState = appState.pair;
+  const previousPairPoints =
+    appState.pair.totalPoints || 0;
 
-if (appState.pair.pairId) {
-  await updatePairPoints({
-    pairId: appState.pair.pairId,
-    delta: 200,
-  });
+  const awardResult =
+    await awardActivityPoints({
+      activityType: "completion",
 
-  nextPairState = await syncPairAfterPointsChange(appState.pair);
-}   
+      id: type,
+    });
 
-const freshLeaderboard = await loadWeeklyPairLeaderboard(getCurrentWeekKey());
-setWeeklyPairLeaderboard(freshLeaderboard);
+  if (!awardResult) {
+    console.error(
+      "Не удалось начислить completion bonus"
+    );
+    return false;
+  }
 
-const freshPreviousLeaderboard = await loadWeeklyPairLeaderboard(getPreviousWeekKey());
-setPreviousWeeklyPairLeaderboard(freshPreviousLeaderboard);
+  let nextPairState =
+    appState.pair;
+
+  if (appState.pair.pairId) {
+    nextPairState =
+      await loadPairStateForUser(
+        user.id
+      );
+  }
+
+  const nextPairPoints =
+    nextPairState.totalPoints || 0;
+
+  // Анимация очков пары
+  if (
+    awardResult.awarded &&
+    nextPairPoints > previousPairPoints
+  ) {
+    setAnimatedPairPoints(
+      previousPairPoints
+    );
+
+    animatePairPoints(
+      previousPairPoints,
+      nextPairPoints
+    );
+  }
+
+  // Проверяем повышение уровня пары
+  const oldLevel =
+    getPairLevelInfo(
+      previousPairPoints
+    );
+
+  const newLevel =
+    getPairLevelInfo(
+      nextPairPoints
+    );
 
   const bonusData =
     type === "polls"
-      ? { title: "Пройдены все опросы", emoji: "🗳️" }
+      ? {
+          title: "Пройдены все опросы",
+          emoji: "🗳️",
+        }
       : type === "tests"
-      ? { title: "Пройдены все тесты", emoji: "🧠" }
-      : { title: "Пройден весь игровой раздел", emoji: "🎮" };
+      ? {
+          title: "Пройдены все тесты",
+          emoji: "🧠",
+        }
+      : {
+          title: "Пройден весь игровой раздел",
+          emoji: "🎮",
+        };
 
   setAppState((prev) => ({
     ...prev,
+
     pair: nextPairState,
-    points: nextPairState.totalPoints || prev.points + 200,
+
+    soloPoints:
+      awardResult.soloPoints,
+
+    soloWeeklyPoints:
+      awardResult.soloWeeklyPoints,
+
+    points:
+      awardResult.soloPoints,
+
     completionBonusesClaimed: {
       ...prev.completionBonusesClaimed,
       [type]: true,
     },
   }));
 
-setCompletionBonusData({
-  title: bonusData.title,
-  points: 200,
-  section: type,
-  emoji: bonusData.emoji,
-});
-setShowCompletionBonus(true);
+  if (
+    awardResult.awarded &&
+    newLevel.level > oldLevel.level
+  ) {
+    setLevelUpData({
+      level: newLevel.level,
+      title: newLevel.title,
+    });
 
-  return true;
+    setShowLevelUp(true);
+  }
+
+  // Показываем окно только при реальном
+  // первом начислении награды
+  if (awardResult.awarded) {
+    setCompletionBonusData({
+      title: bonusData.title,
+      points: 200,
+      section: type,
+      emoji: bonusData.emoji,
+    });
+
+    setShowCompletionBonus(true);
+  }
+
+  return awardResult.awarded;
 };
 
-const claimGameStepReward = async (rewardKey: string) => {
-  if (appState.playedGameRewardKeys.includes(rewardKey)) {
+const claimGameStepReward = async (
+  rewardKey: string
+): Promise<boolean> => {
+  if (
+    appState.playedGameRewardKeys.includes(
+      rewardKey
+    )
+  ) {
     return false;
   }
 
-  let nextPairState = appState.pair;
+  if (!user?.id) {
+    console.error(
+      "claimGameStepReward: Telegram user отсутствует"
+    );
+    return false;
+  }
 
-if (appState.pair.pairId) {
-  await updatePairPoints({
-    pairId: appState.pair.pairId,
-    delta: 10,
-  });
+  const previousPairPoints =
+    appState.pair.totalPoints || 0;
 
-  nextPairState = await syncPairAfterPointsChange(appState.pair);
-}
+  const awardResult =
+    await awardActivityPoints({
+      activityType: "game-step",
 
+      id: rewardKey,
+    });
+
+  if (!awardResult) {
+    console.error(
+      "Не удалось начислить пошаговую игровую награду"
+    );
+    return false;
+  }
+
+  let nextPairState =
+    appState.pair;
+
+  if (appState.pair.pairId) {
+    nextPairState =
+      await loadPairStateForUser(
+        user.id
+      );
+  }
+
+  const nextPairPoints =
+    nextPairState.totalPoints || 0;
+
+  if (
+    awardResult.awarded &&
+    nextPairPoints > previousPairPoints
+  ) {
+    setAnimatedPairPoints(
+      previousPairPoints
+    );
+
+    animatePairPoints(
+      previousPairPoints,
+      nextPairPoints
+    );
+  }
+
+  const oldLevel =
+    getPairLevelInfo(
+      previousPairPoints
+    );
+
+  const newLevel =
+    getPairLevelInfo(
+      nextPairPoints
+    );
 
   setAppState((prev) => ({
     ...prev,
+
     pair: nextPairState,
-    points: nextPairState.totalPoints || prev.points + 10,
-    playedGameRewardKeys: [...prev.playedGameRewardKeys, rewardKey],
+
+    soloPoints:
+      awardResult.soloPoints,
+
+    soloWeeklyPoints:
+      awardResult.soloWeeklyPoints,
+
+    points:
+      awardResult.soloPoints,
+
+    playedGameRewardKeys:
+      prev.playedGameRewardKeys.includes(
+        rewardKey
+      )
+        ? prev.playedGameRewardKeys
+        : [
+            ...prev.playedGameRewardKeys,
+            rewardKey,
+          ],
   }));
 
-  return true;
+  if (
+    awardResult.awarded &&
+    newLevel.level > oldLevel.level
+  ) {
+    setLevelUpData({
+      level: newLevel.level,
+      title: newLevel.title,
+    });
+
+    setShowLevelUp(true);
+  }
+
+  return awardResult.awarded;
 };
 
 const handleCompleteGame = async (game: Game, score: number) => {
-  const alreadyCompleted = appState.completedGameIds.includes(game.id);
-  const rewardToAdd = alreadyCompleted ? 0 : game.reward;
+  const alreadyCompleted =
+    appState.completedGameIds.includes(game.id);
 
-  let nextPairState = appState.pair;
-  let leveledUpTo: { level: number; title: string } | null = null;
+  const rewardToAdd =
+    alreadyCompleted ? 0 : game.reward;
 
-  if (rewardToAdd > 0 && appState.pair.pairId) {
-    await updatePairPoints({
-      pairId: appState.pair.pairId,
-      delta: rewardToAdd,
-    });
+  let nextSoloPoints =
+    appState.soloPoints;
 
-    if (user?.id) {
-      nextPairState = await loadPairStateForUser(user.id);
+  let nextSoloWeeklyPoints =
+    appState.soloWeeklyPoints;
+
+  let activityAwarded = false;
+
+  let nextPairState =
+    appState.pair;
+
+  let leveledUpTo: {
+    level: number;
+    title: string;
+  } | null = null;
+
+  if (rewardToAdd > 0 && user?.id) {
+    const awardResult =
+      await awardActivityPoints({
+        activityType: "game",
+
+        id: game.id,
+      });
+
+    if (!awardResult) {
+      console.error(
+        "Не удалось начислить очки за игру"
+      );
+    } else {
+      activityAwarded =
+        awardResult.awarded;
+
+      nextSoloPoints =
+        awardResult.soloPoints;
+
+      nextSoloWeeklyPoints =
+        awardResult.soloWeeklyPoints;
+
+      if (appState.pair.pairId) {
+        nextPairState =
+          await loadPairStateForUser(
+            user.id
+          );
+      }
     }
   }
+  
 
 
   const previousPoints = appState.pair.totalPoints || 0;
@@ -11893,29 +12397,34 @@ if (nextPoints > previousPoints) {
       };
     }
 
-   return {
+return {
   ...prev,
 
   pair: nextPairState,
 
-  soloPoints: alreadyCompleted
-    ? prev.soloPoints
-    : prev.soloPoints + game.reward,
+  soloPoints: nextSoloPoints,
 
-  points: alreadyCompleted
-    ? prev.points
-    : prev.points + game.reward,
+  soloWeeklyPoints:
+    nextSoloWeeklyPoints,
+
+  points: nextSoloPoints,
 
   stats: {
     ...prev.stats,
-    gamesPlayed: alreadyCompleted
-      ? prev.stats.gamesPlayed
-      : prev.stats.gamesPlayed + 1,
+
+    gamesPlayed: activityAwarded
+      ? prev.stats.gamesPlayed + 1
+      : prev.stats.gamesPlayed,
   },
 
-  completedGameIds: alreadyCompleted
-    ? prev.completedGameIds
-    : [...prev.completedGameIds, game.id],
+  completedGameIds: activityAwarded
+    ? prev.completedGameIds.includes(game.id)
+      ? prev.completedGameIds
+      : [
+          ...prev.completedGameIds,
+          game.id,
+        ]
+    : prev.completedGameIds,
 };
   });
 
@@ -11944,26 +12453,19 @@ if (nextPoints > previousPoints) {
 const handleClaimWeeklyTopReward = async () => {
   const previousWeekKey = getPreviousWeekKey();
 
-  if (!appState.pair.pairId) return;
-  if (appState.weeklyTopRewardClaimedWeek === previousWeekKey) return;
+  if (!appState.pair.pairId || !user?.id) return;
+  // Быстрая локальная проверка (UX only) — источник истины проверяется
+  // атомарно внутри RPC ниже (сервер сам определяет неделю и размер
+  // награды), поэтому двойной клик или клейм от второго партнёра
+  // не даст задвоить награду.
+  if (appState.pair.weeklyTopRewardClaimedWeek === previousWeekKey) return;
 
-  const previousRows = await loadWeeklyPairLeaderboard(previousWeekKey);
-  const previousWeekPairRow = previousRows.find(
-    (row) => row.pair_id === appState.pair.pairId
-  );
+  const result = await claimWeeklyPairTopReward();
 
-  const isEligible =
-    previousWeekPairRow?.pair_id === appState.pair.pairId &&
-    [1, 2, 3].includes(
-      previousRows.findIndex((row) => row.pair_id === appState.pair.pairId) + 1
-    );
-
-  if (!isEligible) return;
-
-  await updatePairPoints({
-    pairId: appState.pair.pairId,
-    delta: 500,
-  });
+  if (!result?.awarded) {
+    console.log("Weekly top reward not claimed:", result?.reason);
+    return;
+  }
 
   let refreshedPair = appState.pair;
   if (user?.id) {
@@ -11982,7 +12484,6 @@ const handleClaimWeeklyTopReward = async () => {
     ...appState,
     pair: refreshedPair,
     points: refreshedPair.totalPoints || 0,
-    weeklyTopRewardClaimedWeek: previousWeekKey,
   };
 
   setAppState(nextState);
@@ -12014,10 +12515,8 @@ const syncWeeklyPairLeaderboard = async (nextState: AppState, currentUser?: TgUs
     weekKey,
     pairId,
     pairTitle,
-    totalPoints:
-  nextState.pair.weeklyPoints ||
-  nextState.pair.totalPoints ||
-  0,
+   totalPoints:
+  nextState.pair.weeklyPoints ?? 0,
   });
 
   const rows = await loadWeeklyPairLeaderboard(weekKey);
@@ -12159,8 +12658,12 @@ await refreshPairData({
 };
 
 
+const [
+  weeklyPairLeaderboard,
+  setWeeklyPairLeaderboard,
+] = useState<WeeklyPairLeaderboardRow[]>([]);
 
-const [weeklyPairLeaderboard, setWeeklyPairLeaderboard] = useState<WeeklyPairLeaderboardRow[]>([]);
+
 const [
   weeklyUserLeaderboard,
   setWeeklyUserLeaderboard,
@@ -12170,11 +12673,19 @@ const [
   previousWeeklyUserLeaderboard,
   setPreviousWeeklyUserLeaderboard,
 ] = useState<WeeklyUserLeaderboardRow[]>([]);
-const [topRefreshing, setTopRefreshing] = useState(false);
 
-const [showPaymentChoice, setShowPaymentChoice] = useState(false);
+const [
+  topRefreshing,
+  setTopRefreshing,
+] = useState(false);
 
-const TRIBUTE_LINK = "https://t.me/tribute/app?startapp=sMuC";
+const [showPaymentChoice, setShowPaymentChoice] =
+  useState(false);
+
+const TRIBUTE_LINK =
+  "https://t.me/tribute/app?startapp=sMuC";
+
+
   
   const [screen, setScreen] = useState<Screen>("welcome");
   const [paywallBackScreen, setPaywallBackScreen] = useState<Screen>("menu");
@@ -12237,44 +12748,6 @@ useEffect(() => {
 }, [mounted, appState.dailyBonus.lastClaimDate]);
 
 const [levelUpData, setLevelUpData] = useState<{ level: number; title: string } | null>(null);
-
-
-
-useEffect(() => {
-  const startParam = window.Telegram?.WebApp?.initDataUnsafe?.start_param;
-  if (!startParam) return;
-
-  if (startParam.startsWith("ref_")) {
-    const referrerId = startParam.replace("ref_", "");
-
-    setAppState((prev) => {
-      if (prev.referrals.invitedUsers.includes(referrerId)) return prev;
-
-      return {
-        ...prev,
-        points: prev.points + 200,
-        referrals: {
-          invitedUsers: [...prev.referrals.invitedUsers, referrerId],
-          totalReward: prev.referrals.totalReward + 200,
-        },
-      };
-    });
-  }
-}, []);
-
-
-
-  useEffect(() => {
-  async function test() {
-    const { data, error } = await supabase
-      .from("profiles")
-      .select("*");
-
-    console.log("SUPABASE TEST:", data, error);
-  }
-
-  test();
-}, []);
 
  useEffect(() => {
   async function bootstrap() {
@@ -12347,17 +12820,31 @@ setAppState((prev) => ({
 
 setUser(currentUser);
 
-await upsertTelegramProfile(currentUser);
+const profileFromDb = await upsertTelegramProfile(currentUser);
 
-if (startParam?.startsWith("ref_")) {
-  const referrerTelegramId = Number(startParam.replace("ref_", ""));
+const soloPointsFromDb = Number(
+  profileFromDb?.solo_points ?? 0
+);
 
-  if (Number.isFinite(referrerTelegramId)) {
-    await claimReferralReward({
-      referrerTelegramId,
-      invitedTelegramId: currentUser.id!,
-    });
-  }
+const soloWeeklyPointsFromDb =
+  profileFromDb?.solo_weekly_points_week === getCurrentWeekKey()
+    ? Number(profileFromDb?.solo_weekly_points ?? 0)
+    : 0;
+
+setAppState((prev) => ({
+  ...prev,
+
+  soloPoints: soloPointsFromDb,
+  soloWeeklyPoints: soloWeeklyPointsFromDb,
+
+  // Пока points используется старым UI как личный баланс.
+  points: soloPointsFromDb,
+}));
+
+if (startParam?.startsWith("ref_") && tg?.initData) {
+  // Локальная проверка startParam — только чтобы не дёргать эндпоинт
+  // впустую; сам referrerTelegramId сервер заново достаёт из initData.
+  await claimReferralReward(tg.initData);
 }
 
 
@@ -12430,32 +12917,132 @@ const refreshTopLeaderboard = async () => {
   try {
     setTopRefreshing(true);
 
-    const refreshedPair = await loadPairStateForUser(user.id);
+    const currentWeekKey =
+      getCurrentWeekKey();
 
-    const nextState: AppState = {
-      ...appState,
-      pair: refreshedPair,
-      points: refreshedPair.totalPoints || 0,
-    };
+    const previousWeekKey =
+      getPreviousWeekKey();
 
-    await syncWeeklyPairLeaderboard(nextState, user);
+    /*
+     * 1. Получаем свежие личные очки
+     */
+    const {
+      data: freshProfile,
+      error: profileError,
+    } = await supabase
+      .from("profiles")
+      .select(
+        "solo_points, solo_weekly_points, solo_weekly_points_week"
+      )
+      .eq("telegram_id", user.id)
+      .maybeSingle();
 
-    const [currentRows, previousRows] = await Promise.all([
-      loadWeeklyPairLeaderboard(getCurrentWeekKey()),
-      loadWeeklyPairLeaderboard(getPreviousWeekKey()),
+    if (profileError) {
+      console.error(
+        "TOP PROFILE REFRESH ERROR:",
+        profileError
+      );
+    }
+
+    /*
+     * 2. Получаем свежие данные пары
+     */
+    const refreshedPair =
+      await loadPairStateForUser(
+        user.id
+      );
+
+    /*
+     * 3. Загружаем сразу четыре рейтинга
+     */
+    const [
+      currentSoloRows,
+      previousSoloRows,
+      currentPairRows,
+      previousPairRows,
+    ] = await Promise.all([
+      loadWeeklyUserLeaderboard(
+        currentWeekKey
+      ),
+
+      loadWeeklyUserLeaderboard(
+        previousWeekKey
+      ),
+
+      loadWeeklyPairLeaderboard(
+        currentWeekKey
+      ),
+
+      loadWeeklyPairLeaderboard(
+        previousWeekKey
+      ),
     ]);
 
-    setAppState((prev) => ({
-      ...prev,
-      pair: refreshedPair,
-      points: refreshedPair.totalPoints || 0,
-    }));
+    /*
+     * 4. Обновляем локальное состояние
+     */
+    setAppState((prev) => {
+      const freshSoloPoints =
+        Number(
+          freshProfile?.solo_points ??
+          prev.soloPoints
+        );
 
-    setAnimatedPairPoints(refreshedPair.totalPoints || 0);
-    setWeeklyPairLeaderboard(currentRows);
-    setPreviousWeeklyPairLeaderboard(previousRows);
+      const freshSoloWeeklyPoints =
+        freshProfile
+          ?.solo_weekly_points_week ===
+        currentWeekKey
+          ? Number(
+              freshProfile
+                ?.solo_weekly_points ?? 0
+            )
+          : 0;
+
+      return {
+        ...prev,
+
+        soloPoints:
+          freshSoloPoints,
+
+        soloWeeklyPoints:
+          freshSoloWeeklyPoints,
+
+        // временный alias старого UI
+        points:
+          freshSoloPoints,
+
+        pair:
+          refreshedPair,
+      };
+    });
+
+    setAnimatedPairPoints(
+      refreshedPair.totalPoints || 0
+    );
+
+    /*
+     * 5. Обновляем оба топа
+     */
+    setWeeklyUserLeaderboard(
+      currentSoloRows
+    );
+
+    setPreviousWeeklyUserLeaderboard(
+      previousSoloRows
+    );
+
+    setWeeklyPairLeaderboard(
+      currentPairRows
+    );
+
+    setPreviousWeeklyPairLeaderboard(
+      previousPairRows
+    );
   } catch (error) {
-    console.error("REFRESH TOP ERROR:", error);
+    console.error(
+      "REFRESH TOP ERROR:",
+      error
+    );
   } finally {
     setTopRefreshing(false);
   }
@@ -12510,24 +13097,68 @@ const totalActivities = useMemo(() => {
 
 
 
-  const handleClaimBonus = () => {
-    const reward = getRewardForDay(claimableDay);
-    const today = getTodayLocalDateString();
+const handleClaimBonus = async () => {
+  // День серии и сумма теперь определяются сервером (profiles.daily_bonus_*
+  // в БД) — claimableDay остаётся только локальным UI-предположением для
+  // отображения ДО ответа сервера, реальный streakDay берём из ответа.
+  const initData = window.Telegram?.WebApp?.initData;
 
-    setAppState((prev) => ({
-      ...prev,
-      points: prev.points + reward,
-      dailyBonus: {
-        streakDay: claimableDay,
-        lastClaimDate: today,
-        totalPointsEarnedFromBonus:
-          prev.dailyBonus.totalPointsEarnedFromBonus + reward,
-      },
-    }));
+  if (!initData) {
+    console.error(
+      "handleClaimBonus: Telegram initData отсутствует"
+    );
+    return;
+  }
 
-    setBonusClaimAvailable(false);
-    setShowDailyBonus(false);
-  };
+  const today = getTodayLocalDateString();
+
+  let data: any = null;
+
+  try {
+    const response = await fetch("/api/rewards/daily-bonus", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ initData }),
+    });
+
+    data = await response.json();
+
+    if (!response.ok || !data?.awarded) {
+      console.error(
+        "Не удалось начислить ежедневный бонус:",
+        data
+      );
+      return;
+    }
+  } catch (error) {
+    console.error("handleClaimBonus request error:", error);
+    return;
+  }
+
+  const reward = Number(data.reward ?? 0);
+
+  setAppState((prev) => ({
+    ...prev,
+
+    soloPoints: Number(data.soloPoints ?? 0),
+
+    soloWeeklyPoints: Number(data.soloWeeklyPoints ?? 0),
+
+    // временный alias старого UI
+    points: Number(data.soloPoints ?? 0),
+
+    dailyBonus: {
+      streakDay: Number(data.streakDay ?? claimableDay),
+      lastClaimDate: today,
+
+      totalPointsEarnedFromBonus:
+        prev.dailyBonus.totalPointsEarnedFromBonus + reward,
+    },
+  }));
+
+  setBonusClaimAvailable(false);
+  setShowDailyBonus(false);
+};
 
   type GiveawayActionType = "poll" | "test";
 
@@ -12592,49 +13223,82 @@ async function completeGiveawayAction(
   }
 }
 
- const handleCompletePoll = async (poll: Poll, answers: number[]) => {
-  const alreadyCompleted = appState.completedPollIds.includes(poll.id);
-  const rewardToAdd = alreadyCompleted ? 0 : poll.reward;
-  let nextSoloPoints = appState.soloPoints;
+const handleCompletePoll = async (
+  poll: Poll,
+  answers: number[]
+) => {
+  const alreadyCompleted =
+    appState.completedPollIds.includes(poll.id);
 
-  if (rewardToAdd > 0 && user?.id) {
-  const soloResult = await addSoloPoints({
-    telegramId: user.id,
-    delta: rewardToAdd,
-  });
+  const rewardToAdd =
+    alreadyCompleted ? 0 : poll.reward;
 
-  if (!soloResult) {
-    throw new Error(
-      "Не удалось начислить личные очки за опрос"
-    );
+  let nextSoloPoints =
+    appState.soloPoints;
+
+  let nextSoloWeeklyPoints =
+    appState.soloWeeklyPoints;
+
+  let activityAwarded = false;
+
+  let nextPairState =
+    appState.pair;
+
+  let pairPollAnswersFromDb =
+    appState.pairPollAnswers;
+
+  if (
+    appState.pair.pairId &&
+    user?.id
+  ) {
+    await savePollSubmission({
+      pairId: appState.pair.pairId,
+      telegramId: user.id,
+      pollId: poll.id,
+      answers,
+    });
+
+    pairPollAnswersFromDb =
+      await loadPairPollAnswers(
+        appState.pair.pairId
+      );
   }
 
-  nextSoloPoints = soloResult.soloPoints;
-}
 
-  let nextPairState = appState.pair;
+
+
   let leveledUpTo: { level: number; title: string } | null = null;
 
-  let pairPollAnswersFromDb = appState.pairPollAnswers;
 
-if (appState.pair.pairId && user?.id) {
-  await savePollSubmission({
-    pairId: appState.pair.pairId,
-    telegramId: user.id,
-    pollId: poll.id,
-    answers,
-  });
+if (rewardToAdd > 0 && user?.id) {
+  const awardResult =
+    await awardActivityPoints({
+      activityType: "poll",
 
-  pairPollAnswersFromDb = await loadPairPollAnswers(appState.pair.pairId);
-}
+      id: poll.id,
+    });
 
-if (rewardToAdd > 0 && appState.pair.pairId) {
-  await updatePairPoints({
-    pairId: appState.pair.pairId,
-    delta: rewardToAdd,
-  });
+  if (!awardResult) {
+    console.error(
+      "Не удалось начислить очки за опрос"
+    );
+  } else {
+    activityAwarded =
+      awardResult.awarded;
 
-  nextPairState = await syncPairAfterPointsChange(appState.pair);
+    nextSoloPoints =
+      awardResult.soloPoints;
+
+    nextSoloWeeklyPoints =
+      awardResult.soloWeeklyPoints;
+
+    if (appState.pair.pairId) {
+      nextPairState =
+        await loadPairStateForUser(
+          user.id
+        );
+    }
+  }
 }
 
 const previousPoints = appState.pair.totalPoints || 0;
@@ -12662,7 +13326,8 @@ if (nextPoints > previousPoints) {
 
   pair: nextPairState,
 
- soloPoints: nextSoloPoints,
+soloPoints: nextSoloPoints,
+soloWeeklyPoints: nextSoloWeeklyPoints,
 points: nextSoloPoints,
   pairPollAnswers: pairPollAnswersFromDb,
   stats: {
@@ -12740,16 +13405,44 @@ if (finishedAllPolls && !appState.completionBonusesClaimed.polls) {
   const alreadyCompleted = appState.completedTestIds.includes(test.id);
   const rewardToAdd = alreadyCompleted ? 0 : test.reward;
 
+  let nextSoloPoints = appState.soloPoints;
+
+let nextSoloWeeklyPoints =
+  appState.soloWeeklyPoints;
+
+let activityAwarded = false;
 let nextPairState = appState.pair;
 let leveledUpTo: { level: number; title: string } | null = null;
 
-if (rewardToAdd > 0 && appState.pair.pairId) {
-  await updatePairPoints({
-    pairId: appState.pair.pairId,
-    delta: rewardToAdd,
-  });
+if (rewardToAdd > 0 && user?.id) {
+  const awardResult =
+    await awardActivityPoints({
+      activityType: "test",
 
-  nextPairState = await syncPairAfterPointsChange(appState.pair);
+      id: test.id,
+    });
+
+  if (!awardResult) {
+    console.error(
+      "Не удалось начислить очки за тест"
+    );
+  } else {
+    activityAwarded =
+      awardResult.awarded;
+
+    nextSoloPoints =
+      awardResult.soloPoints;
+
+    nextSoloWeeklyPoints =
+      awardResult.soloWeeklyPoints;
+
+    if (appState.pair.pairId) {
+      nextPairState =
+        await loadPairStateForUser(
+          user.id
+        );
+    }
+  }
 }
 
 const previousPoints = appState.pair.totalPoints || 0;
@@ -12771,27 +13464,35 @@ if (nextPoints > previousPoints) {
       };
     }
 
-    return {
-      ...prev,
-      pair: nextPairState,
+return {
+  ...prev,
 
-soloPoints: alreadyCompleted
-  ? prev.soloPoints
-  : prev.soloPoints + test.reward,
+  pair: nextPairState,
 
-points: alreadyCompleted
-  ? prev.points
-  : prev.points + test.reward,
-      stats: {
-  ...prev.stats,
-  testsCompleted: alreadyCompleted
-    ? prev.stats.testsCompleted
-    : prev.stats.testsCompleted + 1,
-},
-      completedTestIds: alreadyCompleted
-        ? prev.completedTestIds
-        : [...prev.completedTestIds, test.id],
-    };
+  soloPoints: nextSoloPoints,
+
+  soloWeeklyPoints:
+    nextSoloWeeklyPoints,
+
+  points: nextSoloPoints,
+
+  stats: {
+    ...prev.stats,
+
+    testsCompleted: activityAwarded
+      ? prev.stats.testsCompleted + 1
+      : prev.stats.testsCompleted,
+  },
+
+  completedTestIds: activityAwarded
+    ? prev.completedTestIds.includes(test.id)
+      ? prev.completedTestIds
+      : [
+          ...prev.completedTestIds,
+          test.id,
+        ]
+    : prev.completedTestIds,
+};
   });
 
   if (leveledUpTo) {
@@ -12823,62 +13524,86 @@ if (finishedAllTests && !appState.completionBonusesClaimed.tests) {
 };
 
 
- const handleSpinReward = async (categoryIndex: number) => {
-  let result: WonReward | null = null;
-
+ const handleSpinReward = async (): Promise<WonReward | null> => {
   if (!appState.pair.pairId) {
-    
     alert("Сначала нужно создать пару");
     return null;
   }
 
-  if ((appState.pair.totalPoints || 0) < WHEEL_SPIN_COST) {
+  const initData = window.Telegram?.WebApp?.initData;
+
+  if (!initData) {
+    console.error("handleSpinReward: Telegram initData отсутствует");
+    alert("Не удалось подтвердить пользователя Telegram");
     return null;
   }
 
-  await updatePairPoints({
-    pairId: appState.pair.pairId,
-    delta: -WHEEL_SPIN_COST,
-  });
+  // Списание очков, выбор категории/приза и запись в историю — всё
+  // происходит атомарно на сервере (RPC spin_reward_wheel), клиент
+  // только запрашивает результат и потом анимирует уже известный исход.
+  let data: any = null;
 
-  let refreshedPair = appState.pair;
-  if (user?.id) {
-    refreshedPair = await loadPairStateForUser(user.id);
+  try {
+    const response = await fetch("/api/rewards/spin", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        initData,
+        suggestedMarket: market,
+      }),
+    });
+
+    data = await response.json();
+
+    if (!response.ok) {
+      console.error("REWARDS SPIN ERROR:", data);
+      alert("Не удалось прокрутить колесо, попробуй ещё раз");
+      return null;
+    }
+  } catch (error) {
+    console.error("REWARDS SPIN REQUEST ERROR:", error);
+    alert("Не удалось прокрутить колесо, попробуй ещё раз");
+    return null;
   }
 
-  const category = REWARD_CATEGORIES[categoryIndex];
-  const itemIndex = pickWeightedIndex(
-    category.items.map((item) => item.weight ?? 1),
-  );
-  const item = category.items[itemIndex];
+  if (!data?.awarded) {
+    if (data?.reason === "insufficient-points") {
+      alert("Недостаточно очков для вращения колеса.");
+    } else if (data?.reason === "daily-limit-reached") {
+      alert("Сегодня лимит вращений исчерпан (3 в день).");
+    } else {
+      console.error("Wheel spin not awarded:", data?.reason);
+    }
+    return null;
+  }
 
-  result = {
-    id: item.id,
-    title: item.title,
-    categoryId: category.id,
-    categoryTitle: category.title,
+  const result: WonReward = {
+    spinId: data.spinId,
+    itemId: data.itemId,
+    title: data.itemTitle,
+    categoryId: data.categoryId,
+    categoryTitle: data.categoryTitle,
     wonAt: getCurrentDateTimeLabel(),
+    spentPoints: data.spentPoints,
+    spinsUsedToday: data.spinsUsedToday,
+    spinsRemainingToday: data.spinsRemainingToday,
+    market: data.market,
+    outcomeType: data.outcomeType,
+    bonusValue: data.bonusValue ?? null,
+    spinSource: data.spinSource,
+    bonusSpinCredits: data.bonusSpinCredits ?? 0,
   };
 
   setAppState((prev) => ({
     ...prev,
-    pair: {
-  ...refreshedPair,
-  dailyGamesUsed:
-    (refreshedPair.dailyGamesUsed ?? 0) + 1,
-},
-    points: refreshedPair.totalPoints || 0,
+    soloPoints: data.soloPoints,
+    points: data.soloPoints,
     stats: {
       ...prev.stats,
       rewardsRedeemed: prev.stats.rewardsRedeemed + 1,
     },
-    wonRewards: result ? [...prev.wonRewards, result] : prev.wonRewards,
+    wonRewards: [...prev.wonRewards, result],
   }));
-
-  await refreshPairData({
-  user,
-  setAppState,
-});
 
   return result;
 };
@@ -13145,7 +13870,7 @@ showPaywall={() => {
     previousUserLeaderboard={previousWeeklyUserLeaderboard}
 
     weeklyTopRewardClaimedWeek={
-      appState.weeklyTopRewardClaimedWeek
+      appState.pair.weeklyTopRewardClaimedWeek
     }
 
     onClaimWeeklyReward={
