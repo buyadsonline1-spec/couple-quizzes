@@ -3254,23 +3254,97 @@ function PairScreen({
 function PairCompatibilityInfoScreen({
   appState,
   onBack,
+  onOpenPolls,
 }: {
   appState: AppState;
   onBack: () => void;
+  onOpenPolls: () => void;
 }) {
   const profile = buildCompatibilityProfile(appState.pollAnswers || {});
+  const hasData = profile.completedThemes > 0;
+
+  if (!hasData) {
+    return (
+      <div style={{ padding: 12, display: "grid", gap: 10 }}>
+        <div
+          style={{
+            ...cardBaseStyle(),
+            padding: 28,
+            textAlign: "center",
+            background:
+              "linear-gradient(160deg, rgba(143,107,255,0.16), rgba(255,118,186,0.14))",
+          }}
+        >
+          <div style={{ fontSize: 44, lineHeight: 1 }}>💞</div>
+
+          <div
+            style={{
+              marginTop: 14,
+              fontSize: 20,
+              fontWeight: 900,
+              color: "#1f1d3a",
+            }}
+          >
+            Совместимость пока не рассчитана
+          </div>
+
+          <div
+            style={{
+              marginTop: 10,
+              fontSize: 14.5,
+              lineHeight: 1.55,
+              color: "#5b547d",
+            }}
+          >
+            Пройдите вместе хотя бы один общий парный опрос — и здесь появится
+            процент совместимости, тип пары и разбор по темам.
+          </div>
+
+          <button
+            type="button"
+            onClick={onOpenPolls}
+            style={{ ...primaryButtonStyle, width: "100%", marginTop: 20 }}
+          >
+            Пройти опросы
+          </button>
+
+          <div
+            style={{
+              marginTop: 14,
+              fontSize: 13,
+              color: "#7a7396",
+            }}
+          >
+            Рассчитано по 0 из {profile.totalThemes} тем
+          </div>
+        </div>
+
+        <button onClick={onBack} style={secondaryButtonStyle}>
+          Назад
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div style={{ padding: 12, display: "grid", gap: 10 }}>
-      <div style={{ ...cardBaseStyle(), padding: 16 }}>
-        <div style={{ fontSize: 16, fontWeight: 900, color: "#1f1d3a" }}>
+      <div
+        style={{
+          ...cardBaseStyle(),
+          padding: 20,
+          textAlign: "center",
+          background:
+            "linear-gradient(160deg, rgba(143,107,255,0.18), rgba(255,118,186,0.16))",
+        }}
+      >
+        <div style={{ fontSize: 15, fontWeight: 800, color: "#5b547d" }}>
           💞 Совместимость пары
         </div>
 
         <div
           style={{
             marginTop: 10,
-            fontSize: 54,
+            fontSize: 58,
             fontWeight: 900,
             color: "#1f1d3a",
             lineHeight: 0.95,
@@ -3282,11 +3356,14 @@ function PairCompatibilityInfoScreen({
 
         <div
           style={{
-            marginTop: 8,
-            fontSize: 22,
+            marginTop: 10,
+            display: "inline-block",
+            padding: "6px 16px",
+            borderRadius: 999,
+            background: "rgba(255,255,255,0.55)",
+            fontSize: 16,
             fontWeight: 900,
             color: "#6b46ff",
-            lineHeight: 1.2,
           }}
         >
           {profile.pairType}
@@ -3294,10 +3371,11 @@ function PairCompatibilityInfoScreen({
 
         <div
           style={{
-            marginTop: 10,
-            fontSize: 15,
+            marginTop: 14,
+            fontSize: 14.5,
             lineHeight: 1.55,
-            color: "#5b547d",
+            color: "#4d466c",
+            textAlign: "left",
           }}
         >
           {profile.description}
@@ -3308,9 +3386,9 @@ function PairCompatibilityInfoScreen({
             marginTop: 14,
             padding: 12,
             borderRadius: 18,
-            background: "rgba(255,255,255,0.38)",
-            border: "1px solid rgba(255,255,255,0.35)",
-            fontSize: 14,
+            background: "rgba(255,255,255,0.4)",
+            border: "1px solid rgba(255,255,255,0.4)",
+            fontSize: 13.5,
             color: "#615a86",
           }}
         >
@@ -5514,9 +5592,26 @@ function DailyBonusModal({
 }
 
 function WelcomeScreen({ onStart }: { onStart: () => void }) {
+  const features: { emoji: string; label: string }[] = [
+    { emoji: "💬", label: "Парные опросы" },
+    { emoji: "🎮", label: "Игры для двоих" },
+    { emoji: "🏆", label: "Соревнуйтесь в топе" },
+  ];
+
   return (
-    <div style={{ padding: 16, paddingTop: 20 }}>
-      <div style={{ ...cardBaseStyle(), padding: 16, overflow: "hidden" }}>
+    <div
+      style={{
+        padding: 16,
+        paddingTop: 28,
+        paddingBottom: 28,
+        minHeight: "100vh",
+        boxSizing: "border-box",
+        display: "flex",
+        flexDirection: "column",
+        justifyContent: "center",
+      }}
+    >
+      <div style={{ ...cardBaseStyle(), padding: 18, overflow: "hidden" }}>
         <div
           style={{
             height: 300,
@@ -5527,19 +5622,42 @@ function WelcomeScreen({ onStart }: { onStart: () => void }) {
             alignItems: "center",
             justifyContent: "center",
             position: "relative",
+            overflow: "hidden",
           }}
         >
-         <img
-  src="/couple.png"
-  alt="Couple"
-  style={{
-    width: 240,
-    marginBottom: 26,
-    opacity: 0.96,
-    filter: "drop-shadow(0 8px 20px rgba(0,0,0,0.08))",
-  }}
-/>
+          <div
+            style={{
+              position: "absolute",
+              top: 14,
+              left: 18,
+              fontSize: 22,
+              opacity: 0.5,
+            }}
+          >
+            ✨
+          </div>
+          <div
+            style={{
+              position: "absolute",
+              top: 22,
+              right: 22,
+              fontSize: 18,
+              opacity: 0.45,
+            }}
+          >
+            💫
+          </div>
 
+          <img
+            src="/couple.png"
+            alt="Couple"
+            style={{
+              width: 240,
+              marginBottom: 26,
+              opacity: 0.96,
+              filter: "drop-shadow(0 8px 20px rgba(0,0,0,0.08))",
+            }}
+          />
 
           <div
             style={{
@@ -5547,26 +5665,69 @@ function WelcomeScreen({ onStart }: { onStart: () => void }) {
               left: 18,
               bottom: 18,
               right: 18,
-              padding: 16,
+              padding: "14px 16px",
               borderRadius: 18,
-              background: "rgba(255,255,255,0.28)",
+              background: "rgba(255,255,255,0.34)",
+              backdropFilter: "blur(6px)",
+              WebkitBackdropFilter: "blur(6px)",
               color: "#241b40",
-              fontWeight: 800,
               textAlign: "center",
-              fontSize: 22,
             }}
           >
-            Couple Quizzes
+            <div style={{ fontWeight: 900, fontSize: 22, lineHeight: 1.15 }}>
+              Couple Quizzes
+            </div>
+            <div
+              style={{
+                marginTop: 4,
+                fontSize: 13,
+                fontWeight: 700,
+                color: "#4d4470",
+                opacity: 0.9,
+              }}
+            >
+              Узнайте друг друга ещё лучше 💞
+            </div>
           </div>
         </div>
-        
 
         <button
           onClick={onStart}
-          style={{ ...primaryButtonStyle, width: "100%", marginTop: 16 }}
+          style={{ ...primaryButtonStyle, width: "100%", marginTop: 18 }}
         >
           Старт
         </button>
+
+        <div
+          style={{
+            marginTop: 16,
+            display: "flex",
+            gap: 8,
+            flexWrap: "wrap",
+            justifyContent: "center",
+          }}
+        >
+          {features.map((feature) => (
+            <div
+              key={feature.label}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 6,
+                padding: "8px 12px",
+                borderRadius: 999,
+                background: "rgba(255,255,255,0.35)",
+                border: "1px solid rgba(255,255,255,0.4)",
+                fontSize: 12.5,
+                fontWeight: 800,
+                color: "#3d3660",
+              }}
+            >
+              <span style={{ fontSize: 14 }}>{feature.emoji}</span>
+              {feature.label}
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );
@@ -13930,6 +14091,7 @@ showPaywall={() => {
   <PairCompatibilityInfoScreen
     appState={appState}
     onBack={() => setScreen("pair")}
+    onOpenPolls={() => setScreen("polls")}
   />
 )}
 
