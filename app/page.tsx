@@ -1,6 +1,6 @@
 "use client";
 
-import { CSSProperties, useEffect, useMemo, useState } from "react";
+import { CSSProperties, useEffect, useMemo, useRef, useState } from "react";
 import { getMarket } from "@/config/markets";
 import { REWARD_CATEGORIES_RU } from "@/config/rewards-ru";
 import { REWARD_CATEGORIES_EN } from "@/config/rewards-en";
@@ -74,7 +74,8 @@ type Screen =
   | "pair-streak-info"
   | "paywall"
   | "pair-compatibility-info"
-  | "freePremium";
+  | "freePremium"
+  | "ai-psychologist-chat";
 
 
 
@@ -1880,7 +1881,7 @@ const GAMES: Game[] = [
   },    
 ];
 
-const AI_PSYCHOLOGIST_QUESTIONS = [
+const RELATIONSHIP_CHECK_QUESTIONS = [
   {
     id: "communication-1",
     category: "communication",
@@ -1967,7 +1968,7 @@ const AI_PSYCHOLOGIST_AVATARS = {
   happy: "/psychologist/happy.png",
 };
 
-function getAiPsychologistEmotion(params: {
+function getRelationshipCheckEmotion(params: {
   aiTyping: boolean;
   isFinished: boolean;
   aiStep: number;
@@ -1977,7 +1978,7 @@ function getAiPsychologistEmotion(params: {
   if (aiTyping) return "thinking";
   if (isFinished) return "happy";
 
-  const current = AI_PSYCHOLOGIST_QUESTIONS[aiStep];
+  const current = RELATIONSHIP_CHECK_QUESTIONS[aiStep];
 
   if (!current) return "neutral";
 
@@ -2127,7 +2128,7 @@ const PAIR_LEVELS = [
   { level: 8, title: "Легенды любви", points: 5000 },
 ] as const;
 
-function getAiPsychologistResult(answers: number[]) {
+function getRelationshipCheckResult(answers: number[]) {
   const positiveCategories = new Set(["closeness", "support"]);
 
   const categoryScores: Record<string, number> = {
@@ -2149,7 +2150,7 @@ function getAiPsychologistResult(answers: number[]) {
   };
 
   answers.forEach((value, index) => {
-    const q = AI_PSYCHOLOGIST_QUESTIONS[index];
+    const q = RELATIONSHIP_CHECK_QUESTIONS[index];
     if (!q) return;
 
     let normalized = value;
@@ -4086,6 +4087,437 @@ function PairStreakInfoScreen({
   );
 }
 
+type AiPsychologistMessage = {
+  role: "user" | "assistant";
+  content: string;
+  createdAt?: string;
+};
+
+const AI_PSYCHOLOGIST_STARTERS_RU = [
+  "Мы поссорились",
+  "Хочу понять партнёра",
+  "Помоги найти компромисс",
+  "Мне не хватает внимания",
+  "Ревность",
+  "Помоги написать сообщение",
+];
+
+const AI_PSYCHOLOGIST_STARTERS_EN = [
+  "We had a fight",
+  "I want to understand my partner",
+  "Help me find a compromise",
+  "I'm not getting enough attention",
+  "Jealousy",
+  "Help me write a message",
+];
+
+// Универсальный чат с AI-психологом — настоящий LLM (OpenAI, через
+// /api/psychologist/*), в отличие от старого детерминированного
+// опросника (см. RELATIONSHIP_CHECK_QUESTIONS выше, теперь отдельная
+// игра "Экспресс-чек отношений"). История разговора хранится на
+// сервере (ai_psychologist_conversations/_messages), а не в localStorage
+// — переустановка/смена устройства её не теряет.
+function AiPsychologistChatScreen({
+  onBack,
+}: {
+  onBack: () => void;
+}) {
+  const market = getMarket();
+  const language: "ru" | "en" = market === "en" ? "en" : "ru";
+  const t = market === "en" ? TEXT_EN : TEXT_RU;
+
+  const [conversationId, setConversationId] = useState<string | null>(null);
+  const [messages, setMessages] = useState<AiPsychologistMessage[]>([]);
+  const [inputText, setInputText] = useState("");
+  const [loadingHistory, setLoadingHistory] = useState(true);
+  const [sending, setSending] = useState(false);
+  const [limitInfo, setLimitInfo] = useState<{
+    used: number;
+    limit: number;
+    isPremium: boolean;
+  } | null>(null);
+  const [errorText, setErrorText] = useState<string | null>(null);
+
+  const scrollBottomRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    async function loadState() {
+      const initData = window.Telegram?.WebApp?.initData;
+
+      if (!initData) {
+        setLoadingHistory(false);
+        return;
+      }
+
+      try {
+        const response = await fetch("/api/psychologist/state", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ initData }),
+        });
+
+        const data = await response.json();
+
+        if (response.ok && data?.ok) {
+          setConversationId(data.activeConversationId ?? null);
+          setMessages(
+            (data.messages ?? []).map((m: any) => ({
+              role: m.role,
+              content: m.content,
+              createdAt: m.createdAt,
+            }))
+          );
+        }
+      } catch (error) {
+        console.error("psychologist state load error:", error);
+      } finally {
+        setLoadingHistory(false);
+      }
+    }
+
+    loadState();
+  }, []);
+
+  useEffect(() => {
+    scrollBottomRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages, sending]);
+
+  async function ensureConversation(): Promise<string | null> {
+    if (conversationId) return conversationId;
+
+    const initData = window.Telegram?.WebApp?.initData;
+    if (!initData) return null;
+
+    try {
+      const response = await fetch("/api/psychologist/new", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ initData, language }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data?.ok) {
+        setConversationId(data.conversationId);
+        return data.conversationId as string;
+      }
+    } catch (error) {
+      console.error("psychologist new conversation error:", error);
+    }
+
+    return null;
+  }
+
+  async function sendMessage(text: string) {
+    const trimmed = text.trim();
+    if (!trimmed || sending) return;
+
+    const initData = window.Telegram?.WebApp?.initData;
+    if (!initData) {
+      setErrorText(
+        language === "en"
+          ? "Could not verify Telegram user"
+          : "Не удалось подтвердить пользователя Telegram"
+      );
+      return;
+    }
+
+    setErrorText(null);
+    setInputText("");
+    setSending(true);
+
+    setMessages((prev) => [...prev, { role: "user", content: trimmed }]);
+
+    try {
+      const activeConversationId = await ensureConversation();
+
+      if (!activeConversationId) {
+        setErrorText(
+          language === "en"
+            ? "Failed to start a conversation, try again"
+            : "Не удалось начать разговор, попробуй ещё раз"
+        );
+        return;
+      }
+
+      const response = await fetch("/api/psychologist/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          initData,
+          conversationId: activeConversationId,
+          message: trimmed,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok || !data?.ok) {
+        if (data?.reason === "limit-reached") {
+          setLimitInfo({
+            used: data.used,
+            limit: data.limit,
+            isPremium: data.isPremium,
+          });
+          setErrorText(
+            language === "en"
+              ? `You've reached today's limit (${data.used}/${data.limit} messages). Come back tomorrow${data.isPremium ? "" : " or unlock Premium for more"}.`
+              : `Дневной лимит сообщений исчерпан (${data.used}/${data.limit}). Возвращайся завтра${data.isPremium ? "" : " или разблокируй Premium для большего лимита"}.`
+          );
+        } else if (data?.reason === "ai-not-configured") {
+          setErrorText(
+            language === "en"
+              ? "AI psychologist isn't available right now"
+              : "AI-психолог сейчас недоступен"
+          );
+        } else {
+          setErrorText(
+            language === "en"
+              ? "Something went wrong, try again"
+              : "Что-то пошло не так, попробуй ещё раз"
+          );
+        }
+        return;
+      }
+
+      setMessages((prev) => [
+        ...prev,
+        { role: "assistant", content: data.reply },
+      ]);
+
+      setLimitInfo({
+        used: data.used,
+        limit: data.limit,
+        isPremium: data.isPremium,
+      });
+    } catch (error) {
+      console.error("psychologist chat send error:", error);
+      setErrorText(
+        language === "en"
+          ? "Something went wrong, try again"
+          : "Что-то пошло не так, попробуй ещё раз"
+      );
+    } finally {
+      setSending(false);
+    }
+  }
+
+  const starters =
+    language === "en" ? AI_PSYCHOLOGIST_STARTERS_EN : AI_PSYCHOLOGIST_STARTERS_RU;
+
+  return (
+    <div
+      style={{
+        minHeight: "100vh",
+        padding: 12,
+        display: "flex",
+        flexDirection: "column",
+        gap: 10,
+      }}
+    >
+      <div
+        style={{
+          ...cardBaseStyle(),
+          padding: 14,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          gap: 10,
+        }}
+      >
+        <div>
+          <div style={{ fontSize: 20, fontWeight: 900, color: "#1f1d3a" }}>
+            🧠 {language === "en" ? "AI Psychologist" : "AI-психолог для пары"}
+          </div>
+          <div
+            style={{
+              marginTop: 4,
+              fontSize: 12.5,
+              color: "#5a5378",
+              lineHeight: 1.4,
+            }}
+          >
+            {language === "en"
+              ? "Not a licensed therapist — an AI relationship assistant."
+              : "Не лицензированный специалист — AI-помощник по отношениям."}
+          </div>
+        </div>
+
+        <button onClick={onBack} style={secondaryButtonStyle} type="button">
+          {t.common.back}
+        </button>
+      </div>
+
+      <div
+        style={{
+          ...cardBaseStyle(),
+          flex: 1,
+          padding: 14,
+          display: "flex",
+          flexDirection: "column",
+          gap: 10,
+          overflowY: "auto",
+          minHeight: 260,
+        }}
+      >
+        {loadingHistory ? (
+          <div style={{ color: "#5a5378", fontSize: 14 }}>
+            {language === "en" ? "Loading…" : "Загрузка…"}
+          </div>
+        ) : messages.length === 0 ? (
+          <div style={{ display: "grid", gap: 10 }}>
+            <div style={{ color: "#5a5378", fontSize: 14, lineHeight: 1.5 }}>
+              {language === "en"
+                ? "Tell me what's going on. You can talk about a fight, jealousy, trust, intimacy, boundaries — anything."
+                : "Расскажи, что происходит. Можно обсудить ссору, ревность, доверие, близость, границы — что угодно."}
+            </div>
+
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+              {starters.map((starter) => (
+                <button
+                  key={starter}
+                  type="button"
+                  onClick={() => sendMessage(starter)}
+                  style={{
+                    border: "1px solid rgba(255,255,255,0.4)",
+                    borderRadius: 999,
+                    padding: "8px 12px",
+                    background: "rgba(255,255,255,0.3)",
+                    color: "#3d3660",
+                    fontSize: 13,
+                    fontWeight: 700,
+                    cursor: "pointer",
+                  }}
+                >
+                  {starter}
+                </button>
+              ))}
+            </div>
+          </div>
+        ) : (
+          messages.map((msg, index) => (
+            <div
+              key={index}
+              style={{
+                alignSelf: msg.role === "user" ? "flex-end" : "flex-start",
+                maxWidth: "85%",
+                padding: "10px 14px",
+                borderRadius: 16,
+                fontSize: 14.5,
+                lineHeight: 1.5,
+                whiteSpace: "pre-wrap",
+                background:
+                  msg.role === "user"
+                    ? "linear-gradient(135deg, #8f6bff, #ff76ba)"
+                    : "rgba(255,255,255,0.4)",
+                color: msg.role === "user" ? "#fff" : "#241b40",
+              }}
+            >
+              {msg.content}
+            </div>
+          ))
+        )}
+
+        {sending && (
+          <div
+            style={{
+              alignSelf: "flex-start",
+              padding: "10px 14px",
+              borderRadius: 16,
+              background: "rgba(255,255,255,0.4)",
+              color: "#5a5378",
+              fontSize: 14,
+            }}
+          >
+            {language === "en" ? "Typing…" : "Печатает…"}
+          </div>
+        )}
+
+        <div ref={scrollBottomRef} />
+      </div>
+
+      {errorText && (
+        <div
+          style={{
+            ...cardBaseStyle(),
+            padding: 12,
+            fontSize: 13,
+            color: "#a8305a",
+            background: "rgba(255,220,230,0.5)",
+          }}
+        >
+          {errorText}
+        </div>
+      )}
+
+      {limitInfo && !errorText && (
+        <div
+          style={{
+            fontSize: 12,
+            color: "#7a7396",
+            textAlign: "center",
+          }}
+        >
+          {language === "en"
+            ? `${limitInfo.used}/${limitInfo.limit} messages today`
+            : `Сообщений сегодня: ${limitInfo.used}/${limitInfo.limit}`}
+        </div>
+      )}
+
+      <div
+        style={{
+          ...cardBaseStyle(),
+          padding: 10,
+          display: "flex",
+          gap: 8,
+          alignItems: "center",
+          position: "sticky",
+          bottom: 0,
+        }}
+      >
+        <input
+          value={inputText}
+          onChange={(e) => setInputText(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" && !e.shiftKey) {
+              e.preventDefault();
+              sendMessage(inputText);
+            }
+          }}
+          placeholder={
+            language === "en" ? "Write a message…" : "Напишите сообщение…"
+          }
+          disabled={sending}
+          style={{
+            flex: 1,
+            border: "1px solid rgba(255,255,255,0.4)",
+            borderRadius: 14,
+            padding: "12px 14px",
+            fontSize: 14.5,
+            background: "rgba(255,255,255,0.5)",
+            color: "#241b40",
+            outline: "none",
+          }}
+        />
+
+        <button
+          type="button"
+          onClick={() => sendMessage(inputText)}
+          disabled={sending || !inputText.trim()}
+          style={{
+            ...primaryButtonStyle,
+            padding: "12px 18px",
+            opacity: sending || !inputText.trim() ? 0.6 : 1,
+            cursor: sending || !inputText.trim() ? "not-allowed" : "pointer",
+          }}
+        >
+          ➤
+        </button>
+      </div>
+    </div>
+  );
+}
+
 function DailyPairQuestionScreen({
   user,
   pair,
@@ -5998,6 +6430,45 @@ function MainMenu({
 </div>
 
 
+      <button
+        type="button"
+        onClick={() => onNavigate("ai-psychologist-chat")}
+        style={{
+          ...cardBaseStyle(),
+          width: "100%",
+          padding: 16,
+          marginBottom: 12,
+          textAlign: "left",
+          cursor: "pointer",
+          border: "1px solid rgba(255,255,255,0.4)",
+          background:
+            "linear-gradient(135deg, rgba(143,107,255,0.22), rgba(255,118,186,0.18))",
+          display: "flex",
+          alignItems: "center",
+          gap: 12,
+        }}
+      >
+        <div style={{ fontSize: 30, flexShrink: 0 }}>🧠</div>
+
+        <div style={{ flex: 1 }}>
+          <div style={{ fontSize: 15, fontWeight: 900, color: "#1f1d3a" }}>
+            AI-психолог для пары
+          </div>
+          <div
+            style={{
+              marginTop: 2,
+              fontSize: 12.5,
+              color: "#5a5378",
+              lineHeight: 1.35,
+            }}
+          >
+            Расскажи, что происходит — разберём вместе
+          </div>
+        </div>
+
+        <div style={{ fontSize: 20, color: "#7c5cff", flexShrink: 0 }}>→</div>
+      </button>
+
       <div
         style={{
           display: "grid",
@@ -6493,9 +6964,14 @@ const gamesPage1 = GAMES;
 
 const gamesPage2: Game[] = [
   {
+    // id/reward-key намеренно не переименованы (game-ai-psychologist в
+    // reward-catalog.ts) — иначе тем, кто уже прошёл опросник, начислило
+    // бы награду повторно под новым ключом. Экран называется по-новому:
+    // это больше не "AI-психолог" (см. новый универсальный чат ниже),
+    // а короткий детерминированный опросник — "Экспресс-чек отношений".
     id: "ai-psychologist",
-    title: "ИИ психолог",
-    description: "Ответьте на несколько вопросов и получите разбор вашей пары",
+    title: "Экспресс-чек отношений",
+    description: "12 вопросов, 2 минуты — узнайте, что сейчас происходит в ваших отношениях",
     reward: 10,
     questions: [],
 
@@ -6508,11 +6984,11 @@ const gamesPage2: Game[] = [
 const activeGame = allGames.find((game) => game.id === activeGameId) || null;
 
 if (activeGameId === "ai-psychologist") {
-  const currentAiQuestion = AI_PSYCHOLOGIST_QUESTIONS[aiStep];
-  const isFinished = aiStep >= AI_PSYCHOLOGIST_QUESTIONS.length;
-  const result = getAiPsychologistResult(aiAnswers);
+  const currentAiQuestion = RELATIONSHIP_CHECK_QUESTIONS[aiStep];
+  const isFinished = aiStep >= RELATIONSHIP_CHECK_QUESTIONS.length;
+  const result = getRelationshipCheckResult(aiAnswers);
 
-  const psychologistEmotion = getAiPsychologistEmotion({
+  const psychologistEmotion = getRelationshipCheckEmotion({
   aiTyping,
   isFinished,
   aiStep,
@@ -6536,7 +7012,7 @@ const psychologistAvatar =
     setAiStep(nextStep);
     setAiTyping(false);
 
-    if (nextStep >= AI_PSYCHOLOGIST_QUESTIONS.length) {
+    if (nextStep >= RELATIONSHIP_CHECK_QUESTIONS.length) {
       const rewardKey = "game-ai-psychologist";
       if (!playedGameRewardKeys.includes(rewardKey)) {
         await onClaimStepReward(rewardKey);
@@ -6559,7 +7035,7 @@ const psychologistAvatar =
     >
       <div style={{ ...cardBaseStyle(), padding: 14 }}>
         <div style={{ fontSize: 22, fontWeight: 900, color: "#1f1d3a" }}>
-          ИИ психолог 🧠
+          Экспресс-чек отношений 🩺
         </div>
 
         <div
@@ -6570,7 +7046,7 @@ const psychologistAvatar =
             fontSize: 13,
           }}
         >
-          Небольшой диалог поможет понять, что сейчас происходит в ваших отношениях.
+          12 коротких вопросов помогут понять, что сейчас происходит в ваших отношениях.
         </div>
       </div>
 
@@ -6616,7 +7092,7 @@ const psychologistAvatar =
                   fontWeight: 800,
                 }}
               >
-                Психолог · вопрос {aiStep + 1} из {AI_PSYCHOLOGIST_QUESTIONS.length}
+                Вопрос {aiStep + 1} из {RELATIONSHIP_CHECK_QUESTIONS.length}
               </div>
 
               <div
@@ -7098,9 +7574,9 @@ function handleLoveQuestionFinish() {
 
 
   if (activeGame?.id === "ai-psychologist") {
-  const currentQuestion = AI_PSYCHOLOGIST_QUESTIONS[aiStep];
-  const isFinished = aiStep >= AI_PSYCHOLOGIST_QUESTIONS.length;
-  const result = getAiPsychologistResult(aiAnswers);
+  const currentQuestion = RELATIONSHIP_CHECK_QUESTIONS[aiStep];
+  const isFinished = aiStep >= RELATIONSHIP_CHECK_QUESTIONS.length;
+  const result = getRelationshipCheckResult(aiAnswers);
 
  function handleAiAnswer(answerIndex: number) {
   setLastAiAnswerIndex(answerIndex);
@@ -7115,7 +7591,7 @@ function handleLoveQuestionFinish() {
     setAiStep(nextStep);
     setAiTyping(false);
 
-    if (nextStep >= AI_PSYCHOLOGIST_QUESTIONS.length) {
+    if (nextStep >= RELATIONSHIP_CHECK_QUESTIONS.length) {
       const rewardKey = "game-ai-psychologist";
       if (!playedGameRewardKeys.includes(rewardKey)) {
         await onClaimStepReward(rewardKey);
@@ -7131,7 +7607,7 @@ function handleLoveQuestionFinish() {
     <div style={{ padding: 16, display: "grid", gap: 14 }}>
       <div style={{ ...cardBaseStyle(), padding: 18 }}>
         <div style={{ fontSize: 28, fontWeight: 900, color: "#1f1d3a" }}>
-          ИИ психолог 🧠
+          Экспресс-чек отношений 🩺
         </div>
 
         <div
@@ -7156,7 +7632,7 @@ function handleLoveQuestionFinish() {
               fontWeight: 800,
             }}
           >
-            Вопрос {aiStep + 1} из {AI_PSYCHOLOGIST_QUESTIONS.length}
+            Вопрос {aiStep + 1} из {RELATIONSHIP_CHECK_QUESTIONS.length}
           </div>
 
           <div
@@ -14224,6 +14700,10 @@ showPaywall={() => {
     appState={appState}
     onBack={() => setScreen("daily-pair-question")}
   />
+)}
+
+{screen === "ai-psychologist-chat" && (
+  <AiPsychologistChatScreen onBack={() => setScreen("menu")} />
 )}
 
 {screen === "pair-compatibility-info" && (
