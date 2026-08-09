@@ -13315,10 +13315,33 @@ const handleClaimBonus = async () => {
         "Не удалось начислить ежедневный бонус:",
         data
       );
+
+      // Раньше здесь ничего не показывалось пользователю — кнопка
+      // выглядела нерабочей ("нажимаю — ничего не происходит"), хотя
+      // на самом деле сервер честно отклонял запрос. claimableDay/
+      // bonusClaimAvailable — только локальная UI-догадка (localStorage,
+      // локальный часовой пояс устройства), а реальная проверка — на
+      // сервере (Europe/Helsinki). Если локальная догадка разошлась с
+      // сервером, синхронизируем UI под реальный ответ, а не оставляем
+      // кнопку в неверном состоянии.
+      if (data?.reason === "already-claimed") {
+        setBonusClaimAvailable(false);
+        setShowDailyBonus(false);
+
+        if (data?.streakDay != null) {
+          setClaimableDay(Number(data.streakDay));
+        }
+
+        alert("Бонус на сегодня уже забран — приходи завтра 💫");
+      } else {
+        alert("Не удалось начислить бонус, попробуй ещё раз");
+      }
+
       return;
     }
   } catch (error) {
     console.error("handleClaimBonus request error:", error);
+    alert("Не удалось начислить бонус, попробуй ещё раз");
     return;
   }
 
