@@ -4108,6 +4108,11 @@ const t = market === "en" ? TEXT_EN : TEXT_RU;
   const question = getDailyPairQuestionForToday();
 
   const [saving, setSaving] = useState(false);
+  // Пока today ещё не подгружен с сервера, не считаем "точно не
+  // отвечал" — иначе на долю секунды показываются варианты ответа,
+  // которые тут же прячутся, когда придёт настоящий статус (если
+  // ответ уже был дан). loadingToday гасит этот флеш.
+  const [loadingToday, setLoadingToday] = useState(true);
   const [todayAnswers, setTodayAnswers] = useState<
     Array<{
       telegram_id: number;
@@ -4120,7 +4125,12 @@ const t = market === "en" ? TEXT_EN : TEXT_RU;
 
   useEffect(() => {
     async function loadTodayAnswers() {
-      if (!pair.pairId) return;
+      if (!pair.pairId) {
+        setLoadingToday(false);
+        return;
+      }
+
+      setLoadingToday(true);
 
       const { today: rows } = await loadDailyPairState();
 
@@ -4131,6 +4141,8 @@ const t = market === "en" ? TEXT_EN : TEXT_RU;
           answer_index: Number(row.answer_index),
         }))
       );
+
+      setLoadingToday(false);
     }
 
     loadTodayAnswers();
@@ -4349,37 +4361,65 @@ const t = market === "en" ? TEXT_EN : TEXT_RU;
           {question.text}
         </div>
 
-        {!myAnswer && (
-          <div style={{ marginTop: 12 }}>
-            
-
-            <div style={{ display: "grid", gap: 8 }}>
-              {question.options.map((option, index) => (
-                <button
-                  key={index}
-                  onClick={() => saveAnswer(index)}
-                  disabled={saving}
-                  style={{
-                    border: "1px solid rgba(255,255,255,0.28)",
-                    borderRadius: 16,
-                    padding: "12px 14px",
-                    background: "rgba(255,255,255,0.20)",
-                    color: "#1f1d3a",
-                    textAlign: "left",
-                    fontSize: 15,
-                    fontWeight: 700,
-                    cursor: saving ? "not-allowed" : "pointer",
-                    opacity: saving ? 0.6 : 1,
-                  }}
-                >
-                  {option}
-                </button>
-              ))}
-            </div>
+        {loadingToday ? (
+          <div
+            style={{
+              marginTop: 12,
+              display: "grid",
+              gap: 8,
+            }}
+          >
+            {question.options.map((_, index) => (
+              <div
+                key={index}
+                style={{
+                  height: 44,
+                  borderRadius: 16,
+                  background: "rgba(255,255,255,0.14)",
+                }}
+              />
+            ))}
           </div>
+        ) : (
+          !myAnswer && (
+            <div style={{ marginTop: 12 }}>
+              <div style={{ display: "grid", gap: 8 }}>
+                {question.options.map((option, index) => (
+                  <button
+                    key={index}
+                    onClick={() => saveAnswer(index)}
+                    disabled={saving}
+                    style={{
+                      border: "1px solid rgba(255,255,255,0.28)",
+                      borderRadius: 16,
+                      padding: "12px 14px",
+                      background: "rgba(255,255,255,0.20)",
+                      color: "#1f1d3a",
+                      textAlign: "left",
+                      fontSize: 15,
+                      fontWeight: 700,
+                      cursor: saving ? "not-allowed" : "pointer",
+                      opacity: saving ? 0.6 : 1,
+                    }}
+                  >
+                    {option}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )
         )}
 
-        {bothAnswered ? (
+        {loadingToday ? (
+          <div
+            style={{
+              marginTop: 12,
+              height: 60,
+              borderRadius: 18,
+              background: "rgba(255,255,255,0.14)",
+            }}
+          />
+        ) : bothAnswered ? (
   <div
     style={{
       ...cardBaseStyle(),
