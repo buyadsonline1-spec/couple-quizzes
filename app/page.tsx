@@ -1238,36 +1238,10 @@ function launchLevelConfetti() {
   })();
 }
 
-async function loadPremiumStatus(telegramId: number) {
-  const { data, error } = await supabase
-    .from("subscriptions")
-    .select("plan, status, expires_at")
-    .eq("telegram_id", telegramId)
-    .eq("status", "active");
-
-  if (error) {
-    console.error("LOAD PREMIUM STATUS ERROR:", error);
-    return false;
-  }
-
-  if (!data?.length) return false;
-
-  return data.some((sub) => {
-    // Если у подписки есть expires_at — это и есть источник истины,
-    // независимо от плана (в т.ч. для free_premium: раньше free_premium
-    // считался бессрочным всегда, из-за чего "Premium бесплатно за
-    // подписку на каналы" выдавался навсегда вместо задуманной 1
-    // недели — см. app/api/check-free-premium/route.ts).
-    if (sub.expires_at) {
-      return new Date(sub.expires_at) > new Date();
-    }
-
-    // expires_at не задан — бессрочной считаем только legacy
-    // free_premium-запись без даты истечения (старые гранты до этого
-    // фикса).
-    return sub.plan === "free_premium";
-  });
-}
+// loadPremiumStatus() (прямой supabase.from("subscriptions").select(...))
+// удалена — последняя точка вызова была после успешной оплаты Stars,
+// теперь это /api/profile/state (см. checkIsPremium в
+// lib/server/pair-state.ts, та же логика).
 
 
 
@@ -4104,13 +4078,10 @@ const t = market === "en" ? TEXT_EN : TEXT_RU;
     async function loadTodayAnswers() {
       if (!pair.pairId) return;
 
-      const rows = await loadDailyPairAnswersForDate({
-        pairId: pair.pairId,
-        date: today,
-      });
+      const { today: rows } = await loadDailyPairState();
 
       setTodayAnswers(
-        rows.map((row: any) => ({
+        rows.map((row) => ({
           telegram_id: Number(row.telegram_id),
           question_id: String(row.question_id),
           answer_index: Number(row.answer_index),
@@ -4191,23 +4162,17 @@ const t = market === "en" ? TEXT_EN : TEXT_RU;
         return;
       }
 
-      // Читаем сегодняшние ответы заново — только для отображения (кто
-      // на что ответил), реальное начисление уже произошло на сервере.
-      // История грузится параллельно (не последовательно), а pair state
-      // не перезапрашиваем отдельным round-trip'ом — RPC уже вернул
+      // Читаем сегодняшние ответы (и историю, если оба ответили) заново
+      // — только для отображения, реальное начисление уже произошло на
+      // сервере внутри submit_daily_pair_answer. pair state не
+      // перезапрашиваем отдельным round-trip'ом — RPC уже вернул
       // актуальные pairTotalPoints/pairWeeklyPoints в самом ответе.
-      const [rows, history] = await Promise.all([
-        loadDailyPairAnswersForDate({
-          pairId: pair.pairId,
-          date: today,
-        }),
-        data.status === "both_answered"
-          ? loadDailyPairHistory(pair.pairId)
-          : Promise.resolve(null),
-      ]);
+      const dailyState = await loadDailyPairState();
+      const rows = dailyState.today;
+      const history = data.status === "both_answered" ? dailyState.history : null;
 
       setTodayAnswers(
-        rows.map((row: any) => ({
+        rows.map((row) => ({
           telegram_id: Number(row.telegram_id),
           question_id: String(row.question_id),
           answer_index: Number(row.answer_index),
@@ -11222,8 +11187,7 @@ async function upsertWeeklyUserLeaderboardEntry(params: {
   }
 }
 
-async function loadPairStateForUser(telegramId: number): Promise<PairState> {
-const emptyState: PairState = {
+const EMPTY_PAIR_STATE: PairState = {
   pairId: null,
   inviteCode: null,
   partner: null,
@@ -11239,91 +11203,40 @@ const emptyState: PairState = {
   weeklyTopRewardClaimedWeek: null,
 };
 
+// Раньше это была прямая цепочка supabase.from("profiles"/"pairs")
+// .select(...) анонимным ключом — теперь тот же результат отдаёт
+// сервер через /api/pair/state (см. lib/server/pair-state.ts), где
+// telegramId уже подтверждён подписанным initData. Сигнатура функции
+// (принимает telegramId, отдаёт PairState) намеренно не менялась —
+// все существующие call sites (после начисления очков и т.п.)
+// продолжают работать без изменений.
+async function loadPairStateForUser(telegramId: number): Promise<PairState> {
+  const initData = window.Telegram?.WebApp?.initData;
 
-
-  const { data: profile, error: profileError } = await supabase
-    .from("profiles")
-    .select("pair_id")
-    .eq("telegram_id", telegramId)
-    .maybeSingle();
-    
-
-  if (profileError || !profile?.pair_id) {
-    
-    return emptyState;
+  if (!initData) {
+    console.error("loadPairStateForUser: Telegram initData отсутствует");
+    return EMPTY_PAIR_STATE;
   }
 
-  const { data: pair, error: pairError } = await supabase
-    .from("pairs")
-    .select("*")
-    .eq("id", profile.pair_id)
-    .single();
+  try {
+    const response = await fetch("/api/pair/state", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ initData }),
+    });
 
-  if (pairError || !pair) {
-    return emptyState;
-  }
+    const data = await response.json();
 
- // pairs.daily_tests_used/daily_polls_used/daily_games_used/daily_limit_date
- // — legacy-поля, больше не источник истины и не пишем в них с клиента
- // (это была неконтролируемая запись в pairs для ЛЮБОГО pair_id, п.6 в
- // разборе). Реальный (персональный, не парный) дневной лимит теста
- // теперь считает consume_daily_access на сервере — см.
- // supabase/pairs_profiles_server_side.sql и
- // app/api/activity/consume-daily-limit/route.ts. Значения ниже
- // оставлены только для обратной совместимости типа PairState, нигде
- // больше не используются для гейтинга.
-
-  const currentTelegramId = Number(telegramId);
-  const partner1Id = pair.partner_1_telegram_id != null ? Number(pair.partner_1_telegram_id) : null;
-  const partner2Id = pair.partner_2_telegram_id != null ? Number(pair.partner_2_telegram_id) : null;
-  const createdByTelegramId =
-    pair.created_by_telegram_id != null ? Number(pair.created_by_telegram_id) : null;
-
-  const rawPartnerTelegramId =
-    partner1Id === currentTelegramId ? partner2Id : partner1Id;
-
-  const partnerTelegramId =
-    rawPartnerTelegramId && rawPartnerTelegramId !== currentTelegramId
-      ? rawPartnerTelegramId
-      : null;
-
-  let partner: PairMember | null = null;
-
-  if (partnerTelegramId) {
-    const { data: partnerProfile } = await supabase
-      .from("profiles")
-      .select("*")
-      .eq("telegram_id", partnerTelegramId)
-      .maybeSingle();
-
-    if (partnerProfile) {
-      partner = {
-        telegramId: Number(partnerProfile.telegram_id),
-        firstName: partnerProfile.first_name ?? undefined,
-        lastName: partnerProfile.last_name ?? undefined,
-        username: partnerProfile.username ?? undefined,
-        photoUrl: partnerProfile.photo_url ?? undefined,
-      };
+    if (!response.ok || !data?.ok || !data?.pair) {
+      console.error("loadPairStateForUser error:", data);
+      return EMPTY_PAIR_STATE;
     }
-  }
-return {
-  pairId: pair.id,
-  inviteCode: pair.invite_code,
-  partner,
-  createdByTelegramId,
-  totalPoints: pair.total_points ?? 0,
-  dailyTestsUsed: pair.daily_tests_used ?? 0,
-dailyPollsUsed: pair.daily_polls_used ?? 0,
-dailyGamesUsed: pair.daily_games_used ?? 0,
-dailyLimitDate: pair.daily_limit_date ?? null,
-isPremium: pair.is_premium ?? false,
-weeklyPoints:
-  pair.weekly_points_week === getCurrentWeekKey()
-    ? pair.weekly_points ?? 0
-    : 0,
-weeklyTopRewardClaimedWeek: pair.weekly_top_reward_claimed_week ?? null,
-};
 
+    return data.pair as PairState;
+  } catch (error) {
+    console.error("loadPairStateForUser request error:", error);
+    return EMPTY_PAIR_STATE;
+  }
 }
 
 type ActivityAwardResult = {
@@ -11456,126 +11369,84 @@ async function consumeDailyTestAccess(): Promise<{
 
 
 
+// Раньше писал прямо в poll_submissions с pairId/telegramId из React
+// state (можно было подделать ответы партнёра) — теперь /api/poll/submit
+// сам достаёт telegramId/pairId из initData/профиля и сразу отдаёт
+// пересчитанный pairPollAnswers, отдельного loadPairPollAnswers после
+// этого больше не нужно.
 async function savePollSubmission(params: {
-  pairId: string;
-  telegramId: number;
   pollId: string;
   answers: number[];
-}) {
-  const { pairId, telegramId, pollId, answers } = params;
+}): Promise<Record<string, number[]> | null> {
+  const { pollId, answers } = params;
 
-  const { error } = await supabase
-    .from("poll_submissions")
-    .upsert(
-      {
-        pair_id: pairId,
-        telegram_id: telegramId,
-        poll_id: pollId,
-        answers,
-      },
-      { onConflict: "telegram_id,poll_id" }
-    );
+  const initData = window.Telegram?.WebApp?.initData;
 
-  if (error) {
-    console.error("savePollSubmission error:", error);
-  }
-}
-
-async function loadPairPollAnswers(pairId: string): Promise<Record<string, number[]>> {
-  const { data, error } = await supabase
-    .from("poll_submissions")
-    .select("poll_id, answers")
-    .eq("pair_id", pairId);
-
-  if (error || !data) {
-    console.error("loadPairPollAnswers error:", error);
-    return {};
+  if (!initData) {
+    console.error("savePollSubmission: Telegram initData отсутствует");
+    return null;
   }
 
-  const result: Record<string, number[]> = {};
+  try {
+    const response = await fetch("/api/poll/submit", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ initData, pollId, answers }),
+    });
 
-  for (const row of data) {
-    if (row?.poll_id && Array.isArray(row.answers)) {
-      result[row.poll_id] = row.answers.map((value: unknown) => Number(value));
+    const data = await response.json();
+
+    if (!response.ok || !data?.ok) {
+      console.error("savePollSubmission error:", data);
+      return null;
     }
-  }
 
-  return result;
+    return data.pairPollAnswers as Record<string, number[]>;
+  } catch (error) {
+    console.error("savePollSubmission request error:", error);
+    return null;
+  }
 }
 
-async function loadDailyPairAnswersForDate(params: {
-  pairId: string;
-  date: string;
-}) {
-  const { pairId, date } = params;
-
-  const { data, error } = await supabase
-    .from("daily_pair_answers")
-    .select("telegram_id, question_id, answer_index, created_at")
-    .eq("pair_id", pairId)
-    .eq("answer_date", date)
-    .order("created_at", { ascending: true });
-
-  if (error || !data) {
-    console.error("loadDailyPairAnswersForDate error:", error);
-    return [];
-  }
-
-  return data;
-}
-
-async function loadDailyPairHistory(pairId: string): Promise<
-  Array<{
+// Раньше — два прямых supabase.from("daily_pair_answers").select(...)
+// анонимным ключом; теперь один авторизованный вызов /api/pair/daily-state
+// (сервер сам знает pairId из профиля и вычисляет "сегодня" по
+// Europe/Helsinki), возвращающий и сегодняшние ответы, и историю сразу.
+async function loadDailyPairState(): Promise<{
+  today: Array<{ telegram_id: number; question_id: string; answer_index: number }>;
+  history: Array<{
     date: string;
     questionId: string;
     boyAnswerIndex: number | null;
     girlAnswerIndex: number | null;
-  }>
-> {
-  const { data, error } = await supabase
-    .from("daily_pair_answers")
-    .select("answer_date, question_id, telegram_id, answer_index, created_at")
-    .eq("pair_id", pairId)
-    .order("answer_date", { ascending: false })
-    .order("created_at", { ascending: true });
+  }>;
+}> {
+  const initData = window.Telegram?.WebApp?.initData;
 
-  if (error || !data) {
-    console.error("loadDailyPairHistory error:", error);
-    return [];
+  if (!initData) {
+    console.error("loadDailyPairState: Telegram initData отсутствует");
+    return { today: [], history: [] };
   }
 
-  const grouped = new Map<
-    string,
-    {
-      date: string;
-      questionId: string;
-      boyAnswerIndex: number | null;
-      girlAnswerIndex: number | null;
-    }
-  >();
+  try {
+    const response = await fetch("/api/pair/daily-state", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ initData }),
+    });
 
-  for (const row of data) {
-    const key = String(row.answer_date);
+    const data = await response.json();
 
-    if (!grouped.has(key)) {
-      grouped.set(key, {
-        date: String(row.answer_date),
-        questionId: String(row.question_id),
-        boyAnswerIndex: null,
-        girlAnswerIndex: null,
-      });
+    if (!response.ok || !data?.ok) {
+      console.error("loadDailyPairState error:", data);
+      return { today: [], history: [] };
     }
 
-    const item = grouped.get(key)!;
-
-    if (item.boyAnswerIndex === null) {
-      item.boyAnswerIndex = Number(row.answer_index);
-    } else if (item.girlAnswerIndex === null) {
-      item.girlAnswerIndex = Number(row.answer_index);
-    }
+    return { today: data.today ?? [], history: data.history ?? [] };
+  } catch (error) {
+    console.error("loadDailyPairState request error:", error);
+    return { today: [], history: [] };
   }
-
-  return Array.from(grouped.values());
 }
 
 function getPreviousDateString(dateString: string) {
@@ -11643,6 +11514,37 @@ function calculateDailyPairStreak(
   };
 }
 
+async function loadPairPollAnswersForCurrentUser(): Promise<
+  Record<string, number[]>
+> {
+  const initData = window.Telegram?.WebApp?.initData;
+
+  if (!initData) {
+    console.error("loadPairPollAnswersForCurrentUser: initData отсутствует");
+    return {};
+  }
+
+  try {
+    const response = await fetch("/api/pair/poll-answers", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ initData }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok || !data?.ok) {
+      console.error("loadPairPollAnswersForCurrentUser error:", data);
+      return {};
+    }
+
+    return data.pairPollAnswers ?? {};
+  } catch (error) {
+    console.error("loadPairPollAnswersForCurrentUser request error:", error);
+    return {};
+  }
+}
+
 async function refreshPairData(params: {
   user: TgUser | null;
   setAppState: React.Dispatch<React.SetStateAction<AppState>>;
@@ -11667,8 +11569,13 @@ let dailyPairStreakFromDb = {
 };
 
 if (nextPairState.pairId) {
-  pairPollAnswersFromDb = await loadPairPollAnswers(nextPairState.pairId);
-  dailyPairHistoryFromDb = await loadDailyPairHistory(nextPairState.pairId);
+  const [pollAnswers, dailyState] = await Promise.all([
+    loadPairPollAnswersForCurrentUser(),
+    loadDailyPairState(),
+  ]);
+
+  pairPollAnswersFromDb = pollAnswers;
+  dailyPairHistoryFromDb = dailyState.history;
   dailyPairStreakFromDb = calculateDailyPairStreak(dailyPairHistoryFromDb);
 }
 
@@ -12051,7 +11958,27 @@ const handleBuyPremium = async () => {
 
   if (status !== "paid" || !user?.id) return;
 
-  const hasPremium = await loadPremiumStatus(user.id);
+  const initDataForPremiumCheck = window.Telegram?.WebApp?.initData;
+  let hasPremium = false;
+
+  if (initDataForPremiumCheck) {
+    try {
+      const premiumResponse = await fetch("/api/profile/state", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ initData: initDataForPremiumCheck }),
+      });
+      const premiumData = await premiumResponse.json();
+
+      if (premiumResponse.ok && premiumData?.ok) {
+        hasPremium = Boolean(premiumData.isPremium);
+      } else {
+        console.error("POST-PAYMENT PREMIUM CHECK ERROR:", premiumData);
+      }
+    } catch (error) {
+      console.error("POST-PAYMENT PREMIUM CHECK ERROR:", error);
+    }
+  }
 
   setAppState((prev) => ({
     ...prev,
@@ -12988,15 +12915,6 @@ if (!telegramId) {
   return;
 }
 
-const hasPremium = await loadPremiumStatus(telegramId);
-
-setAppState((prev) => ({
-  ...prev,
-  isPremium: hasPremium,
-}));
-
-
-
    const currentUser: TgUser = {
   id: telegramUser.id,
   first_name: telegramUser.first_name,
@@ -13007,19 +12925,47 @@ setAppState((prev) => ({
 
 setUser(currentUser);
 
-const profileFromDb = await upsertTelegramProfile(currentUser);
+// Единый старт: раньше здесь была россыпь отдельных прямых
+// supabase.from(...).select(...) анонимным ключом (профиль, пара,
+// premium-статус, парные ответы опросов, вопрос дня) — теперь один
+// авторизованный POST /api/bootstrap отдаёт всё сразу. См.
+// lib/server/pair-state.ts / lib/server/reads.ts на сервере.
+const initData = window.Telegram?.WebApp?.initData;
 
-const soloPointsFromDb = Number(
-  profileFromDb?.soloPoints ?? 0
+if (!initData) {
+  console.error("bootstrap: Telegram initData отсутствует");
+  return;
+}
+
+let bootstrapData: any = null;
+
+try {
+  const response = await fetch("/api/bootstrap", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ initData }),
+  });
+
+  bootstrapData = await response.json();
+
+  if (!response.ok || !bootstrapData?.ok) {
+    console.error("bootstrap request failed:", bootstrapData);
+    return;
+  }
+} catch (error) {
+  console.error("bootstrap request error:", error);
+  return;
+}
+
+const soloPointsFromDb = Number(bootstrapData.profile?.soloPoints ?? 0);
+const soloWeeklyPointsFromDb = Number(
+  bootstrapData.profile?.soloWeeklyPoints ?? 0
 );
-
-const soloWeeklyPointsFromDb =
-  profileFromDb?.soloWeeklyPointsWeek === getCurrentWeekKey()
-    ? Number(profileFromDb?.soloWeeklyPoints ?? 0)
-    : 0;
 
 setAppState((prev) => ({
   ...prev,
+
+  isPremium: Boolean(bootstrapData.isPremium),
 
   soloPoints: soloPointsFromDb,
   soloWeeklyPoints: soloWeeklyPointsFromDb,
@@ -13028,17 +12974,19 @@ setAppState((prev) => ({
   points: soloPointsFromDb,
 }));
 
-if (startParam?.startsWith("ref_") && tg?.initData) {
+if (startParam?.startsWith("ref_")) {
   // Локальная проверка startParam — только чтобы не дёргать эндпоинт
   // впустую; сам referrerTelegramId сервер заново достаёт из initData.
-  await claimReferralReward(tg.initData);
+  await claimReferralReward(initData);
 }
-
-
 
 const referralStats = await loadReferralStats(currentUser.id!);
 
-let nextPairState = await loadPairStateForUser(currentUser.id!);
+let nextPairState: PairState = bootstrapData.pair;
+let pairPollAnswersFromDb: Record<string, number[]> =
+  bootstrapData.pairPollAnswers ?? {};
+let dailyPairTodayFromDb = bootstrapData.dailyPair?.today ?? [];
+let dailyPairHistoryFromDb = bootstrapData.dailyPair?.history ?? [];
 
 if (!nextPairState.pairId && startParam?.startsWith("invite_")) {
   const inviteCode = startParam.replace("invite_", "");
@@ -13052,25 +13000,26 @@ if (!nextPairState.pairId && startParam?.startsWith("invite_")) {
 
   if (joinedPair) {
     nextPairState = joinedPair;
+
+    // bootstrap уже сходил за pairPollAnswers/dailyPair ДО join —
+    // для только что подключённой пары нужно перечитать их заново.
+    if (nextPairState.pairId) {
+      const dailyState = await loadDailyPairState();
+      dailyPairTodayFromDb = dailyState.today;
+      dailyPairHistoryFromDb = dailyState.history;
+    }
   }
 }
 
 console.log("PAIR STATE AFTER BOOTSTRAP:", nextPairState);
 
-let pairPollAnswersFromDb: Record<string, number[]> = {};
-
-if (nextPairState.pairId) {
-  pairPollAnswersFromDb = await loadPairPollAnswers(
-    nextPairState.pairId
-  );
-}
-
 setAppState((prev) => ({
   ...prev,
   pair: nextPairState,
-  
+
   referrals: referralStats,
   pairPollAnswers: pairPollAnswersFromDb,
+  dailyPairHistory: dailyPairHistoryFromDb,
 }));
 
 // Загружаем топ текущей и предыдущей недели при запуске приложения
@@ -13111,24 +13060,37 @@ const refreshTopLeaderboard = async () => {
       getPreviousWeekKey();
 
     /*
-     * 1. Получаем свежие личные очки
+     * 1. Получаем свежие личные очки (через /api/profile/state —
+     * раньше был прямой supabase.from("profiles").select(...))
      */
-    const {
-      data: freshProfile,
-      error: profileError,
-    } = await supabase
-      .from("profiles")
-      .select(
-        "solo_points, solo_weekly_points, solo_weekly_points_week"
-      )
-      .eq("telegram_id", user.id)
-      .maybeSingle();
+    const initDataForProfile = window.Telegram?.WebApp?.initData;
+    let freshProfile: {
+      solo_points: number;
+      solo_weekly_points: number;
+      solo_weekly_points_week: string | null;
+    } | null = null;
 
-    if (profileError) {
-      console.error(
-        "TOP PROFILE REFRESH ERROR:",
-        profileError
-      );
+    if (initDataForProfile) {
+      try {
+        const profileResponse = await fetch("/api/profile/state", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ initData: initDataForProfile }),
+        });
+        const profileData = await profileResponse.json();
+
+        if (profileResponse.ok && profileData?.ok) {
+          freshProfile = {
+            solo_points: profileData.profile.soloPoints,
+            solo_weekly_points: profileData.profile.soloWeeklyPoints,
+            solo_weekly_points_week: profileData.profile.soloWeeklyPointsWeek,
+          };
+        } else {
+          console.error("TOP PROFILE REFRESH ERROR:", profileData);
+        }
+      } catch (error) {
+        console.error("TOP PROFILE REFRESH ERROR:", error);
+      }
     }
 
     /*
@@ -13461,17 +13423,14 @@ const handleCompletePoll = async (
     appState.pair.pairId &&
     user?.id
   ) {
-    await savePollSubmission({
-      pairId: appState.pair.pairId,
-      telegramId: user.id,
+    const updatedPairPollAnswers = await savePollSubmission({
       pollId: poll.id,
       answers,
     });
 
-    pairPollAnswersFromDb =
-      await loadPairPollAnswers(
-        appState.pair.pairId
-      );
+    if (updatedPairPollAnswers) {
+      pairPollAnswersFromDb = updatedPairPollAnswers;
+    }
   }
 
 
