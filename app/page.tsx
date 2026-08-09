@@ -3086,14 +3086,20 @@ function PairScreen({
                   >
                     <span>
                       {pairLevel.nextLevelPoints
-                        ? `${points} / ${pairLevel.nextLevelPoints}`
+                        ? // Берём из pairLevel (посчитан от очков ПАРЫ), а
+                          // не из points — тот был солo-балансом
+                          // пользователя и не совпадал с самим прогресс-баром.
+                          `${
+                            pairLevel.currentLevelPoints +
+                            pairLevel.progressInLevel
+                          } / ${pairLevel.nextLevelPoints}`
                         : t.pair.maxLevel}
                     </span>
 
                     <span>
                       {pairLevel.nextLevelPoints
                         ? `${t.pair.untilNext}: ${
-                            pairLevel.nextLevelPoints - points
+                            pairLevel.progressMax - pairLevel.progressInLevel
                           }`
                         : ""}
                     </span>
@@ -6386,7 +6392,12 @@ function MainMenu({
   }}
 >
   {pairLevel.nextLevelPoints
-  ? `До следующего уровня: ${Math.max(0, pairLevel.nextLevelPoints - points)}`
+  ? // Тот же фикс, что и в PairScreen — берём из pairLevel (очки пары),
+    // а не из points (соло-баланс, не совпадал с прогресс-баром).
+    `До следующего уровня: ${Math.max(
+      0,
+      pairLevel.progressMax - pairLevel.progressInLevel
+    )}`
   : "Максимальный уровень"}
 </div>
       </div>
