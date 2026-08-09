@@ -1253,15 +1253,19 @@ async function loadPremiumStatus(telegramId: number) {
   if (!data?.length) return false;
 
   return data.some((sub) => {
-    if (sub.plan === "free_premium") {
-      return true;
+    // Если у подписки есть expires_at — это и есть источник истины,
+    // независимо от плана (в т.ч. для free_premium: раньше free_premium
+    // считался бессрочным всегда, из-за чего "Premium бесплатно за
+    // подписку на каналы" выдавался навсегда вместо задуманной 1
+    // недели — см. app/api/check-free-premium/route.ts).
+    if (sub.expires_at) {
+      return new Date(sub.expires_at) > new Date();
     }
 
-    if (!sub.expires_at) {
-      return false;
-    }
-
-    return new Date(sub.expires_at) > new Date();
+    // expires_at не задан — бессрочной считаем только legacy
+    // free_premium-запись без даты истечения (старые гранты до этого
+    // фикса).
+    return sub.plan === "free_premium";
   });
 }
 
@@ -4124,9 +4128,11 @@ const t = market === "en" ? TEXT_EN : TEXT_RU;
 
   const bothAnswered = !!myAnswer && !!partnerAnswer;
 
-  const visibleHistory = historyExpanded
-  ? appState.dailyPairHistory
-  : appState.dailyPairHistory.slice(0, 1);
+  // Полностью свёрнуто по умолчанию — список показывается только по
+  // нажатию кнопки "Показать" (раньше при 1 записи в истории она была
+  // видна всегда, кнопки не было вовсе, потому что тогда нечего было
+  // "разворачивать" — теперь кнопка есть в любом случае).
+  const visibleHistory = historyExpanded ? appState.dailyPairHistory : [];
 
   async function saveAnswer(answerIndex: number) {
     if (!pair.pairId || !user?.id) {
@@ -4588,25 +4594,23 @@ const t = market === "en" ? TEXT_EN : TEXT_RU;
         История
       </div>
 
-      {appState.dailyPairHistory.length > 1 && (
-        <button
-          type="button"
-          onClick={() => setHistoryExpanded((prev) => !prev)}
-          style={{
-            border: "none",
-            background: "rgba(255,255,255,0.78)",
-            color: "#6f54ff",
-            fontSize: 12,
-            fontWeight: 800,
-            padding: "6px 10px",
-            borderRadius: 999,
-            cursor: "pointer",
-            boxShadow: "0 6px 14px rgba(124,92,255,0.10)",
-          }}
-        >
-          {historyExpanded ? "Свернуть" : "Показать всё"}
-        </button>
-      )}
+      <button
+        type="button"
+        onClick={() => setHistoryExpanded((prev) => !prev)}
+        style={{
+          border: "none",
+          background: "rgba(255,255,255,0.78)",
+          color: "#6f54ff",
+          fontSize: 12,
+          fontWeight: 800,
+          padding: "6px 10px",
+          borderRadius: 999,
+          cursor: "pointer",
+          boxShadow: "0 6px 14px rgba(124,92,255,0.10)",
+        }}
+      >
+        {historyExpanded ? "Скрыть" : "Показать"}
+      </button>
     </div>
 
          <div style={{ display: "grid", gap: 8, marginTop: 12 }}>
@@ -10528,10 +10532,11 @@ function FreePremiumScreen({
 
         <button
   onClick={async () => {
-    const tgUser =
-      window.Telegram?.WebApp?.initDataUnsafe?.user;
+    // telegramId сервер теперь достаёт сам из подписанного initData —
+    // раньше принимался прямо из тела запроса без проверки.
+    const initData = window.Telegram?.WebApp?.initData;
 
-    if (!tgUser?.id) {
+    if (!initData) {
       alert("Не удалось определить Telegram");
       return;
     }
@@ -10544,7 +10549,7 @@ function FreePremiumScreen({
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          telegramId: tgUser.id,
+          initData,
         }),
       }
     );
@@ -10553,7 +10558,15 @@ function FreePremiumScreen({
     const result = await response.json();
 
 if (result.success) {
-  alert("🎉 Premium активирован!");
+  const untilText = result.expiresAt
+    ? new Date(result.expiresAt).toLocaleDateString("ru-RU")
+    : null;
+
+  alert(
+    untilText
+      ? `🎉 Premium активирован до ${untilText}!`
+      : "🎉 Premium активирован!"
+  );
   window.location.reload();
 } else {
   console.error("FREE PREMIUM RESULT:", result);
