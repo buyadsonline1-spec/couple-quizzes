@@ -3778,87 +3778,129 @@ function PairStreakInfoScreen({
   const reachedMilestones = appState.dailyPairStreak.reachedMilestones;
 
   const nextMilestone = milestones.find((item) => item.days > current);
+  const prevMilestoneDays = [...milestones]
+    .reverse()
+    .find((item) => item.days <= current)?.days ?? 0;
+
+  const progressPercent = nextMilestone
+    ? Math.min(
+        100,
+        Math.round(
+          ((current - prevMilestoneDays) /
+            (nextMilestone.days - prevMilestoneDays)) *
+            100
+        )
+      )
+    : 100;
 
   return (
     <div style={{ padding: 16, display: "grid", gap: 14 }}>
-      
+
 
       <div
         style={{
           ...cardBaseStyle(),
-          padding: 18,
+          padding: 20,
+          textAlign: "center",
           background:
-            "linear-gradient(135deg, rgba(255,255,255,0.38), rgba(255,255,255,0.22))",
+            "linear-gradient(160deg, rgba(255,145,190,0.20), rgba(143,107,255,0.18))",
         }}
       >
-        <div>
-  <div
-    style={{
-      fontSize: 16,
-      fontWeight: 900,
-      color: "#2b2148",
-    }}
-  >
-    🔥 Серия пары
-  </div>
-
-  <div
-    style={{
-      marginTop: 10,
-      fontSize: 36,
-      fontWeight: 900,
-      color: "#1f1d3a",
-      lineHeight: 1,
-    }}
-  >
-    {current} дн.
-  </div>
-
-  <div
-    style={{
-      marginTop: 10,
-      fontSize: 14,
-      lineHeight: 1.55,
-      color: "rgba(43,33,72,0.72)",
-    }}
-  >
-    Вы оба отвечаете на вопрос дня подряд и прокачиваете серию пары.
-  </div>
-</div>
-
-     
+        <div
+          style={{
+            fontSize: 15,
+            fontWeight: 800,
+            color: "#6c6487",
+          }}
+        >
+          🔥 Серия пары
+        </div>
 
         <div
           style={{
-            marginTop: 14,
-            padding: "12px 14px",
-            borderRadius: 16,
-            background: "rgba(255,255,255,0.36)",
-            border: "1px solid rgba(255,255,255,0.35)",
+            marginTop: 10,
+            fontSize: 46,
+            fontWeight: 900,
+            color: "#1f1d3a",
+            lineHeight: 1,
+            letterSpacing: "-0.03em",
+          }}
+        >
+          {current} дн.
+        </div>
+
+        <div
+          style={{
+            marginTop: 10,
+            fontSize: 14,
+            lineHeight: 1.55,
+            color: "rgba(43,33,72,0.72)",
+          }}
+        >
+          Вы оба отвечаете на вопрос дня подряд и прокачиваете серию пары.
+        </div>
+
+        <div
+          style={{
+            marginTop: 16,
+            padding: "14px 16px",
+            borderRadius: 18,
+            background: "rgba(255,255,255,0.42)",
+            border: "1px solid rgba(255,255,255,0.4)",
+            textAlign: "left",
           }}
         >
           <div
             style={{
-              fontSize: 13,
-              fontWeight: 700,
-              color: "#6c6487",
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "baseline",
+              gap: 10,
             }}
           >
-            Следующий бонус
+            <div
+              style={{
+                fontSize: 13,
+                fontWeight: 700,
+                color: "#6c6487",
+              }}
+            >
+              Следующий бонус
+            </div>
+
+            <div
+              style={{
+                fontSize: 15,
+                fontWeight: 900,
+                color: "#6f54ff",
+              }}
+            >
+              {nextMilestone
+                ? `${nextMilestone.days} дн. · +${nextMilestone.reward} очков`
+                : "Максимальный рубеж достигнут 👑"}
+            </div>
           </div>
 
-          <div
-            style={{
-              marginTop: 4,
-              fontSize: 16,
-              fontWeight: 900,
-              color: "#6f54ff",
-            }}
-          >
-            {nextMilestone
-              ? `${nextMilestone.days} дн. · +${nextMilestone.reward} очков`
-              : "Максимальный рубеж достигнут"}
-          </div>
+          {nextMilestone && (
+            <div
+              style={{
+                marginTop: 10,
+                height: 8,
+                borderRadius: 999,
+                background: "rgba(255,255,255,0.6)",
+                overflow: "hidden",
+              }}
+            >
+              <div
+                style={{
+                  width: `${progressPercent}%`,
+                  height: "100%",
+                  borderRadius: 999,
+                  background: "linear-gradient(90deg,#8f6bff,#ff76ba)",
+                }}
+              />
+            </div>
+          )}
         </div>
       </div>
 
@@ -3944,11 +3986,13 @@ function PairStreakInfoScreen({
                       justifyContent: "center",
                       background: "rgba(255,255,255,0.72)",
                       fontSize: 18,
+                      opacity: reached ? 1 : 0.35,
+                      filter: reached ? "none" : "grayscale(1)",
                     }}
                   >
-                    {reached ? icon : "▫️"}
+                    {icon}
                   </div>
-                  
+
 
                   {reached && (
                     <div
