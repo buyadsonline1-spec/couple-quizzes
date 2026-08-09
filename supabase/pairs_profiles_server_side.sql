@@ -332,11 +332,16 @@ begin
 
   v_today := (now() at time zone 'Europe/Helsinki')::date;
 
-  -- Та же логика, что и в клиентском loadPremiumStatus(): активная
-  -- подписка с plan='free_premium' (бессрочно) или expires_at в будущем.
+  -- Та же логика, что и в клиентском loadPremiumStatus(): если задан
+  -- expires_at, он и решает (в т.ч. для free_premium — иначе бесплатный
+  -- премиум за подписку на каналы был бы бессрочным); expires_at is
+  -- null считаем бессрочным только для legacy free_premium-записей без
+  -- даты истечения.
   select coalesce(bool_or(
-    s.plan = 'free_premium'
-    or (s.expires_at is not null and s.expires_at > now())
+    case
+      when s.expires_at is not null then s.expires_at > now()
+      else s.plan = 'free_premium'
+    end
   ), false)
     into v_is_premium
     from public.subscriptions s
