@@ -9606,16 +9606,55 @@ if (!activeTestId) {
   );
 }
 
+// Раньше wonRewards/spinsInfo заполнялись только как побочный эффект
+// вызова onSpin() — при переустановке/смене устройства история призов
+// и счётчик "X/3 сегодня" пропадали, хотя реальная история давно
+// хранится на сервере (wheel_spins). Подтягиваем её при открытии
+// экрана через новый /api/rewards/state.
+async function loadRewardsState(): Promise<{
+  wonRewards: WonReward[];
+  spinsInfo: { used: number; remaining: number; bonusCredits: number };
+} | null> {
+  const initData = window.Telegram?.WebApp?.initData;
+
+  if (!initData) {
+    console.error("loadRewardsState: Telegram initData отсутствует");
+    return null;
+  }
+
+  try {
+    const response = await fetch("/api/rewards/state", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ initData }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok || !data?.ok) {
+      console.error("loadRewardsState error:", data);
+      return null;
+    }
+
+    return { wonRewards: data.wonRewards, spinsInfo: data.spinsInfo };
+  } catch (error) {
+    console.error("loadRewardsState request error:", error);
+    return null;
+  }
+}
+
 function RewardsScreen({
   points,
   wonRewards,
   onBack,
   onSpin,
+  onRewardsStateLoaded,
 }: {
   points: number;
   wonRewards: WonReward[];
   onBack: () => void;
   onSpin: () => Promise<WonReward | null>;
+  onRewardsStateLoaded: (wonRewards: WonReward[]) => void;
 }) {
 
   const market = getMarket();
@@ -9653,16 +9692,31 @@ const visibleRewards = rewardsExpanded
   };
   const wheelDisplayCategories = [...wheelCategories, BONUS_DISPLAY_CATEGORY];
 
-  // Известно только после первого спина в этой сессии (нет ещё
-  // отдельного bootstrap-эндпоинта, который отдавал бы это при
-  // открытии экрана) — но раз колесо теперь тратит личный SOLO-баланс,
-  // а не общий счёт пары, явно показываем лимит, чтобы не было
-  // непонятно, почему баланс пары не меняется.
+  // Теперь подтягивается сразу при открытии экрана через
+  // /api/rewards/state (а не только после первого спина в этой
+  // сессии) — история призов и счётчик "X/3 сегодня" переживают
+  // переустановку/смену устройства, потому что реальный источник —
+  // wheel_spins на сервере, а не localStorage.
   const [spinsInfo, setSpinsInfo] = useState<{
     used: number;
     remaining: number;
     bonusCredits: number;
   } | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    loadRewardsState().then((data) => {
+      if (cancelled || !data) return;
+      setSpinsInfo(data.spinsInfo);
+      onRewardsStateLoaded(data.wonRewards);
+    });
+
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const size = 320;
   const radius = 150;
@@ -14596,6 +14650,9 @@ showPaywall={() => {
             wonRewards={appState.wonRewards}
             onBack={() => setScreen("menu")}
             onSpin={handleSpinReward}
+            onRewardsStateLoaded={(wonRewards) =>
+              setAppState((prev) => ({ ...prev, wonRewards }))
+            }
           />
         )}
 
