@@ -6,6 +6,10 @@ import {
   buildRelationshipPsychologistPrompt,
   getSafetyModeResponse,
 } from "@/lib/ai/relationship-psychologist-prompt";
+import {
+  buildPsychologistPairContext,
+  formatPairContextForPrompt,
+} from "@/lib/server/psychologist-pair-context";
 
 // Категории OpenAI Moderation, которые мы считаем "серьёзной опасностью"
 // (не просто грубость/хейт) — при срабатывании любой из них НЕ отдаём
@@ -62,7 +66,7 @@ export async function POST(request: NextRequest) {
     // принадлежит ли он этому telegramId.
     const { data: conversation, error: conversationError } = await supabaseAdmin
       .from("ai_psychologist_conversations")
-      .select("id, telegram_id, language")
+      .select("id, telegram_id, language, pair_id, pair_context_enabled")
       .eq("id", conversationId)
       .eq("telegram_id", telegramId)
       .maybeSingle();
@@ -83,6 +87,34 @@ export async function POST(request: NextRequest) {
     }
 
     const language = conversation.language === "en" ? "en" : "ru";
+
+    // Pair Context (второй проход, согласован с ChatGPT): только если
+    // пользователь явно включил тумблер для ЭТОГО разговора и реально
+    // состоит в паре. Собираем строго агрегированные данные (уровень
+    // пары, % совместимости, сильные/слабые темы, серия вопроса дня) —
+    // никаких сырых ответов партнёра, telegram_id или username. Если
+    // сбор контекста не удался — не блокируем чат, просто продолжаем
+    // без контекста (тот же уровень доступности, что и раньше).
+    let pairContextText: string | null = null;
+
+    if (conversation.pair_context_enabled && conversation.pair_id) {
+      try {
+        const { data: pairRow } = await supabaseAdmin
+          .from("pairs")
+          .select("total_points")
+          .eq("id", conversation.pair_id)
+          .maybeSingle();
+
+        const pairContext = await buildPsychologistPairContext(
+          conversation.pair_id,
+          pairRow?.total_points ?? 0
+        );
+
+        pairContextText = formatPairContextForPrompt(pairContext, language);
+      } catch (error) {
+        console.error("PSYCHOLOGIST CHAT pair context error:", error);
+      }
+    }
 
     // Дневной лимит — атомарно на сервере, тот же паттерн, что и
     // consume_daily_access для тестов, но с premium-aware лимитом
@@ -188,10 +220,14 @@ export async function POST(request: NextRequest) {
 
       const history = (historyRows ?? []).reverse();
 
+      const instructions = pairContextText
+        ? `${buildRelationshipPsychologistPrompt({ language })}\n\n${pairContextText}`
+        : buildRelationshipPsychologistPrompt({ language });
+
       try {
         const response = await openai.responses.create({
           model: AI_PSYCHOLOGIST_MODEL,
-          instructions: buildRelationshipPsychologistPrompt({ language }),
+          instructions,
           input: history.map((row) => ({
             role: row.role as "user" | "assistant",
             content: row.content,
@@ -239,6 +275,7 @@ export async function POST(request: NextRequest) {
       ok: true,
       reply: replyText,
       safetyMode,
+      pairContextUsed: Boolean(pairContextText),
       used: accessData.used,
       limit: accessData.limit,
       isPremium: accessData.isPremium,

@@ -4097,6 +4097,7 @@ type AiPsychologistMessage = {
   role: "user" | "assistant";
   content: string;
   createdAt?: string;
+  pairContextUsed?: boolean;
 };
 
 const AI_PSYCHOLOGIST_STARTERS_RU = [
@@ -4143,6 +4144,12 @@ function AiPsychologistChatScreen({
     isPremium: boolean;
   } | null>(null);
   const [errorText, setErrorText] = useState<string | null>(null);
+  // Pair Context — по умолчанию OFF. Хранится на самом conversation
+  // (не глобально), чтобы один диалог мог быть личным, другой — с
+  // контекстом пары. Сервер собирает только агрегированные данные
+  // (уровень пары, % совместимости, сильные/слабые темы, серию вопроса
+  // дня) — никаких сырых ответов партнёра.
+  const [pairContextEnabled, setPairContextEnabled] = useState(false);
 
   const scrollBottomRef = useRef<HTMLDivElement | null>(null);
 
@@ -4173,6 +4180,14 @@ function AiPsychologistChatScreen({
               createdAt: m.createdAt,
             }))
           );
+
+          const activeConversation = (data.conversations ?? []).find(
+            (c: any) => c.id === data.activeConversationId
+          );
+
+          if (activeConversation) {
+            setPairContextEnabled(Boolean(activeConversation.pair_context_enabled));
+          }
         }
       } catch (error) {
         console.error("psychologist state load error:", error);
@@ -4198,7 +4213,7 @@ function AiPsychologistChatScreen({
       const response = await fetch("/api/psychologist/new", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ initData, language }),
+        body: JSON.stringify({ initData, language, pairContextEnabled }),
       });
 
       const data = await response.json();
@@ -4288,7 +4303,11 @@ function AiPsychologistChatScreen({
 
       setMessages((prev) => [
         ...prev,
-        { role: "assistant", content: data.reply },
+        {
+          role: "assistant",
+          content: data.reply,
+          pairContextUsed: Boolean(data.pairContextUsed),
+        },
       ]);
 
       setLimitInfo({
@@ -4305,6 +4324,28 @@ function AiPsychologistChatScreen({
       );
     } finally {
       setSending(false);
+    }
+  }
+
+  async function togglePairContext(next: boolean) {
+    setPairContextEnabled(next);
+
+    // Если разговор ещё не создан — значение просто уйдёт вместе с
+    // первым сообщением через ensureConversation(). Если уже есть —
+    // переключаем на сервере отдельным вызовом.
+    if (!conversationId) return;
+
+    const initData = window.Telegram?.WebApp?.initData;
+    if (!initData) return;
+
+    try {
+      await fetch("/api/psychologist/context", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ initData, conversationId, enabled: next }),
+      });
+    } catch (error) {
+      console.error("psychologist context toggle error:", error);
     }
   }
 
@@ -4353,6 +4394,64 @@ function AiPsychologistChatScreen({
           {t.common.back}
         </button>
       </div>
+
+      <button
+        type="button"
+        onClick={() => togglePairContext(!pairContextEnabled)}
+        style={{
+          ...cardBaseStyle(),
+          padding: "10px 14px",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          gap: 10,
+          cursor: "pointer",
+          border: "none",
+          textAlign: "left",
+        }}
+      >
+        <div style={{ flex: 1 }}>
+          <div style={{ fontSize: 13, fontWeight: 800, color: "#3d3660" }}>
+            ✨{" "}
+            {language === "en"
+              ? "Use our pair's data"
+              : "Учитывать данные нашей пары"}
+          </div>
+          <div style={{ marginTop: 2, fontSize: 11.5, color: "#7a7396" }}>
+            {language === "en"
+              ? "Compatibility & strong/weak topics — never the partner's raw answers."
+              : "Совместимость и сильные/слабые темы — без сырых ответов партнёра."}
+          </div>
+        </div>
+
+        <div
+          style={{
+            width: 40,
+            height: 22,
+            borderRadius: 999,
+            background: pairContextEnabled
+              ? "linear-gradient(90deg,#8f6bff,#ff76ba)"
+              : "rgba(255,255,255,0.4)",
+            position: "relative",
+            flexShrink: 0,
+            transition: "background 0.2s ease",
+          }}
+        >
+          <div
+            style={{
+              position: "absolute",
+              top: 2,
+              left: pairContextEnabled ? 20 : 2,
+              width: 18,
+              height: 18,
+              borderRadius: 999,
+              background: "#fff",
+              transition: "left 0.2s ease",
+              boxShadow: "0 2px 6px rgba(0,0,0,0.2)",
+            }}
+          />
+        </div>
+      </button>
 
       <div
         style={{
@@ -4407,19 +4506,39 @@ function AiPsychologistChatScreen({
               style={{
                 alignSelf: msg.role === "user" ? "flex-end" : "flex-start",
                 maxWidth: "85%",
-                padding: "10px 14px",
-                borderRadius: 16,
-                fontSize: 14.5,
-                lineHeight: 1.5,
-                whiteSpace: "pre-wrap",
-                background:
-                  msg.role === "user"
-                    ? "linear-gradient(135deg, #8f6bff, #ff76ba)"
-                    : "rgba(255,255,255,0.4)",
-                color: msg.role === "user" ? "#fff" : "#241b40",
               }}
             >
-              {msg.content}
+              <div
+                style={{
+                  padding: "10px 14px",
+                  borderRadius: 16,
+                  fontSize: 14.5,
+                  lineHeight: 1.5,
+                  whiteSpace: "pre-wrap",
+                  background:
+                    msg.role === "user"
+                      ? "linear-gradient(135deg, #8f6bff, #ff76ba)"
+                      : "rgba(255,255,255,0.4)",
+                  color: msg.role === "user" ? "#fff" : "#241b40",
+                }}
+              >
+                {msg.content}
+              </div>
+
+              {msg.role === "assistant" && msg.pairContextUsed && (
+                <div
+                  style={{
+                    marginTop: 4,
+                    fontSize: 10.5,
+                    color: "#8f6bff",
+                    fontWeight: 700,
+                  }}
+                >
+                  {language === "en"
+                    ? "✨ Used your pair's data"
+                    : "✨ Учтены данные вашей пары"}
+                </div>
+              )}
             </div>
           ))
         )}
