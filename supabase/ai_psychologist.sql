@@ -110,9 +110,9 @@ begin
     where s.telegram_id = p_telegram_id
       and s.status = 'active';
 
-  -- FREE: 3 сообщения в день. PREMIUM: 50 в день — не безлимит,
+  -- FREE: 5 сообщений в день. PREMIUM: 50 в день — не безлимит,
   -- потому что каждое сообщение реально стоит денег на OpenAI.
-  v_limit := case when v_is_premium then 50 else 3 end;
+  v_limit := case when v_is_premium then 50 else 5 end;
 
   insert into public.user_daily_usage (telegram_id, usage_date)
   values (p_telegram_id, v_today)
