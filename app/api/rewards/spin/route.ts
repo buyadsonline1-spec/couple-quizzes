@@ -105,7 +105,9 @@ export async function POST(request: NextRequest) {
     // этого поля не даёт финансового преимущества: она может изменить
     // только страну/валюту приза, а не его ценность или списываемую сумму.
     const suggestedMarket =
-      body.suggestedMarket === "en" || body.suggestedMarket === "ru"
+      body.suggestedMarket === "en" ||
+      body.suggestedMarket === "ru" ||
+      body.suggestedMarket === "fi"
         ? body.suggestedMarket
         : null;
 

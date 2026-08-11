@@ -4,6 +4,7 @@ import { CSSProperties, useEffect, useMemo, useRef, useState } from "react";
 import { getMarket, Market } from "@/config/markets";
 import { REWARD_CATEGORIES_RU } from "@/config/rewards-ru";
 import { REWARD_CATEGORIES_EN } from "@/config/rewards-en";
+import { REWARD_CATEGORIES_FI } from "@/config/rewards-fi";
 import {
   TEST_REWARD,
   POLL_REWARD,
@@ -116,7 +117,7 @@ type WonReward = {
   spentPoints: number;
   spinsUsedToday: number;
   spinsRemainingToday: number;
-  market: "ru" | "en";
+  market: Market;
   // 70% вращений — это не настоящий приз, а один из двух видов бонуса:
   // +500 очков сразу, либо +1 в банк бесплатных вращений (bonusSpinCredits) —
   // следующее вращение из банка бесплатно и не тратит дневной лимит.
@@ -10280,20 +10281,20 @@ const visibleRewards = rewardsExpanded
   : [...wonRewards].reverse().slice(0, 3);
 
   // Приз и очки решает сервер (spin_reward_wheel) — здесь мы только
-  // подбираем, из какого каталога (RU/EN) рисовать секторы колеса.
+  // подбираем, из какого каталога (RU/EN/FI) рисовать секторы колеса.
   // До первого спина ориентируемся на язык интерфейса; как только
   // приходит ответ сервера, переключаемся на реально закреплённый за
   // пользователем reward_market (result.market), чтобы секторы и текст
-  // приза всегда совпадали с тем, что реально было разыграно.
-  // Колесо призов пока умеет только ru/en (см. wheel_reward_wheel.sql —
-  // reward_market check ограничен 'ru'/'en'), поэтому fi временно
-  // ведёт себя как en — это уже реальные международные призы
-  // (Amazon/Starbucks/Spotify и т.д.), а не русские WB/ЗЯ-сертификаты.
-  const [effectiveMarket, setEffectiveMarket] = useState<"ru" | "en">(
-    market === "ru" ? "ru" : "en"
-  );
+  // приза всегда совпадали с тем, что реально было разыграно. С
+  // wheel_reward_wheel_fi.sql колесо умеет и 'fi' — Normal/Finnkino/
+  // S-market, реально покупаемые в Финляндии подарочные карты.
+  const [effectiveMarket, setEffectiveMarket] = useState<Market>(market);
   const wheelCategories =
-    effectiveMarket === "en" ? REWARD_CATEGORIES_EN : REWARD_CATEGORIES_RU;
+    effectiveMarket === "fi"
+      ? REWARD_CATEGORIES_FI
+      : effectiveMarket === "en"
+        ? REWARD_CATEGORIES_EN
+        : REWARD_CATEGORIES_RU;
 
   // "Бонус" — не настоящий приз (70% вращений), а служебный исход
   // (+500 очков или +1 прокрут). У него нет записи в каталоге призов,
@@ -10363,7 +10364,11 @@ const visibleRewards = rewardsExpanded
     }
 
     const resultCategories =
-      result.market === "en" ? REWARD_CATEGORIES_EN : REWARD_CATEGORIES_RU;
+      result.market === "fi"
+        ? REWARD_CATEGORIES_FI
+        : result.market === "en"
+          ? REWARD_CATEGORIES_EN
+          : REWARD_CATEGORIES_RU;
     const resultDisplayCategories = [
       ...resultCategories,
       BONUS_DISPLAY_CATEGORY,
@@ -14966,10 +14971,9 @@ if (finishedAllTests && !appState.completionBonusesClaimed.tests) {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         initData,
-        // Сервер понимает только 'ru'/'en' (см. wheel_reward_wheel.sql);
-        // fi временно мапим на en — реальные международные призы, а не
-        // случайный откат на русские.
-        suggestedMarket: market === "ru" ? "ru" : "en",
+        // С wheel_reward_wheel_fi.sql сервер понимает 'ru'/'en'/'fi'
+        // напрямую (см. supabase/wheel_reward_wheel_fi.sql).
+        suggestedMarket: market,
       }),
     });
 
