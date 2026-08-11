@@ -1068,6 +1068,14 @@ function getThemeTitle(matchGroup: string) {
       return "Быт";
     case "jealousy":
       return "Ревность";
+    case "roles":
+      return "Роль в отношениях";
+    case "fidelity":
+      return "Верность и измена";
+    case "family":
+      return "Семья и друзья";
+    case "quality-time":
+      return "Совместное время";
     default:
       return matchGroup;
   }
@@ -1121,6 +1129,10 @@ function buildCompatibilityProfile(
     "future",
     "life",
     "jealousy",
+    "roles",
+    "fidelity",
+    "family",
+    "quality-time",
   ];
 
   const themes: CompatibilityThemeResult[] = [];
@@ -1671,6 +1683,425 @@ case "love":
     ),
   ];
 
+    case "roles":
+      return gender === "boy"
+        ? [
+    make(
+      "q1",
+      "Ты считаешь, что мужчина должен быть главным в паре?",
+      "Do you think the man should be the leader in the relationship?",
+      ["Да", "Нет", "Пропускаю"],
+      ["Yes", "No", "Skip"]
+    ),
+    make(
+      "q2",
+      "Должен ли парень всегда платить на свиданиях?",
+      "Should the guy always pay on dates?",
+      ["Да", "Нет", "50 на 50"],
+      ["Yes", "No", "Split 50/50"]
+    ),
+    make(
+      "q3",
+      "Важно ли тебе, чтобы партнёрша поддерживала твои решения без споров?",
+      "Is it important that your partner supports your decisions without arguing?",
+      ["Да", "Нет", "Смотря какие"],
+      ["Yes", "No", "Depends which ones"]
+    ),
+    make(
+      "q4",
+      "Должен ли мужчина быть инициатором в отношениях?",
+      "Should the man be the one to make the first move?",
+      ["Да", "Нет"],
+      ["Yes", "No"]
+    ),
+    make(
+      "q5",
+      "Считаешь ли ты, что забота о технике и ремонте — обязанность парня?",
+      "Do you think fixing things and dealing with tech is the guy's job?",
+      ["Да", "Нет", "Не обязательно"],
+      ["Yes", "No", "Not necessarily"]
+    ),
+    make(
+      "q6",
+      "Важно ли тебе быть для партнёрши «сильным плечом» в трудную минуту?",
+      "Is it important to be your partner's rock in hard times?",
+      ["Да", "Нет"],
+      ["Yes", "No"]
+    ),
+    make(
+      "q7",
+      "Должен ли парень уметь готовить не хуже девушки?",
+      "Should a guy be able to cook as well as a girl?",
+      ["Да", "Нет", "Не принципиально"],
+      ["Yes", "No", "Doesn't matter"]
+    ),
+  ]
+       : [
+    make(
+      "q1",
+      "Ты считаешь, что девушка должна проявлять инициативу в отношениях?",
+      "Do you think a girl should take initiative in a relationship?",
+      ["Да", "Нет", "Хотелось бы"],
+      ["Yes", "No", "I wish"]
+    ),
+    make(
+      "q2",
+      "Важно ли тебе, чтобы партнёр умел готовить?",
+      "Is it important that your partner can cook?",
+      ["Да", "Нет", "Не принципиально"],
+      ["Yes", "No", "Doesn't matter"]
+    ),
+    make(
+      "q3",
+      "Должен ли партнёр первым писать после ссоры?",
+      "Should your partner be the one to text first after a fight?",
+      ["Да", "Нет"],
+      ["Yes", "No"]
+    ),
+    make(
+      "q4",
+      "Считаешь ли ты уборку дома скорее женской обязанностью?",
+      "Do you think cleaning the house is more of a woman's job?",
+      ["Да", "Нет", "Пополам"],
+      ["Yes", "No", "Split evenly"]
+    ),
+    make(
+      "q5",
+      "Важно ли тебе, чтобы партнёр поддерживал твои решения без споров?",
+      "Is it important that your partner supports your decisions without arguing?",
+      ["Да", "Нет", "Смотря какие"],
+      ["Yes", "No", "Depends which ones"]
+    ),
+    make(
+      "q6",
+      "Должен ли партнёр следить за собой ради тебя так же, как ты?",
+      "Should your partner take care of their appearance for you as much as you do?",
+      ["Да", "Нет"],
+      ["Yes", "No"]
+    ),
+    make(
+      "q7",
+      "Важно ли тебе видеть в партнёре надёжного «хозяина дома»?",
+      "Is it important to see your partner as a reliable head of the household?",
+      ["Да", "Нет", "Не обязательно"],
+      ["Yes", "No", "Not necessarily"]
+    ),
+  ];
+
+    case "fidelity":
+      return gender === "boy"
+        ? [
+    make(
+      "q1",
+      "Это измена для тебя, если она смотрит откровенные фото других парней?",
+      "Is it cheating if she looks at explicit photos of other guys?",
+      ["Да", "Нет", "Пропускаю"],
+      ["Yes", "No", "Skip"]
+    ),
+    make(
+      "q2",
+      "Считаешь ли ты изменой активную переписку с бывшим?",
+      "Do you consider actively texting an ex to be cheating?",
+      ["Да", "Нет"],
+      ["Yes", "No"]
+    ),
+    make(
+      "q3",
+      "Это измена, если она скрывает от тебя переписки?",
+      "Is it cheating if she hides her chats from you?",
+      ["Да", "Нет", "Смотря что скрывает"],
+      ["Yes", "No", "Depends what's hidden"]
+    ),
+    make(
+      "q4",
+      "Будет ли изменой поцелуй на вечеринке «по пьяни»?",
+      "Would a drunk kiss at a party count as cheating?",
+      ["Да", "Нет"],
+      ["Yes", "No"]
+    ),
+    make(
+      "q5",
+      "Считаешь ли ты изменой близкую дружбу с «тем самым» бывшим?",
+      "Do you consider staying close with 'that one' ex to be cheating?",
+      ["Да", "Нет", "Зависит от обстоятельств"],
+      ["Yes", "No", "Depends on the circumstances"]
+    ),
+    make(
+      "q6",
+      "Это измена, если она ставит лайки красивым парням в соцсетях?",
+      "Is it cheating if she likes attractive guys' photos on social media?",
+      ["Да", "Нет", "Раздражает, но не измена"],
+      ["Yes", "No", "Annoying, but not cheating"]
+    ),
+    make(
+      "q7",
+      "Будет ли изменой эмоциональная близость с другим человеком без физического контакта?",
+      "Would emotional closeness with someone else count as cheating, even without physical contact?",
+      ["Да", "Нет"],
+      ["Yes", "No"]
+    ),
+  ]
+       : [
+    make(
+      "q1",
+      "Это измена для тебя, если он смотрит откровенные фото других людей?",
+      "Is it cheating if he looks at explicit photos of other people?",
+      ["Пропускаю", "Да", "Нет"],
+      ["Skip", "Yes", "No"]
+    ),
+    make(
+      "q2",
+      "Считаешь ли ты изменой активную переписку с бывшей?",
+      "Do you consider actively texting an ex to be cheating?",
+      ["Да", "Нет"],
+      ["Yes", "No"]
+    ),
+    make(
+      "q3",
+      "Это измена, если он скрывает от тебя переписки?",
+      "Is it cheating if he hides his chats from you?",
+      ["Да", "Нет", "Смотря что скрывает"],
+      ["Yes", "No", "Depends what's hidden"]
+    ),
+    make(
+      "q4",
+      "Будет ли изменой поцелуй на вечеринке «по пьяни»?",
+      "Would a drunk kiss at a party count as cheating?",
+      ["Да", "Нет"],
+      ["Yes", "No"]
+    ),
+    make(
+      "q5",
+      "Считаешь ли ты изменой близкую дружбу с «той самой» бывшей?",
+      "Do you consider staying close with 'that one' ex to be cheating?",
+      ["Да", "Нет", "Зависит от обстоятельств"],
+      ["Yes", "No", "Depends on the circumstances"]
+    ),
+    make(
+      "q6",
+      "Это измена, если он ставит лайки красивым девушкам в соцсетях?",
+      "Is it cheating if he likes attractive girls' photos on social media?",
+      ["Да", "Нет", "Раздражает, но не измена"],
+      ["Yes", "No", "Annoying, but not cheating"]
+    ),
+    make(
+      "q7",
+      "Будет ли изменой эмоциональная близость с другим человеком без физического контакта?",
+      "Would emotional closeness with someone else count as cheating, even without physical contact?",
+      ["Да", "Нет"],
+      ["Yes", "No"]
+    ),
+  ];
+
+    case "family":
+      return gender === "boy"
+        ? [
+    make(
+      "q1",
+      "Ты ценишь дружескую поддержку?",
+      "Do you value support from friends?",
+      ["Для меня это не очень важно", "Да, конечно", "Иногда это помогает"],
+      ["Not very important to me", "Yes, of course", "Sometimes it helps"]
+    ),
+    make(
+      "q2",
+      "Важно ли тебе, чтобы партнёрша нравилась твоим родителям?",
+      "Is it important that your parents like your partner?",
+      ["Да", "Нет", "Не принципиально"],
+      ["Yes", "No", "Doesn't really matter"]
+    ),
+    make(
+      "q3",
+      "Стоит ли обсуждать ваши ссоры с друзьями?",
+      "Is it okay to discuss your fights with friends?",
+      ["Да", "Нет"],
+      ["Yes", "No"]
+    ),
+    make(
+      "q4",
+      "Готов ли ты проводить больше времени с её семьёй, чем со своей?",
+      "Are you willing to spend more time with her family than your own?",
+      ["Да", "Нет", "Смотря когда"],
+      ["Yes", "No", "Depends on when"]
+    ),
+    make(
+      "q5",
+      "Важно ли тебе сохранять близких друзей после начала серьёзных отношений?",
+      "Is it important to keep your close friends after starting a serious relationship?",
+      ["Да", "Нет"],
+      ["Yes", "No"]
+    ),
+    make(
+      "q6",
+      "Нормально ли для тебя, если партнёрша не ладит с твоими друзьями?",
+      "Is it okay if your partner doesn't get along with your friends?",
+      ["Да", "Нет", "Могу с этим смириться"],
+      ["Yes", "No", "I could live with it"]
+    ),
+    make(
+      "q7",
+      "Важно ли тебе, чтобы партнёрша участвовала в семейных праздниках?",
+      "Is it important that your partner joins family celebrations?",
+      ["Да", "Нет", "Не обязательно каждый раз"],
+      ["Yes", "No", "Not every single time"]
+    ),
+  ]
+       : [
+    make(
+      "q1",
+      "Ты ценишь дружескую поддержку?",
+      "Do you value support from friends?",
+      ["Для меня это не очень важно", "Да, конечно", "Иногда это помогает"],
+      ["Not very important to me", "Yes, of course", "Sometimes it helps"]
+    ),
+    make(
+      "q2",
+      "Важно ли тебе, чтобы партнёр нравился твоим родителям?",
+      "Is it important that your parents like your partner?",
+      ["Да", "Нет", "Не принципиально"],
+      ["Yes", "No", "Doesn't really matter"]
+    ),
+    make(
+      "q3",
+      "Стоит ли обсуждать ваши ссоры с подругами?",
+      "Is it okay to discuss your fights with friends?",
+      ["Да", "Нет"],
+      ["Yes", "No"]
+    ),
+    make(
+      "q4",
+      "Готова ли ты проводить больше времени с его семьёй, чем со своей?",
+      "Are you willing to spend more time with his family than your own?",
+      ["Да", "Нет", "Смотря когда"],
+      ["Yes", "No", "Depends on when"]
+    ),
+    make(
+      "q5",
+      "Важно ли тебе сохранять близких подруг после начала серьёзных отношений?",
+      "Is it important to keep your close friends after starting a serious relationship?",
+      ["Да", "Нет"],
+      ["Yes", "No"]
+    ),
+    make(
+      "q6",
+      "Нормально ли для тебя, если партнёр не ладит с твоими друзьями?",
+      "Is it okay if your partner doesn't get along with your friends?",
+      ["Да", "Нет", "Могу с этим смириться"],
+      ["Yes", "No", "I could live with it"]
+    ),
+    make(
+      "q7",
+      "Важно ли тебе, чтобы партнёр участвовал в семейных праздниках?",
+      "Is it important that your partner joins family celebrations?",
+      ["Да", "Нет", "Не обязательно каждый раз"],
+      ["Yes", "No", "Not every single time"]
+    ),
+  ];
+
+    case "quality-time":
+      return gender === "boy"
+        ? [
+    make(
+      "q1",
+      "Ты заинтересован в поиске общих хобби или увлечений с партнёршей?",
+      "Are you interested in finding shared hobbies with your partner?",
+      ["Да", "Нет", "Иногда выдаю)"],
+      ["Yes", "No", "Sometimes I fake it)"]
+    ),
+    make(
+      "q2",
+      "Важно ли тебе проводить хотя бы один вечер в неделю только вдвоём?",
+      "Is it important to spend at least one evening a week just the two of you?",
+      ["Да", "Нет"],
+      ["Yes", "No"]
+    ),
+    make(
+      "q3",
+      "Готов ли ты отказаться от встречи с друзьями ради вечера с партнёршей?",
+      "Would you skip hanging out with friends for an evening with your partner?",
+      ["Да", "Нет", "Смотря по ситуации"],
+      ["Yes", "No", "Depends on the situation"]
+    ),
+    make(
+      "q4",
+      "Важно ли тебе, чтобы у вас были общие традиции или ритуалы?",
+      "Is it important to have shared traditions or rituals?",
+      ["Да", "Нет"],
+      ["Yes", "No"]
+    ),
+    make(
+      "q5",
+      "Считаешь ли ты нормальным проводить выходные порознь?",
+      "Do you think it's normal to spend weekends apart?",
+      ["Да", "Нет", "Иногда это даже полезно"],
+      ["Yes", "No", "Sometimes it's even good for you"]
+    ),
+    make(
+      "q6",
+      "Важно ли тебе путешествовать вместе хотя бы раз в год?",
+      "Is it important to travel together at least once a year?",
+      ["Да", "Нет", "Не принципиально"],
+      ["Yes", "No", "Doesn't really matter"]
+    ),
+    make(
+      "q7",
+      "Готов ли ты откладывать личные дела ради совместных планов?",
+      "Would you put off your own plans for shared ones?",
+      ["Да", "Нет"],
+      ["Yes", "No"]
+    ),
+  ]
+       : [
+    make(
+      "q1",
+      "Ты заинтересована в поиске общих хобби или увлечений с партнёром?",
+      "Are you interested in finding shared hobbies with your partner?",
+      ["Да", "Нет", "Иногда выдаю)"],
+      ["Yes", "No", "Sometimes I fake it)"]
+    ),
+    make(
+      "q2",
+      "Важно ли тебе проводить хотя бы один вечер в неделю только вдвоём?",
+      "Is it important to spend at least one evening a week just the two of you?",
+      ["Да", "Нет"],
+      ["Yes", "No"]
+    ),
+    make(
+      "q3",
+      "Готова ли ты отказаться от встречи с подругами ради вечера с партнёром?",
+      "Would you skip hanging out with friends for an evening with your partner?",
+      ["Да", "Нет", "Смотря по ситуации"],
+      ["Yes", "No", "Depends on the situation"]
+    ),
+    make(
+      "q4",
+      "Важно ли тебе, чтобы у вас были общие традиции или ритуалы?",
+      "Is it important to have shared traditions or rituals?",
+      ["Да", "Нет"],
+      ["Yes", "No"]
+    ),
+    make(
+      "q5",
+      "Считаешь ли ты нормальным проводить выходные порознь?",
+      "Do you think it's normal to spend weekends apart?",
+      ["Да", "Нет", "Иногда это даже полезно"],
+      ["Yes", "No", "Sometimes it's even good for you"]
+    ),
+    make(
+      "q6",
+      "Важно ли тебе путешествовать вместе хотя бы раз в год?",
+      "Is it important to travel together at least once a year?",
+      ["Да", "Нет", "Не принципиально"],
+      ["Yes", "No", "Doesn't really matter"]
+    ),
+    make(
+      "q7",
+      "Готова ли ты откладывать личные дела ради совместных планов?",
+      "Would you put off your own plans for shared ones?",
+      ["Да", "Нет"],
+      ["Yes", "No"]
+    ),
+  ];
 
     default:
       return [];
@@ -1688,6 +2119,10 @@ const POLL_THEME_IMAGES: Record<string, string> = {
   future: "/images/poll-themes/future.png",
   life: "/images/poll-themes/life.png",
   jealousy: "/images/poll-themes/jealousy.png",
+  roles: "/images/poll-themes/life.png",
+  fidelity: "/images/poll-themes/trust.png",
+  family: "/images/poll-themes/understanding.png",
+  "quality-time": "/images/poll-themes/romance.png",
 };
 
 
@@ -1803,7 +2238,51 @@ const POLL_THEME_IMAGES: Record<string, string> = {
     theme: "life",
     matchGroup: "life",
   },
-  
+  {
+    key: "roles",
+    titleRu: "Роль в отношениях",
+    titleEn: "Roles in the relationship",
+    descriptionRu:
+      "Кто и за что отвечает в паре — взгляды на роли партнёров.",
+    descriptionEn:
+      "Who's responsible for what — your views on partner roles.",
+    theme: "roles",
+    matchGroup: "roles",
+  },
+  {
+    key: "fidelity",
+    titleRu: "Верность и измена",
+    titleEn: "Fidelity and cheating",
+    descriptionRu:
+      "Где для тебя проходит граница между нормой и изменой.",
+    descriptionEn:
+      "Where you draw the line between normal and cheating.",
+    theme: "fidelity",
+    matchGroup: "fidelity",
+  },
+  {
+    key: "family",
+    titleRu: "Семья и друзья",
+    titleEn: "Family and friends",
+    descriptionRu:
+      "Как ты относишься к семье, друзьям партнёра и их месту в отношениях.",
+    descriptionEn:
+      "How you feel about family, your partner's friends, and their place in the relationship.",
+    theme: "family",
+    matchGroup: "family",
+  },
+  {
+    key: "quality-time",
+    titleRu: "Совместное время",
+    titleEn: "Quality time",
+    descriptionRu:
+      "Сколько времени и внимания вам важно проводить вместе.",
+    descriptionEn:
+      "How much time and attention you need to spend together.",
+    theme: "quality-time",
+    matchGroup: "quality-time",
+  },
+
 ] as const;
 
 const POLLS: Poll[] = POLL_THEMES.flatMap((item, index) => {
@@ -5760,6 +6239,10 @@ function calculatePairStats(pollAnswers: Record<string, number[]>) {
     { key: "future", label: "Будущее" },
     { key: "life", label: "Быт" },
     { key: "jealousy", label: "Ревность" },
+    { key: "roles", label: "Роль в отношениях" },
+    { key: "fidelity", label: "Верность и измена" },
+    { key: "family", label: "Семья и друзья" },
+    { key: "quality-time", label: "Совместное время" },
   ];
 
   const results = matchGroups

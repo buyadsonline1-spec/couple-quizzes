@@ -15,7 +15,7 @@ export const TEST_IDS = [
 ] as const;
 
 export const POLL_REWARD = 60;
-// 10 тем опросов, каждая даёт пару "boy-<key>"/"girl-<key>" (см. POLL_THEMES
+// 14 тем опросов, каждая даёт пару "boy-<key>"/"girl-<key>" (см. POLL_THEMES
 // и POLLS в app/page.tsx).
 const POLL_THEME_KEYS = [
   "communication",
@@ -28,6 +28,10 @@ const POLL_THEME_KEYS = [
   "space",
   "future",
   "life",
+  "roles",
+  "fidelity",
+  "family",
+  "quality-time",
 ] as const;
 export const POLL_IDS = POLL_THEME_KEYS.flatMap((key) => [
   `boy-${key}`,

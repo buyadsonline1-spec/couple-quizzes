@@ -21,6 +21,10 @@ const THEME_TITLES: Record<string, string> = {
   future: "Будущее",
   life: "Быт",
   jealousy: "Ревность",
+  roles: "Роль в отношениях",
+  fidelity: "Верность и измена",
+  family: "Семья и друзья",
+  "quality-time": "Совместное время",
 };
 
 const THEME_TITLES_EN: Record<string, string> = {
@@ -34,6 +38,10 @@ const THEME_TITLES_EN: Record<string, string> = {
   future: "Future",
   life: "Daily life",
   jealousy: "Jealousy",
+  roles: "Roles in the relationship",
+  fidelity: "Fidelity and cheating",
+  family: "Family and friends",
+  "quality-time": "Quality time",
 };
 
 const COMPATIBILITY_GROUPS = Object.keys(THEME_TITLES);
