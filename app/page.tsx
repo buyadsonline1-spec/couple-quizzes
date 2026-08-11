@@ -277,6 +277,8 @@ type Game = {
 type LoveQuestion = {
   id: string;
   text: string;
+  textRu: string;
+  textEn: string;
 };
 
 type TestKind = "scale" | "love-language" | "personality";
@@ -327,6 +329,8 @@ type BottleTask = {
   id: string;
   target: "boy" | "girl";
   text: string;
+  textRu: string;
+  textEn: string;
 };
 
 type PairMember = {
@@ -954,7 +958,7 @@ const TESTS: TestDefinition[] = [
         id: "p5",
         text:
           market !== "ru"
-            ? "When someone close is рядом, you more often..."
+            ? "When someone close is nearby, you more often..."
             : "Когда рядом близкий человек, ты чаще...",
         textRu: "Когда рядом близкий человек, ты чаще...",
         textEn: "When someone close is nearby, you more often...",
@@ -2339,108 +2343,148 @@ const GAMES: Game[] = [
 
 {
   id: "never-have-i-ever",
-  title: "Я никогда не...",
+  title: market !== "ru" ? "Never Have I Ever..." : "Я никогда не...",
   description:
-    "Скажите что-то, чего вы никогда в жизни не делали, и если ваш партнёр делал это, он выполняет задание с карточки.",
+    market !== "ru"
+      ? "Say something you've never done in your life — if your partner has done it, they complete the task on the card."
+      : "Скажите что-то, чего вы никогда в жизни не делали, и если ваш партнёр делал это, он выполняет задание с карточки.",
   reward: 0,
   questions: [],
 },
 
   {
     id: "bottle",
-    title: "Бутылочка",
-    description: "Крути бутылку и получай романтичные и дерзкие задания для пары.",
+    title: market !== "ru" ? "Spin the Bottle" : "Бутылочка",
+    description:
+      market !== "ru"
+        ? "Spin the bottle and get romantic or bold tasks for couples."
+        : "Крути бутылку и получай романтичные и дерзкие задания для пары.",
     reward: 0,
     questions: [],
   },
 
     {
     id: "90-questions",
-    title: "90 вопросов",
-    description: "Случайные глубокие вопросы про любовь, чувства и отношения.",
+    title: market !== "ru" ? "90 Questions" : "90 вопросов",
+    description:
+      market !== "ru"
+        ? "Random deep questions about love, feelings, and relationships."
+        : "Случайные глубокие вопросы про любовь, чувства и отношения.",
     reward: 0,
     questions: [],
-  },    
+  },
 ];
 
+const RARELY_SOMETIMES_OFTEN =
+  market !== "ru" ? ["Rarely", "Sometimes", "Often"] : ["Редко", "Иногда", "Часто"];
+const NO_SOMETIMES_YES =
+  market !== "ru" ? ["No", "Sometimes", "Yes"] : ["Нет", "Иногда", "Да"];
+const YES_SOMETIMES_NO =
+  market !== "ru" ? ["Yes", "Sometimes", "No"] : ["Да", "Иногда", "Нет"];
+
+const relationshipCheckQuestion = (
+  id: string,
+  category: string,
+  textRu: string,
+  textEn: string,
+  options: string[]
+) => ({
+  id,
+  category,
+  text: market !== "ru" ? textEn : textRu,
+  options,
+});
+
 const RELATIONSHIP_CHECK_QUESTIONS = [
-  {
-    id: "communication-1",
-    category: "communication",
-    text: "Как часто вам трудно спокойно поговорить друг с другом?",
-    options: ["Редко", "Иногда", "Часто"],
-  },
-  {
-    id: "communication-2",
-    category: "communication",
-    text: "Как часто один из вас чувствует, что его не слышат?",
-    options: ["Редко", "Иногда", "Часто"],
-  },
+  relationshipCheckQuestion(
+    "communication-1",
+    "communication",
+    "Как часто вам трудно спокойно поговорить друг с другом?",
+    "How often is it hard for you to calmly talk to each other?",
+    RARELY_SOMETIMES_OFTEN
+  ),
+  relationshipCheckQuestion(
+    "communication-2",
+    "communication",
+    "Как часто один из вас чувствует, что его не слышат?",
+    "How often does one of you feel unheard?",
+    RARELY_SOMETIMES_OFTEN
+  ),
 
-  {
-    id: "trust-1",
-    category: "trust",
-    text: "Бывает ли в ваших отношениях недоверие?",
-    options: ["Нет", "Иногда", "Да"],
-  },
-  {
-    id: "trust-2",
-    category: "trust",
-    text: "Как часто вам хочется что-то скрыть друг от друга, чтобы избежать конфликта?",
-    options: ["Редко", "Иногда", "Часто"],
-  },
+  relationshipCheckQuestion(
+    "trust-1",
+    "trust",
+    "Бывает ли в ваших отношениях недоверие?",
+    "Does distrust ever show up in your relationship?",
+    NO_SOMETIMES_YES
+  ),
+  relationshipCheckQuestion(
+    "trust-2",
+    "trust",
+    "Как часто вам хочется что-то скрыть друг от друга, чтобы избежать конфликта?",
+    "How often do you want to hide something from each other to avoid conflict?",
+    RARELY_SOMETIMES_OFTEN
+  ),
 
-  {
-    id: "conflicts-1",
-    category: "conflicts",
-    text: "Как часто мелочи перерастают в ссору?",
-    options: ["Редко", "Иногда", "Часто"],
-  },
-  {
-    id: "conflicts-2",
-    category: "conflicts",
-    text: "После конфликта вам легко восстановить близость?",
-    options: ["Да", "Иногда", "Нет"],
-  },
+  relationshipCheckQuestion(
+    "conflicts-1",
+    "conflicts",
+    "Как часто мелочи перерастают в ссору?",
+    "How often do small things turn into a fight?",
+    RARELY_SOMETIMES_OFTEN
+  ),
+  relationshipCheckQuestion(
+    "conflicts-2",
+    "conflicts",
+    "После конфликта вам легко восстановить близость?",
+    "Is it easy for you to reconnect after a conflict?",
+    YES_SOMETIMES_NO
+  ),
 
-  {
-    id: "closeness-1",
-    category: "closeness",
-    text: "Чувствуете ли вы эмоциональную близость друг к другу?",
-    options: ["Да", "Иногда", "Нет"],
-  },
-  {
-    id: "closeness-2",
-    category: "closeness",
-    text: "Как часто вам не хватает тепла, внимания или нежности в отношениях?",
-    options: ["Редко", "Иногда", "Часто"],
-  },
+  relationshipCheckQuestion(
+    "closeness-1",
+    "closeness",
+    "Чувствуете ли вы эмоциональную близость друг к другу?",
+    "Do you feel emotionally close to each other?",
+    YES_SOMETIMES_NO
+  ),
+  relationshipCheckQuestion(
+    "closeness-2",
+    "closeness",
+    "Как часто вам не хватает тепла, внимания или нежности в отношениях?",
+    "How often do you feel a lack of warmth, attention, or tenderness in the relationship?",
+    RARELY_SOMETIMES_OFTEN
+  ),
 
-  {
-    id: "support-1",
-    category: "support",
-    text: "Чувствуете ли вы поддержку от партнёра?",
-    options: ["Да", "Иногда", "Нет"],
-  },
-  {
-    id: "support-2",
-    category: "support",
-    text: "Как часто вы чувствуете, что тянете отношения на себе?",
-    options: ["Редко", "Иногда", "Часто"],
-  },
+  relationshipCheckQuestion(
+    "support-1",
+    "support",
+    "Чувствуете ли вы поддержку от партнёра?",
+    "Do you feel supported by your partner?",
+    YES_SOMETIMES_NO
+  ),
+  relationshipCheckQuestion(
+    "support-2",
+    "support",
+    "Как часто вы чувствуете, что тянете отношения на себе?",
+    "How often do you feel like you're carrying the relationship alone?",
+    RARELY_SOMETIMES_OFTEN
+  ),
 
-  {
-    id: "resentment-1",
-    category: "resentment",
-    text: "Как часто вы копите обиды и не проговариваете их?",
-    options: ["Редко", "Иногда", "Часто"],
-  },
-  {
-    id: "resentment-2",
-    category: "resentment",
-    text: "Есть ли у вас темы, к которым неприятно возвращаться, но они до сих пор болят?",
-    options: ["Нет", "Иногда", "Да"],
-  },
+  relationshipCheckQuestion(
+    "resentment-1",
+    "resentment",
+    "Как часто вы копите обиды и не проговариваете их?",
+    "How often do you bottle up resentment instead of talking it through?",
+    RARELY_SOMETIMES_OFTEN
+  ),
+  relationshipCheckQuestion(
+    "resentment-2",
+    "resentment",
+    "Есть ли у вас темы, к которым неприятно возвращаться, но они до сих пор болят?",
+    "Are there topics that are unpleasant to revisit but still hurt?",
+    NO_SOMETIMES_YES
+  ),
 ];
 
 const AI_PSYCHOLOGIST_AVATARS = {
@@ -2477,126 +2521,131 @@ function getRelationshipCheckEmotion(params: {
 
 
 
-const BOTTLE_TASKS: BottleTask[] = [
-  { id: "b1", target: "girl", text: "Скажи партнёру самый милый комплимент." },
-  { id: "b2", target: "girl", text: "Обними партнёра на 15 секунд." },
-  { id: "b3", target: "girl", text: "Поцелуй партнёра в щёку." },
-  { id: "b4", target: "girl", text: "Расскажи, что тебе в нём нравится больше всего." },
-  { id: "b5", target: "girl", text: "Скажи, какое свидание с ним было бы идеальным." },
-  { id: "b6", target: "girl", text: "Проведи рукой по его волосам и улыбнись." },
-  { id: "b7", target: "girl", text: "Прошепчи ему что-нибудь приятное на ухо." },
-  { id: "b8", target: "girl", text: "Назови одну его привычку, которая тебя заводит." },
+const bottleTask = (
+  id: string,
+  target: "boy" | "girl",
+  textRu: string,
+  textEn: string
+): BottleTask => ({
+  id,
+  target,
+  text: market !== "ru" ? textEn : textRu,
+  textRu,
+  textEn,
+});
 
-  { id: "b9", target: "boy", text: "Скажи партнёрше самый красивый комплимент." },
-  { id: "b10", target: "boy", text: "Обними её на 15 секунд." },
-  { id: "b11", target: "boy", text: "Поцелуй её в щёку." },
-  { id: "b12", target: "boy", text: "Скажи три причины, почему она тебе нравится." },
-  { id: "b13", target: "boy", text: "Назови её самую привлекательную черту." },
-  { id: "b14", target: "boy", text: "Возьми её за руку и не отпускай 20 секунд." },
-  { id: "b15", target: "boy", text: "Скажи, что бы ты хотел повторить с вашим лучшим свиданием." },
-  { id: "b16", target: "boy", text: "Сделай ей короткое романтичное признание." },
+const BOTTLE_TASKS: BottleTask[] = [
+  bottleTask("b1", "girl", "Скажи партнёру самый милый комплимент.", "Give your partner the sweetest compliment."),
+  bottleTask("b2", "girl", "Обними партнёра на 15 секунд.", "Hug your partner for 15 seconds."),
+  bottleTask("b3", "girl", "Поцелуй партнёра в щёку.", "Kiss your partner on the cheek."),
+  bottleTask("b4", "girl", "Расскажи, что тебе в нём нравится больше всего.", "Tell him what you like most about him."),
+  bottleTask("b5", "girl", "Скажи, какое свидание с ним было бы идеальным.", "Describe what your perfect date with him would be like."),
+  bottleTask("b6", "girl", "Проведи рукой по его волосам и улыбнись.", "Run your hand through his hair and smile."),
+  bottleTask("b7", "girl", "Прошепчи ему что-нибудь приятное на ухо.", "Whisper something sweet in his ear."),
+  bottleTask("b8", "girl", "Назови одну его привычку, которая тебя заводит.", "Name one habit of his that turns you on."),
+
+  bottleTask("b9", "boy", "Скажи партнёрше самый красивый комплимент.", "Give your partner the most beautiful compliment."),
+  bottleTask("b10", "boy", "Обними её на 15 секунд.", "Hug her for 15 seconds."),
+  bottleTask("b11", "boy", "Поцелуй её в щёку.", "Kiss her on the cheek."),
+  bottleTask("b12", "boy", "Скажи три причины, почему она тебе нравится.", "Name three reasons why you like her."),
+  bottleTask("b13", "boy", "Назови её самую привлекательную черту.", "Name her most attractive trait."),
+  bottleTask("b14", "boy", "Возьми её за руку и не отпускай 20 секунд.", "Hold her hand and don't let go for 20 seconds."),
+  bottleTask("b15", "boy", "Скажи, что бы ты хотел повторить с вашим лучшим свиданием.", "Say what you'd like to repeat from your best date together."),
+  bottleTask("b16", "boy", "Сделай ей короткое романтичное признание.", "Give her a short romantic confession."),
 ];
 
 
 const LOVE_QUESTIONS: LoveQuestion[] = [
-  { id: "lq1", text: "Когда ты в последний раз чувствовал(а) себя по-настоящему любимым(ой)?" },
-  { id: "lq2", text: "Что для тебя значит настоящая близость в отношениях?" },
-  { id: "lq3", text: "Чего тебе иногда не хватает в любви?" },
-  { id: "lq4", text: "Что ты боишься потерять в отношениях сильнее всего?" },
-  { id: "lq5", text: "Как ты обычно показываешь, что человек тебе дорог?" },
-  { id: "lq6", text: "Какие слова ты хотел(а) бы чаще слышать от партнёра?" },
-  { id: "lq7", text: "Какой момент в отношениях ты считаешь самым тёплым?" },
-  { id: "lq8", text: "Что делает человека по-настоящему надёжным для тебя?" },
-  { id: "lq9", text: "Как ты понимаешь, что можешь доверять человеку?" },
-  { id: "lq10", text: "Что в отношениях даёт тебе чувство безопасности?" },
-
-  { id: "lq11", text: "О чём тебе бывает сложно говорить даже с близким человеком?" },
-  { id: "lq12", text: "Как ты ведёшь себя, когда обижаешься?" },
-  { id: "lq13", text: "Что тебе помогает мириться после ссоры?" },
-  { id: "lq14", text: "За что ты можешь долго злиться?" },
-  { id: "lq15", text: "Что бы ты никогда не хотел(а) пережить в отношениях снова?" },
-  { id: "lq16", text: "Какая твоя самая сильная потребность в любви?" },
-  { id: "lq17", text: "Какие поступки ранят тебя сильнее слов?" },
-  { id: "lq18", text: "Как ты понимаешь, что человек тебя слышит?" },
-  { id: "lq19", text: "Что тебе нужно в трудный день от любимого человека?" },
-  { id: "lq20", text: "Как выглядит идеальная эмоциональная поддержка для тебя?" },
-
-  { id: "lq21", text: "Что для тебя важнее: страсть, дружба или спокойствие в отношениях?" },
-  { id: "lq22", text: "Что ты считаешь красным флагом в отношениях?" },
-  { id: "lq23", text: "Что помогает тебе открываться человеку?" },
-  { id: "lq24", text: "В какой момент ты чувствуешь себя особенно уязвимым(ой)?" },
-  { id: "lq25", text: "Как ты реагируешь, когда ревнуешь?" },
-  { id: "lq26", text: "Что для тебя уже считается изменой?" },
-  { id: "lq27", text: "Как ты понимаешь слово «верность»?" },
-  { id: "lq28", text: "Что тебе важно сохранять личным даже в отношениях?" },
-  { id: "lq29", text: "Какой формат свободы в паре тебе кажется здоровым?" },
-  { id: "lq30", text: "Что тебя успокаивает, когда в отношениях появляется тревога?" },
-
-  { id: "lq31", text: "О каком будущем с любимым человеком ты мечтаешь?" },
-  { id: "lq32", text: "Ты больше про стабильность или про яркие эмоции?" },
-  { id: "lq33", text: "Что для тебя значит «быть командой»?" },
-  { id: "lq34", text: "Какие семейные ценности тебе особенно близки?" },
-  { id: "lq35", text: "Как ты представляешь идеальный совместный вечер?" },
-  { id: "lq36", text: "Какой отдых с любимым человеком тебе ближе всего?" },
-  { id: "lq37", text: "Какая мелочь в отношениях делает тебя счастливым(ой)?" },
-  { id: "lq38", text: "Что ты особенно ценишь в заботе?" },
-  { id: "lq39", text: "Какие ритуалы в паре тебе нравятся?" },
-  { id: "lq40", text: "Как ты относишься к сюрпризам в отношениях?" },
-
-  { id: "lq41", text: "Когда ты чувствуешь романтику сильнее всего?" },
-  { id: "lq42", text: "Какие свидания тебе нравятся больше: тихие или яркие?" },
-  { id: "lq43", text: "Что для тебя значит быть желанным(ой)?" },
-  { id: "lq44", text: "Какая твоя любимая форма нежности?" },
-  { id: "lq45", text: "Как ты понимаешь, что тебя по-настоящему принимают?" },
-  { id: "lq46", text: "Что тебе хотелось бы чаще делать вместе с партнёром?" },
-  { id: "lq47", text: "Что бы ты хотел(а) попробовать в отношениях впервые?" },
-  { id: "lq48", text: "Какую мечту ты бы хотел(а) разделить с любимым человеком?" },
-  { id: "lq49", text: "Какой разговор между вами ты считаешь самым важным?" },
-  { id: "lq50", text: "За что тебе сложнее всего просить прощения?" },
-
-  { id: "lq51", text: "Чего ты ждёшь от партнёра в трудные периоды жизни?" },
-  { id: "lq52", text: "Что тебе помогает чувствовать связь после дистанции?" },
-  { id: "lq53", text: "Что для тебя важнее: внимание или действия?" },
-  { id: "lq54", text: "Какой комплимент запоминается тебе надолго?" },
-  { id: "lq55", text: "Что бы ты хотел(а) изменить в своём поведении в отношениях?" },
-  { id: "lq56", text: "Какой урок тебе дали прошлые отношения?" },
-  { id: "lq57", text: "Что ты особенно бережёшь в любви?" },
-  { id: "lq58", text: "Какие обещания в отношениях для тебя священны?" },
-  { id: "lq59", text: "Как ты понимаешь, что вас двоих тянет друг к другу по-настоящему?" },
-  { id: "lq60", text: "Когда тебе бывает особенно важно побыть рядом молча?" },
-
-  { id: "lq61", text: "Что бы ты хотел(а), чтобы партнёр лучше понимал о тебе?" },
-  { id: "lq62", text: "Как ты переживаешь отдаление в отношениях?" },
-  { id: "lq63", text: "Что помогает тебе снова сближаться после напряжения?" },
-  { id: "lq64", text: "Какая твоя слабая сторона чаще всего проявляется в любви?" },
-  { id: "lq65", text: "В чём ты особенно нуждаешься, но редко об этом говоришь?" },
-  { id: "lq66", text: "Что тебе сложнее: довериться или сохранить чувства?" },
-  { id: "lq67", text: "Какой поступок может вернуть тебе веру в отношения?" },
-  { id: "lq68", text: "Что тебе важно слышать после ссоры?" },
-  { id: "lq69", text: "Как ты понимаешь, что отношения становятся серьёзными?" },
-  { id: "lq70", text: "Какие границы для тебя обязательны в любви?" },
-
-  { id: "lq71", text: "Что ты ценишь в человеке сильнее внешности?" },
-  { id: "lq72", text: "Какая черта делает человека особенно привлекательным?" },
-  { id: "lq73", text: "Что тебя вдохновляет любить сильнее?" },
-  { id: "lq74", text: "Как ты относишься к проявлению слабости перед любимым человеком?" },
-  { id: "lq75", text: "Что даёт тебе чувство «мы»?" },
-  { id: "lq76", text: "В каких моментах тебе особенно нужна поддержка?" },
-  { id: "lq77", text: "Как ты представляешь счастливую совместную жизнь?" },
-  { id: "lq78", text: "Что для тебя важнее: совпадение характеров или усилия друг ради друга?" },
-  { id: "lq79", text: "Какие слова любви для тебя звучат наиболее искренне?" },
-  { id: "lq80", text: "Что ты хотел(а) бы чаще делать для любимого человека?" },
-
-  { id: "lq81", text: "О чём ты мечтаешь рассказать партнёру, но всё откладываешь?" },
-  { id: "lq82", text: "Какая общая цель могла бы сделать вашу пару сильнее?" },
-  { id: "lq83", text: "Какой страх в любви тебе хотелось бы отпустить?" },
-  { id: "lq84", text: "Что делает отношения для тебя зрелыми?" },
-  { id: "lq85", text: "Как ты понимаешь, что человека можно назвать «своим»?" },
-  { id: "lq86", text: "Что бы ты хотел(а) сохранить в отношениях на долгие годы?" },
-  { id: "lq87", text: "Как ты относишься к полной честности в любви?" },
-  { id: "lq88", text: "Что бы ты хотел(а) услышать от партнёра прямо сейчас?" },
-  { id: "lq89", text: "Какая мечта о любви у тебя была с детства?" },
-  { id: "lq90", text: "Что для тебя значит любить по-настоящему?" },
+  { id: "lq1", text: market !== "ru" ? "When was the last time you felt truly loved?" : "Когда ты в последний раз чувствовал(а) себя по-настоящему любимым(ой)?", textRu: "Когда ты в последний раз чувствовал(а) себя по-настоящему любимым(ой)?", textEn: "When was the last time you felt truly loved?" },
+  { id: "lq2", text: market !== "ru" ? "What does real closeness in a relationship mean to you?" : "Что для тебя значит настоящая близость в отношениях?", textRu: "Что для тебя значит настоящая близость в отношениях?", textEn: "What does real closeness in a relationship mean to you?" },
+  { id: "lq3", text: market !== "ru" ? "What do you sometimes feel is missing in love?" : "Чего тебе иногда не хватает в любви?", textRu: "Чего тебе иногда не хватает в любви?", textEn: "What do you sometimes feel is missing in love?" },
+  { id: "lq4", text: market !== "ru" ? "What are you most afraid of losing in a relationship?" : "Что ты боишься потерять в отношениях сильнее всего?", textRu: "Что ты боишься потерять в отношениях сильнее всего?", textEn: "What are you most afraid of losing in a relationship?" },
+  { id: "lq5", text: market !== "ru" ? "How do you usually show someone they matter to you?" : "Как ты обычно показываешь, что человек тебе дорог?", textRu: "Как ты обычно показываешь, что человек тебе дорог?", textEn: "How do you usually show someone they matter to you?" },
+  { id: "lq6", text: market !== "ru" ? "What words would you like to hear from your partner more often?" : "Какие слова ты хотел(а) бы чаще слышать от партнёра?", textRu: "Какие слова ты хотел(а) бы чаще слышать от партнёра?", textEn: "What words would you like to hear from your partner more often?" },
+  { id: "lq7", text: market !== "ru" ? "What moment in a relationship do you consider the warmest?" : "Какой момент в отношениях ты считаешь самым тёплым?", textRu: "Какой момент в отношениях ты считаешь самым тёплым?", textEn: "What moment in a relationship do you consider the warmest?" },
+  { id: "lq8", text: market !== "ru" ? "What makes someone truly reliable to you?" : "Что делает человека по-настоящему надёжным для тебя?", textRu: "Что делает человека по-настоящему надёжным для тебя?", textEn: "What makes someone truly reliable to you?" },
+  { id: "lq9", text: market !== "ru" ? "How do you know you can trust someone?" : "Как ты понимаешь, что можешь доверять человеку?", textRu: "Как ты понимаешь, что можешь доверять человеку?", textEn: "How do you know you can trust someone?" },
+  { id: "lq10", text: market !== "ru" ? "What gives you a sense of safety in a relationship?" : "Что в отношениях даёт тебе чувство безопасности?", textRu: "Что в отношениях даёт тебе чувство безопасности?", textEn: "What gives you a sense of safety in a relationship?" },
+  { id: "lq11", text: market !== "ru" ? "What's hard for you to talk about even with someone close?" : "О чём тебе бывает сложно говорить даже с близким человеком?", textRu: "О чём тебе бывает сложно говорить даже с близким человеком?", textEn: "What's hard for you to talk about even with someone close?" },
+  { id: "lq12", text: market !== "ru" ? "How do you act when you're hurt?" : "Как ты ведёшь себя, когда обижаешься?", textRu: "Как ты ведёшь себя, когда обижаешься?", textEn: "How do you act when you're hurt?" },
+  { id: "lq13", text: market !== "ru" ? "What helps you make up after a fight?" : "Что тебе помогает мириться после ссоры?", textRu: "Что тебе помогает мириться после ссоры?", textEn: "What helps you make up after a fight?" },
+  { id: "lq14", text: market !== "ru" ? "What can make you stay angry for a long time?" : "За что ты можешь долго злиться?", textRu: "За что ты можешь долго злиться?", textEn: "What can make you stay angry for a long time?" },
+  { id: "lq15", text: market !== "ru" ? "What would you never want to go through again in a relationship?" : "Что бы ты никогда не хотел(а) пережить в отношениях снова?", textRu: "Что бы ты никогда не хотел(а) пережить в отношениях снова?", textEn: "What would you never want to go through again in a relationship?" },
+  { id: "lq16", text: market !== "ru" ? "What's your strongest need in love?" : "Какая твоя самая сильная потребность в любви?", textRu: "Какая твоя самая сильная потребность в любви?", textEn: "What's your strongest need in love?" },
+  { id: "lq17", text: market !== "ru" ? "What actions hurt you more than words?" : "Какие поступки ранят тебя сильнее слов?", textRu: "Какие поступки ранят тебя сильнее слов?", textEn: "What actions hurt you more than words?" },
+  { id: "lq18", text: market !== "ru" ? "How do you know someone is really listening to you?" : "Как ты понимаешь, что человек тебя слышит?", textRu: "Как ты понимаешь, что человек тебя слышит?", textEn: "How do you know someone is really listening to you?" },
+  { id: "lq19", text: market !== "ru" ? "What do you need from a loved one on a hard day?" : "Что тебе нужно в трудный день от любимого человека?", textRu: "Что тебе нужно в трудный день от любимого человека?", textEn: "What do you need from a loved one on a hard day?" },
+  { id: "lq20", text: market !== "ru" ? "What does ideal emotional support look like to you?" : "Как выглядит идеальная эмоциональная поддержка для тебя?", textRu: "Как выглядит идеальная эмоциональная поддержка для тебя?", textEn: "What does ideal emotional support look like to you?" },
+  { id: "lq21", text: market !== "ru" ? "What matters more to you: passion, friendship, or calm in a relationship?" : "Что для тебя важнее: страсть, дружба или спокойствие в отношениях?", textRu: "Что для тебя важнее: страсть, дружба или спокойствие в отношениях?", textEn: "What matters more to you: passion, friendship, or calm in a relationship?" },
+  { id: "lq22", text: market !== "ru" ? "What do you consider a red flag in a relationship?" : "Что ты считаешь красным флагом в отношениях?", textRu: "Что ты считаешь красным флагом в отношениях?", textEn: "What do you consider a red flag in a relationship?" },
+  { id: "lq23", text: market !== "ru" ? "What helps you open up to someone?" : "Что помогает тебе открываться человеку?", textRu: "Что помогает тебе открываться человеку?", textEn: "What helps you open up to someone?" },
+  { id: "lq24", text: market !== "ru" ? "When do you feel especially vulnerable?" : "В какой момент ты чувствуешь себя особенно уязвимым(ой)?", textRu: "В какой момент ты чувствуешь себя особенно уязвимым(ой)?", textEn: "When do you feel especially vulnerable?" },
+  { id: "lq25", text: market !== "ru" ? "How do you react when you're jealous?" : "Как ты реагируешь, когда ревнуешь?", textRu: "Как ты реагируешь, когда ревнуешь?", textEn: "How do you react when you're jealous?" },
+  { id: "lq26", text: market !== "ru" ? "What already counts as cheating for you?" : "Что для тебя уже считается изменой?", textRu: "Что для тебя уже считается изменой?", textEn: "What already counts as cheating for you?" },
+  { id: "lq27", text: market !== "ru" ? "How do you understand the word \\u2018faithfulness\\u2019?" : "Как ты понимаешь слово «верность»?", textRu: "Как ты понимаешь слово «верность»?", textEn: "How do you understand the word \\u2018faithfulness\\u2019?" },
+  { id: "lq28", text: market !== "ru" ? "What's important for you to keep private even in a relationship?" : "Что тебе важно сохранять личным даже в отношениях?", textRu: "Что тебе важно сохранять личным даже в отношениях?", textEn: "What's important for you to keep private even in a relationship?" },
+  { id: "lq29", text: market !== "ru" ? "What kind of freedom in a couple feels healthy to you?" : "Какой формат свободы в паре тебе кажется здоровым?", textRu: "Какой формат свободы в паре тебе кажется здоровым?", textEn: "What kind of freedom in a couple feels healthy to you?" },
+  { id: "lq30", text: market !== "ru" ? "What calms you down when anxiety shows up in a relationship?" : "Что тебя успокаивает, когда в отношениях появляется тревога?", textRu: "Что тебя успокаивает, когда в отношениях появляется тревога?", textEn: "What calms you down when anxiety shows up in a relationship?" },
+  { id: "lq31", text: market !== "ru" ? "What kind of future do you dream of with someone you love?" : "О каком будущем с любимым человеком ты мечтаешь?", textRu: "О каком будущем с любимым человеком ты мечтаешь?", textEn: "What kind of future do you dream of with someone you love?" },
+  { id: "lq32", text: market !== "ru" ? "Are you more about stability or intense emotions?" : "Ты больше про стабильность или про яркие эмоции?", textRu: "Ты больше про стабильность или про яркие эмоции?", textEn: "Are you more about stability or intense emotions?" },
+  { id: "lq33", text: market !== "ru" ? "What does \\u2018being a team\\u2019 mean to you?" : "Что для тебя значит «быть командой»?", textRu: "Что для тебя значит «быть командой»?", textEn: "What does \\u2018being a team\\u2019 mean to you?" },
+  { id: "lq34", text: market !== "ru" ? "What family values matter most to you?" : "Какие семейные ценности тебе особенно близки?", textRu: "Какие семейные ценности тебе особенно близки?", textEn: "What family values matter most to you?" },
+  { id: "lq35", text: market !== "ru" ? "What does your ideal evening together look like?" : "Как ты представляешь идеальный совместный вечер?", textRu: "Как ты представляешь идеальный совместный вечер?", textEn: "What does your ideal evening together look like?" },
+  { id: "lq36", text: market !== "ru" ? "What kind of vacation with a loved one appeals to you most?" : "Какой отдых с любимым человеком тебе ближе всего?", textRu: "Какой отдых с любимым человеком тебе ближе всего?", textEn: "What kind of vacation with a loved one appeals to you most?" },
+  { id: "lq37", text: market !== "ru" ? "What small thing in a relationship makes you happy?" : "Какая мелочь в отношениях делает тебя счастливым(ой)?", textRu: "Какая мелочь в отношениях делает тебя счастливым(ой)?", textEn: "What small thing in a relationship makes you happy?" },
+  { id: "lq38", text: market !== "ru" ? "What do you value most in being cared for?" : "Что ты особенно ценишь в заботе?", textRu: "Что ты особенно ценишь в заботе?", textEn: "What do you value most in being cared for?" },
+  { id: "lq39", text: market !== "ru" ? "What couple rituals do you enjoy?" : "Какие ритуалы в паре тебе нравятся?", textRu: "Какие ритуалы в паре тебе нравятся?", textEn: "What couple rituals do you enjoy?" },
+  { id: "lq40", text: market !== "ru" ? "How do you feel about surprises in a relationship?" : "Как ты относишься к сюрпризам в отношениях?", textRu: "Как ты относишься к сюрпризам в отношениях?", textEn: "How do you feel about surprises in a relationship?" },
+  { id: "lq41", text: market !== "ru" ? "When do you feel romance most strongly?" : "Когда ты чувствуешь романтику сильнее всего?", textRu: "Когда ты чувствуешь романтику сильнее всего?", textEn: "When do you feel romance most strongly?" },
+  { id: "lq42", text: market !== "ru" ? "Which dates do you prefer: quiet or exciting ones?" : "Какие свидания тебе нравятся больше: тихие или яркие?", textRu: "Какие свидания тебе нравятся больше: тихие или яркие?", textEn: "Which dates do you prefer: quiet or exciting ones?" },
+  { id: "lq43", text: market !== "ru" ? "What does it mean to you to feel desired?" : "Что для тебя значит быть желанным(ой)?", textRu: "Что для тебя значит быть желанным(ой)?", textEn: "What does it mean to you to feel desired?" },
+  { id: "lq44", text: market !== "ru" ? "What's your favorite form of tenderness?" : "Какая твоя любимая форма нежности?", textRu: "Какая твоя любимая форма нежности?", textEn: "What's your favorite form of tenderness?" },
+  { id: "lq45", text: market !== "ru" ? "How do you know someone truly accepts you?" : "Как ты понимаешь, что тебя по-настоящему принимают?", textRu: "Как ты понимаешь, что тебя по-настоящему принимают?", textEn: "How do you know someone truly accepts you?" },
+  { id: "lq46", text: market !== "ru" ? "What would you like to do more often with your partner?" : "Что тебе хотелось бы чаще делать вместе с партнёром?", textRu: "Что тебе хотелось бы чаще делать вместе с партнёром?", textEn: "What would you like to do more often with your partner?" },
+  { id: "lq47", text: market !== "ru" ? "What would you like to try for the first time in a relationship?" : "Что бы ты хотел(а) попробовать в отношениях впервые?", textRu: "Что бы ты хотел(а) попробовать в отношениях впервые?", textEn: "What would you like to try for the first time in a relationship?" },
+  { id: "lq48", text: market !== "ru" ? "What dream would you like to share with someone you love?" : "Какую мечту ты бы хотел(а) разделить с любимым человеком?", textRu: "Какую мечту ты бы хотел(а) разделить с любимым человеком?", textEn: "What dream would you like to share with someone you love?" },
+  { id: "lq49", text: market !== "ru" ? "What conversation between you two do you consider the most important?" : "Какой разговор между вами ты считаешь самым важным?", textRu: "Какой разговор между вами ты считаешь самым важным?", textEn: "What conversation between you two do you consider the most important?" },
+  { id: "lq50", text: market !== "ru" ? "What's the hardest thing for you to apologize for?" : "За что тебе сложнее всего просить прощения?", textRu: "За что тебе сложнее всего просить прощения?", textEn: "What's the hardest thing for you to apologize for?" },
+  { id: "lq51", text: market !== "ru" ? "What do you expect from a partner during hard times?" : "Чего ты ждёшь от партнёра в трудные периоды жизни?", textRu: "Чего ты ждёшь от партнёра в трудные периоды жизни?", textEn: "What do you expect from a partner during hard times?" },
+  { id: "lq52", text: market !== "ru" ? "What helps you feel connected again after some distance?" : "Что тебе помогает чувствовать связь после дистанции?", textRu: "Что тебе помогает чувствовать связь после дистанции?", textEn: "What helps you feel connected again after some distance?" },
+  { id: "lq53", text: market !== "ru" ? "What matters more to you: attention or actions?" : "Что для тебя важнее: внимание или действия?", textRu: "Что для тебя важнее: внимание или действия?", textEn: "What matters more to you: attention or actions?" },
+  { id: "lq54", text: market !== "ru" ? "What compliment stays with you for a long time?" : "Какой комплимент запоминается тебе надолго?", textRu: "Какой комплимент запоминается тебе надолго?", textEn: "What compliment stays with you for a long time?" },
+  { id: "lq55", text: market !== "ru" ? "What would you like to change about your own behavior in relationships?" : "Что бы ты хотел(а) изменить в своём поведении в отношениях?", textRu: "Что бы ты хотел(а) изменить в своём поведении в отношениях?", textEn: "What would you like to change about your own behavior in relationships?" },
+  { id: "lq56", text: market !== "ru" ? "What lesson did a past relationship teach you?" : "Какой урок тебе дали прошлые отношения?", textRu: "Какой урок тебе дали прошлые отношения?", textEn: "What lesson did a past relationship teach you?" },
+  { id: "lq57", text: market !== "ru" ? "What do you protect most carefully in love?" : "Что ты особенно бережёшь в любви?", textRu: "Что ты особенно бережёшь в любви?", textEn: "What do you protect most carefully in love?" },
+  { id: "lq58", text: market !== "ru" ? "What promises in a relationship are sacred to you?" : "Какие обещания в отношениях для тебя священны?", textRu: "Какие обещания в отношениях для тебя священны?", textEn: "What promises in a relationship are sacred to you?" },
+  { id: "lq59", text: market !== "ru" ? "How do you know the two of you are truly drawn to each other?" : "Как ты понимаешь, что вас двоих тянет друг к другу по-настоящему?", textRu: "Как ты понимаешь, что вас двоих тянет друг к другу по-настоящему?", textEn: "How do you know the two of you are truly drawn to each other?" },
+  { id: "lq60", text: market !== "ru" ? "When is it especially important for you to just be close in silence?" : "Когда тебе бывает особенно важно побыть рядом молча?", textRu: "Когда тебе бывает особенно важно побыть рядом молча?", textEn: "When is it especially important for you to just be close in silence?" },
+  { id: "lq61", text: market !== "ru" ? "What do you wish your partner understood better about you?" : "Что бы ты хотел(а), чтобы партнёр лучше понимал о тебе?", textRu: "Что бы ты хотел(а), чтобы партнёр лучше понимал о тебе?", textEn: "What do you wish your partner understood better about you?" },
+  { id: "lq62", text: market !== "ru" ? "How do you cope with distance growing in a relationship?" : "Как ты переживаешь отдаление в отношениях?", textRu: "Как ты переживаешь отдаление в отношениях?", textEn: "How do you cope with distance growing in a relationship?" },
+  { id: "lq63", text: market !== "ru" ? "What helps you grow close again after tension?" : "Что помогает тебе снова сближаться после напряжения?", textRu: "Что помогает тебе снова сближаться после напряжения?", textEn: "What helps you grow close again after tension?" },
+  { id: "lq64", text: market !== "ru" ? "What weakness of yours shows up most often in love?" : "Какая твоя слабая сторона чаще всего проявляется в любви?", textRu: "Какая твоя слабая сторона чаще всего проявляется в любви?", textEn: "What weakness of yours shows up most often in love?" },
+  { id: "lq65", text: market !== "ru" ? "What do you especially need but rarely talk about?" : "В чём ты особенно нуждаешься, но редко об этом говоришь?", textRu: "В чём ты особенно нуждаешься, но редко об этом говоришь?", textEn: "What do you especially need but rarely talk about?" },
+  { id: "lq66", text: market !== "ru" ? "What's harder for you: trusting someone or keeping your feelings intact?" : "Что тебе сложнее: довериться или сохранить чувства?", textRu: "Что тебе сложнее: довериться или сохранить чувства?", textEn: "What's harder for you: trusting someone or keeping your feelings intact?" },
+  { id: "lq67", text: market !== "ru" ? "What act could restore your faith in relationships?" : "Какой поступок может вернуть тебе веру в отношения?", textRu: "Какой поступок может вернуть тебе веру в отношения?", textEn: "What act could restore your faith in relationships?" },
+  { id: "lq68", text: market !== "ru" ? "What's important for you to hear after a fight?" : "Что тебе важно слышать после ссоры?", textRu: "Что тебе важно слышать после ссоры?", textEn: "What's important for you to hear after a fight?" },
+  { id: "lq69", text: market !== "ru" ? "How do you know a relationship is becoming serious?" : "Как ты понимаешь, что отношения становятся серьёзными?", textRu: "Как ты понимаешь, что отношения становятся серьёзными?", textEn: "How do you know a relationship is becoming serious?" },
+  { id: "lq70", text: market !== "ru" ? "What boundaries are non-negotiable for you in love?" : "Какие границы для тебя обязательны в любви?", textRu: "Какие границы для тебя обязательны в любви?", textEn: "What boundaries are non-negotiable for you in love?" },
+  { id: "lq71", text: market !== "ru" ? "What do you value in a person more than looks?" : "Что ты ценишь в человеке сильнее внешности?", textRu: "Что ты ценишь в человеке сильнее внешности?", textEn: "What do you value in a person more than looks?" },
+  { id: "lq72", text: market !== "ru" ? "What trait makes a person especially attractive?" : "Какая черта делает человека особенно привлекательным?", textRu: "Какая черта делает человека особенно привлекательным?", textEn: "What trait makes a person especially attractive?" },
+  { id: "lq73", text: market !== "ru" ? "What inspires you to love more deeply?" : "Что тебя вдохновляет любить сильнее?", textRu: "Что тебя вдохновляет любить сильнее?", textEn: "What inspires you to love more deeply?" },
+  { id: "lq74", text: market !== "ru" ? "How do you feel about showing vulnerability to someone you love?" : "Как ты относишься к проявлению слабости перед любимым человеком?", textRu: "Как ты относишься к проявлению слабости перед любимым человеком?", textEn: "How do you feel about showing vulnerability to someone you love?" },
+  { id: "lq75", text: market !== "ru" ? "What gives you a sense of \\u2018us\\u2019?" : "Что даёт тебе чувство «мы»?", textRu: "Что даёт тебе чувство «мы»?", textEn: "What gives you a sense of \\u2018us\\u2019?" },
+  { id: "lq76", text: market !== "ru" ? "In what moments do you especially need support?" : "В каких моментах тебе особенно нужна поддержка?", textRu: "В каких моментах тебе особенно нужна поддержка?", textEn: "In what moments do you especially need support?" },
+  { id: "lq77", text: market !== "ru" ? "What does a happy life together look like to you?" : "Как ты представляешь счастливую совместную жизнь?", textRu: "Как ты представляешь счастливую совместную жизнь?", textEn: "What does a happy life together look like to you?" },
+  { id: "lq78", text: market !== "ru" ? "What matters more to you: matching personalities or effort for each other?" : "Что для тебя важнее: совпадение характеров или усилия друг ради друга?", textRu: "Что для тебя важнее: совпадение характеров или усилия друг ради друга?", textEn: "What matters more to you: matching personalities or effort for each other?" },
+  { id: "lq79", text: market !== "ru" ? "What words of love sound the most sincere to you?" : "Какие слова любви для тебя звучат наиболее искренне?", textRu: "Какие слова любви для тебя звучат наиболее искренне?", textEn: "What words of love sound the most sincere to you?" },
+  { id: "lq80", text: market !== "ru" ? "What would you like to do more often for someone you love?" : "Что ты хотел(а) бы чаще делать для любимого человека?", textRu: "Что ты хотел(а) бы чаще делать для любимого человека?", textEn: "What would you like to do more often for someone you love?" },
+  { id: "lq81", text: market !== "ru" ? "What do you dream of telling your partner but keep putting off?" : "О чём ты мечтаешь рассказать партнёру, но всё откладываешь?", textRu: "О чём ты мечтаешь рассказать партнёру, но всё откладываешь?", textEn: "What do you dream of telling your partner but keep putting off?" },
+  { id: "lq82", text: market !== "ru" ? "What shared goal could make your relationship stronger?" : "Какая общая цель могла бы сделать вашу пару сильнее?", textRu: "Какая общая цель могла бы сделать вашу пару сильнее?", textEn: "What shared goal could make your relationship stronger?" },
+  { id: "lq83", text: market !== "ru" ? "What fear about love would you like to let go of?" : "Какой страх в любви тебе хотелось бы отпустить?", textRu: "Какой страх в любви тебе хотелось бы отпустить?", textEn: "What fear about love would you like to let go of?" },
+  { id: "lq84", text: market !== "ru" ? "What makes a relationship feel mature to you?" : "Что делает отношения для тебя зрелыми?", textRu: "Что делает отношения для тебя зрелыми?", textEn: "What makes a relationship feel mature to you?" },
+  { id: "lq85", text: market !== "ru" ? "How do you know someone can be called \\u2018yours\\u2019?" : "Как ты понимаешь, что человека можно назвать «своим»?", textRu: "Как ты понимаешь, что человека можно назвать «своим»?", textEn: "How do you know someone can be called \\u2018yours\\u2019?" },
+  { id: "lq86", text: market !== "ru" ? "What would you like to keep in a relationship for years to come?" : "Что бы ты хотел(а) сохранить в отношениях на долгие годы?", textRu: "Что бы ты хотел(а) сохранить в отношениях на долгие годы?", textEn: "What would you like to keep in a relationship for years to come?" },
+  { id: "lq87", text: market !== "ru" ? "How do you feel about complete honesty in love?" : "Как ты относишься к полной честности в любви?", textRu: "Как ты относишься к полной честности в любви?", textEn: "How do you feel about complete honesty in love?" },
+  { id: "lq88", text: market !== "ru" ? "What would you like to hear from your partner right now?" : "Что бы ты хотел(а) услышать от партнёра прямо сейчас?", textRu: "Что бы ты хотел(а) услышать от партнёра прямо сейчас?", textEn: "What would you like to hear from your partner right now?" },
+  { id: "lq89", text: market !== "ru" ? "What dream about love have you had since childhood?" : "Какая мечта о любви у тебя была с детства?", textRu: "Какая мечта о любви у тебя была с детства?", textEn: "What dream about love have you had since childhood?" },
+  { id: "lq90", text: market !== "ru" ? "What does it mean to you to truly love someone?" : "Что для тебя значит любить по-настоящему?", textRu: "Что для тебя значит любить по-настоящему?", textEn: "What does it mean to you to truly love someone?" },
 ];
 
 const PAIR_LEVELS = [
@@ -2659,14 +2708,24 @@ function getRelationshipCheckResult(answers: number[]) {
   const mainZone = sortedProblemZones[0];
   const secondZone = sortedProblemZones[1];
 
-  const categoryTitles: Record<string, string> = {
-    communication: "общение",
-    trust: "доверие",
-    conflicts: "конфликты",
-    closeness: "близость",
-    support: "поддержка",
-    resentment: "обиды",
-  };
+  const categoryTitles: Record<string, string> =
+    market !== "ru"
+      ? {
+          communication: "communication",
+          trust: "trust",
+          conflicts: "conflicts",
+          closeness: "closeness",
+          support: "support",
+          resentment: "resentment",
+        }
+      : {
+          communication: "общение",
+          trust: "доверие",
+          conflicts: "конфликты",
+          closeness: "близость",
+          support: "поддержка",
+          resentment: "обиды",
+        };
 
   const overallScore =
     Object.values(averages).reduce((sum, value) => sum + value, 0) /
@@ -2678,35 +2737,71 @@ function getRelationshipCheckResult(answers: number[]) {
   let advice: string[] = [];
 
   if (overallScore >= 1.35) {
-    title = "Сейчас в отношениях есть заметное напряжение";
-    subtitle = `Главные зоны риска: ${categoryTitles[mainZone]} и ${categoryTitles[secondZone]}`;
-    description =
-      "По ответам видно, что вам сейчас может не хватать ощущения безопасности, ясности и лёгкого контакта. Это не означает, что отношения плохие, но говорит о накопившемся напряжении, которое лучше не игнорировать.";
-    advice = [
-      "Выберите одну конкретную проблему и обсудите только её, не смешивая всё сразу",
-      "Спросите друг друга: что сейчас ранит меня сильнее всего?",
-      "Дайте друг другу не защиту, а сначала понимание и подтверждение чувств",
-    ];
+    if (market !== "ru") {
+      title = "There's noticeable tension in the relationship right now";
+      subtitle = `Main risk zones: ${categoryTitles[mainZone]} and ${categoryTitles[secondZone]}`;
+      description =
+        "Your answers suggest you might currently be missing a sense of safety, clarity, and easy contact. That doesn't mean the relationship is bad, but it does point to built-up tension that's better not to ignore.";
+      advice = [
+        "Pick one specific problem and discuss only that, without mixing everything together",
+        "Ask each other: what hurts me the most right now?",
+        "Give each other understanding and validation first, before defensiveness",
+      ];
+    } else {
+      title = "Сейчас в отношениях есть заметное напряжение";
+      subtitle = `Главные зоны риска: ${categoryTitles[mainZone]} и ${categoryTitles[secondZone]}`;
+      description =
+        "По ответам видно, что вам сейчас может не хватать ощущения безопасности, ясности и лёгкого контакта. Это не означает, что отношения плохие, но говорит о накопившемся напряжении, которое лучше не игнорировать.";
+      advice = [
+        "Выберите одну конкретную проблему и обсудите только её, не смешивая всё сразу",
+        "Спросите друг друга: что сейчас ранит меня сильнее всего?",
+        "Дайте друг другу не защиту, а сначала понимание и подтверждение чувств",
+      ];
+    }
   } else if (overallScore >= 0.8) {
-    title = "У пары хороший потенциал, но есть уязвимые места";
-    subtitle = `Больше внимания стоит дать теме: ${categoryTitles[mainZone]}`;
-    description =
-      "Ваши отношения не выглядят кризисными, но в них есть повторяющиеся моменты, которые постепенно создают дистанцию. При желании это можно довольно быстро улучшить через более честный диалог и взаимную поддержку.";
-    advice = [
-      "Раз в неделю устраивайте спокойный разговор без телефонов и спешки",
-      "Проговорите, что помогает каждому из вас чувствовать близость",
-      "Замечайте не только проблемы, но и то, что у вас уже получается хорошо",
-    ];
+    if (market !== "ru") {
+      title = "The couple has good potential, but there are vulnerable spots";
+      subtitle = `Worth paying more attention to: ${categoryTitles[mainZone]}`;
+      description =
+        "Your relationship doesn't look like it's in crisis, but there are recurring moments that gradually create distance. With some effort, this can improve fairly quickly through more honest dialogue and mutual support.";
+      advice = [
+        "Once a week, have a calm conversation without phones and without rushing",
+        "Talk about what helps each of you feel close",
+        "Notice not just the problems, but what's already working well between you",
+      ];
+    } else {
+      title = "У пары хороший потенциал, но есть уязвимые места";
+      subtitle = `Больше внимания стоит дать теме: ${categoryTitles[mainZone]}`;
+      description =
+        "Ваши отношения не выглядят кризисными, но в них есть повторяющиеся моменты, которые постепенно создают дистанцию. При желании это можно довольно быстро улучшить через более честный диалог и взаимную поддержку.";
+      advice = [
+        "Раз в неделю устраивайте спокойный разговор без телефонов и спешки",
+        "Проговорите, что помогает каждому из вас чувствовать близость",
+        "Замечайте не только проблемы, но и то, что у вас уже получается хорошо",
+      ];
+    }
   } else {
-    title = "У вашей пары довольно здоровая эмоциональная база";
-    subtitle = "Между вами уже есть опора, которую важно сохранять";
-    description =
-      "По ответам видно, что в отношениях достаточно контакта, поддержки и способности договариваться. Это хорошая основа, и сейчас для вас важнее не 'спасать' отношения, а продолжать бережно укреплять то, что уже работает.";
-    advice = [
-      "Сохраняйте привычку говорить друг с другом открыто",
-      "Поддерживайте тёплые ритуалы: свидания, разговоры, маленькую заботу",
-      "Периодически обсуждайте не только проблемы, но и желания в отношениях",
-    ];
+    if (market !== "ru") {
+      title = "Your couple has a fairly healthy emotional foundation";
+      subtitle = "There's already a solid base between you that's worth protecting";
+      description =
+        "Your answers show enough contact, support, and ability to work things out together. This is a good foundation, and right now what matters more isn't 'saving' the relationship, but carefully strengthening what's already working.";
+      advice = [
+        "Keep the habit of talking to each other openly",
+        "Keep up warm rituals: dates, conversations, small acts of care",
+        "Every so often, talk not just about problems but about wishes in the relationship",
+      ];
+    } else {
+      title = "У вашей пары довольно здоровая эмоциональная база";
+      subtitle = "Между вами уже есть опора, которую важно сохранять";
+      description =
+        "По ответам видно, что в отношениях достаточно контакта, поддержки и способности договариваться. Это хорошая основа, и сейчас для вас важнее не 'спасать' отношения, а продолжать бережно укреплять то, что уже работает.";
+      advice = [
+        "Сохраняйте привычку говорить друг с другом открыто",
+        "Поддерживайте тёплые ритуалы: свидания, разговоры, маленькую заботу",
+        "Периодически обсуждайте не только проблемы, но и желания в отношениях",
+      ];
+    }
   }
 
   const zones = Object.entries(averages)
@@ -2716,7 +2811,13 @@ function getRelationshipCheckResult(answers: number[]) {
       title: categoryTitles[key],
       score: value,
       label:
-        value >= 1.35
+        market !== "ru"
+          ? value >= 1.35
+            ? "Needs attention"
+            : value >= 0.8
+            ? "Room to grow"
+            : "Strong zone"
+          : value >= 1.35
           ? "Нужно внимание"
           : value >= 0.8
           ? "Есть над чем работать"
@@ -7176,9 +7277,11 @@ const activePoll = POLLS.find((poll) => poll.id === activePollId) || null;
   if (activePoll && activePoll.questions.length === 0) {
   return (
     <div style={{ padding: 20 }}>
-      <button onClick={() => setActivePollId(null)}>Назад</button>
+      <button onClick={() => setActivePollId(null)}>
+        {market !== "ru" ? "Back" : "Назад"}
+      </button>
       <div style={{ marginTop: 16, opacity: 0.7 }}>
-        В этом опросе пока нет вопросов
+        {market !== "ru" ? "This poll has no questions yet" : "В этом опросе пока нет вопросов"}
       </div>
     </div>
   );
@@ -7456,7 +7559,9 @@ async function handleFinish() {
           {activePoll.title}
         </div>
         <div style={{ marginTop: 6, color: "#4b446a", fontSize: 14 }}>
-          Вопрос {currentQuestionIndex + 1} из {activePoll.questions.length}
+          {market !== "ru"
+            ? `Question ${currentQuestionIndex + 1} of ${activePoll.questions.length}`
+            : `Вопрос ${currentQuestionIndex + 1} из ${activePoll.questions.length}`}
         </div>
       </div>
 
@@ -7534,7 +7639,7 @@ async function handleFinish() {
           onClick={() => setActivePollId(null)}
           style={{ ...secondaryButtonStyle, marginTop: 10 }}
         >
-          Выйти из опроса
+          {market !== "ru" ? "Exit poll" : "Выйти из опроса"}
         </button>
       </div>
     </div>
@@ -7589,8 +7694,11 @@ const gamesPage2: Game[] = [
     // это больше не "AI-психолог" (см. новый универсальный чат ниже),
     // а короткий детерминированный опросник — "Экспресс-чек отношений".
     id: "ai-psychologist",
-    title: "Экспресс-чек отношений",
-    description: "12 вопросов, 2 минуты — узнайте, что сейчас происходит в ваших отношениях",
+    title: market !== "ru" ? "Relationship Express-Check" : "Экспресс-чек отношений",
+    description:
+      market !== "ru"
+        ? "12 questions, 2 minutes — find out what's going on in your relationship right now"
+        : "12 вопросов, 2 минуты — узнайте, что сейчас происходит в ваших отношениях",
     reward: 10,
     questions: [],
 
@@ -7654,7 +7762,7 @@ const psychologistAvatar =
     >
       <div style={{ ...cardBaseStyle(), padding: 14 }}>
         <div style={{ fontSize: 22, fontWeight: 900, color: "#1f1d3a" }}>
-          Экспресс-чек отношений 🩺
+          {market !== "ru" ? "Relationship Express-Check 🩺" : "Экспресс-чек отношений 🩺"}
         </div>
 
         <div
@@ -7665,7 +7773,9 @@ const psychologistAvatar =
             fontSize: 13,
           }}
         >
-          12 коротких вопросов помогут понять, что сейчас происходит в ваших отношениях.
+          {market !== "ru"
+            ? "12 short questions to help you understand what's going on in your relationship right now."
+            : "12 коротких вопросов помогут понять, что сейчас происходит в ваших отношениях."}
         </div>
       </div>
 
@@ -7680,7 +7790,7 @@ const psychologistAvatar =
           >
             <img
   src={psychologistAvatar}
-  alt="Психолог"
+  alt={market !== "ru" ? "Psychologist" : "Психолог"}
   style={{
   width: 96,
   height: 96,
@@ -7711,7 +7821,9 @@ const psychologistAvatar =
                   fontWeight: 800,
                 }}
               >
-                Вопрос {aiStep + 1} из {RELATIONSHIP_CHECK_QUESTIONS.length}
+                {market !== "ru"
+                  ? `Question ${aiStep + 1} of ${RELATIONSHIP_CHECK_QUESTIONS.length}`
+                  : `Вопрос ${aiStep + 1} из ${RELATIONSHIP_CHECK_QUESTIONS.length}`}
               </div>
 
               <div
@@ -7748,7 +7860,7 @@ const psychologistAvatar =
                 marginBottom: 10,
               }}
             >
-              Выберите ответ
+              {market !== "ru" ? "Choose an answer" : "Выберите ответ"}
             </div>
 
             {aiTyping ? (
@@ -7774,7 +7886,7 @@ const psychologistAvatar =
         animation: "pulse 1s infinite",
       }}
     />
-    Анализирую ваш ответ...
+    {market !== "ru" ? "Analyzing your answer..." : "Анализирую ваш ответ..."}
   </div>
 ) : (
   showAiAnswers && (
@@ -7812,7 +7924,7 @@ const psychologistAvatar =
             >
               <img
   src={AI_PSYCHOLOGIST_AVATARS.happy}
-  alt="Психолог"
+  alt={market !== "ru" ? "Psychologist" : "Психолог"}
                 style={{
                   width: 54,
                   height: 54,
@@ -7831,7 +7943,7 @@ const psychologistAvatar =
                     fontWeight: 800,
                   }}
                 >
-                  Анализ готов
+                  {market !== "ru" ? "Analysis ready" : "Анализ готов"}
                 </div>
 
                 <div
@@ -7874,7 +7986,7 @@ const psychologistAvatar =
 
           <div style={{ ...cardBaseStyle(), padding: 18 }}>
             <div style={{ fontSize: 18, fontWeight: 900, color: "#1f1d3a" }}>
-              Что можно сделать уже сейчас 💞
+              {market !== "ru" ? "What you can do right now 💞" : "Что можно сделать уже сейчас 💞"}
             </div>
 
             <div style={{ display: "grid", gap: 10, marginTop: 14 }}>
@@ -7901,7 +8013,7 @@ const psychologistAvatar =
             onClick={() => startGame("ai-psychologist")}
             style={{ ...primaryButtonStyle, width: "100%" }}
           >
-            Пройти ещё раз
+            {market !== "ru" ? "Take it again" : "Пройти ещё раз"}
           </button>
         </>
       )}
@@ -7910,7 +8022,7 @@ const psychologistAvatar =
         onClick={() => setActiveGameId(null)}
         style={{ ...secondaryButtonStyle, width: "100%" }}
       >
-        Назад к играм
+        {market !== "ru" ? "Back to games" : "Назад к играм"}
       </button>
     </div>
   );
@@ -8027,10 +8139,10 @@ function handleLoveQuestionFinish() {
     <div style={{ padding: 10, display: "grid", gap: 8 }}>
       <div style={{ ...cardBaseStyle(), padding: 12 }}>
         <div style={{ fontSize: 24, fontWeight: 900, color: "#1f1d3a" }}>
-          Игры
+          {t.games.title}
         </div>
         <div style={{ marginTop: 4, color: "#3a345c", fontSize: 13 }}>
-          Играй и зарабатывай очки
+          {t.games.subtitle}
         </div>
       </div>
 
@@ -8105,7 +8217,7 @@ function handleLoveQuestionFinish() {
       fontWeight: 700,
     }}
   >
-    Скоро будет доступно 🧠
+    {market !== "ru" ? "Coming soon 🧠" : "Скоро будет доступно 🧠"}
   </div>
 )}
 
@@ -8682,7 +8794,7 @@ function BottleGameScreen({
     <div style={{ padding: 16, display: "grid", gap: 14 }}>
       <div style={{ ...cardBaseStyle(), padding: 18 }}>
         <div style={{ fontSize: 26, fontWeight: 900, color: "#1f1d3a" }}>
-          Бутылочка
+          {market !== "ru" ? "Spin the Bottle" : "Бутылочка"}
         </div>
 
         <div
@@ -8693,7 +8805,9 @@ function BottleGameScreen({
             lineHeight: 1.45,
           }}
         >
-          Крути бутылку и получай задание для того, на кого она покажет.
+          {market !== "ru"
+            ? "Spin the bottle and get a task for whoever it points to."
+            : "Крути бутылку и получай задание для того, на кого она покажет."}
         </div>
       </div>
 
@@ -8715,8 +8829,8 @@ function BottleGameScreen({
             color: "#5a5378",
           }}
         >
-          <span>👧 Девушка</span>
-          <span>👦 Парень</span>
+          <span>{market !== "ru" ? "👧 Girl" : "👧 Девушка"}</span>
+          <span>{market !== "ru" ? "👦 Guy" : "👦 Парень"}</span>
         </div>
 
         <div
@@ -8779,7 +8893,13 @@ function BottleGameScreen({
             cursor: isSpinning ? "not-allowed" : "pointer",
           }}
         >
-          {isSpinning ? "Крутим..." : "Крутить бутылку"}
+          {market !== "ru"
+            ? isSpinning
+              ? "Spinning..."
+              : "Spin the bottle"
+            : isSpinning
+              ? "Крутим..."
+              : "Крутить бутылку"}
         </button>
 
         <button
@@ -8827,7 +8947,7 @@ function BottleGameScreen({
                 fontSize: 13,
               }}
             >
-              💫 Задание бутылочки
+              {market !== "ru" ? "💫 Bottle task" : "💫 Задание бутылочки"}
             </div>
 
             <div
@@ -8839,7 +8959,13 @@ function BottleGameScreen({
                 color: "#1f1d3a",
               }}
             >
-              {activeTask.target === "boy" ? "Задание для него" : "Задание для неё"}
+              {market !== "ru"
+                ? activeTask.target === "boy"
+                  ? "Task for him"
+                  : "Task for her"
+                : activeTask.target === "boy"
+                  ? "Задание для него"
+                  : "Задание для неё"}
             </div>
 
            <div style={{ marginTop: 10, fontSize: 16, lineHeight: 1.55, color: "#4b446a", padding: "14px 16px", borderRadius: 20, background: "rgba(107,70,255,0.06)", }} > {activeTask.text} </div>
@@ -8849,14 +8975,14 @@ function BottleGameScreen({
                 onClick={handleCompleteBottleTask}
                 style={{ ...primaryButtonStyle, width: "100%" }}
               >
-                Задание выполнено
+                {market !== "ru" ? "Task done" : "Задание выполнено"}
               </button>
 
               <button
                 onClick={handleAnotherBottleTask}
                 style={{ ...secondaryButtonStyle, width: "100%" }}
               >
-                Другое задание
+                {market !== "ru" ? "Another task" : "Другое задание"}
               </button>
             </div>
           </div>
@@ -8955,7 +9081,7 @@ setAppState((prev) => ({
     <div style={{ padding: 16, display: "grid", gap: 14 }}>
       <div style={{ ...cardBaseStyle(), padding: 18 }}>
         <div style={{ fontSize: 26, fontWeight: 900, color: "#1f1d3a" }}>
-          90 вопросов
+          {market !== "ru" ? "90 Questions" : "90 вопросов"}
         </div>
 
         <div
@@ -8966,7 +9092,9 @@ setAppState((prev) => ({
             lineHeight: 1.45,
           }}
         >
-          Глубокие вопросы про чувства, близость и отношения.
+          {market !== "ru"
+            ? "Deep questions about feelings, closeness, and relationships."
+            : "Глубокие вопросы про чувства, близость и отношения."}
         </div>
       </div>
 
@@ -9008,7 +9136,7 @@ setAppState((prev) => ({
                     fontSize: 13,
                   }}
                 >
-                  90 вопросов 💞
+                  {market !== "ru" ? "90 Questions 💞" : "90 вопросов 💞"}
                 </div>
 
                 <div
@@ -9047,7 +9175,7 @@ setAppState((prev) => ({
       color: "#6f54ff",
     }}
   >
-    ✔ Вы уже отвечали на этот вопрос
+    {market !== "ru" ? "✔ You already answered this one" : "✔ Вы уже отвечали на этот вопрос"}
   </div>
 )}
             </div>
@@ -9063,7 +9191,7 @@ setAppState((prev) => ({
                 cursor: animating ? "not-allowed" : "pointer",
               }}
             >
-              Ответили
+              {market !== "ru" ? "Answered" : "Ответили"}
             </button>
           </>
         ) : (
@@ -9076,11 +9204,13 @@ setAppState((prev) => ({
                 lineHeight: 1.35,
               }}
             >
-              Вопросы закончились 🎉
+              {market !== "ru" ? "You've run out of questions 🎉" : "Вопросы закончились 🎉"}
             </div>
 
             <div style={{ marginTop: 12, color: "#4b446a", lineHeight: 1.45 }}>
-              Ты прошёл(а) весь текущий набор вопросов.
+              {market !== "ru"
+                ? "You went through the whole current set of questions."
+                : "Ты прошёл(а) весь текущий набор вопросов."}
             </div>
           </>
         )}
@@ -9106,421 +9236,555 @@ function NeverHaveIEverGameScreen({
   onFinish: () => void;
   onClaimReward: (rewardKey: string) => Promise<boolean>;
 }) {
+  const nhCard = (
+    id: string,
+    type: "spicy" | "funny" | "romantic",
+    emoji: string,
+    textRu: string,
+    textEn: string,
+    taskRu: string,
+    taskEn: string
+  ) => ({
+    id,
+    type,
+    emoji,
+    text: market !== "ru" ? textEn : textRu,
+    task: market !== "ru" ? taskEn : taskRu,
+  });
+
   const cards = [
-    {
-      id: "nh1",
-      type: "spicy",
-      emoji: "😈",
-      text: "Я никогда не играл(а) в карты на раздевание",
-      task: "Если партнёр делал это — ему пора пыхтеть 😏",
-    },
-    {
-      id: "nh2",
-      type: "funny",
-      emoji: "🤣",
-      text: "Я никогда не пел(а) вслух в душе",
-      task: "Если партнёр делал это — поёт одну строчку любой песни",
-    },
-    {
-      id: "nh3",
-      type: "romantic",
-      emoji: "🔥",
-      text: "Я никогда не устраивал(а) романтический сюрприз",
-      task: "Если партнёр делал это — делится самой милой историей",
-    },
-    {
-      id: "nh4",
-      type: "spicy",
-      emoji: "😈",
-      text: "Я никогда не писал(а) бывшему ночью",
-      task: "Если партнёр делал это — рассказывает неловкую историю",
-    },
-    {
-      id: "nh5",
-      type: "funny",
-      emoji: "🤣",
-      text: "Я никогда не засыпал(а) на свидании",
-      task: "Если партнёр делал это — показывает это в лицах",
-    },
-    {
-      id: "nh6",
-      type: "romantic",
-      emoji: "🔥",
-      text: "Я никогда не мечтал(а) о ленивом дне вдвоём без дел",
-      task: "Если партнёр делал это — описывает этот день тремя словами",
-    },
-    {
-      id: "nh7",
-      type: "spicy",
-      emoji: "😈",
-      text: "Я никогда не ревновал(а) без причины",
-      task: "Если партнёр делал это — обнимает тебя 20 секунд",
-    },
-    {
-      id: "nh8",
-      type: "funny",
-      emoji: "🤣",
-      text: "Я никогда не говорил(а) 'я в пути', ещё не выйдя из дома",
-      task: "Если партнёр делал это — изображает очень виноватый вид 10 секунд",
-    },
-    {
-      id: "nh9",
-      type: "romantic",
-      emoji: "🔥",
-      text: "Я никогда не представлял(а) наш идеальный совместный выходной",
-      task: "Если партнёр делал это — быстро рассказывает свой вариант",
-    },
-    {
-      id: "nh10",
-      type: "spicy",
-      emoji: "😈",
-      text: "Я никогда не флиртовал(а) ради шутки",
-      task: "Если партнёр делал это — выполняет твоё мини-желание",
-    },
-    {
-      id: "nh11",
-      type: "funny",
-      emoji: "🤣",
-      text: "Я никогда не путал(а) имя человека",
-      task: "Если партнёр делал это — рассказывает самую неловкую ситуацию",
-    },
-    {
-      id: "nh12",
-      type: "romantic",
-      emoji: "🔥",
-      text: "Я никогда не придумывал(а) милое прозвище для любимого человека",
-      task: "Если партнёр делал это — придумывает тебе новое прямо сейчас",
-    },
-    {
-      id: "nh13",
-      type: "spicy",
-      emoji: "😈",
-      text: "Я никогда не подглядывал(а) в чужой телефон",
-      task: "Если партнёр делал это — честно признаётся, зачем",
-    },
-    {
-      id: "nh14",
-      type: "funny",
-      emoji: "🤣",
-      text: "Я никогда не делал(а) вид, что слушаю, хотя мысли были в другом месте",
-      task: "Если партнёр делал это — должен(на) очень внимательно слушать тебя 30 секунд",
-    },
-    {
-      id: "nh15",
-      type: "romantic",
-      emoji: "🔥",
-      text: "Я никогда не влюблялся(ась) с первого взгляда",
-      task: "Если партнёр делал это — делает тебе комплимент",
-    },
-    {
-      id: "nh16",
-      type: "spicy",
-      emoji: "😈",
-      text: "Я никогда не хотел(а) поцеловать человека в первый же вечер",
-      task: "Если партнёр делал это — улыбается максимально загадочно",
-    },
-    {
-      id: "nh17",
-      type: "funny",
-      emoji: "🤣",
-      text: "Я никогда не танцевал(а) без музыки",
-      task: "Если партнёр делал это — показывает 5 секунд танца",
-    },
-    {
-      id: "nh18",
-      type: "romantic",
-      emoji: "🔥",
-      text: "Я никогда не хотел(а) устроить спонтанную поездку вдвоём",
-      task: "Если партнёр делал это — называет место, куда хотел(а) бы поехать с тобой",
-    },
-    {
-      id: "nh19",
-      type: "spicy",
-      emoji: "😈",
-      text: "Я никогда не писал(а) длинное сообщение и потом не удалял(а) его",
-      task: "Если партнёр делал это — говорит, почему передумал(а)",
-    },
-    {
-      id: "nh20",
-      type: "funny",
-      emoji: "🤣",
-      text: "Я никогда не удалял(а) фото из-за того, что плохо получился(ась)",
-      task: "Если партнёр делал это — показывает свою самую смешную мину",
-    },
-    {
-      id: "nh21",
-      type: "romantic",
-      emoji: "🔥",
-      text: "Я никогда не скучал(а) настолько, что пересматривал(а) фото человека",
-      task: "Если партнёр делал это — признаётся, чьи фото так смотрел(а)",
-    },
-    {
-      id: "nh22",
-      type: "spicy",
-      emoji: "😈",
-      text: "Я никогда не говорил(а) 'мне всё равно', когда было очень даже не всё равно",
-      task: "Если партнёр делал это — говорит 3 вещи, которые ему(ей) не всё равно",
-    },
-    {
-      id: "nh23",
-      type: "funny",
-      emoji: "🤣",
-      text: "Я никогда не выбирал(а) одежду дольше часа",
-      task: "Если партнёр делал это — рассказывает про свой самый сложный выбор",
-    },
-    {
-      id: "nh24",
-      type: "romantic",
-      emoji: "🔥",
-      text: "Я никогда не мечтал(а) проснуться у моря рядом с любимым человеком",
-      task: "Если партнёр делал это — описывает такое утро одной фразой",
-    },
-    {
-      id: "nh25",
-      type: "spicy",
-      emoji: "😈",
-      text: "Я никогда не ревновал(а) к прошлому партнёра",
-      task: "Если партнёр делал это — честно признаётся, что именно задевало",
-    },
-    {
-      id: "nh26",
-      type: "funny",
-      emoji: "🤣",
-      text: "Я никогда не опаздывал(а) на свидание больше чем на 30 минут",
-      task: "Если партнёр делал это — извиняется максимально драматично",
-    },
-    {
-      id: "nh27",
-      type: "romantic",
-      emoji: "🔥",
-      text: "Я никогда не делал(а) сюрприз без повода",
-      task: "Если партнёр делал это — обещает маленький сюрприз в будущем",
-    },
-    {
-      id: "nh28",
-      type: "spicy",
-      emoji: "😈",
-      text: "Я никогда не скрывал(а), что мне кто-то нравится",
-      task: "Если партнёр делал это — показывает, как он(а) это обычно скрывает",
-    },
-    {
-      id: "nh29",
-      type: "funny",
-      emoji: "🤣",
-      text: "Я никогда не делал(а) скриншот переписки",
-      task: "Если партнёр делал это — делает максимально innocent face",
-    },
-    {
-      id: "nh30",
-      type: "romantic",
-      emoji: "🔥",
-      text: "Я никогда не представлял(а) совместную жизнь через 10 лет",
-      task: "Если партнёр делал это — рассказывает один такой образ",
-    },
-    {
-      id: "nh31",
-      type: "spicy",
-      emoji: "😈",
-      text: "Я никогда не задерживал(а) ответ специально",
-      task: "Если партнёр делал это — признаётся, зачем так делал(а)",
-    },
-    {
-      id: "nh32",
-      type: "funny",
-      emoji: "🤣",
-      text: "Я никогда не делал(а) вид, что не заметил(а) сообщение",
-      task: "Если партнёр делал это — признаётся, почему так бывает",
-    },
-    {
-      id: "nh33",
-      type: "romantic",
-      emoji: "🔥",
-      text: "Я никогда не хотел(а) обнять человека сильнее, чем позволяли обстоятельства",
-      task: "Если партнёр делал это — обнимает тебя прямо сейчас",
-    },
-    {
-      id: "nh34",
-      type: "spicy",
-      emoji: "😈",
-      text: "Я никогда не устраивал(а) сцену ревности",
-      task: "Если партнёр делал это — изображает свою ревность без слов",
-    },
-    {
-      id: "nh35",
-      type: "funny",
-      emoji: "🤣",
-      text: "Я никогда не врал(а), что мне нравится подарок",
-      task: "Если партнёр делал это — рассказывает про самый странный подарок",
-    },
-    {
-      id: "nh36",
-      type: "romantic",
-      emoji: "🔥",
-      text: "Я никогда не думал(а): 'с этим человеком было бы очень спокойно'",
-      task: "Если партнёр делал это — говорит, что для него(неё) значит спокойствие в любви",
-    },
-    {
-      id: "nh37",
-      type: "spicy",
-      emoji: "😈",
-      text: "Я никогда не хотел(а) сбежать с вечеринки домой с кем-то вдвоём",
-      task: "Если партнёр делал это — объясняет, что для него(неё) идеальный вечер",
-    },
-    {
-      id: "nh38",
-      type: "funny",
-      emoji: "🤣",
-      text: "Я никогда не краснел(а) из-за комплимента",
-      task: "Если партнёр делал это — получает от тебя новый комплимент",
-    },
-    {
-      id: "nh39",
-      type: "romantic",
-      emoji: "🔥",
-      text: "Я никогда не хранил(а) мелочь на память о важном человеке",
-      task: "Если партнёр делал это — рассказывает, что это была за вещь",
-    },
-    {
-      id: "nh40",
-      type: "spicy",
-      emoji: "😈",
-      text: "Я никогда не хотел(а) пофлиртовать, просто чтобы проверить реакцию",
-      task: "Если партнёр делал это — признаётся, что это было очень рискованно",
-    },
-    {
-      id: "nh41",
-      type: "funny",
-      emoji: "🤣",
-      text: "Я никогда не пугался(ась) собственного сообщения на максимальной громкости",
-      task: "Если партнёр делал это — изображает этот момент",
-    },
-    {
-      id: "nh42",
-      type: "romantic",
-      emoji: "🔥",
-      text: "Я никогда не представлял(а), как мы выглядели бы в старости",
-      task: "Если партнёр делал это — рассказывает одну милую деталь",
-    },
-    {
-      id: "nh43",
-      type: "spicy",
-      emoji: "😈",
-      text: "Я никогда не писал(а) бывшему первым(ой) после расставания",
-      task: "Если партнёр делал это — рассказывает, зачем это было",
-    },
-    {
-      id: "nh44",
-      type: "funny",
-      emoji: "🤣",
-      text: "Я никогда не спотыкался(ась) на ровном месте на глазах у других",
-      task: "Если партнёр делал это — показывает свой самый достойный выход из неловкости",
-    },
-    {
-      id: "nh45",
-      type: "romantic",
-      emoji: "🔥",
-      text: "Я никогда не хотел(а) провести целый день вдвоём без телефонов",
-      task: "Если партнёр делал это — описывает этот день одной фразой",
-    },
-    {
-      id: "nh46",
-      type: "spicy",
-      emoji: "😈",
-      text: "Я никогда не делал(а) первый шаг в отношениях",
-      task: "Если партнёр делал это — рассказывает, как это было",
-    },
-    {
-      id: "nh47",
-      type: "funny",
-      emoji: "🤣",
-      text: "Я никогда не делал(а) виноватое лицо, чтобы выкрутиться",
-      task: "Если партнёр делал это — показывает своё лучшее виноватое лицо",
-    },
-    {
-      id: "nh48",
-      type: "romantic",
-      emoji: "🔥",
-      text: "Я никогда не переслушивал(а) песню из-за воспоминаний о человеке",
-      task: "Если партнёр делал это — называет эту песню или её настроение",
-    },
-    {
-      id: "nh49",
-      type: "spicy",
-      emoji: "😈",
-      text: "Я никогда не хотел(а) поцеловать кого-то неожиданно",
-      task: "Если партнёр делал это — говорит, насколько это было спонтанно по шкале от 1 до 10",
-    },
-    {
-      id: "nh50",
-      type: "funny",
-      emoji: "🤣",
-      text: "Я никогда не отправлял(а) сообщение не тому человеку",
-      task: "Если партнёр делал это — рассказывает, что это было за сообщение",
-    },
-    {
-      id: "nh51",
-      type: "romantic",
-      emoji: "🔥",
-      text: "Я никогда не мечтал(а) о красивом признании в любви",
-      task: "Если партнёр делал это — делится одной такой идеей",
-    },
-    {
-      id: "nh52",
-      type: "spicy",
-      emoji: "😈",
-      text: "Я никогда не вёл(вела) себя слишком гордо после ссоры",
-      task: "Если партнёр делал это — говорит одну фразу для примирения",
-    },
-    {
-      id: "nh53",
-      type: "funny",
-      emoji: "🤣",
-      text: "Я никогда не делал(а) вид, что всё нормально, когда было очень смешно",
-      task: "Если партнёр делал это — пытается не засмеяться 5 секунд, глядя на тебя",
-    },
-    {
-      id: "nh54",
-      type: "romantic",
-      emoji: "🔥",
-      text: "Я никогда не хотел(а) сказать человеку что-то очень нежное, но стеснялся(ась)",
-      task: "Если партнёр делал это — говорит тебе это сейчас в мягкой форме",
-    },
-    {
-      id: "nh55",
-      type: "spicy",
-      emoji: "😈",
-      text: "Я никогда не делал(а) вид, что мне неинтересно, хотя было очень интересно",
-      task: "Если партнёр делал это — честно признаётся, когда так бывало",
-    },
-    {
-      id: "nh56",
-      type: "funny",
-      emoji: "🤣",
-      text: "Я никогда не репетировал(а) разговор заранее в голове",
-      task: "Если партнёр делал это — изображает, как это выглядит",
-    },
-    {
-      id: "nh57",
-      type: "romantic",
-      emoji: "🔥",
-      text: "Я никогда не хотел(а) провести с человеком весь день, ничего особо не делая",
-      task: "Если партнёр делал это — говорит, почему это для него(неё) ценно",
-    },
-    {
-      id: "nh58",
-      type: "spicy",
-      emoji: "😈",
-      text: "Я никогда не делал(а) намёк вместо прямого признания",
-      task: "Если партнёр делал это — признаётся, понял(а) ли кто-то этот намёк",
-    },
-    {
-      id: "nh59",
-      type: "funny",
-      emoji: "🤣",
-      text: "Я никогда не терял(а) мысль посреди разговора",
-      task: "Если партнёр делал это — должен(на) придумать очень умный вид на 3 секунды",
-    },
-  ] as const;
+    nhCard(
+      "nh1",
+      "spicy",
+      "😈",
+      "Я никогда не играл(а) в карты на раздевание",
+      "I have never played strip poker (or any strip game)",
+      "Если партнёр делал это — ему пора пыхтеть 😏",
+      "If your partner has, they're in the hot seat now 😏"
+    ),
+    nhCard(
+      "nh2",
+      "funny",
+      "🤣",
+      "Я никогда не пел(а) вслух в душе",
+      "I have never sung out loud in the shower",
+      "Если партнёр делал это — поёт одну строчку любой песни",
+      "If your partner has, they sing one line of any song"
+    ),
+    nhCard(
+      "nh3",
+      "romantic",
+      "🔥",
+      "Я никогда не устраивал(а) романтический сюрприз",
+      "I have never planned a romantic surprise",
+      "Если партнёр делал это — делится самой милой историей",
+      "If your partner has, they share their sweetest story"
+    ),
+    nhCard(
+      "nh4",
+      "spicy",
+      "😈",
+      "Я никогда не писал(а) бывшему ночью",
+      "I have never texted an ex late at night",
+      "Если партнёр делал это — рассказывает неловкую историю",
+      "If your partner has, they tell an awkward story"
+    ),
+    nhCard(
+      "nh5",
+      "funny",
+      "🤣",
+      "Я никогда не засыпал(а) на свидании",
+      "I have never fallen asleep on a date",
+      "Если партнёр делал это — показывает это в лицах",
+      "If your partner has, they act it out"
+    ),
+    nhCard(
+      "nh6",
+      "romantic",
+      "🔥",
+      "Я никогда не мечтал(а) о ленивом дне вдвоём без дел",
+      "I have never dreamed of a lazy do-nothing day together",
+      "Если партнёр делал это — описывает этот день тремя словами",
+      "If your partner has, they describe that day in three words"
+    ),
+    nhCard(
+      "nh7",
+      "spicy",
+      "😈",
+      "Я никогда не ревновал(а) без причины",
+      "I have never been jealous without a reason",
+      "Если партнёр делал это — обнимает тебя 20 секунд",
+      "If your partner has, they hug you for 20 seconds"
+    ),
+    nhCard(
+      "nh8",
+      "funny",
+      "🤣",
+      "Я никогда не говорил(а) 'я в пути', ещё не выйдя из дома",
+      "I have never said 'I'm on my way' before actually leaving the house",
+      "Если партнёр делал это — изображает очень виноватый вид 10 секунд",
+      "If your partner has, they make a guilty face for 10 seconds"
+    ),
+    nhCard(
+      "nh9",
+      "romantic",
+      "🔥",
+      "Я никогда не представлял(а) наш идеальный совместный выходной",
+      "I have never imagined our perfect day off together",
+      "Если партнёр делал это — быстро рассказывает свой вариант",
+      "If your partner has, they quickly describe theirs"
+    ),
+    nhCard(
+      "nh10",
+      "spicy",
+      "😈",
+      "Я никогда не флиртовал(а) ради шутки",
+      "I have never flirted just as a joke",
+      "Если партнёр делал это — выполняет твоё мини-желание",
+      "If your partner has, they grant you a small wish"
+    ),
+    nhCard(
+      "nh11",
+      "funny",
+      "🤣",
+      "Я никогда не путал(а) имя человека",
+      "I have never mixed up someone's name",
+      "Если партнёр делал это — рассказывает самую неловкую ситуацию",
+      "If your partner has, they tell their most awkward story about it"
+    ),
+    nhCard(
+      "nh12",
+      "romantic",
+      "🔥",
+      "Я никогда не придумывал(а) милое прозвище для любимого человека",
+      "I have never come up with a cute nickname for someone I love",
+      "Если партнёр делал это — придумывает тебе новое прямо сейчас",
+      "If your partner has, they make up a new one for you right now"
+    ),
+    nhCard(
+      "nh13",
+      "spicy",
+      "😈",
+      "Я никогда не подглядывал(а) в чужой телефон",
+      "I have never snooped on someone else's phone",
+      "Если партнёр делал это — честно признаётся, зачем",
+      "If your partner has, they honestly admit why"
+    ),
+    nhCard(
+      "nh14",
+      "funny",
+      "🤣",
+      "Я никогда не делал(а) вид, что слушаю, хотя мысли были в другом месте",
+      "I have never pretended to listen while my mind was somewhere else",
+      "Если партнёр делал это — должен(на) очень внимательно слушать тебя 30 секунд",
+      "If your partner has, they have to listen to you very closely for 30 seconds"
+    ),
+    nhCard(
+      "nh15",
+      "romantic",
+      "🔥",
+      "Я никогда не влюблялся(ась) с первого взгляда",
+      "I have never fallen in love at first sight",
+      "Если партнёр делал это — делает тебе комплимент",
+      "If your partner has, they give you a compliment"
+    ),
+    nhCard(
+      "nh16",
+      "spicy",
+      "😈",
+      "Я никогда не хотел(а) поцеловать человека в первый же вечер",
+      "I have never wanted to kiss someone on the very first night",
+      "Если партнёр делал это — улыбается максимально загадочно",
+      "If your partner has, they smile as mysteriously as possible"
+    ),
+    nhCard(
+      "nh17",
+      "funny",
+      "🤣",
+      "Я никогда не танцевал(а) без музыки",
+      "I have never danced without any music playing",
+      "Если партнёр делал это — показывает 5 секунд танца",
+      "If your partner has, they show 5 seconds of that dance"
+    ),
+    nhCard(
+      "nh18",
+      "romantic",
+      "🔥",
+      "Я никогда не хотел(а) устроить спонтанную поездку вдвоём",
+      "I have never wanted to go on a spontaneous trip together",
+      "Если партнёр делал это — называет место, куда хотел(а) бы поехать с тобой",
+      "If your partner has, they name a place they'd want to go with you"
+    ),
+    nhCard(
+      "nh19",
+      "spicy",
+      "😈",
+      "Я никогда не писал(а) длинное сообщение и потом не удалял(а) его",
+      "I have never written a long message and then deleted it instead of sending",
+      "Если партнёр делал это — говорит, почему передумал(а)",
+      "If your partner has, they say why they changed their mind"
+    ),
+    nhCard(
+      "nh20",
+      "funny",
+      "🤣",
+      "Я никогда не удалял(а) фото из-за того, что плохо получился(ась)",
+      "I have never deleted a photo just because I looked bad in it",
+      "Если партнёр делал это — показывает свою самую смешную мину",
+      "If your partner has, they make their funniest face"
+    ),
+    nhCard(
+      "nh21",
+      "romantic",
+      "🔥",
+      "Я никогда не скучал(а) настолько, что пересматривал(а) фото человека",
+      "I have never missed someone so much I kept scrolling through their photos",
+      "Если партнёр делал это — признаётся, чьи фото так смотрел(а)",
+      "If your partner has, they admit whose photos it was"
+    ),
+    nhCard(
+      "nh22",
+      "spicy",
+      "😈",
+      "Я никогда не говорил(а) 'мне всё равно', когда было очень даже не всё равно",
+      "I have never said 'I don't care' when I actually cared a lot",
+      "Если партнёр делал это — говорит 3 вещи, которые ему(ей) не всё равно",
+      "If your partner has, they name 3 things they actually care about"
+    ),
+    nhCard(
+      "nh23",
+      "funny",
+      "🤣",
+      "Я никогда не выбирал(а) одежду дольше часа",
+      "I have never spent over an hour picking an outfit",
+      "Если партнёр делал это — рассказывает про свой самый сложный выбор",
+      "If your partner has, they tell the story of their hardest outfit choice"
+    ),
+    nhCard(
+      "nh24",
+      "romantic",
+      "🔥",
+      "Я никогда не мечтал(а) проснуться у моря рядом с любимым человеком",
+      "I have never dreamed of waking up by the sea next to someone I love",
+      "Если партнёр делал это — описывает такое утро одной фразой",
+      "If your partner has, they describe that morning in one sentence"
+    ),
+    nhCard(
+      "nh25",
+      "spicy",
+      "😈",
+      "Я никогда не ревновал(а) к прошлому партнёра",
+      "I have never been jealous of a partner's past relationship",
+      "Если партнёр делал это — честно признаётся, что именно задевало",
+      "If your partner has, they honestly admit what exactly bothered them"
+    ),
+    nhCard(
+      "nh26",
+      "funny",
+      "🤣",
+      "Я никогда не опаздывал(а) на свидание больше чем на 30 минут",
+      "I have never been more than 30 minutes late for a date",
+      "Если партнёр делал это — извиняется максимально драматично",
+      "If your partner has, they apologize as dramatically as possible"
+    ),
+    nhCard(
+      "nh27",
+      "romantic",
+      "🔥",
+      "Я никогда не делал(а) сюрприз без повода",
+      "I have never planned a surprise for no reason at all",
+      "Если партнёр делал это — обещает маленький сюрприз в будущем",
+      "If your partner has, they promise a small surprise in the future"
+    ),
+    nhCard(
+      "nh28",
+      "spicy",
+      "😈",
+      "Я никогда не скрывал(а), что мне кто-то нравится",
+      "I have never hidden that I liked someone",
+      "Если партнёр делал это — показывает, как он(а) это обычно скрывает",
+      "If your partner has, they show how they usually hide it"
+    ),
+    nhCard(
+      "nh29",
+      "funny",
+      "🤣",
+      "Я никогда не делал(а) скриншот переписки",
+      "I have never taken a screenshot of a chat",
+      "Если партнёр делал это — делает максимально innocent face",
+      "If your partner has, they make the most innocent face possible"
+    ),
+    nhCard(
+      "nh30",
+      "romantic",
+      "🔥",
+      "Я никогда не представлял(а) совместную жизнь через 10 лет",
+      "I have never imagined our life together 10 years from now",
+      "Если партнёр делал это — рассказывает один такой образ",
+      "If your partner has, they share one such picture"
+    ),
+    nhCard(
+      "nh31",
+      "spicy",
+      "😈",
+      "Я никогда не задерживал(а) ответ специально",
+      "I have never delayed replying on purpose",
+      "Если партнёр делал это — признаётся, зачем так делал(а)",
+      "If your partner has, they admit why they did it"
+    ),
+    nhCard(
+      "nh32",
+      "funny",
+      "🤣",
+      "Я никогда не делал(а) вид, что не заметил(а) сообщение",
+      "I have never pretended I didn't see a message",
+      "Если партнёр делал это — признаётся, почему так бывает",
+      "If your partner has, they admit why that happens"
+    ),
+    nhCard(
+      "nh33",
+      "romantic",
+      "🔥",
+      "Я никогда не хотел(а) обнять человека сильнее, чем позволяли обстоятельства",
+      "I have never wanted to hug someone more than the situation allowed",
+      "Если партнёр делал это — обнимает тебя прямо сейчас",
+      "If your partner has, they hug you right now"
+    ),
+    nhCard(
+      "nh34",
+      "spicy",
+      "😈",
+      "Я никогда не устраивал(а) сцену ревности",
+      "I have never made a jealous scene",
+      "Если партнёр делал это — изображает свою ревность без слов",
+      "If your partner has, they act out their jealousy without words"
+    ),
+    nhCard(
+      "nh35",
+      "funny",
+      "🤣",
+      "Я никогда не врал(а), что мне нравится подарок",
+      "I have never lied about liking a gift",
+      "Если партнёр делал это — рассказывает про самый странный подарок",
+      "If your partner has, they tell the story of the strangest gift"
+    ),
+    nhCard(
+      "nh36",
+      "romantic",
+      "🔥",
+      "Я никогда не думал(а): 'с этим человеком было бы очень спокойно'",
+      "I have never thought 'life would feel so calm with this person'",
+      "Если партнёр делал это — говорит, что для него(неё) значит спокойствие в любви",
+      "If your partner has, they say what calm love means to them"
+    ),
+    nhCard(
+      "nh37",
+      "spicy",
+      "😈",
+      "Я никогда не хотел(а) сбежать с вечеринки домой с кем-то вдвоём",
+      "I have never wanted to sneak away from a party with someone",
+      "Если партнёр делал это — объясняет, что для него(неё) идеальный вечер",
+      "If your partner has, they describe their idea of a perfect night out"
+    ),
+    nhCard(
+      "nh38",
+      "funny",
+      "🤣",
+      "Я никогда не краснел(а) из-за комплимента",
+      "I have never blushed because of a compliment",
+      "Если партнёр делал это — получает от тебя новый комплимент",
+      "If your partner has, they get a new compliment from you"
+    ),
+    nhCard(
+      "nh39",
+      "romantic",
+      "🔥",
+      "Я никогда не хранил(а) мелочь на память о важном человеке",
+      "I have never kept a small memento of someone important to me",
+      "Если партнёр делал это — рассказывает, что это была за вещь",
+      "If your partner has, they tell you what it was"
+    ),
+    nhCard(
+      "nh40",
+      "spicy",
+      "😈",
+      "Я никогда не хотел(а) пофлиртовать, просто чтобы проверить реакцию",
+      "I have never flirted just to test someone's reaction",
+      "Если партнёр делал это — признаётся, что это было очень рискованно",
+      "If your partner has, they admit it was pretty risky"
+    ),
+    nhCard(
+      "nh41",
+      "funny",
+      "🤣",
+      "Я никогда не пугался(ась) собственного сообщения на максимальной громкости",
+      "I have never been startled by my own notification at max volume",
+      "Если партнёр делал это — изображает этот момент",
+      "If your partner has, they act out that moment"
+    ),
+    nhCard(
+      "nh42",
+      "romantic",
+      "🔥",
+      "Я никогда не представлял(а), как мы выглядели бы в старости",
+      "I have never imagined what we'd look like when we're old",
+      "Если партнёр делал это — рассказывает одну милую деталь",
+      "If your partner has, they share one sweet detail"
+    ),
+    nhCard(
+      "nh43",
+      "spicy",
+      "😈",
+      "Я никогда не писал(а) бывшему первым(ой) после расставания",
+      "I have never texted an ex first after a breakup",
+      "Если партнёр делал это — рассказывает, зачем это было",
+      "If your partner has, they explain why"
+    ),
+    nhCard(
+      "nh44",
+      "funny",
+      "🤣",
+      "Я никогда не спотыкался(ась) на ровном месте на глазах у других",
+      "I have never tripped over nothing in front of other people",
+      "Если партнёр делал это — показывает свой самый достойный выход из неловкости",
+      "If your partner has, they show their smoothest recovery move"
+    ),
+    nhCard(
+      "nh45",
+      "romantic",
+      "🔥",
+      "Я никогда не хотел(а) провести целый день вдвоём без телефонов",
+      "I have never wanted to spend a whole day together with no phones",
+      "Если партнёр делал это — описывает этот день одной фразой",
+      "If your partner has, they describe that day in one sentence"
+    ),
+    nhCard(
+      "nh46",
+      "spicy",
+      "😈",
+      "Я никогда не делал(а) первый шаг в отношениях",
+      "I have never made the first move in a relationship",
+      "Если партнёр делал это — рассказывает, как это было",
+      "If your partner has, they tell the story of how it happened"
+    ),
+    nhCard(
+      "nh47",
+      "funny",
+      "🤣",
+      "Я никогда не делал(а) виноватое лицо, чтобы выкрутиться",
+      "I have never put on a guilty face just to get out of trouble",
+      "Если партнёр делал это — показывает своё лучшее виноватое лицо",
+      "If your partner has, they show their best guilty face"
+    ),
+    nhCard(
+      "nh48",
+      "romantic",
+      "🔥",
+      "Я никогда не переслушивал(а) песню из-за воспоминаний о человеке",
+      "I have never replayed a song over and over because it reminded me of someone",
+      "Если партнёр делал это — называет эту песню или её настроение",
+      "If your partner has, they name the song or its mood"
+    ),
+    nhCard(
+      "nh49",
+      "spicy",
+      "😈",
+      "Я никогда не хотел(а) поцеловать кого-то неожиданно",
+      "I have never wanted to kiss someone out of the blue",
+      "Если партнёр делал это — говорит, насколько это было спонтанно по шкале от 1 до 10",
+      "If your partner has, they rate how spontaneous it was from 1 to 10"
+    ),
+    nhCard(
+      "nh50",
+      "funny",
+      "🤣",
+      "Я никогда не отправлял(а) сообщение не тому человеку",
+      "I have never sent a message to the wrong person",
+      "Если партнёр делал это — рассказывает, что это было за сообщение",
+      "If your partner has, they tell you what the message said"
+    ),
+    nhCard(
+      "nh51",
+      "romantic",
+      "🔥",
+      "Я никогда не мечтал(а) о красивом признании в любви",
+      "I have never dreamed of a beautiful love confession",
+      "Если партнёр делал это — делится одной такой идеей",
+      "If your partner has, they share one such idea"
+    ),
+    nhCard(
+      "nh52",
+      "spicy",
+      "😈",
+      "Я никогда не вёл(вела) себя слишком гордо после ссоры",
+      "I have never been too proud to make up after a fight",
+      "Если партнёр делал это — говорит одну фразу для примирения",
+      "If your partner has, they say one line to make peace"
+    ),
+    nhCard(
+      "nh53",
+      "funny",
+      "🤣",
+      "Я никогда не делал(а) вид, что всё нормально, когда было очень смешно",
+      "I have never pretended everything was fine when it was actually hilarious",
+      "Если партнёр делал это — пытается не засмеяться 5 секунд, глядя на тебя",
+      "If your partner has, they try not to laugh for 5 seconds while looking at you"
+    ),
+    nhCard(
+      "nh54",
+      "romantic",
+      "🔥",
+      "Я никогда не хотел(а) сказать человеку что-то очень нежное, но стеснялся(ась)",
+      "I have never wanted to say something very tender to someone but got too shy",
+      "Если партнёр делал это — говорит тебе это сейчас в мягкой форме",
+      "If your partner has, they say it to you now, gently"
+    ),
+    nhCard(
+      "nh55",
+      "spicy",
+      "😈",
+      "Я никогда не делал(а) вид, что мне неинтересно, хотя было очень интересно",
+      "I have never pretended not to be interested when I really was",
+      "Если партнёр делал это — честно признаётся, когда так бывало",
+      "If your partner has, they honestly admit when that happened"
+    ),
+    nhCard(
+      "nh56",
+      "funny",
+      "🤣",
+      "Я никогда не репетировал(а) разговор заранее в голове",
+      "I have never rehearsed a conversation in my head beforehand",
+      "Если партнёр делал это — изображает, как это выглядит",
+      "If your partner has, they act out what that looks like"
+    ),
+    nhCard(
+      "nh57",
+      "romantic",
+      "🔥",
+      "Я никогда не хотел(а) провести с человеком весь день, ничего особо не делая",
+      "I have never wanted to spend the whole day with someone, doing nothing in particular",
+      "Если партнёр делал это — говорит, почему это для него(неё) ценно",
+      "If your partner has, they say why that matters to them"
+    ),
+    nhCard(
+      "nh58",
+      "spicy",
+      "😈",
+      "Я никогда не делал(а) намёк вместо прямого признания",
+      "I have never dropped a hint instead of just saying it directly",
+      "Если партнёр делал это — признаётся, понял(а) ли кто-то этот намёк",
+      "If your partner has, they admit whether anyone actually got the hint"
+    ),
+    nhCard(
+      "nh59",
+      "funny",
+      "🤣",
+      "Я никогда не терял(а) мысль посреди разговора",
+      "I have never lost my train of thought in the middle of a conversation",
+      "Если партнёр делал это — должен(на) придумать очень умный вид на 3 секунды",
+      "If your partner has, they have to look extremely smart for 3 seconds"
+    ),
+  ];
 
   function shuffle<T>(array: readonly T[]) {
     const copy = [...array];
@@ -9575,11 +9839,11 @@ function handleNext() {
     <div style={{ padding: 16, display: "grid", gap: 14 }}>
       <div style={{ ...cardBaseStyle(), padding: 18 }}>
         <div style={{ fontSize: 28, fontWeight: 900, color: "#1f1d3a" }}>
-          Я никогда не...
+          {market !== "ru" ? "Never Have I Ever..." : "Я никогда не..."}
         </div>
 
         <div style={{ marginTop: 8, color: "#3a345c", fontSize: 15 }}>
-          Загружаем карточки...
+          {market !== "ru" ? "Loading cards..." : "Загружаем карточки..."}
         </div>
       </div>
 
@@ -9594,7 +9858,13 @@ const rewardKey = `never-have:${card.id}`;
 const alreadyPlayed = playedGameRewardKeys.includes(rewardKey);
 
 const categoryLabel =
-  card.type === "romantic"
+  market !== "ru"
+    ? card.type === "romantic"
+      ? "Romantic"
+      : card.type === "spicy"
+      ? "Bold"
+      : "Funny"
+    : card.type === "romantic"
     ? "Романтика"
     : card.type === "spicy"
     ? "Провокация"
@@ -9604,7 +9874,7 @@ return (
   <div style={{ padding: 16, display: "grid", gap: 14 }}>
     <div style={{ ...cardBaseStyle(), padding: 18 }}>
       <div style={{ fontSize: 28, fontWeight: 900, color: "#1f1d3a" }}>
-        Я никогда не...
+        {market !== "ru" ? "Never Have I Ever..." : "Я никогда не..."}
       </div>
 
       <div
@@ -9615,8 +9885,9 @@ return (
           lineHeight: 1.45,
         }}
       >
-        Скажите что-то, чего вы никогда в жизни не делали, и если ваш партнёр
-        делал это, он выполняет задание с карточки.
+        {market !== "ru"
+          ? "Say something you've never done in your life — if your partner has done it, they complete the task on the card."
+          : "Скажите что-то, чего вы никогда в жизни не делали, и если ваш партнёр делал это, он выполняет задание с карточки."}
       </div>
 
       <div
@@ -9627,8 +9898,9 @@ return (
           lineHeight: 1.45,
         }}
       >
-        Например: «Я ни разу не играл в карты на раздевание» — если партнёр
-        хотя бы раз делал это, ему пора выполнять задание.
+        {market !== "ru"
+          ? "For example: “I have never played strip poker” — if your partner has done it at least once, it's their turn to complete the task."
+          : "Например: «Я ни разу не играл в карты на раздевание» — если партнёр хотя бы раз делал это, ему пора выполнять задание."}
       </div>
 
       <div
@@ -9641,7 +9913,9 @@ return (
           fontWeight: 800,
         }}
       >
-        Награда за карточку: +{reward} очков
+        {market !== "ru"
+          ? `Reward per card: +${reward} points`
+          : `Награда за карточку: +${reward} очков`}
       </div>
     </div>
 
@@ -9737,7 +10011,7 @@ return (
                 color: "#241b40",
               }}
             >
-              {card.emoji} Задание
+              {card.emoji} {market !== "ru" ? "Task" : "Задание"}
             </div>
 
             <div
@@ -9758,7 +10032,13 @@ return (
         onClick={() => setFlipped((prev) => !prev)}
         style={{ ...primaryButtonStyle, width: "100%", marginTop: 16 }}
       >
-        {flipped ? "Показать вопрос" : "Показать задание"}
+        {market !== "ru"
+          ? flipped
+            ? "Show question"
+            : "Show task"
+          : flipped
+            ? "Показать вопрос"
+            : "Показать задание"}
       </button>
 
 
@@ -9774,7 +10054,13 @@ return (
       cursor: rewardClaimed || alreadyPlayed ? "not-allowed" : "pointer",
     }}
   >
-    {alreadyPlayed ? "Карточка уже сыграна" : "Карточка сыграна"}
+    {market !== "ru"
+      ? alreadyPlayed
+        ? "Card already played"
+        : "Card played"
+      : alreadyPlayed
+        ? "Карточка уже сыграна"
+        : "Карточка сыграна"}
   </button>
 )}
 
@@ -9977,10 +10263,10 @@ if (!activeTestId) {
     <div style={{ padding: 10, display: "grid", gap: 8 }}>
       <div style={{ ...cardBaseStyle(), padding: 12 }}>
         <div style={{ fontSize: 24, fontWeight: 900, color: "#1f1d3a" }}>
-          Тесты
+          {t.tests.title}
         </div>
         <div style={{ marginTop: 4, color: "#3a345c", fontSize: 13 }}>
-          Узнай о себе и отношениях больше
+          {t.tests.subtitle}
         </div>
       </div>
 
@@ -10052,7 +10338,9 @@ if (!activeTestId) {
       fontSize: 12,
     }}
   >
-    {test.questions.length} вопросов
+    {market !== "ru"
+      ? `${test.questions.length} questions`
+      : `${test.questions.length} вопросов`}
   </div>
 
               
@@ -10069,7 +10357,13 @@ if (!activeTestId) {
   }}
 >
             
-              {completed ? "Пройти снова" : "Начать"}
+              {market !== "ru"
+                ? completed
+                  ? "Take again"
+                  : "Start"
+                : completed
+                  ? "Пройти снова"
+                  : "Начать"}
             </button>
           </div>
         );
@@ -10094,7 +10388,7 @@ if (!activeTestId) {
       <div style={{ padding: 16 }}>
         <div style={{ ...cardBaseStyle(), padding: 20 }}>
           <div style={{ fontSize: 30, fontWeight: 900, color: "#1f1d3a" }}>
-            Результат теста ✨
+            {market !== "ru" ? "Test Result ✨" : "Результат теста ✨"}
           </div>
 
           <div style={{ marginTop: 16, fontSize: 26, fontWeight: 900, color: "#241b40" }}>
@@ -10119,14 +10413,16 @@ if (!activeTestId) {
               fontWeight: 800,
             }}
           >
-            Награда за тест: +{activeTest.reward} очков
+            {market !== "ru"
+              ? `Reward for the test: +${activeTest.reward} points`
+              : `Награда за тест: +${activeTest.reward} очков`}
           </div>
 
           <button
             onClick={handleFinish}
             style={{ ...primaryButtonStyle, width: "100%", marginTop: 16 }}
           >
-            Забрать очки
+            {market !== "ru" ? "Claim points" : "Забрать очки"}
           </button>
         </div>
       </div>
@@ -10142,7 +10438,9 @@ if (!activeTestId) {
           {activeTest.title}
         </div>
         <div style={{ marginTop: 8, color: "#4b446a" }}>
-          Вопрос {currentQuestionIndex + 1} из {activeTest.questions.length}
+          {market !== "ru"
+            ? `Question ${currentQuestionIndex + 1} of ${activeTest.questions.length}`
+            : `Вопрос ${currentQuestionIndex + 1} из ${activeTest.questions.length}`}
         </div>
       </div>
 
@@ -10207,7 +10505,7 @@ if (!activeTestId) {
        
 
         <button onClick={() => setActiveTestId(null)} style={secondaryButtonStyle}>
-          Выйти из теста
+          {market !== "ru" ? "Exit test" : "Выйти из теста"}
         </button>
       </div>
     </div>
