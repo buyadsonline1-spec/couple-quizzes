@@ -1,7 +1,7 @@
 "use client";
 
 import { CSSProperties, useEffect, useMemo, useRef, useState } from "react";
-import { getMarket } from "@/config/markets";
+import { getMarket, Market } from "@/config/markets";
 import { REWARD_CATEGORIES_RU } from "@/config/rewards-ru";
 import { REWARD_CATEGORIES_EN } from "@/config/rewards-en";
 import {
@@ -17,9 +17,10 @@ import { supabase } from "@/lib/supabase";
 import confetti from "canvas-confetti";
 import { TEXT_RU } from "@/config/text-ru";
 import { TEXT_EN } from "@/config/text-en";
+import { TEXT_FI } from "@/config/text-fi";
 
 const market = getMarket();
-const t = market === "en" ? TEXT_EN : TEXT_RU;
+const t = market === "fi" ? TEXT_FI : market === "en" ? TEXT_EN : TEXT_RU;
 const MANAGER_CHAT_URL = "https://t.me/Couple_quizzes_support";
 
 const REWARD_CATEGORIES =
@@ -45,6 +46,7 @@ declare global {
     last_name?: string;
     username?: string;
     photo_url?: string;
+    language_code?: string;
   };
   start_param?: string;
 };
@@ -402,13 +404,13 @@ const TESTS: TestDefinition[] = [
     id: "trust-level",
     image: TEST_IMAGES["trust-level"],
     title:
-      market === "en"
+      market !== "ru"
         ? "Trust Level in a Relationship"
         : "Уровень доверия к партнёру",
     titleRu: "Уровень доверия к партнёру",
     titleEn: "Trust Level in a Relationship",
     description:
-      market === "en"
+      market !== "ru"
         ? "Shows how calm, secure, and confident you feel in your relationship."
         : "Покажет, насколько спокойно и уверенно ты чувствуешь себя в отношениях.",
     descriptionRu:
@@ -421,96 +423,96 @@ const TESTS: TestDefinition[] = [
       {
         id: "t1",
         text:
-          market === "en"
+          market !== "ru"
             ? "I feel comfortable sharing my worries with my partner."
             : "Мне комфортно делиться с партнёром своими переживаниями.",
         textRu: "Мне комфортно делиться с партнёром своими переживаниями.",
         textEn: "I feel comfortable sharing my worries with my partner.",
-        options: market === "en" ? SCALE_OPTIONS_EN : SCALE_OPTIONS_RU,
+        options: market !== "ru" ? SCALE_OPTIONS_EN : SCALE_OPTIONS_RU,
         optionsRu: SCALE_OPTIONS_RU,
         optionsEn: SCALE_OPTIONS_EN,
       },
       {
         id: "t2",
         text:
-          market === "en"
+          market !== "ru"
             ? "I am not afraid that my partner will judge my feelings."
             : "Я не боюсь, что партнёр осудит мои чувства.",
         textRu: "Я не боюсь, что партнёр осудит мои чувства.",
         textEn: "I am not afraid that my partner will judge my feelings.",
-        options: market === "en" ? SCALE_OPTIONS_EN : SCALE_OPTIONS_RU,
+        options: market !== "ru" ? SCALE_OPTIONS_EN : SCALE_OPTIONS_RU,
         optionsRu: SCALE_OPTIONS_RU,
         optionsEn: SCALE_OPTIONS_EN,
       },
       {
         id: "t3",
         text:
-          market === "en"
+          market !== "ru"
             ? "I trust my partner's words without unnecessary doubt."
             : "Я верю словам партнёра без лишних сомнений.",
         textRu: "Я верю словам партнёра без лишних сомнений.",
         textEn: "I trust my partner's words without unnecessary doubt.",
-        options: market === "en" ? SCALE_OPTIONS_EN : SCALE_OPTIONS_RU,
+        options: market !== "ru" ? SCALE_OPTIONS_EN : SCALE_OPTIONS_RU,
         optionsRu: SCALE_OPTIONS_RU,
         optionsEn: SCALE_OPTIONS_EN,
       },
       {
         id: "t4",
         text:
-          market === "en"
+          market !== "ru"
             ? "I feel calm when my partner spends time without me."
             : "Мне спокойно, когда партнёр проводит время без меня.",
         textRu: "Мне спокойно, когда партнёр проводит время без меня.",
         textEn: "I feel calm when my partner spends time without me.",
-        options: market === "en" ? SCALE_OPTIONS_EN : SCALE_OPTIONS_RU,
+        options: market !== "ru" ? SCALE_OPTIONS_EN : SCALE_OPTIONS_RU,
         optionsRu: SCALE_OPTIONS_RU,
         optionsEn: SCALE_OPTIONS_EN,
       },
       {
         id: "t5",
         text:
-          market === "en"
+          market !== "ru"
             ? "I feel safe when I am with my partner."
             : "Я чувствую себя в безопасности рядом с партнёром.",
         textRu: "Я чувствую себя в безопасности рядом с партнёром.",
         textEn: "I feel safe when I am with my partner.",
-        options: market === "en" ? SCALE_OPTIONS_EN : SCALE_OPTIONS_RU,
+        options: market !== "ru" ? SCALE_OPTIONS_EN : SCALE_OPTIONS_RU,
         optionsRu: SCALE_OPTIONS_RU,
         optionsEn: SCALE_OPTIONS_EN,
       },
       {
         id: "t6",
         text:
-          market === "en"
+          market !== "ru"
             ? "If a problem comes up, I believe we can talk it through."
             : "Если возникает проблема, я верю, что мы сможем её обсудить.",
         textRu: "Если возникает проблема, я верю, что мы сможем её обсудить.",
         textEn: "If a problem comes up, I believe we can talk it through.",
-        options: market === "en" ? SCALE_OPTIONS_EN : SCALE_OPTIONS_RU,
+        options: market !== "ru" ? SCALE_OPTIONS_EN : SCALE_OPTIONS_RU,
         optionsRu: SCALE_OPTIONS_RU,
         optionsEn: SCALE_OPTIONS_EN,
       },
       {
         id: "t7",
         text:
-          market === "en"
+          market !== "ru"
             ? "I do not expect tricks or betrayal from my partner."
             : "Я не жду подвоха от партнёра.",
         textRu: "Я не жду подвоха от партнёра.",
         textEn: "I do not expect tricks or betrayal from my partner.",
-        options: market === "en" ? SCALE_OPTIONS_EN : SCALE_OPTIONS_RU,
+        options: market !== "ru" ? SCALE_OPTIONS_EN : SCALE_OPTIONS_RU,
         optionsRu: SCALE_OPTIONS_RU,
         optionsEn: SCALE_OPTIONS_EN,
       },
       {
         id: "t8",
         text:
-          market === "en"
+          market !== "ru"
             ? "It is easy for me to be myself in this relationship."
             : "Мне легко быть собой в этих отношениях.",
         textRu: "Мне легко быть собой в этих отношениях.",
         textEn: "It is easy for me to be myself in this relationship.",
-        options: market === "en" ? SCALE_OPTIONS_EN : SCALE_OPTIONS_RU,
+        options: market !== "ru" ? SCALE_OPTIONS_EN : SCALE_OPTIONS_RU,
         optionsRu: SCALE_OPTIONS_RU,
         optionsEn: SCALE_OPTIONS_EN,
       },
@@ -520,11 +522,11 @@ const TESTS: TestDefinition[] = [
   {
     id: "love-language",
      image: TEST_IMAGES["love-language"],
-    title: market === "en" ? "Love Language" : "Язык любви",
+    title: market !== "ru" ? "Love Language" : "Язык любви",
     titleRu: "Язык любви",
     titleEn: "Love Language",
     description:
-      market === "en"
+      market !== "ru"
         ? "Helps determine how you most naturally feel love and care."
         : "Определит, как тебе приятнее всего чувствовать любовь и заботу.",
     descriptionRu:
@@ -537,13 +539,13 @@ const TESTS: TestDefinition[] = [
       {
         id: "l1",
         text:
-          market === "en"
+          market !== "ru"
             ? "What would feel nicest to receive from your partner?"
             : "Что приятнее получить от партнёра?",
         textRu: "Что приятнее получить от партнёра?",
         textEn: "What would feel nicest to receive from your partner?",
         options:
-          market === "en"
+          market !== "ru"
             ? [
                 "Warm words and compliments",
                 "Hugs and touch",
@@ -576,13 +578,13 @@ const TESTS: TestDefinition[] = [
       {
         id: "l2",
         text:
-          market === "en"
+          market !== "ru"
             ? "When do you feel especially happy in a relationship?"
             : "Когда тебе особенно хорошо в отношениях?",
         textRu: "Когда тебе особенно хорошо в отношениях?",
         textEn: "When do you feel especially happy in a relationship?",
         options:
-          market === "en"
+          market !== "ru"
             ? [
                 "When I am praised and supported",
                 "When I am hugged and kissed",
@@ -615,13 +617,13 @@ const TESTS: TestDefinition[] = [
       {
         id: "l3",
         text:
-          market === "en"
+          market !== "ru"
             ? "What do you remember the most?"
             : "Что ты запоминаешь сильнее всего?",
         textRu: "Что ты запоминаешь сильнее всего?",
         textEn: "What do you remember the most?",
         options:
-          market === "en"
+          market !== "ru"
             ? [
                 "Beautiful words",
                 "Tender gestures",
@@ -654,13 +656,13 @@ const TESTS: TestDefinition[] = [
       {
         id: "l4",
         text:
-          market === "en"
+          market !== "ru"
             ? "What makes it easiest for you to feel loved?"
             : "Как тебе легче почувствовать любовь?",
         textRu: "Как тебе легче почувствовать любовь?",
         textEn: "What makes it easiest for you to feel loved?",
         options:
-          market === "en"
+          market !== "ru"
             ? [
                 "Hearing it in words",
                 "Feeling it physically",
@@ -693,13 +695,13 @@ const TESTS: TestDefinition[] = [
       {
         id: "l5",
         text:
-          market === "en"
+          market !== "ru"
             ? "What upsets you the most when it is missing?"
             : "Что тебя расстраивает сильнее всего, когда этого не хватает?",
         textRu: "Что тебя расстраивает сильнее всего, когда этого не хватает?",
         textEn: "What upsets you the most when it is missing?",
         options:
-          market === "en"
+          market !== "ru"
             ? [
                 "Support and words",
                 "Tenderness",
@@ -732,13 +734,13 @@ const TESTS: TestDefinition[] = [
       {
         id: "l6",
         text:
-          market === "en"
+          market !== "ru"
             ? "What feels more romantic to you?"
             : "Что для тебя романтичнее?",
         textRu: "Что для тебя романтичнее?",
         textEn: "What feels more romantic to you?",
         options:
-          market === "en"
+          market !== "ru"
             ? [
                 "A sincere confession",
                 "Long hugs",
@@ -775,13 +777,13 @@ const TESTS: TestDefinition[] = [
     id: "personality-strengths",
       image: TEST_IMAGES["personality-strengths"],
     title:
-      market === "en"
+      market !== "ru"
         ? "Personal Strengths"
         : "Сильные стороны личности",
     titleRu: "Сильные стороны личности",
     titleEn: "Personal Strengths",
     description:
-      market === "en"
+      market !== "ru"
         ? "Shows which of your inner strengths stands out the most in life and relationships."
         : "Покажет, какая твоя энергия сильнее всего проявляется в жизни и отношениях.",
     descriptionRu:
@@ -794,13 +796,13 @@ const TESTS: TestDefinition[] = [
       {
         id: "p1",
         text:
-          market === "en"
+          market !== "ru"
             ? "In a difficult situation, you are more likely to..."
             : "В сложной ситуации ты чаще...",
         textRu: "В сложной ситуации ты чаще...",
         textEn: "In a difficult situation, you are more likely to...",
         options:
-          market === "en"
+          market !== "ru"
             ? [
                 "Support others",
                 "Take responsibility",
@@ -833,13 +835,13 @@ const TESTS: TestDefinition[] = [
       {
         id: "p2",
         text:
-          market === "en"
+          market !== "ru"
             ? "People most often value in you..."
             : "Люди чаще ценят в тебе...",
         textRu: "Люди чаще ценят в тебе...",
         textEn: "People most often value in you...",
         options:
-          market === "en"
+          market !== "ru"
             ? [
                 "Kindness",
                 "Confidence",
@@ -872,13 +874,13 @@ const TESTS: TestDefinition[] = [
       {
         id: "p3",
         text:
-          market === "en"
+          market !== "ru"
             ? "In relationships, you are mostly about..."
             : "В отношениях ты больше про...",
         textRu: "В отношениях ты больше про...",
         textEn: "In relationships, you are mostly about...",
         options:
-          market === "en"
+          market !== "ru"
             ? [
                 "Care",
                 "Strength of character",
@@ -911,13 +913,13 @@ const TESTS: TestDefinition[] = [
       {
         id: "p4",
         text:
-          market === "en"
+          market !== "ru"
             ? "What is your biggest strength?"
             : "Какой твой главный плюс?",
         textRu: "Какой твой главный плюс?",
         textEn: "What is your biggest strength?",
         options:
-          market === "en"
+          market !== "ru"
             ? [
                 "Empathy",
                 "Determination",
@@ -950,13 +952,13 @@ const TESTS: TestDefinition[] = [
       {
         id: "p5",
         text:
-          market === "en"
+          market !== "ru"
             ? "When someone close is рядом, you more often..."
             : "Когда рядом близкий человек, ты чаще...",
         textRu: "Когда рядом близкий человек, ты чаще...",
         textEn: "When someone close is nearby, you more often...",
         options:
-          market === "en"
+          market !== "ru"
             ? [
                 "Support",
                 "Protect",
@@ -989,13 +991,13 @@ const TESTS: TestDefinition[] = [
       {
         id: "p6",
         text:
-          market === "en"
+          market !== "ru"
             ? "Your ideal self-image is..."
             : "Твой идеальный образ себя — это...",
         textRu: "Твой идеальный образ себя — это...",
         textEn: "Your ideal self-image is...",
         options:
-          market === "en"
+          market !== "ru"
             ? [
                 "A caring person",
                 "A strong personality",
@@ -1287,11 +1289,11 @@ function createPollQuestions(
   image?: string
 ): PollQuestion => ({
   id,
-  text: market === "en" ? textEn : textRu,
+  text: market !== "ru" ? textEn : textRu,
   textRu,
   textEn,
   image,
-  options: market === "en" ? customOptionsEn : customOptionsRu,
+  options: market !== "ru" ? customOptionsEn : customOptionsRu,
   optionsRu: customOptionsRu,
   optionsEn: customOptionsEn,
 });
@@ -3996,7 +3998,7 @@ function PairInviteScreen({
   onJoinByCode: (code: string) => Promise<void>;
 }) {
   
-const t = market === "en" ? TEXT_EN : TEXT_RU;
+const t = market === "fi" ? TEXT_FI : market === "en" ? TEXT_EN : TEXT_RU;
 const REWARD_CATEGORIES =
   market === "en" ? REWARD_CATEGORIES_EN : REWARD_CATEGORIES_RU;
   const [joinCode, setJoinCode] = useState("");
@@ -4609,8 +4611,11 @@ function AiPsychologistChatScreen({
   onBack: () => void;
 }) {
   const market = getMarket();
-  const language: "ru" | "en" = market === "en" ? "en" : "ru";
-  const t = market === "en" ? TEXT_EN : TEXT_RU;
+  // AI-психолог поддерживает только ru/en (см. relationship-psychologist-prompt.ts),
+  // поэтому для fi-рынка используем английский промпт — понятнее, чем
+  // молча откатываться на русский.
+  const language: "ru" | "en" = market === "ru" ? "ru" : "en";
+  const t = market === "fi" ? TEXT_FI : market === "en" ? TEXT_EN : TEXT_RU;
 
   const [conversationId, setConversationId] = useState<string | null>(null);
   const [messages, setMessages] = useState<AiPsychologistMessage[]>([]);
@@ -5139,7 +5144,7 @@ function DailyPairQuestionScreen({
 }) {
 
   const market = getMarket();
-const t = market === "en" ? TEXT_EN : TEXT_RU;
+const t = market === "fi" ? TEXT_FI : market === "en" ? TEXT_EN : TEXT_RU;
   const today = getTodayLocalDateString();
   const question = getDailyPairQuestionForToday();
 
@@ -7151,7 +7156,7 @@ function PollsScreen({
   const [answers, setAnswers] = useState<number[]>([]);
   const [finished, setFinished] = useState(false);
   const market = getMarket();
-const t = market === "en" ? TEXT_EN : TEXT_RU;
+const t = market === "fi" ? TEXT_FI : market === "en" ? TEXT_EN : TEXT_RU;
 
 
 const POLLS_PER_PAGE = 3;
@@ -7249,7 +7254,7 @@ async function handleFinish() {
   {t.polls.title}
 </div>
 <div style={{ marginTop: 6, color: "#3a345c", fontSize: 14 }}>
-  {market === "en"
+  {market !== "ru"
     ? genderFilter === "girl"
       ? "Your polls 👧"
       : "Your polls 👦"
@@ -7269,12 +7274,12 @@ async function handleFinish() {
           }}
         >
           <div style={{ fontSize: 14, fontWeight: 800, color: "#2c2647" }}>
-  {market === "en"
+  {market !== "ru"
     ? `Page ${page} of ${totalPages}`
     : `Страница ${page} из ${totalPages}`}
 </div>
 <div style={{ fontSize: 13, color: "#5a5378" }}>
-  {market === "en"
+  {market !== "ru"
     ? `${visiblePolls.length} polls`
     : `${visiblePolls.length} опросов`}
 </div>
@@ -7303,7 +7308,7 @@ async function handleFinish() {
                 lineHeight: 1.2,
               }}
             >
-              {market === "en"
+              {market !== "ru"
                 ? poll.titleEn ?? poll.title
                 : poll.titleRu ?? poll.title}
             </div>
@@ -7316,7 +7321,7 @@ async function handleFinish() {
                 lineHeight: 1.35,
               }}
             >
-              {market === "en"
+              {market !== "ru"
                 ? poll.descriptionEn ?? poll.description
                 : poll.descriptionRu ?? poll.description}
             </div>
@@ -7352,7 +7357,7 @@ async function handleFinish() {
             opacity: completed ? 0.92 : 1,
           }}
         >
-          {market === "en"
+          {market !== "ru"
             ? completed
               ? "Try again"
               : "Start"
@@ -7382,7 +7387,7 @@ async function handleFinish() {
       cursor: page === 1 ? "not-allowed" : "pointer",
     }}
   >
-    {market === "en" ? "← Previous" : "← Предыдущая"}
+    {market !== "ru" ? "← Previous" : "← Предыдущая"}
   </button>
 
   <button
@@ -7395,7 +7400,7 @@ async function handleFinish() {
       cursor: page === totalPages ? "not-allowed" : "pointer",
     }}
   >
-    {market === "en" ? "Next →" : "Следующая →"}
+    {market !== "ru" ? "Next →" : "Следующая →"}
   </button>
 </div>
 
@@ -7411,10 +7416,10 @@ async function handleFinish() {
     <div style={{ padding: 14 }}>
       <div style={{ ...cardBaseStyle(), padding: 16 }}>
         <div style={{ fontSize: 28, fontWeight: 900, color: "#1f1d3a" }}>
-          {market === "en" ? "Done 🎉" : "Готово 🎉"}
+          {market !== "ru" ? "Done 🎉" : "Готово 🎉"}
         </div>
         <div style={{ marginTop: 10, color: "#3a345c", lineHeight: 1.5 }}>
-          {market === "en" ? (
+          {market !== "ru" ? (
             <>
               You completed the poll{" "}
               <b>{activePoll.titleEn ?? activePoll.title}</b> and earned{" "}
@@ -7432,7 +7437,7 @@ async function handleFinish() {
           onClick={handleFinish}
           style={{ ...primaryButtonStyle, width: "100%", marginTop: 14 }}
         >
-          {market === "en" ? "Claim points" : "Забрать очки"}
+          {market !== "ru" ? "Claim points" : "Забрать очки"}
         </button>
       </div>
     </div>
@@ -7555,7 +7560,7 @@ function GamesScreen({
 }) {
 
   const market = getMarket();
-const t = market === "en" ? TEXT_EN : TEXT_RU;
+const t = market === "fi" ? TEXT_FI : market === "en" ? TEXT_EN : TEXT_RU;
   const [activeGameId, setActiveGameId] = useState<string | null>(null);
   const [aiStep, setAiStep] = useState(0);
   const [showAiAnswers, setShowAiAnswers] = useState(true);
@@ -9814,7 +9819,7 @@ function TestsScreen({
   const [finished, setFinished] = useState(false);
 
   const market = getMarket();
-const t = market === "en" ? TEXT_EN : TEXT_RU;
+const t = market === "fi" ? TEXT_FI : market === "en" ? TEXT_EN : TEXT_RU;
   const activeTest = TESTS.find((item) => item.id === activeTestId) || null;
   const currentQuestion = activeTest?.questions[currentQuestionIndex] || null;
 
@@ -10260,7 +10265,7 @@ function RewardsScreen({
 }) {
 
   const market = getMarket();
-const t = market === "en" ? TEXT_EN : TEXT_RU;
+const t = market === "fi" ? TEXT_FI : market === "en" ? TEXT_EN : TEXT_RU;
   const [rotation, setRotation] = useState(0);
   const [isSpinning, setIsSpinning] = useState(false);
   const [message, setMessage] = useState("");
@@ -10280,7 +10285,13 @@ const visibleRewards = rewardsExpanded
   // приходит ответ сервера, переключаемся на реально закреплённый за
   // пользователем reward_market (result.market), чтобы секторы и текст
   // приза всегда совпадали с тем, что реально было разыграно.
-  const [effectiveMarket, setEffectiveMarket] = useState<"ru" | "en">(market);
+  // Колесо призов пока умеет только ru/en (см. wheel_reward_wheel.sql —
+  // reward_market check ограничен 'ru'/'en'), поэтому fi временно
+  // ведёт себя как en — это уже реальные международные призы
+  // (Amazon/Starbucks/Spotify и т.д.), а не русские WB/ЗЯ-сертификаты.
+  const [effectiveMarket, setEffectiveMarket] = useState<"ru" | "en">(
+    market === "ru" ? "ru" : "en"
+  );
   const wheelCategories =
     effectiveMarket === "en" ? REWARD_CATEGORIES_EN : REWARD_CATEGORIES_RU;
 
@@ -11952,7 +11963,7 @@ function ProfileAndStatsScreen({
 
 
   const market = getMarket();
-const t = market === "en" ? TEXT_EN : TEXT_RU;
+const t = market === "fi" ? TEXT_FI : market === "en" ? TEXT_EN : TEXT_RU;
   const fullName =
     [user?.first_name, user?.last_name].filter(Boolean).join(" ") ||
     "Пользователь";
@@ -13057,20 +13068,22 @@ function getTelegramUserSafe(fallbackUser: TgUser | null): TgUser | null {
 export default function Page() {
 
   const [appState, setAppState] = useState<AppState>(DEFAULT_STATE);
-  const [selectedLang, setSelectedLang] = useState<"ru" | "en">("ru");
-  
+  const [selectedLang, setSelectedLang] = useState<Market>("ru");
+
 const market = selectedLang;
-const t = market === "en" ? TEXT_EN : TEXT_RU;
+const t = market === "fi" ? TEXT_FI : market === "en" ? TEXT_EN : TEXT_RU;
 const REWARD_CATEGORIES =
   market === "en" ? REWARD_CATEGORIES_EN : REWARD_CATEGORIES_RU;
 
     useEffect(() => {
   if (typeof window === "undefined") return;
 
-  const saved = window.localStorage.getItem("couple-quizzes-lang");
-  if (saved === "ru" || saved === "en") {
-    setSelectedLang(saved);
-  }
+  // getMarket() уже содержит всю логику приоритета: сохранённый выбор
+  // пользователя → язык Telegram-клиента → язык устройства → en как
+  // безопасный дефолт (раньше тут читался только localStorage, и любой
+  // новый пользователь без сохранённого выбора всегда получал русский,
+  // даже если его Telegram/устройство было на другом языке).
+  setSelectedLang(getMarket());
 }, []);
 
   
@@ -14953,7 +14966,10 @@ if (finishedAllTests && !appState.completionBonusesClaimed.tests) {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         initData,
-        suggestedMarket: market,
+        // Сервер понимает только 'ru'/'en' (см. wheel_reward_wheel.sql);
+        // fi временно мапим на en — реальные международные призы, а не
+        // случайный откат на русские.
+        suggestedMarket: market === "ru" ? "ru" : "en",
       }),
     });
 
@@ -15144,6 +15160,17 @@ if (finishedAllTests && !appState.completionBonusesClaimed.tests) {
       style={{ ...primaryButtonStyle }}
     >
       🇬🇧 English
+    </button>
+
+    <button
+      onClick={() => {
+        setSelectedLang("fi");
+        localStorage.setItem("couple-quizzes-lang", "fi");
+        setScreen("gender-select");
+      }}
+      style={{ ...primaryButtonStyle }}
+    >
+      🇫🇮 Suomi
     </button>
 
     <button
