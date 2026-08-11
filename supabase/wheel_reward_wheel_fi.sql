@@ -1,6 +1,7 @@
 -- Добавляет 'fi' как полноценный третий призовой рынок колеса (был
 -- только 'ru'/'en', см. wheel_reward_wheel.sql). Финский пул — реально
--- покупаемые в Финляндии подарочные карты: Normal, Finnkino, S-market.
+-- покупаемые в Финляндии подарочные карты: Normal, Finnkino, S-market,
+-- Kicks, Hesburger.
 -- Как только у пользователя рынок 'fi', сервер уже НЕ подставляет ему
 -- EN-каталог — колесо крутит по-настоящему финские призы.
 --
@@ -39,7 +40,7 @@ alter table public.wheel_spins
   check (market in ('ru', 'en', 'fi'));
 
 -- ============================================================
--- 2. seed: FI — три категории. Веса откалиброваны вместе с ChatGPT
+-- 2. seed: FI — пять категорий. Веса откалиброваны вместе с ChatGPT
 --    (тот же процесс, что и для RU/EN — целевая абсолютная вероятность
 --    с учётом 30%-го "приз, не бонус" фильтра). Категории равные
 --    (1/1/1), редкость задаётся весами ВНУТРИ категории:
@@ -52,26 +53,38 @@ alter table public.wheel_spins
 -- ============================================================
 
 insert into public.wheel_reward_categories (id, market, title, emoji, weight, sort_order) values
-  ('normal',   'fi', 'Normal',   '🏷️', 1, 1),
-  ('finnkino', 'fi', 'Finnkino', '🎬', 1, 2),
-  ('s-market', 'fi', 'S-market', '🛒', 1, 3)
+  ('normal',    'fi', 'Normal',    '🏷️', 1, 1),
+  ('finnkino',  'fi', 'Finnkino',  '🎬', 1, 2),
+  ('s-market',  'fi', 'S-market',  '🛒', 1, 3),
+  ('kicks',     'fi', 'Kicks',     '💄', 1, 4),
+  ('hesburger', 'fi', 'Hesburger', '🍔', 1, 5)
 on conflict (market, id) do update set
   title = excluded.title,
   emoji = excluded.emoji,
   weight = excluded.weight,
   sort_order = excluded.sort_order;
 
+-- Kicks и Hesburger откалиброваны вместе с ChatGPT так же, как и первые
+-- три категории: 5 категорий = каждая 30%/5 = 6% от всех вращений, топ-
+-- номинал редкий (~1 из 5000 для Kicks 50€), у Hesburger потолок всего
+-- 20€ (фастфуд, низкий чек), поэтому обе позиции ощутимо чаще, чем
+-- топ-номиналы у остальных категорий.
 insert into public.wheel_reward_items (id, market, category_id, title, weight) values
-  ('normal-5',    'fi', 'normal',   'Normal-lahjakortti 5€',    389),
-  ('normal-10',   'fi', 'normal',   'Normal-lahjakortti 10€',   100),
-  ('normal-20',   'fi', 'normal',   'Normal-lahjakortti 20€',   10),
-  ('normal-50',   'fi', 'normal',   'Normal-lahjakortti 50€',   1),
-  ('finnkino-10', 'fi', 'finnkino', 'Finnkino-lahjakortti 10€', 484),
-  ('finnkino-20', 'fi', 'finnkino', 'Finnkino-lahjakortti 20€', 15),
-  ('finnkino-50', 'fi', 'finnkino', 'Finnkino-lahjakortti 50€', 1),
-  ('s-market-10', 'fi', 's-market', 'S-ryhmän lahjakortti 10€', 484),
-  ('s-market-20', 'fi', 's-market', 'S-ryhmän lahjakortti 20€', 15),
-  ('s-market-50', 'fi', 's-market', 'S-ryhmän lahjakortti 50€', 1)
+  ('normal-5',     'fi', 'normal',    'Normal-lahjakortti 5€',    389),
+  ('normal-10',    'fi', 'normal',    'Normal-lahjakortti 10€',   100),
+  ('normal-20',    'fi', 'normal',    'Normal-lahjakortti 20€',   10),
+  ('normal-50',    'fi', 'normal',    'Normal-lahjakortti 50€',   1),
+  ('finnkino-10',  'fi', 'finnkino',  'Finnkino-lahjakortti 10€', 484),
+  ('finnkino-20',  'fi', 'finnkino',  'Finnkino-lahjakortti 20€', 15),
+  ('finnkino-50',  'fi', 'finnkino',  'Finnkino-lahjakortti 50€', 1),
+  ('s-market-10',  'fi', 's-market',  'S-ryhmän lahjakortti 10€', 484),
+  ('s-market-20',  'fi', 's-market',  'S-ryhmän lahjakortti 20€', 15),
+  ('s-market-50',  'fi', 's-market',  'S-ryhmän lahjakortti 50€', 1),
+  ('kicks-10',     'fi', 'kicks',     'Kicks-lahjakortti 10€',    284),
+  ('kicks-20',     'fi', 'kicks',     'Kicks-lahjakortti 20€',    15),
+  ('kicks-50',     'fi', 'kicks',     'Kicks-lahjakortti 50€',    1),
+  ('hesburger-10', 'fi', 'hesburger', 'Hesburger-lahjakortti 10€', 95),
+  ('hesburger-20', 'fi', 'hesburger', 'Hesburger-lahjakortti 20€', 5)
 on conflict (market, id) do update set
   category_id = excluded.category_id,
   title = excluded.title,

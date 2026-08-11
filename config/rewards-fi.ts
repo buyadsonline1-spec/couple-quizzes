@@ -38,4 +38,25 @@ export const REWARD_CATEGORIES_FI = [
       { id: "s-market-50", title: "S-ryhmän lahjakortti 50€", weight: 1 },
     ],
   },
+  {
+    id: "kicks",
+    title: "Kicks",
+    emoji: "💄",
+    weight: 1,
+    items: [
+      { id: "kicks-10", title: "Kicks-lahjakortti 10€", weight: 284 },
+      { id: "kicks-20", title: "Kicks-lahjakortti 20€", weight: 15 },
+      { id: "kicks-50", title: "Kicks-lahjakortti 50€", weight: 1 },
+    ],
+  },
+  {
+    id: "hesburger",
+    title: "Hesburger",
+    emoji: "🍔",
+    weight: 1,
+    items: [
+      { id: "hesburger-10", title: "Hesburger-lahjakortti 10€", weight: 95 },
+      { id: "hesburger-20", title: "Hesburger-lahjakortti 20€", weight: 5 },
+    ],
+  },
 ];
