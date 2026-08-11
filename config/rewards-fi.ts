@@ -10,10 +10,10 @@ export const REWARD_CATEGORIES_FI = [
     emoji: "🏷️",
     weight: 1,
     items: [
-      { id: "normal-5", title: "Normal-lahjakortti 5€", weight: 50 },
-      { id: "normal-10", title: "Normal-lahjakortti 10€", weight: 30 },
-      { id: "normal-20", title: "Normal-lahjakortti 20€", weight: 15 },
-      { id: "normal-50", title: "Normal-lahjakortti 50€", weight: 5 },
+      { id: "normal-5", title: "Normal-lahjakortti 5€", weight: 389 },
+      { id: "normal-10", title: "Normal-lahjakortti 10€", weight: 100 },
+      { id: "normal-20", title: "Normal-lahjakortti 20€", weight: 10 },
+      { id: "normal-50", title: "Normal-lahjakortti 50€", weight: 1 },
     ],
   },
   {
@@ -22,9 +22,9 @@ export const REWARD_CATEGORIES_FI = [
     emoji: "🎬",
     weight: 1,
     items: [
-      { id: "finnkino-10", title: "Finnkino-lahjakortti 10€", weight: 55 },
-      { id: "finnkino-20", title: "Finnkino-lahjakortti 20€", weight: 30 },
-      { id: "finnkino-50", title: "Finnkino-lahjakortti 50€", weight: 15 },
+      { id: "finnkino-10", title: "Finnkino-lahjakortti 10€", weight: 484 },
+      { id: "finnkino-20", title: "Finnkino-lahjakortti 20€", weight: 15 },
+      { id: "finnkino-50", title: "Finnkino-lahjakortti 50€", weight: 1 },
     ],
   },
   {
@@ -33,9 +33,9 @@ export const REWARD_CATEGORIES_FI = [
     emoji: "🛒",
     weight: 1,
     items: [
-      { id: "s-market-10", title: "S-ryhmän lahjakortti 10€", weight: 55 },
-      { id: "s-market-20", title: "S-ryhmän lahjakortti 20€", weight: 30 },
-      { id: "s-market-50", title: "S-ryhmän lahjakortti 50€", weight: 15 },
+      { id: "s-market-10", title: "S-ryhmän lahjakortti 10€", weight: 484 },
+      { id: "s-market-20", title: "S-ryhmän lahjakortti 20€", weight: 15 },
+      { id: "s-market-50", title: "S-ryhmän lahjakortti 50€", weight: 1 },
     ],
   },
 ];

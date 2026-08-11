@@ -39,11 +39,16 @@ alter table public.wheel_spins
   check (market in ('ru', 'en', 'fi'));
 
 -- ============================================================
--- 2. seed: FI — три категории, начальный набор. Веса — простое и
---    объяснимое распределение (меньший номинал встречается чаще),
---    НЕ откалибровано под точный "1 из X" как RU/EN пул (там расчёт
---    согласовывался отдельно) — можно поправить позже через тот же
---    on conflict update.
+-- 2. seed: FI — три категории. Веса откалиброваны вместе с ChatGPT
+--    (тот же процесс, что и для RU/EN — целевая абсолютная вероятность
+--    с учётом 30%-го "приз, не бонус" фильтра). Категории равные
+--    (1/1/1), редкость задаётся весами ВНУТРИ категории:
+--      5€/10€ (младший номинал)  — основная масса реальных призов;
+--      20€                       — ощутимо реже, ~1 из 125-500;
+--      50€                       — редкий "верхний" приз, ~1 из 5000
+--                                   на каждый бренд (~1 из 1667 суммарно
+--                                   по всем трём).
+--    Можно поправить позже тем же on conflict update.
 -- ============================================================
 
 insert into public.wheel_reward_categories (id, market, title, emoji, weight, sort_order) values
@@ -57,16 +62,16 @@ on conflict (market, id) do update set
   sort_order = excluded.sort_order;
 
 insert into public.wheel_reward_items (id, market, category_id, title, weight) values
-  ('normal-5',    'fi', 'normal',   'Normal-lahjakortti 5€',  50),
-  ('normal-10',   'fi', 'normal',   'Normal-lahjakortti 10€', 30),
-  ('normal-20',   'fi', 'normal',   'Normal-lahjakortti 20€', 15),
-  ('normal-50',   'fi', 'normal',   'Normal-lahjakortti 50€', 5),
-  ('finnkino-10', 'fi', 'finnkino', 'Finnkino-lahjakortti 10€', 55),
-  ('finnkino-20', 'fi', 'finnkino', 'Finnkino-lahjakortti 20€', 30),
-  ('finnkino-50', 'fi', 'finnkino', 'Finnkino-lahjakortti 50€', 15),
-  ('s-market-10', 'fi', 's-market', 'S-ryhmän lahjakortti 10€', 55),
-  ('s-market-20', 'fi', 's-market', 'S-ryhmän lahjakortti 20€', 30),
-  ('s-market-50', 'fi', 's-market', 'S-ryhmän lahjakortti 50€', 15)
+  ('normal-5',    'fi', 'normal',   'Normal-lahjakortti 5€',    389),
+  ('normal-10',   'fi', 'normal',   'Normal-lahjakortti 10€',   100),
+  ('normal-20',   'fi', 'normal',   'Normal-lahjakortti 20€',   10),
+  ('normal-50',   'fi', 'normal',   'Normal-lahjakortti 50€',   1),
+  ('finnkino-10', 'fi', 'finnkino', 'Finnkino-lahjakortti 10€', 484),
+  ('finnkino-20', 'fi', 'finnkino', 'Finnkino-lahjakortti 20€', 15),
+  ('finnkino-50', 'fi', 'finnkino', 'Finnkino-lahjakortti 50€', 1),
+  ('s-market-10', 'fi', 's-market', 'S-ryhmän lahjakortti 10€', 484),
+  ('s-market-20', 'fi', 's-market', 'S-ryhmän lahjakortti 20€', 15),
+  ('s-market-50', 'fi', 's-market', 'S-ryhmän lahjakortti 50€', 1)
 on conflict (market, id) do update set
   category_id = excluded.category_id,
   title = excluded.title,
