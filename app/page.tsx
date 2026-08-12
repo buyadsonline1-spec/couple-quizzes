@@ -12348,7 +12348,7 @@ const t = market === "fi" ? TEXT_FI : market === "en" ? TEXT_EN : TEXT_RU;
       fontWeight: 800,
     }}
   >
-    ✨ Premium активен
+    👑 Premium активен
   </div>
 ) : (
   <div style={{ marginTop: 6, display: "grid", gap: 8 }}>
@@ -12388,25 +12388,6 @@ const t = market === "fi" ? TEXT_FI : market === "en" ? TEXT_EN : TEXT_RU;
 
   </div>
 )}
-            {isPremium && (
-  <div
-    style={{
-      marginTop: 8,
-      display: "inline-flex",
-      alignItems: "center",
-      gap: 8,
-      padding: "8px 12px",
-      borderRadius: 999,
-      background: "rgba(255,255,255,0.30)",
-      color: "#241b40",
-      fontWeight: 900,
-      fontSize: 13,
-    }}
-  >
-    👑 Premium
-  </div>
-)}
-
             <div
               style={{
                 marginTop: 10,
