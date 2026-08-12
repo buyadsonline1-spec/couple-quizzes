@@ -12661,72 +12661,19 @@ async function loadWeeklyUserLeaderboard(
   return data as WeeklyUserLeaderboardRow[];
 }
 
-async function upsertWeeklyPairLeaderboardEntry(params: {
-  weekKey: string;
-  pairId: string;
-  pairTitle: string;
-  totalPoints: number;
-}) {
-  const { weekKey, pairId, pairTitle, totalPoints } = params;
-
-  const { error } = await supabase
-    .from("weekly_pair_leaderboard")
-    .upsert(
-      {
-        week_key: weekKey,
-        pair_id: pairId,
-        pair_title: pairTitle,
-        total_points: totalPoints,
-        updated_at: new Date().toISOString(),
-      },
-      { onConflict: "week_key,pair_id" }
-    );
-
-  if (error) {
-    console.error("upsertWeeklyPairLeaderboardEntry error:", error);
-  }
-}
-
-async function upsertWeeklyUserLeaderboardEntry(params: {
-  weekKey: string;
-  user: TgUser;
-  totalPoints: number;
-}) {
-  const { weekKey, user, totalPoints } = params;
-
-  if (!user.id) return;
-
-  const displayName =
-    [user.first_name, user.last_name]
-      .filter(Boolean)
-      .join(" ") ||
-    user.username ||
-    `Игрок ${user.id}`;
-
-  const { error } = await supabase
-    .from("weekly_user_leaderboard")
-    .upsert(
-      {
-        week_key: weekKey,
-        telegram_id: user.id,
-        display_name: displayName,
-        username: user.username ?? null,
-        photo_url: user.photo_url ?? null,
-        total_points: totalPoints,
-        updated_at: new Date().toISOString(),
-      },
-      {
-        onConflict: "week_key,telegram_id",
-      }
-    );
-
-  if (error) {
-    console.error(
-      "upsertWeeklyUserLeaderboardEntry error:",
-      error
-    );
-  }
-}
+// upsertWeeklyPairLeaderboardEntry()/upsertWeeklyUserLeaderboardEntry()
+// removed (security-pass finding): they wrote directly to
+// weekly_pair_leaderboard/weekly_user_leaderboard with the public
+// anon key, client-computed totalPoints, no server validation —
+// confirmed live-exploitable (anyone could POST arbitrary points for
+// any pair_id/telegram_id via the anon key alone, then fraudulently
+// claim the weekly top-3 reward). Removed the client write path
+// entirely; see supabase/weekly_leaderboard_lockdown.sql — both
+// tables are now revoked from anon/authenticated writes and kept in
+// sync exclusively by server-side triggers (sync_pair_weekly_leaderboard
+// on pairs.weekly_points, sync_user_weekly_leaderboard on
+// profiles.solo_weekly_points), which fire automatically whenever a
+// legitimate server RPC updates those columns. The client only reads.
 
 const EMPTY_PAIR_STATE: PairState = {
   pairId: null,
@@ -14164,20 +14111,17 @@ const handleClaimWeeklyTopReward = async () => {
 
 
 
+// Больше не пишет в weekly_pair_leaderboard/weekly_user_leaderboard
+// напрямую с клиента (см. security-pass находку у определения
+// upsertWeeklyPairLeaderboardEntry выше) — только перечитывает уже
+// синхронизированные сервером (триггеры на pairs/profiles) строки.
+// nextState/currentUser/points остаются в сигнатуре, чтобы не трогать
+// вызывающий код, хотя сама запись больше не используется.
 const syncWeeklyPairLeaderboard = async (nextState: AppState, currentUser?: TgUser | null) => {
   const pairId = nextState.pair.pairId;
   if (!pairId) return;
 
   const weekKey = getCurrentWeekKey();
-  const pairTitle = getPairDisplayTitle(currentUser ?? user, nextState.pair);
-
-  await upsertWeeklyPairLeaderboardEntry({
-    weekKey,
-    pairId,
-    pairTitle,
-   totalPoints:
-  nextState.pair.weeklyPoints ?? 0,
-  });
 
   const rows = await loadWeeklyPairLeaderboard(weekKey);
   setWeeklyPairLeaderboard(rows);
@@ -14190,12 +14134,6 @@ const syncWeeklyUserLeaderboard = async (
   const actualUser = currentUser ?? user;
 
   if (!actualUser?.id) return;
-
-  await upsertWeeklyUserLeaderboardEntry({
-    weekKey: getCurrentWeekKey(),
-    user: actualUser,
-    totalPoints: points,
-  });
 
   const rows = await loadWeeklyUserLeaderboard(
     getCurrentWeekKey()
