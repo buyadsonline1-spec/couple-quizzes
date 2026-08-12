@@ -10796,8 +10796,25 @@ const visibleRewards = rewardsExpanded
               const startAngle = index * segmentAngle;
               const endAngle = startAngle + segmentAngle;
               const midAngle = startAngle + segmentAngle / 2;
-              const textPos = polarToCartesian(center, center, radius * 0.62, midAngle);
+              const textRadius = radius * 0.62;
+              const textPos = polarToCartesian(center, center, textRadius, midAngle);
               const rotationForText = midAngle;
+
+              // Больше категорий -> уже сектор -> текст скорее налезет на
+              // соседей (было заметно на реальном скрине: "Активности"/
+              // "Свидания"/"ЗЯ"/"WB" наезжали на иконки соседних секторов).
+              // Два слоя защиты: 1) базовый размер шрифта уменьшается для
+              // узких секторов, 2) textLength/lengthAdjust жёстко зажимает
+              // фактическую ширину текста в доступный хорд сектора — так
+              // переполнение невозможно вообще, при любом числе призов
+              // (10 у RU, меньше у EN/FI).
+              const emojiFontSize = segmentAngle < 40 ? 16 : segmentAngle < 55 ? 19 : 22;
+              const titleFontSize = segmentAngle < 40 ? 8.5 : segmentAngle < 55 ? 9.5 : 11;
+              const maxChordWidth =
+                2 * textRadius * Math.sin((segmentAngle / 2) * (Math.PI / 180)) * 0.86;
+              const titleWidth = category.title.length * titleFontSize * 0.62;
+              const titleTextLength =
+                titleWidth > maxChordWidth ? maxChordWidth : undefined;
 
               return (
                 <g key={category.id}>
@@ -10815,7 +10832,7 @@ const visibleRewards = rewardsExpanded
                       y="-8"
                       textAnchor="middle"
                       fill="#241b40"
-                      fontSize="22"
+                      fontSize={emojiFontSize}
                       fontWeight="700"
                     >
                       {category.emoji}
@@ -10825,8 +10842,10 @@ const visibleRewards = rewardsExpanded
                       y="14"
                       textAnchor="middle"
                       fill="#241b40"
-                      fontSize="11"
+                      fontSize={titleFontSize}
                       fontWeight="800"
+                      textLength={titleTextLength}
+                      lengthAdjust={titleTextLength ? "spacingAndGlyphs" : undefined}
                     >
                       {category.title}
                     </text>
