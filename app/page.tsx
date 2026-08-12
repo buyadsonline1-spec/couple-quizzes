@@ -13273,24 +13273,50 @@ async function claimWeeklyPairTopReward(): Promise<{
 }
 
 
-async function loadReferralStats(telegramId: number) {
-  const { data, error } = await supabase
-    .from("referrals")
-    .select("invited_telegram_id,reward_points")
-    .eq("referrer_telegram_id", telegramId);
+// Раньше это был прямой supabase.from("referrals").select(...) с
+// клиента — security-pass находка: таблица была читаема anon-ключом
+// целиком, без фильтра по пользователю (кто кого пригласил — для
+// всех). Теперь только через сервер, который сам берёт telegramId из
+// validated initData, а не из параметра функции.
+async function loadReferralStats(_telegramId: number) {
+  const initData = window.Telegram?.WebApp?.initData;
 
-  if (error || !data) {
-    console.error("loadReferralStats error", error);
+  if (!initData) {
+    console.error("loadReferralStats: Telegram initData отсутствует");
     return {
       invitedUsers: [],
       totalReward: 0,
     };
   }
 
-  return {
-    invitedUsers: data.map((r) => String(r.invited_telegram_id)),
-    totalReward: data.reduce((sum, r) => sum + (r.reward_points ?? 0), 0),
-  };
+  try {
+    const response = await fetch("/api/referral/stats", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ initData }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      console.error("loadReferralStats error", data);
+      return {
+        invitedUsers: [],
+        totalReward: 0,
+      };
+    }
+
+    return {
+      invitedUsers: Array.isArray(data.invitedUsers) ? data.invitedUsers : [],
+      totalReward: typeof data.totalReward === "number" ? data.totalReward : 0,
+    };
+  } catch (error) {
+    console.error("loadReferralStats error", error);
+    return {
+      invitedUsers: [],
+      totalReward: 0,
+    };
+  }
 }
 
 function getTelegramUserSafe(fallbackUser: TgUser | null): TgUser | null {
