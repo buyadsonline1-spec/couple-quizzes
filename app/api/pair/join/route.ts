@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/server/supabase-admin";
-import { validateTelegramInitData } from "@/lib/server/telegram-auth";
+import { validateRequestAuth } from "@/lib/server/telegram-auth";
 import { loadPairStateForTelegramId } from "@/lib/server/pair-state";
 import {
   loadDailyPairAnswersForDateServer,
@@ -18,11 +18,10 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
 
-    const initData = typeof body.initData === "string" ? body.initData : "";
     const inviteCode =
       typeof body.inviteCode === "string" ? body.inviteCode.trim() : "";
 
-    const validation = validateTelegramInitData(initData);
+    const validation = await validateRequestAuth(body);
 
     if (!validation.valid || !validation.telegramId) {
       return NextResponse.json(

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/server/supabase-admin";
-import { validateTelegramInitData } from "@/lib/server/telegram-auth";
+import { validateRequestAuth } from "@/lib/server/telegram-auth";
 import { checkIsPremium, loadPairStateForTelegramId } from "@/lib/server/pair-state";
 import {
   loadDailyPairAnswersForDateServer,
@@ -25,9 +25,11 @@ function todayInHelsinki(): string {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const initData = typeof body.initData === "string" ? body.initData : "";
 
-    const validation = validateTelegramInitData(initData);
+    // Telegram Mini App присылает initData; standalone iOS-клиент
+    // (Phase 1 плана про App Store) присылает supabaseAccessToken —
+    // validateRequestAuth понимает оба и возвращает одинаковый шейп.
+    const validation = await validateRequestAuth(body);
 
     if (!validation.valid || !validation.telegramId) {
       return NextResponse.json(
@@ -38,26 +40,42 @@ export async function POST(request: NextRequest) {
 
     const telegramId = validation.telegramId;
 
-    // Профиль: та же bootstrap_profile RPC, что и /api/profile/bootstrap
-    // (display-поля из initData, никогда из тела запроса) — здесь же
-    // получаем soloPoints/soloWeeklyPoints одним вызовом.
-    const { data: profileData, error: profileError } = await supabaseAdmin.rpc(
-      "bootstrap_profile",
-      {
-        p_telegram_id: telegramId,
-        p_first_name: validation.firstName,
-        p_last_name: validation.lastName,
-        p_username: validation.username,
-        p_photo_url: validation.photoUrl,
-      }
-    );
+    // Для Supabase Auth профиль уже создан/обновлён внутри
+    // validateRequestAuth (bootstrap_profile_from_auth) — вызывать
+    // bootstrap_profile второй раз нельзя (она отклоняет telegramId
+    // <= 0, а тут синтетический отрицательный id).
+    let profileData: {
+      soloPoints?: number;
+      soloWeeklyPoints?: number;
+      soloWeeklyPointsWeek?: string | null;
+    } = {};
 
-    if (profileError || !profileData?.ok) {
-      console.error("BOOTSTRAP profile error:", profileError || profileData);
-      return NextResponse.json(
-        { error: "Internal server error" },
-        { status: 500 }
+    if (validation.authMethod === "supabase") {
+      profileData = {};
+    } else {
+      // Профиль: та же bootstrap_profile RPC, что и /api/profile/bootstrap
+      // (display-поля из initData, никогда из тела запроса) — здесь же
+      // получаем soloPoints/soloWeeklyPoints одним вызовом.
+      const { data, error: profileError } = await supabaseAdmin.rpc(
+        "bootstrap_profile",
+        {
+          p_telegram_id: telegramId,
+          p_first_name: validation.firstName,
+          p_last_name: validation.lastName,
+          p_username: validation.username,
+          p_photo_url: validation.photoUrl,
+        }
       );
+
+      if (profileError || !data?.ok) {
+        console.error("BOOTSTRAP profile error:", profileError || data);
+        return NextResponse.json(
+          { error: "Internal server error" },
+          { status: 500 }
+        );
+      }
+
+      profileData = data;
     }
 
     const [isPremium, pair] = await Promise.all([

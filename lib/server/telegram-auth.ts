@@ -1,4 +1,5 @@
 import crypto from "crypto";
+import { supabaseAdmin } from "./supabase-admin";
 
 // Общая валидация Telegram initData для app/api/*/route.ts. Раньше
 // была продублирована почти дословно в каждом route.ts — вынесено
@@ -19,6 +20,13 @@ export type TelegramInitDataValidation = {
   lastName?: string | null;
   username?: string | null;
   photoUrl?: string | null;
+  // "telegram" (по умолчанию, обратная совместимость) — вызывающий код
+  // должен ещё сам синхронизировать профиль через bootstrap_profile.
+  // "supabase" — profiles-ряд уже создан/обновлён внутри
+  // validateSupabaseAuthToken (bootstrap_profile_from_auth), повторно
+  // звать bootstrap_profile для него нельзя (та функция отклоняет
+  // telegramId <= 0, а тут синтетический отрицательный id).
+  authMethod?: "telegram" | "supabase";
 };
 
 export function validateTelegramInitData(
@@ -84,8 +92,93 @@ export function validateTelegramInitData(
       lastName: typeof user.last_name === "string" ? user.last_name : null,
       username: typeof user.username === "string" ? user.username : null,
       photoUrl: typeof user.photo_url === "string" ? user.photo_url : null,
+      authMethod: "telegram",
     };
   } catch {
+    return { valid: false };
+  }
+}
+
+// Phase 1 iOS-приложения (план: standalone iOS app for the Apple App
+// Store). Вне Telegram подписанного initData не существует вообще —
+// не Mini App, значит Telegram ничего не подписывает. Новые клиенты
+// (email/Sign in with Apple/телефон через Supabase Auth) присылают
+// supabaseAccessToken вместо initData.
+//
+// Возвращает РОВНО ТОТ ЖЕ шейп TelegramInitDataValidation, что и
+// validateTelegramInitData — только telegramId тут синтетический
+// отрицательный id (см. supabase/ios_auth_foundation.sql,
+// bootstrap_profile_from_auth). Благодаря одинаковому шейпу все RPC
+// ниже по каждому route.ts остаются нетронутыми — они как принимали
+// telegramId, так и принимают, не зная и не заботясь о том, откуда
+// он взялся.
+export async function validateRequestAuth(body: {
+  initData?: unknown;
+  supabaseAccessToken?: unknown;
+}): Promise<TelegramInitDataValidation> {
+  if (typeof body.initData === "string" && body.initData) {
+    return validateTelegramInitData(body.initData);
+  }
+
+  if (
+    typeof body.supabaseAccessToken === "string" &&
+    body.supabaseAccessToken
+  ) {
+    return validateSupabaseAuthToken(body.supabaseAccessToken);
+  }
+
+  return { valid: false };
+}
+
+async function validateSupabaseAuthToken(
+  accessToken: string
+): Promise<TelegramInitDataValidation> {
+  try {
+    const { data, error } = await supabaseAdmin.auth.getUser(accessToken);
+
+    if (error || !data?.user) {
+      return { valid: false };
+    }
+
+    const authUser = data.user;
+
+    const displayName =
+      (typeof authUser.user_metadata?.full_name === "string"
+        ? authUser.user_metadata.full_name
+        : null) ||
+      (typeof authUser.user_metadata?.name === "string"
+        ? authUser.user_metadata.name
+        : null);
+
+    const { data: bootstrapData, error: bootstrapError } =
+      await supabaseAdmin.rpc("bootstrap_profile_from_auth", {
+        p_auth_user_id: authUser.id,
+        p_display_name: displayName,
+        p_email: authUser.email ?? null,
+      });
+
+    if (bootstrapError || !bootstrapData?.ok) {
+      console.error(
+        "validateSupabaseAuthToken bootstrap error:",
+        bootstrapError || bootstrapData
+      );
+      return { valid: false };
+    }
+
+    return {
+      valid: true,
+      telegramId: Number(bootstrapData.telegramId),
+      firstName: displayName,
+      lastName: null,
+      username: null,
+      photoUrl:
+        typeof authUser.user_metadata?.avatar_url === "string"
+          ? authUser.user_metadata.avatar_url
+          : null,
+      authMethod: "supabase",
+    };
+  } catch (error) {
+    console.error("validateSupabaseAuthToken error:", error);
     return { valid: false };
   }
 }
