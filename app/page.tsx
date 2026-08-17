@@ -6846,6 +6846,49 @@ function AuthScreen() {
     }
   }
 
+  async function handleAppleSignIn() {
+    setLoading(true);
+    setError(null);
+
+    try {
+      // Плагин подключён (@capacitor-community/apple-sign-in), но
+      // реально протестировать нативный флоу можно только после
+      // сборки в Xcode (нужны entitlements) — до этого просто
+      // аккуратно ловим ошибку и показываем сообщение, ничего не
+      // падает.
+      const { SignInWithApple } = await import(
+        "@capacitor-community/apple-sign-in"
+      );
+
+      const nonce = crypto.randomUUID();
+
+      const result = await SignInWithApple.authorize({
+        clientId: "com.couplequizzes.signin",
+        redirectURI: "https://eudiyzokazypcalizcls.supabase.co/auth/v1/callback",
+        scopes: "email name",
+        nonce,
+      });
+
+      const { error: authError } = await supabase.auth.signInWithIdToken({
+        provider: "apple",
+        token: result.response.identityToken,
+        nonce,
+      });
+
+      if (authError) {
+        setError(authError.message);
+        setLoading(false);
+        return;
+      }
+
+      window.location.reload();
+    } catch (err) {
+      console.error("Apple sign-in error:", err);
+      setError("Не удалось войти через Apple ID, попробуйте ещё раз");
+      setLoading(false);
+    }
+  }
+
   return (
     <div
       style={{
@@ -6865,6 +6908,36 @@ function AuthScreen() {
         </div>
         <div style={{ marginTop: 6, color: "#3a345c", fontSize: 14 }}>
           {mode === "sign-up" ? "Создайте аккаунт" : "Войдите в аккаунт"}
+        </div>
+
+        <button
+          onClick={handleAppleSignIn}
+          disabled={loading}
+          style={{
+            ...primaryButtonStyle,
+            width: "100%",
+            marginTop: 16,
+            background: "#000000",
+            opacity: loading ? 0.7 : 1,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: 8,
+          }}
+        >
+          <span style={{ fontSize: 18 }}></span> Войти через Apple ID
+        </button>
+
+        <div
+          style={{
+            marginTop: 14,
+            marginBottom: 2,
+            textAlign: "center",
+            color: "#8a84a6",
+            fontSize: 12,
+          }}
+        >
+          или email
         </div>
 
         <input

@@ -27,7 +27,19 @@ export function isCapacitorApp(): boolean {
   const capacitor = (
     window as unknown as { Capacitor?: { isNativePlatform?: () => boolean } }
   ).Capacitor;
-  return Boolean(capacitor?.isNativePlatform?.());
+  if (capacitor?.isNativePlatform?.()) return true;
+
+  // Тестовый флаг — до появления реальной iOS-сборки (ждём, пока
+  // Артём поставит Xcode) это единственный способ прогнать экран
+  // входа/шим живьём в обычном браузере. ?forceCapacitor=1 в URL —
+  // намеренно ручной, ничего не включает сам по себе, никак не
+  // затрагивает реальных Telegram-пользователей.
+  if (typeof window.location !== "undefined") {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("forceCapacitor") === "1") return true;
+  }
+
+  return false;
 }
 
 let cachedAccessToken: string | undefined;
