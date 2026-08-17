@@ -112,19 +112,34 @@ export function validateTelegramInitData(
 // ниже по каждому route.ts остаются нетронутыми — они как принимали
 // telegramId, так и принимают, не зная и не заботясь о том, откуда
 // он взялся.
+// Капаситоровский клиент (Phase 2) не трогает ни один из ~25 мест,
+// что читают window.Telegram?.WebApp?.initData — вместо этого
+// lib/platform.ts подменяет сам window.Telegram.WebApp шимом, чей
+// initData возвращает "supabase-token:<jwt>" вместо настоящей
+// Telegram-подписи. Настоящий Telegram initData никогда не начинается
+// с этого префикса (это urlencoded query-string вида "user=..."), так
+// что распознавание по префиксу однозначно и безопасно.
+const SUPABASE_TOKEN_PREFIX = "supabase-token:";
+
 export async function validateRequestAuth(body: {
   initData?: unknown;
   supabaseAccessToken?: unknown;
 }): Promise<TelegramInitDataValidation> {
-  if (typeof body.initData === "string" && body.initData) {
-    return validateTelegramInitData(body.initData);
-  }
-
   if (
     typeof body.supabaseAccessToken === "string" &&
     body.supabaseAccessToken
   ) {
     return validateSupabaseAuthToken(body.supabaseAccessToken);
+  }
+
+  if (typeof body.initData === "string" && body.initData) {
+    if (body.initData.startsWith(SUPABASE_TOKEN_PREFIX)) {
+      return validateSupabaseAuthToken(
+        body.initData.slice(SUPABASE_TOKEN_PREFIX.length)
+      );
+    }
+
+    return validateTelegramInitData(body.initData);
   }
 
   return { valid: false };

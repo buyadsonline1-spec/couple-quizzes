@@ -15,6 +15,12 @@ import {
 
 import { confirmGiveawayAction } from "@/lib/giveaway";
 import { supabase } from "@/lib/supabase";
+import {
+  isCapacitorApp,
+  installCapacitorTelegramShim,
+  hasSupabaseSession,
+  setSyntheticTelegramId,
+} from "@/lib/platform";
 import confetti from "canvas-confetti";
 import { TEXT_RU } from "@/config/text-ru";
 import { TEXT_EN } from "@/config/text-en";
@@ -57,6 +63,7 @@ declare global {
 }
 
 type Screen =
+  | "auth"
   | "welcome"
   | "start"
   | "language-select"
@@ -6786,6 +6793,149 @@ function DailyBonusModal({
             Продолжить
           </button>
         )}
+      </div>
+    </div>
+  );
+}
+
+// Phase 2 (App Store план): экран входа только для Capacitor-сборки —
+// Telegram-пользователи его никогда не видят (isCapacitorApp() у них
+// всегда false, экран "auth" даже не устанавливается как screen).
+// Email/password на этот проход; Sign in with Apple и телефон —
+// отдельным заходом позже (нужен нативный плагин и настройка в
+// Xcode, план явно откладывает это, чтобы не блокировать базовую
+// обёртку).
+function AuthScreen() {
+  const [mode, setMode] = useState<"sign-in" | "sign-up">("sign-in");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  async function handleSubmit() {
+    if (!email || !password) {
+      setError("Введите email и пароль");
+      return;
+    }
+
+    setLoading(true);
+    setError(null);
+
+    try {
+      const { error: authError } =
+        mode === "sign-up"
+          ? await supabase.auth.signUp({ email, password })
+          : await supabase.auth.signInWithPassword({ email, password });
+
+      if (authError) {
+        setError(authError.message);
+        setLoading(false);
+        return;
+      }
+
+      // Простой и надёжный способ подхватить новую сессию — весь
+      // bootstrap живёт в одном useEffect с [] на маунте компонента
+      // (см. выше), перезапускать его отдельно сложнее и рискованнее,
+      // чем просто перезагрузить страницу с уже сохранённой Supabase
+      // сессией в локальном хранилище.
+      window.location.reload();
+    } catch (err) {
+      console.error("AuthScreen submit error:", err);
+      setError("Что-то пошло не так, попробуйте ещё раз");
+      setLoading(false);
+    }
+  }
+
+  return (
+    <div
+      style={{
+        padding: 16,
+        paddingTop: 28,
+        minHeight: "100vh",
+        boxSizing: "border-box",
+        display: "flex",
+        flexDirection: "column",
+        justifyContent: "center",
+        gap: 14,
+      }}
+    >
+      <div style={{ ...cardBaseStyle(), padding: 18 }}>
+        <div style={{ fontSize: 26, fontWeight: 900, color: "#1f1d3a" }}>
+          Couple Quizzes
+        </div>
+        <div style={{ marginTop: 6, color: "#3a345c", fontSize: 14 }}>
+          {mode === "sign-up" ? "Создайте аккаунт" : "Войдите в аккаунт"}
+        </div>
+
+        <input
+          type="email"
+          placeholder="Email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          style={{
+            marginTop: 16,
+            width: "100%",
+            padding: "12px 14px",
+            borderRadius: 14,
+            border: "1px solid rgba(0,0,0,0.12)",
+            fontSize: 15,
+            boxSizing: "border-box",
+          }}
+        />
+        <input
+          type="password"
+          placeholder="Пароль"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          style={{
+            marginTop: 10,
+            width: "100%",
+            padding: "12px 14px",
+            borderRadius: 14,
+            border: "1px solid rgba(0,0,0,0.12)",
+            fontSize: 15,
+            boxSizing: "border-box",
+          }}
+        />
+
+        {error && (
+          <div style={{ marginTop: 10, color: "#c0392b", fontSize: 13 }}>
+            {error}
+          </div>
+        )}
+
+        <button
+          onClick={handleSubmit}
+          disabled={loading}
+          style={{
+            ...primaryButtonStyle,
+            width: "100%",
+            marginTop: 16,
+            opacity: loading ? 0.7 : 1,
+          }}
+        >
+          {loading
+            ? "Подождите..."
+            : mode === "sign-up"
+              ? "Создать аккаунт"
+              : "Войти"}
+        </button>
+
+        <button
+          onClick={() => {
+            setMode(mode === "sign-up" ? "sign-in" : "sign-up");
+            setError(null);
+          }}
+          style={{
+            ...secondaryButtonStyle,
+            width: "100%",
+            marginTop: 10,
+          }}
+        >
+          {mode === "sign-up"
+            ? "У меня уже есть аккаунт"
+            : "Создать новый аккаунт"}
+        </button>
       </div>
     </div>
   );
@@ -14374,6 +14524,26 @@ const [levelUpData, setLevelUpData] = useState<{ level: number; title: string } 
   async function bootstrap() {
     setMounted(true);
 
+    // Phase 2 (App Store план): в Capacitor-сборке window.Telegram не
+    // существует в принципе — устанавливаем шим (см. lib/platform.ts)
+    // ДО того, как что-либо ниже попробует его прочитать. В Telegram
+    // isCapacitorApp() === false, эта строка — no-op, ничего не меняет.
+    installCapacitorTelegramShim();
+    if (isCapacitorApp()) {
+      // Дожидаемся, пока Supabase восстановит сессию из локального
+      // хранилища — иначе шим ещё не знает access token и initData
+      // шима будет пустым на первом рендере. У Telegram аналогичная
+      // проблема решается retry через 600мс ниже, эта же логика после
+      // этого await продолжает работать как раньше.
+      const signedIn = await hasSupabaseSession();
+      if (!signedIn) {
+        // Ни один Telegram-пользователь никогда сюда не попадёт —
+        // isCapacitorApp() у них всегда false. Показываем экран входа
+        // вместо того, чтобы пытаться бутстрапиться без сессии.
+        setScreen("auth");
+        return;
+      }
+    }
 
     const tg = window.Telegram?.WebApp;
     console.log("WINDOW TELEGRAM:", window.Telegram);
@@ -14462,6 +14632,17 @@ try {
 } catch (error) {
   console.error("bootstrap request error:", error);
   return;
+}
+
+// В Capacitor-сборке до этого момента telegramId был временным
+// плейсхолдером (см. lib/platform.ts) — сервер уже давно знает
+// настоящий синтетический id, обновляем шим и currentUser, чтобы
+// весь дальнейший код (referral-ссылки, отображение имени и т.д.)
+// использовал правильное значение.
+if (isCapacitorApp() && bootstrapData.profile?.telegramId) {
+  const realTelegramId = Number(bootstrapData.profile.telegramId);
+  setSyntheticTelegramId(realTelegramId);
+  setUser((prev) => (prev ? { ...prev, id: realTelegramId } : prev));
 }
 
 const soloPointsFromDb = Number(bootstrapData.profile?.soloPoints ?? 0);
@@ -15385,6 +15566,8 @@ if (finishedAllTests && !appState.completionBonusesClaimed.tests) {
             onClose={() => setShowDailyBonus(false)}
           />
         )}
+
+        {screen === "auth" && <AuthScreen />}
 
         {screen === "welcome" && (
   <WelcomeScreen
