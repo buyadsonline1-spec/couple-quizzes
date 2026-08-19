@@ -13748,6 +13748,59 @@ const handleBuyPremium = async () => {
   try {
     setPremiumLoading(true);
 
+    // Standalone iOS-клиент (Capacitor): Telegram Stars недоступны
+    // вообще (это Telegram-специфичный openInvoice), а Apple требует
+    // покупку строго через собственный In-App Purchase (Guideline
+    // 3.1.1) — сторонний способ оплаты отклонят на ревью. Отдельная
+    // ветка, ниже существующий Stars-путь остаётся нетронутым для
+    // Telegram.
+    if (isCapacitorApp()) {
+      const { ApplePurchase, APPLE_PREMIUM_MONTH_PRODUCT_ID } = await import(
+        "@/lib/applePurchase"
+      );
+
+      const purchaseResult = await ApplePurchase.purchase({
+        productId: APPLE_PREMIUM_MONTH_PRODUCT_ID,
+      });
+
+      const { data: sessionData } = await supabase.auth.getSession();
+      const supabaseAccessToken = sessionData.session?.access_token;
+
+      if (!supabaseAccessToken) {
+        throw new Error("Нет активной сессии, попробуйте войти заново");
+      }
+
+      const verifyRes = await fetch("/api/payments/apple-iap-verify", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          supabaseAccessToken,
+          signedTransaction: purchaseResult.jwsRepresentation,
+        }),
+      });
+      const verifyData = await verifyRes.json();
+
+      if (!verifyRes.ok || !verifyData?.ok) {
+        throw new Error(verifyData?.error || "Не удалось подтвердить покупку");
+      }
+
+      const hasPremium = Boolean(verifyData.isPremium);
+
+      setAppState((prev) => ({
+        ...prev,
+        isPremium: hasPremium,
+      }));
+
+      if (hasPremium) {
+        setShowPaymentChoice(false);
+        if (screen === "paywall") {
+          setScreen(paywallBackScreen || "menu");
+        }
+      }
+
+      return;
+    }
+
     const res = await fetch("/api/payments/create-stars-invoice", {
       method: "POST",
       headers: {
@@ -13815,6 +13868,14 @@ const handleBuyPremium = async () => {
       throw new Error("Telegram WebApp openInvoice недоступен");
     }
   } catch (error) {
+    // Пользователь сам отменил системный диалог StoreKit — это не
+    // ошибка, не пугаем алертом.
+    if (
+      error instanceof Error &&
+      error.message.includes("USER_CANCELLED")
+    ) {
+      return;
+    }
     console.error("BUY PREMIUM ERROR:", error);
     alert(error instanceof Error ? error.message : "Не удалось открыть оплату");
   } finally {
