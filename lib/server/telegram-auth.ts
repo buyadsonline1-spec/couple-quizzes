@@ -27,6 +27,13 @@ export type TelegramInitDataValidation = {
   // звать bootstrap_profile для него нельзя (та функция отклоняет
   // telegramId <= 0, а тут синтетический отрицательный id).
   authMethod?: "telegram" | "supabase";
+  // start_param идёт из ТОЙ ЖЕ подписанной initData, что и telegramId —
+  // используется в app/api/referral/claim/route.ts как криптографически
+  // надёжный источник referrerTelegramId (вида "ref_<id>"), клиент не
+  // может подделать его отдельно от telegramId. Для authMethod:
+  // "supabase" всегда undefined — start_param специфичен для Telegram
+  // Mini App, у standalone iOS-клиента (Phase 1) его источника нет.
+  startParam?: string;
 };
 
 export function validateTelegramInitData(
@@ -93,6 +100,7 @@ export function validateTelegramInitData(
       username: typeof user.username === "string" ? user.username : null,
       photoUrl: typeof user.photo_url === "string" ? user.photo_url : null,
       authMethod: "telegram",
+      startParam: params.get("start_param") ?? undefined,
     };
   } catch {
     return { valid: false };

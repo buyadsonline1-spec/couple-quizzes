@@ -1,120 +1,34 @@
-import crypto from "crypto";
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@supabase/supabase-js";
+import { supabaseAdmin } from "@/lib/server/supabase-admin";
+import { validateRequestAuth } from "@/lib/server/telegram-auth";
 
-// Валидация initData и клиент service-role — тот же паттерн, что и в
-// остальных app/api/*/route.ts, намеренно без изменений.
-
-const botToken = process.env.TELEGRAM_BOT_TOKEN;
-const supabaseUrl = process.env.SUPABASE_URL;
-const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-
-if (!botToken) {
-  throw new Error("TELEGRAM_BOT_TOKEN is not set");
-}
-
-if (!supabaseUrl) {
-  throw new Error("SUPABASE_URL is not set");
-}
-
-if (!serviceRoleKey) {
-  throw new Error("SUPABASE_SERVICE_ROLE_KEY is not set");
-}
-
-const supabaseAdmin = createClient(supabaseUrl, serviceRoleKey, {
-  auth: {
-    persistSession: false,
-    autoRefreshToken: false,
-  },
-});
-
-function validateTelegramInitData(initData: string): {
-  valid: boolean;
-  telegramId?: number;
-  firstName?: string | null;
-  lastName?: string | null;
-  username?: string | null;
-  photoUrl?: string | null;
-} {
-  try {
-    const params = new URLSearchParams(initData);
-
-    const receivedHash = params.get("hash");
-    const authDateRaw = params.get("auth_date");
-    const userRaw = params.get("user");
-
-    if (!receivedHash || !authDateRaw || !userRaw) {
-      return { valid: false };
-    }
-
-    params.delete("hash");
-
-    const dataCheckString = [...params.entries()]
-      .sort(([a], [b]) => a.localeCompare(b))
-      .map(([key, value]) => `${key}=${value}`)
-      .join("\n");
-
-    const secretKey = crypto
-      .createHmac("sha256", "WebAppData")
-      .update(botToken!)
-      .digest();
-
-    const calculatedHash = crypto
-      .createHmac("sha256", secretKey)
-      .update(dataCheckString)
-      .digest("hex");
-
-    const receivedBuffer = Buffer.from(receivedHash, "hex");
-    const calculatedBuffer = Buffer.from(calculatedHash, "hex");
-
-    if (
-      receivedBuffer.length !== calculatedBuffer.length ||
-      !crypto.timingSafeEqual(receivedBuffer, calculatedBuffer)
-    ) {
-      return { valid: false };
-    }
-
-    const authDate = Number(authDateRaw);
-    const now = Math.floor(Date.now() / 1000);
-
-    // Не принимаем initData старше 24 часов.
-    if (!Number.isFinite(authDate) || now - authDate > 86400) {
-      return { valid: false };
-    }
-
-    const user = JSON.parse(userRaw);
-    const telegramId = Number(user.id);
-
-    if (!Number.isSafeInteger(telegramId) || telegramId <= 0) {
-      return { valid: false };
-    }
-
-    return {
-      valid: true,
-      telegramId,
-      firstName: typeof user.first_name === "string" ? user.first_name : null,
-      lastName: typeof user.last_name === "string" ? user.last_name : null,
-      username: typeof user.username === "string" ? user.username : null,
-      photoUrl: typeof user.photo_url === "string" ? user.photo_url : null,
-    };
-  } catch {
-    return { valid: false };
-  }
-}
+// Раньше здесь была собственная копия validateTelegramInitData —
+// из-за этого endpoint не понимал Supabase-сессию standalone
+// iOS-клиента (Phase 1 плана про App Store), только Telegram
+// initData. Переведено на общий validateRequestAuth (см.
+// app/api/bootstrap/route.ts) — понимает оба источника, для
+// Telegram-пути поведение не меняется.
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
 
-    const initData = typeof body.initData === "string" ? body.initData : "";
-
-    const validation = validateTelegramInitData(initData);
+    const validation = await validateRequestAuth(body);
 
     if (!validation.valid || !validation.telegramId) {
       return NextResponse.json(
         { error: "Invalid Telegram data" },
         { status: 401 }
       );
+    }
+
+    // bootstrap_profile отклоняет telegramId <= 0 — у Supabase-аккаунтов
+    // (Phase 1) он синтетический отрицательный, и профиль для них уже
+    // создан внутри validateRequestAuth (bootstrap_profile_from_auth).
+    // Повторно звать bootstrap_profile для них нельзя (тот же паттерн,
+    // что в app/api/bootstrap/route.ts) — отдаём успех без вызова RPC.
+    if (validation.authMethod === "supabase") {
+      return NextResponse.json({ ok: true, telegramId: validation.telegramId });
     }
 
     // Все display-поля берутся ИЗ подписанного initData, а не из тела
