@@ -15698,7 +15698,15 @@ if (finishedAllTests && !appState.completionBonusesClaimed.tests) {
    background: appState.isPremium
   ? "linear-gradient(135deg, #a18cd1 0%, #fbc2eb 100%)"
   : "radial-gradient(circle, rgba(238,174,202,1) 0%, rgba(148,187,233,1) 100%)",
-    paddingBottom: 24,
+    // env(safe-area-inset-*) — держит контент подальше от выреза/
+    // динамического острова сверху и home indicator снизу вне
+    // Telegram (там свой chrome, эти отступы там просто равны 0,
+    // ничего не портят). Требует viewport-fit=cover в app/layout.tsx.
+    paddingTop: "env(safe-area-inset-top)",
+    paddingBottom: "calc(24px + env(safe-area-inset-bottom))",
+    paddingLeft: "env(safe-area-inset-left)",
+    paddingRight: "env(safe-area-inset-right)",
+    boxSizing: "border-box",
   }}
 >
 
@@ -16081,7 +16089,16 @@ showPaywall={() => {
 )}
 
 {screen === "paywall" && (
-  <div style={{ padding: 16 }}>
+  <div
+    style={{
+      padding: 16,
+      minHeight: "100vh",
+      boxSizing: "border-box",
+      display: "flex",
+      flexDirection: "column",
+      justifyContent: "center",
+    }}
+  >
     <div style={{ ...cardBaseStyle(), padding: 20 }}>
       <div style={{ fontSize: 28, fontWeight: 900, color: "#1f1d3a" }}>
         Полный доступ
