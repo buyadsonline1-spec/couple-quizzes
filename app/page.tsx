@@ -15631,7 +15631,7 @@ if (finishedAllTests && !appState.completionBonusesClaimed.tests) {
   />
 )}
 
-        {showDailyBonus && (
+        {showDailyBonus && screen !== "auth" && (
           <DailyBonusModal
             currentDay={claimableDay}
             canClaim={bonusClaimAvailable}
