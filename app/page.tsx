@@ -6811,6 +6811,15 @@ function AuthScreen() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // Показывается вместо формы, когда signUp прошёл без ошибки, но
+  // Supabase ещё не выдал активную сессию — значит, у проекта включено
+  // "Confirm email" (по умолчанию так и есть) и пользователю ушло
+  // письмо со ссылкой подтверждения. Раньше в этом случае код молча
+  // делал reload() и живого человека просто выкидывало обратно на
+  // пустой экран входа без единого объяснения.
+  const [checkEmailMessage, setCheckEmailMessage] = useState<string | null>(
+    null
+  );
 
   async function handleSubmit() {
     if (!email || !password) {
@@ -6822,15 +6831,42 @@ function AuthScreen() {
     setError(null);
 
     try {
-      const { error: authError } =
-        mode === "sign-up"
-          ? await supabase.auth.signUp({ email, password })
-          : await supabase.auth.signInWithPassword({ email, password });
+      if (mode === "sign-up") {
+        const { data, error: authError } = await supabase.auth.signUp({
+          email,
+          password,
+        });
 
-      if (authError) {
-        setError(authError.message);
-        setLoading(false);
-        return;
+        if (authError) {
+          setError(authError.message);
+          setLoading(false);
+          return;
+        }
+
+        if (!data.session) {
+          // Нет authError, но и активной сессии нет — email ещё не
+          // подтверждён (обычный случай для signUp с "Confirm email").
+          // Заодно это ровно тот же ответ, что Supabase отдаёт на
+          // повторный signUp уже существующего подтверждённого email
+          // (антиэнумерация) — показываем один и тот же нейтральный
+          // текст в обоих случаях, ничего не раскрывая.
+          setCheckEmailMessage(
+            `Мы отправили письмо со ссылкой подтверждения на ${email}. Перейдите по ней, а затем войдите в аккаунт.`
+          );
+          setLoading(false);
+          return;
+        }
+      } else {
+        const { error: authError } = await supabase.auth.signInWithPassword({
+          email,
+          password,
+        });
+
+        if (authError) {
+          setError(authError.message);
+          setLoading(false);
+          return;
+        }
       }
 
       // Простой и надёжный способ подхватить новую сессию — весь
@@ -6887,6 +6923,50 @@ function AuthScreen() {
       setError("Не удалось войти через Apple ID, попробуйте ещё раз");
       setLoading(false);
     }
+  }
+
+  if (checkEmailMessage) {
+    return (
+      <div
+        style={{
+          padding: 16,
+          paddingTop: 28,
+          minHeight: "100vh",
+          boxSizing: "border-box",
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "center",
+          gap: 14,
+        }}
+      >
+        <div style={{ ...cardBaseStyle(), padding: 18, textAlign: "center" }}>
+          <div style={{ fontSize: 40 }}>✉️</div>
+          <div
+            style={{
+              marginTop: 10,
+              fontSize: 20,
+              fontWeight: 900,
+              color: "#1f1d3a",
+            }}
+          >
+            Проверьте почту
+          </div>
+          <div style={{ marginTop: 10, color: "#3a345c", fontSize: 15 }}>
+            {checkEmailMessage}
+          </div>
+          <button
+            onClick={() => {
+              setCheckEmailMessage(null);
+              setMode("sign-in");
+              setPassword("");
+            }}
+            style={{ ...primaryButtonStyle, width: "100%", marginTop: 18 }}
+          >
+            Понятно
+          </button>
+        </div>
+      </div>
+    );
   }
 
   return (
