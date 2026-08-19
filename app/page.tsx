@@ -6990,36 +6990,6 @@ function AuthScreen() {
           {mode === "sign-up" ? "Создайте аккаунт" : "Войдите в аккаунт"}
         </div>
 
-        <button
-          onClick={handleAppleSignIn}
-          disabled={loading}
-          style={{
-            ...primaryButtonStyle,
-            width: "100%",
-            marginTop: 16,
-            background: "#000000",
-            opacity: loading ? 0.7 : 1,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            gap: 8,
-          }}
-        >
-          <span style={{ fontSize: 18 }}></span> Войти через Apple ID
-        </button>
-
-        <div
-          style={{
-            marginTop: 14,
-            marginBottom: 2,
-            textAlign: "center",
-            color: "#8a84a6",
-            fontSize: 12,
-          }}
-        >
-          или email
-        </div>
-
         <input
           type="email"
           placeholder="Email"
@@ -7072,6 +7042,36 @@ function AuthScreen() {
             : mode === "sign-up"
               ? "Создать аккаунт"
               : "Войти"}
+        </button>
+
+        <div
+          style={{
+            marginTop: 14,
+            marginBottom: 2,
+            textAlign: "center",
+            color: "#8a84a6",
+            fontSize: 12,
+          }}
+        >
+          или
+        </div>
+
+        <button
+          onClick={handleAppleSignIn}
+          disabled={loading}
+          style={{
+            ...primaryButtonStyle,
+            width: "100%",
+            marginTop: 16,
+            background: "#000000",
+            opacity: loading ? 0.7 : 1,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: 8,
+          }}
+        >
+          <span style={{ fontSize: 18 }}></span> Войти через Apple ID
         </button>
 
         <button
