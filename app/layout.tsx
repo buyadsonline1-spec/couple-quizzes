@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import Script from "next/script";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
@@ -16,6 +16,19 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Couple Quizzes",
   description: "Telegram Mini App",
+};
+
+// viewportFit: "cover" — без него env(safe-area-inset-*) в CSS всегда
+// равен 0, даже на устройствах с вырезом/динамическим островом.
+// Внутри Telegram это было не важно — там свой header держит контент
+// подальше от выреза. В standalone iOS-сборке (Capacitor,
+// WKWebView на весь экран) контент без этого залезает под вырез и
+// под home indicator снизу — стало заметно только сейчас, когда
+// впервые тестируем полноэкранный режим вне Telegram.
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
 };
 
 export default function RootLayout({
