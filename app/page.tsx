@@ -16125,7 +16125,7 @@ showPaywall={() => {
           color: "#6b46ff",
         }}
       >
-        149 ₽
+        299 ₽
       </div>
 
       <button
