@@ -1,7 +1,7 @@
-import crypto from "crypto";
 import { NextResponse } from "next/server";
 import TelegramBot from "node-telegram-bot-api";
 import { supabaseAdmin } from "@/bot/supabase-admin";
+import { validateRequestAuth } from "@/lib/server/telegram-auth";
 
 const bot = new TelegramBot(process.env.TELEGRAM_BOT_TOKEN!, {
   polling: false,
@@ -14,90 +14,31 @@ const allowedStatuses = ["member", "administrator", "creator"];
 
 const FREE_PREMIUM_DURATION_MS = 7 * 24 * 60 * 60 * 1000; // 1 неделя
 
-const botToken = process.env.TELEGRAM_BOT_TOKEN;
-
-if (!botToken) {
-  throw new Error("TELEGRAM_BOT_TOKEN is not set");
-}
-
-// telegramId раньше принимался прямо из тела запроса, без всякой
-// проверки — можно было дёрнуть эндпоинт с произвольным чужим
-// telegramId. Теперь берём его только из подписанного initData, тем
-// же паттерном, что и в остальных app/api/*/route.ts.
-function validateTelegramInitData(initData: string): {
-  valid: boolean;
-  telegramId?: number;
-} {
-  try {
-    const params = new URLSearchParams(initData);
-
-    const receivedHash = params.get("hash");
-    const authDateRaw = params.get("auth_date");
-    const userRaw = params.get("user");
-
-    if (!receivedHash || !authDateRaw || !userRaw) {
-      return { valid: false };
-    }
-
-    params.delete("hash");
-
-    const dataCheckString = [...params.entries()]
-      .sort(([a], [b]) => a.localeCompare(b))
-      .map(([key, value]) => `${key}=${value}`)
-      .join("\n");
-
-    const secretKey = crypto
-      .createHmac("sha256", "WebAppData")
-      .update(botToken!)
-      .digest();
-
-    const calculatedHash = crypto
-      .createHmac("sha256", secretKey)
-      .update(dataCheckString)
-      .digest("hex");
-
-    const receivedBuffer = Buffer.from(receivedHash, "hex");
-    const calculatedBuffer = Buffer.from(calculatedHash, "hex");
-
-    if (
-      receivedBuffer.length !== calculatedBuffer.length ||
-      !crypto.timingSafeEqual(receivedBuffer, calculatedBuffer)
-    ) {
-      return { valid: false };
-    }
-
-    const authDate = Number(authDateRaw);
-    const now = Math.floor(Date.now() / 1000);
-
-    if (!Number.isFinite(authDate) || now - authDate > 86400) {
-      return { valid: false };
-    }
-
-    const user = JSON.parse(userRaw);
-    const telegramId = Number(user.id);
-
-    if (!Number.isSafeInteger(telegramId) || telegramId <= 0) {
-      return { valid: false };
-    }
-
-    return { valid: true, telegramId };
-  } catch {
-    return { valid: false };
-  }
-}
-
+// Раньше здесь была собственная копия validateTelegramInitData —
+// заменено на общий validateRequestAuth (см. app/api/bootstrap/route.ts).
+// Сама акция завязана на членство в конкретных Telegram-каналах, поэтому
+// она в принципе неприменима к standalone iOS-аккаунтам (Phase 1 плана
+// про App Store) — для них ниже отдельная явная ветка вместо попытки
+// вызвать Telegram Bot API с синтетическим (несуществующим) telegramId.
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    const initData = typeof body.initData === "string" ? body.initData : "";
 
-    const validation = validateTelegramInitData(initData);
+    const validation = await validateRequestAuth(body);
 
     if (!validation.valid || !validation.telegramId) {
       return NextResponse.json(
         { success: false, error: "Invalid Telegram data" },
         { status: 401 }
       );
+    }
+
+    if (validation.authMethod === "supabase") {
+      return NextResponse.json({
+        success: false,
+        subscribed: false,
+        reason: "telegram_only",
+      });
     }
 
     const telegramId = validation.telegramId;

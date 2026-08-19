@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/server/supabase-admin";
-import { validateTelegramInitData } from "@/lib/server/telegram-auth";
+import { validateRequestAuth } from "@/lib/server/telegram-auth";
 import { getOpenAIClient, AI_PSYCHOLOGIST_MODEL } from "@/lib/server/openai-client";
 import {
   buildRelationshipPsychologistPrompt,
@@ -31,13 +31,12 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
 
-    const initData = typeof body.initData === "string" ? body.initData : "";
     const conversationId =
       typeof body.conversationId === "string" ? body.conversationId : "";
     const message =
       typeof body.message === "string" ? body.message.trim() : "";
 
-    const validation = validateTelegramInitData(initData);
+    const validation = await validateRequestAuth(body);
 
     if (!validation.valid || !validation.telegramId) {
       return NextResponse.json(

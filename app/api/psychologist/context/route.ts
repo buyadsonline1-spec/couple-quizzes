@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/server/supabase-admin";
-import { validateTelegramInitData } from "@/lib/server/telegram-auth";
+import { validateRequestAuth } from "@/lib/server/telegram-auth";
 
 // Переключение "✨ Учитывать данные нашей пары" для УЖЕ существующего
 // разговора (при создании через /api/psychologist/new это тоже можно
@@ -12,12 +12,11 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
 
-    const initData = typeof body.initData === "string" ? body.initData : "";
     const conversationId =
       typeof body.conversationId === "string" ? body.conversationId : "";
     const enabled = Boolean(body.enabled);
 
-    const validation = validateTelegramInitData(initData);
+    const validation = await validateRequestAuth(body);
 
     if (!validation.valid || !validation.telegramId) {
       return NextResponse.json(

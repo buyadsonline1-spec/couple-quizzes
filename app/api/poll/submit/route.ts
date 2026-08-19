@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/server/supabase-admin";
-import { validateTelegramInitData } from "@/lib/server/telegram-auth";
+import { validateRequestAuth } from "@/lib/server/telegram-auth";
 import { loadPairPollAnswersForPair } from "@/lib/server/reads";
 import { POLL_IDS } from "@/config/reward-catalog";
 
@@ -16,11 +16,10 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
 
-    const initData = typeof body.initData === "string" ? body.initData : "";
     const pollId = typeof body.pollId === "string" ? body.pollId : "";
     const answers = Array.isArray(body.answers) ? body.answers : null;
 
-    const validation = validateTelegramInitData(initData);
+    const validation = await validateRequestAuth(body);
 
     if (!validation.valid || !validation.telegramId) {
       return NextResponse.json(

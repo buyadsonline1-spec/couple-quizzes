@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { validateTelegramInitData } from "@/lib/server/telegram-auth";
+import { validateRequestAuth } from "@/lib/server/telegram-auth";
 import { loadSoloProfileForTelegramId } from "@/lib/server/reads";
 import { checkIsPremium } from "@/lib/server/pair-state";
 
@@ -10,9 +10,8 @@ import { checkIsPremium } from "@/lib/server/pair-state";
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const initData = typeof body.initData === "string" ? body.initData : "";
 
-    const validation = validateTelegramInitData(initData);
+    const validation = await validateRequestAuth(body);
 
     if (!validation.valid || !validation.telegramId) {
       return NextResponse.json(
