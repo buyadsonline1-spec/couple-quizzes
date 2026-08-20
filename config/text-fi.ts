@@ -31,6 +31,9 @@ export const TEXT_FI = {
     loading: "Ladataan...",
     noData: "Ei vielä tietoja",
     done: "Valmis",
+    show: "Näytä",
+    hide: "Piilota",
+    toMenu: "Valikkoon",
   },
 
   home: {
@@ -38,6 +41,19 @@ export const TEXT_FI = {
     toNextLevel: "Seuraavalle tasolle",
     yourPoints: "Sinun pisteesi",
     newbies: "Aloittelijat",
+    maxLevelReached: "Enimmäistaso",
+  },
+
+  welcome: {
+    subtitle: "Tutustukaa toisiinne entistä paremmin 💞",
+    featurePolls: "Parikyselyt",
+    featureGames: "Pelejä kahdelle",
+    featureTop: "Kilpaile kärkilistalla",
+  },
+
+  aiPsychologist: {
+    menuTitle: "Tekoälypsykologi pareille",
+    menuSubtitle: "Kerro, mitä on meneillään — käydään se yhdessä läpi",
   },
 
   bonus: {
@@ -85,6 +101,18 @@ export const TEXT_FI = {
     questions90Desc:
       "Satunnaisia syvällisiä kysymyksiä rakkaudesta, tunteista ja suhteista.",
     start: "Aloita",
+    playAgain: "Pelaa uudelleen",
+    nextPage: "Seuraava →",
+    prevPage: "← Edellinen",
+    finishedTitle: "Peli päättyi 🎮",
+    completedSuffix: "suoritettu.",
+    correctAnswersLabel: "Oikeita vastauksia:",
+    resultLabel: "Tulos:",
+    rewardLabel: "Palkinto:",
+    claimPoints: "Lunasta pisteet",
+    questionProgress: "Kysymys {current}/{total}",
+    nextButton: "Seuraava",
+    exitGame: "Poistu pelistä",
   },
 
   rewards: {
@@ -95,6 +123,28 @@ export const TEXT_FI = {
     spin: "Pyöritä pyörää",
     notEnoughPoints: "Pisteitä ei riitä",
     yourBalance: "Saldosi",
+
+    wheelScreen: {
+      spinCostPrefix: "Yksi pyöräytys maksaa",
+      pointsLabel: "⭐ Pisteitä:",
+      todayLabel: "Tänään:",
+      freeSpinsLabel: " · ilmaisia pyöräytyksiä:",
+      spinFailedMessage: "Pyörän pyöritys epäonnistui. Yritä uudelleen.",
+      spinningLabel: "Pyöritetään...",
+      spinButtonPrefix: "Pyöritä hinnalla",
+      bonusPointsMessage: "Bonus: +{value} pistettä!",
+      bonusSpinMessage:
+        "Bonus: +1 ilmainen pyöräytys! Seuraava pyöräytys on ilmainen eikä kuluta päivittäistä rajaasi.",
+      prizeWonMessage: "Voitit palkinnon: {title} ({categoryTitle})",
+      wonRewardsTitle: "Voitetut palkinnot",
+      emptyPrizesText: "Täällä ei ole vielä mitään. Ansaitse pisteitä ja pyöritä pyörää.",
+      categoryLabel: "Kategoria:",
+      collapsePrizes: "Piilota palkinnot",
+      showAllPrizes: "Näytä kaikki palkinnot",
+      congratsTitle: "🎉 Onneksi olkoon!",
+      wonPrizeText: "Voitit palkinnon 🎁 Ota yhteyttä managerille lunastaaksesi sen",
+      claimPrizeButton: "Lunasta palkinto 🎁",
+    },
   },
 
   pair: {
@@ -215,6 +265,51 @@ export const TEXT_FI = {
     topPairsReward: "Kärkiparit saavat +500 pistettä",
     weeklyRewardHint:
       "Palkinto näkyy vasta viikon päätyttyä, ja vain edellisen viikon kolmen parhaan parin jäsenille",
+
+    screen: {
+      soloSubtitle:
+        "Kilpaile muiden pelaajien kanssa ja nouse henkilökohtaisella kärkilistalla.",
+      pairSubtitle:
+        "Ansaitkaa pisteitä yhdessä ja nostakaa parinne kärkilistalla.",
+      refresh: "Päivitä",
+      soloTabLabel: "👤 Henkilökohtainen kärki",
+      pairTabLabel: "💕 Parien kärki",
+      currentWeekBadge: "Nykyinen viikko",
+      soloRankingTitle: "👤 Pelaajien kärkilista",
+      pairRankingTitle: "💕 Parien kärkilista",
+      soloEmpty:
+        "Henkilökohtainen kärkilista on vielä tyhjä. Suorita ensimmäinen testi, kysely tai peli!",
+      pairEmpty:
+        "Parien kärkilista on vielä tyhjä. Yhdistä kumppanisi ja alkakaa ansaita pisteitä yhdessä!",
+      youSuffix: " (Sinä)",
+      leaderOfWeek: "Viikon johtaja",
+      placeTemplate: "Sija #{place}",
+      collapseRanking: "Piilota kärkilista",
+      showTop10: "Näytä kymmenen parasta",
+      yourPlaceTitle: "👤 Sinun sijasi",
+      yourPlaceText: "Olet sijalla {place} ja ansaitsit {points} pistettä tällä viikolla.",
+      yourPlaceEmptyText:
+        "Et ole vielä mukana henkilökohtaisella kärkilistalla. Ansaitse ensimmäiset pisteesi!",
+      yourPairPlaceTitle: "💕 Parinne sija",
+      pairNeedsPartnerText:
+        "Yhdistä ensin kumppanisi osallistuaksesi parien kärkilistalle.",
+      yourPairPlaceText:
+        "Parinne on sijalla {place} ja ansaitsi {points} pistettä tällä viikolla.",
+      pairNoRankYetText:
+        "Parinne ei ole vielä kärkilistalla. Ansaitkaa ensimmäiset yhteiset pisteenne!",
+      weeklyRewardTitle: "🎁 Viikkopalkinto",
+      soloRewardComingSoon:
+        "Henkilökohtaisen kärkilistan palkinnot tulossa pian. Toistaiseksi voit kilpailla paikasta kärjessä.",
+      topThreeRewardPrefix: "Kolmen parhaan sijan parit saavat",
+      connectPartnerForRankingText:
+        "Yhdistä kumppanisi osallistuaksesi parien kärkilistalle.",
+      rewardAlreadyClaimedText: "Viime viikon palkinto on jo lunastettu ✅",
+      rewardAvailableText:
+        "Parinne oli viime viikon kolmen parhaan joukossa! Voitte lunastaa palkinnon 🎉",
+      rewardOnlyTopThreeText:
+        "Palkinto on saatavilla vain viime viikon kolmen parhaan parin joukolle.",
+      claimRewardButton: "Lunasta +500 pistettä",
+    },
   },
 
   profile: {
@@ -237,6 +332,89 @@ export const TEXT_FI = {
     rewardReceived: "Palkinto saatu!",
     sectionCompleted: "Osio suoritettu!",
     bonusReceived: "Bonus lunastettu!",
+    great: "Mahtavaa!",
+  },
+
+  dailyPairQuestion: {
+    title: "Päivän kysymys 💞",
+    subtitle:
+      "Vastaatte molemmat samaan kysymykseen. Kun olette molemmat vastanneet, voitte vertailla vastauksianne.",
+    pairRequiredAlert: "Sinun täytyy ensin yhdistää pari",
+    alreadyAnsweredAlert: "Olet jo vastannut päivän kysymykseen",
+    answerLockedAlert: "Tämän päivän vastaus on jo tallennettu, eikä sitä voi muuttaa",
+    streakAlert: "🔥 {days} päivän putki!\n+{points} pistettä",
+    matchAlert: "💘 Vastasitte samoin!\n+{points} pistettä",
+    streakAndMatchAlert:
+      "🔥 {days} päivän putki!\n+{streakPoints} pistettä\n💘 Vastaukset osuivat yhteen!\n+{matchPoints} pistettä",
+    answeredWord: "vastasi",
+    notAnsweredWord: "ei ole vielä vastannut",
+    sameAnswerHint: "Valitsitte saman vaihtoehdon",
+    differentAnswerHint: "Vastauksenne eroavat — keskustelkaa asiasta 💬",
+    matchedTitle: "💘 Osuma!",
+    differentTitle: "✨ Eri vastaukset",
+    pairPointsSuffix: "pistettä parille",
+    milestoneReached: "Rajapyykki saavutettu!",
+    streakDaysInARow: "Olette vastanneet yhdessä jo {days} päivää putkeen 💞",
+    historyTitle: "Historia",
+    matchedShort: "Osui yhteen 💘",
+    differentShort: "Eri vastaukset ✨",
+  },
+
+  paywall: {
+    title: "Täysi käyttöoikeus",
+    subtitle:
+      "Olet suorittanut kaikki ilmaiset kyselyt. Avaa täysi käyttöoikeus Couple Quizzesiin.",
+    featurePolls: "🔓 Kaikki kyselyt",
+    featureGames: "🎮 Kaikki pelit",
+    featureTests: "🧠 Kaikki testit",
+    featureWheel: "🎡 Palkintopyörä",
+    featureBonusPoints: "🎁 +500 pistettä",
+    featureDesign: "🎨 Erikoismuotoilu",
+    unlockButton: "Avaa Premium",
+    choosePaymentSubtitle: "Valitse sinulle sopiva maksutapa",
+    openingPayment: "Avataan maksua...",
+    payWithStars: "⭐ Maksa Starsilla",
+    payWithTribute: "💎 Maksa Tributella",
+  },
+
+  completionBonus: {
+    prefix: "Suoritit kaikki",
+    pollsWord: " kyselyt",
+    testsWord: " testit",
+    sectionWord: " osion",
+    suffix: " ja saat bonuksen!",
+    pairPointsLabel: "parin pisteitä",
+    claimRewardButton: "Lunasta palkinto",
+  },
+
+  errors: {
+    telegramUserNotConfirmed: "Telegram-käyttäjän vahvistus epäonnistui",
+    telegramUserNotFound: "Telegram-käyttäjän haku epäonnistui",
+    telegramNotDetected: "Telegramia ei tunnistettu",
+    saveAnswerFailed: "Vastauksen tallennus epäonnistui, yritä uudelleen",
+    pairJoinFailed: "Yhdistäminen epäonnistui. Tarkista kutsukoodi.",
+    pairJoinedSuccess: "Pari yhdistetty onnistuneesti 💕",
+    pairCreateInviteFailedPrefix: "Kutsun luonti epäonnistui:",
+    pairCreateInviteFailed: "Kutsun luonti epäonnistui",
+    wheelSpinFailed: "Pyörän pyöritys epäonnistui, yritä uudelleen",
+    wheelInsufficientPoints: "Pisteitä ei riitä pyörän pyöritykseen.",
+    wheelDailyLimitReached: "Tämän päivän pyöräytysraja on täynnä (3/päivä).",
+    pairRequiredForSpin: "Sinun täytyy ensin luoda pari",
+    bonusAlreadyClaimedToday: "Tämän päivän bonus on jo lunastettu — palaa huomenna 💫",
+    bonusClaimFailed: "Bonuksen lisäys epäonnistui, yritä uudelleen",
+    noActiveSession: "Ei aktiivista istuntoa, kirjaudu uudelleen",
+    purchaseNotConfirmed: "Ostoa ei voitu vahvistaa",
+    paymentCreateFailed: "Maksun luonti epäonnistui",
+    paymentLinkMissing: "Maksulinkkiä ei saatu",
+    telegramInvoiceUnavailable: "Telegram WebApp openInvoice ei ole käytettävissä",
+    paymentOpenFailed: "Maksun avaaminen epäonnistui",
+    linkAppearsAfterProfile: "Linkki näkyy, kun profiili on latautunut",
+    inviteLinkCopied: "Kutsulinkki kopioitu",
+  },
+
+  giveaway: {
+    ticketEarned: "🎟️ Sait +1 lipun kyselyn suorittamisesta!",
+    totalTicketsLabel: "Liput yhteensä:",
   },
 
   genderSelect: {

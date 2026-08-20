@@ -6166,7 +6166,7 @@ function CompletionBonusModal({
         <div style={{ fontSize: 46, marginBottom: 12 }}>{emoji}</div>
 
         <div style={{ fontSize: 28, fontWeight: 900, color: "#1f1d3a" }}>
-          Раздел пройден!
+          {t.notifications.sectionCompleted}
         </div>
 
         <div
@@ -6189,14 +6189,14 @@ function CompletionBonusModal({
             color: "#6b46ff",
           }}
         >
-          +{points} очков
+          +{points} {t.bonus.pointsWord}
         </div>
 
         <button
           onClick={onClose}
           style={{ ...primaryButtonStyle, width: "100%", marginTop: 18 }}
         >
-          Класс!
+          {t.notifications.great}
         </button>
       </div>
     </div>
@@ -6249,7 +6249,7 @@ backdropFilter: "blur(6px)",
         </div>
 
         <div style={{ fontSize: 28, fontWeight: 900, color: "#1f1d3a" }}>
-          Новый уровень!
+          {t.notifications.newLevel}
         </div>
 
         <div
@@ -6260,7 +6260,7 @@ backdropFilter: "blur(6px)",
             color: "#4d466c",
           }}
         >
-          Уровень {level}
+          {t.pair.level} {level}
         </div>
 
         <div
@@ -6278,7 +6278,7 @@ backdropFilter: "blur(6px)",
           onClick={onClose}
           style={{ ...primaryButtonStyle, width: "100%", marginTop: 18 }}
         >
-          Класс!
+          {t.notifications.great}
         </button>
       </div>
     </div>
@@ -7105,10 +7105,12 @@ function AuthScreen() {
 }
 
 function WelcomeScreen({ onStart }: { onStart: () => void }) {
+  const market = getMarket();
+  const t = market === "fi" ? TEXT_FI : market === "en" ? TEXT_EN : TEXT_RU;
   const features: { emoji: string; label: string }[] = [
-    { emoji: "💬", label: "Парные опросы" },
-    { emoji: "🎮", label: "Игры для двоих" },
-    { emoji: "🏆", label: "Соревнуйтесь в топе" },
+    { emoji: "💬", label: t.welcome.featurePolls },
+    { emoji: "🎮", label: t.welcome.featureGames },
+    { emoji: "🏆", label: t.welcome.featureTop },
   ];
 
   return (
@@ -7199,7 +7201,7 @@ function WelcomeScreen({ onStart }: { onStart: () => void }) {
                 opacity: 0.9,
               }}
             >
-              Узнайте друг друга ещё лучше 💞
+              {t.welcome.subtitle}
             </div>
           </div>
         </div>
@@ -7208,7 +7210,7 @@ function WelcomeScreen({ onStart }: { onStart: () => void }) {
           onClick={onStart}
           style={{ ...primaryButtonStyle, width: "100%", marginTop: 18 }}
         >
-          Старт
+          {t.common.start}
         </button>
 
         <div
@@ -7416,11 +7418,11 @@ function MainMenu({
   {pairLevel.nextLevelPoints
   ? // Тот же фикс, что и в PairScreen — берём из pairLevel (очки пары),
     // а не из points (соло-баланс, не совпадал с прогресс-баром).
-    `До следующего уровня: ${Math.max(
+    `${t.home.toNextLevel}: ${Math.max(
       0,
       pairLevel.progressMax - pairLevel.progressInLevel
     )}`
-  : "Максимальный уровень"}
+  : t.home.maxLevelReached}
 </div>
       </div>
     </div>
@@ -7485,7 +7487,7 @@ function MainMenu({
 
         <div style={{ flex: 1 }}>
           <div style={{ fontSize: 15, fontWeight: 900, color: "#1f1d3a" }}>
-            AI-психолог для пары
+            {t.aiPsychologist.menuTitle}
           </div>
           <div
             style={{
@@ -7495,7 +7497,7 @@ function MainMenu({
               lineHeight: 1.35,
             }}
           >
-            Расскажи, что происходит — разберём вместе
+            {t.aiPsychologist.menuSubtitle}
           </div>
         </div>
 

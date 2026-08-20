@@ -27,6 +27,9 @@ export const TEXT_EN = {
     loading: "Loading...",
     noData: "No data yet",
     done: "Done",
+    show: "Show",
+    hide: "Hide",
+    toMenu: "To menu",
   },
 
   home: {
@@ -34,6 +37,19 @@ export const TEXT_EN = {
     toNextLevel: "To the next level",
     yourPoints: "Your points",
     newbies: "Newbies",
+    maxLevelReached: "Maximum level",
+  },
+
+  welcome: {
+    subtitle: "Get to know each other even better 💞",
+    featurePolls: "Couple polls",
+    featureGames: "Games for two",
+    featureTop: "Compete on the leaderboard",
+  },
+
+  aiPsychologist: {
+    menuTitle: "AI psychologist for couples",
+    menuSubtitle: "Tell us what's going on — let's work through it together",
   },
 
   bonus: {
@@ -81,6 +97,18 @@ export const TEXT_EN = {
     questions90Desc:
       "Random deep questions about love, feelings, and relationships.",
     start: "Start",
+    playAgain: "Play again",
+    nextPage: "Next →",
+    prevPage: "← Previous",
+    finishedTitle: "Game finished 🎮",
+    completedSuffix: "completed.",
+    correctAnswersLabel: "Correct answers:",
+    resultLabel: "Result:",
+    rewardLabel: "Reward:",
+    claimPoints: "Claim points",
+    questionProgress: "Question {current} of {total}",
+    nextButton: "Next",
+    exitGame: "Exit game",
   },
 
   rewards: {
@@ -91,6 +119,28 @@ export const TEXT_EN = {
     spin: "Spin the wheel",
     notEnoughPoints: "Not enough points",
     yourBalance: "Your balance",
+
+    wheelScreen: {
+      spinCostPrefix: "One spin costs",
+      pointsLabel: "⭐ Points:",
+      todayLabel: "Today:",
+      freeSpinsLabel: " · free spins:",
+      spinFailedMessage: "Couldn't spin the wheel. Try again.",
+      spinningLabel: "Spinning...",
+      spinButtonPrefix: "Spin for",
+      bonusPointsMessage: "Bonus: +{value} points!",
+      bonusSpinMessage:
+        "Bonus: +1 free spin! Your next spin will be free and won't use up your daily limit.",
+      prizeWonMessage: "You won a prize: {title} ({categoryTitle})",
+      wonRewardsTitle: "Prizes won",
+      emptyPrizesText: "Nothing here yet. Earn points and spin the wheel.",
+      categoryLabel: "Category:",
+      collapsePrizes: "Collapse prizes",
+      showAllPrizes: "Show all prizes",
+      congratsTitle: "🎉 Congratulations!",
+      wonPrizeText: "You won a prize 🎁 Message the manager to claim it",
+      claimPrizeButton: "Claim prize 🎁",
+    },
   },
 
  pair: {
@@ -213,6 +263,48 @@ export const TEXT_EN = {
     topPairsReward: "Top pairs receive +500 points",
     weeklyRewardHint:
       "The reward appears only after the week ends and only for couples from the previous week's top 3",
+
+    screen: {
+      soloSubtitle: "Compete with other players and climb the solo leaderboard.",
+      pairSubtitle: "Earn points together and climb the leaderboard as a pair.",
+      refresh: "Refresh",
+      soloTabLabel: "👤 Solo top",
+      pairTabLabel: "💕 Pair top",
+      currentWeekBadge: "Current week",
+      soloRankingTitle: "👤 Player ranking",
+      pairRankingTitle: "💕 Pair ranking",
+      soloEmpty:
+        "The solo leaderboard is empty for now. Complete your first test, poll, or game!",
+      pairEmpty:
+        "The pair leaderboard is empty for now. Connect with your partner and start earning points together!",
+      youSuffix: " (You)",
+      leaderOfWeek: "Leader of the week",
+      placeTemplate: "Place #{place}",
+      collapseRanking: "Collapse ranking",
+      showTop10: "Show top 10",
+      yourPlaceTitle: "👤 Your place",
+      yourPlaceText: "You're in {place} place and earned {points} points this week.",
+      yourPlaceEmptyText: "You're not on the solo leaderboard yet. Earn your first points!",
+      yourPairPlaceTitle: "💕 Your pair's place",
+      pairNeedsPartnerText:
+        "Connect with your partner first to take part in the pair leaderboard.",
+      yourPairPlaceText:
+        "Your pair is in {place} place and earned {points} points this week.",
+      pairNoRankYetText:
+        "Your pair hasn't appeared on the leaderboard yet. Earn your first points together!",
+      weeklyRewardTitle: "🎁 Weekly reward",
+      soloRewardComingSoon:
+        "Solo leaderboard rewards are coming soon. For now you can compete for a spot at the top.",
+      topThreeRewardPrefix: "Couples who finish in the top three receive",
+      connectPartnerForRankingText:
+        "Connect with your partner to take part in the pair leaderboard.",
+      rewardAlreadyClaimedText: "Last week's reward has already been claimed ✅",
+      rewardAvailableText:
+        "Your pair made the top 3 last week! You can claim your reward 🎉",
+      rewardOnlyTopThreeText:
+        "The reward is only available to pairs that finished in the top 3 last week.",
+      claimRewardButton: "Claim +500 points",
+    },
   },
 
   profile: {
@@ -235,6 +327,88 @@ export const TEXT_EN = {
     rewardReceived: "Reward received!",
     sectionCompleted: "Section completed!",
     bonusReceived: "Bonus claimed!",
+    great: "Nice!",
+  },
+
+  dailyPairQuestion: {
+    title: "Question of the Day 💞",
+    subtitle:
+      "You both answer the same question. Once you've both answered, you can compare your results.",
+    pairRequiredAlert: "You need to connect with a partner first",
+    alreadyAnsweredAlert: "You've already answered today's question",
+    answerLockedAlert: "Today's answer is already saved and can't be changed",
+    streakAlert: "🔥 {days}-day streak!\n+{points} points",
+    matchAlert: "💘 You matched!\n+{points} points",
+    streakAndMatchAlert:
+      "🔥 {days}-day streak!\n+{streakPoints} points\n💘 Your answers matched!\n+{matchPoints} points",
+    answeredWord: "answered",
+    notAnsweredWord: "hasn't answered yet",
+    sameAnswerHint: "You picked the same option",
+    differentAnswerHint: "Your answers are different — talk it through 💬",
+    matchedTitle: "💘 It's a match!",
+    differentTitle: "✨ Different answers",
+    pairPointsSuffix: "points to your pair",
+    milestoneReached: "Milestone reached!",
+    streakDaysInARow: "You've answered together for {days} days in a row 💞",
+    historyTitle: "History",
+    matchedShort: "Matched 💘",
+    differentShort: "Different answers ✨",
+  },
+
+  paywall: {
+    title: "Full access",
+    subtitle: "You've completed all the free polls. Unlock full access to Couple Quizzes.",
+    featurePolls: "🔓 All polls",
+    featureGames: "🎮 All games",
+    featureTests: "🧠 All tests",
+    featureWheel: "🎡 Prize wheel",
+    featureBonusPoints: "🎁 +500 points",
+    featureDesign: "🎨 Special design",
+    unlockButton: "Unlock Premium",
+    choosePaymentSubtitle: "Choose a convenient payment method",
+    openingPayment: "Opening payment...",
+    payWithStars: "⭐ Pay with Stars",
+    payWithTribute: "💎 Pay with Tribute",
+  },
+
+  completionBonus: {
+    prefix: "You've completed all the",
+    pollsWord: " polls",
+    testsWord: " tests",
+    sectionWord: " section",
+    suffix: " and earned a bonus!",
+    pairPointsLabel: "pair points",
+    claimRewardButton: "Claim reward",
+  },
+
+  errors: {
+    telegramUserNotConfirmed: "Couldn't verify Telegram user",
+    telegramUserNotFound: "Couldn't get Telegram user",
+    telegramNotDetected: "Couldn't detect Telegram",
+    saveAnswerFailed: "Couldn't save your answer, try again",
+    pairJoinFailed: "Couldn't connect. Check your invite code.",
+    pairJoinedSuccess: "Pair connected successfully 💕",
+    pairCreateInviteFailedPrefix: "Couldn't create invite:",
+    pairCreateInviteFailed: "Couldn't create invite",
+    wheelSpinFailed: "Couldn't spin the wheel, try again",
+    wheelInsufficientPoints: "Not enough points to spin the wheel.",
+    wheelDailyLimitReached: "Today's spin limit is reached (3 per day).",
+    pairRequiredForSpin: "You need to create a pair first",
+    bonusAlreadyClaimedToday: "Today's bonus is already claimed — come back tomorrow 💫",
+    bonusClaimFailed: "Couldn't add the bonus, try again",
+    noActiveSession: "No active session, please sign in again",
+    purchaseNotConfirmed: "Couldn't confirm the purchase",
+    paymentCreateFailed: "Couldn't create the payment",
+    paymentLinkMissing: "Didn't receive a payment link",
+    telegramInvoiceUnavailable: "Telegram WebApp openInvoice is unavailable",
+    paymentOpenFailed: "Couldn't open the payment",
+    linkAppearsAfterProfile: "Your link will appear once your profile loads",
+    inviteLinkCopied: "Invite link copied",
+  },
+
+  giveaway: {
+    ticketEarned: "🎟️ You earned +1 ticket for completing the poll!",
+    totalTicketsLabel: "Total tickets:",
   },
 
   genderSelect: {
