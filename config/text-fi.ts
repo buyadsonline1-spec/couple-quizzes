@@ -171,6 +171,14 @@ export const TEXT_FI = {
     bonusReceived: "Bonus lunastettu!",
   },
 
+  genderSelect: {
+    title: "Valitse sukupuolesi",
+    subtitle:
+      "Tämä kysytään vain kerran, jotta voimme näyttää sinulle sopivia testejä ja kyselyitä!",
+    boy: "Olen poika",
+    girl: "Olen tyttö",
+  },
+
   auth: {
     signInTitle: "Kirjaudu sisään tilillesi",
     signUpTitle: "Luo tili",

@@ -11393,6 +11393,8 @@ const visibleRewards = rewardsExpanded
 }: {
   onSelect: (gender: "boy" | "girl") => void;
 }) {
+  const market = getMarket();
+  const t = market === "fi" ? TEXT_FI : market === "en" ? TEXT_EN : TEXT_RU;
   return (
     <div style={{ padding: 16 }}>
       <div style={{ ...cardBaseStyle(), padding: 20 }}>
@@ -11404,7 +11406,7 @@ const visibleRewards = rewardsExpanded
             textAlign: "center",
           }}
         >
-          Выбери свой пол
+          {t.genderSelect.title}
         </div>
 
        <div
@@ -11416,21 +11418,21 @@ const visibleRewards = rewardsExpanded
     textAlign: "center",
   }}
 >
-  Это нужно только один раз, чтобы показывать тебе подходящие тесты и опросы!
+  {t.genderSelect.subtitle}
 </div>
 
         <button
           style={{ ...primaryButtonStyle, width: "100%", marginTop: 18 }}
           onClick={() => onSelect("boy")}
         >
-          Я парень
+          {t.genderSelect.boy}
         </button>
 
         <button
           style={{ ...secondaryButtonStyle, width: "100%", marginTop: 10 }}
           onClick={() => onSelect("girl")}
         >
-          Я девушка
+          {t.genderSelect.girl}
         </button>
       </div>
     </div>

@@ -169,6 +169,14 @@ export const TEXT_RU = {
     bonusReceived: "Бонус получен!",
   },
 
+  genderSelect: {
+    title: "Выбери свой пол",
+    subtitle:
+      "Это нужно только один раз, чтобы показывать тебе подходящие тесты и опросы!",
+    boy: "Я парень",
+    girl: "Я девушка",
+  },
+
   auth: {
     signInTitle: "Войдите в аккаунт",
     signUpTitle: "Создайте аккаунт",

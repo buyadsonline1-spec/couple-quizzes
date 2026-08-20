@@ -169,6 +169,14 @@ export const TEXT_EN = {
     bonusReceived: "Bonus claimed!",
   },
 
+  genderSelect: {
+    title: "Choose your gender",
+    subtitle:
+      "You only need this once, so we can show you the right tests and polls!",
+    boy: "I'm a guy",
+    girl: "I'm a girl",
+  },
+
   auth: {
     signInTitle: "Sign in to your account",
     signUpTitle: "Create an account",
