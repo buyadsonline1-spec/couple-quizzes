@@ -6683,6 +6683,12 @@ function DailyBonusModal({
   onClaim: () => void;
   onClose: () => void;
 }) {
+  // Раньше весь текст здесь был захардкожен по-русски — единственный
+  // экран во всём приложении, который не переводился на EN/FI (нашли
+  // при подготовке EN/FI скриншотов для App Store).
+  const market = getMarket();
+  const t = market === "fi" ? TEXT_FI : market === "en" ? TEXT_EN : TEXT_RU;
+
   return (
     <div
       style={{
@@ -6714,7 +6720,7 @@ function DailyBonusModal({
             color: "#241b40",
           }}
         >
-          Ежедневный бонус
+          {t.bonus.title}
         </div>
         <div
           style={{
@@ -6724,7 +6730,7 @@ function DailyBonusModal({
             fontSize: 15,
           }}
         >
-          Заходи каждый день и забирай всё больше очков
+          {t.bonus.subtitle}
         </div>
 
         <div
@@ -6765,13 +6771,13 @@ function DailyBonusModal({
                 }}
               >
                 <div style={{ fontWeight: 800, color: "#2a2248", fontSize: 14 }}>
-                  День {day}
+                  {t.bonus.day} {day}
                 </div>
                 <div style={{ fontWeight: 900, fontSize: 20, color: "#17142e" }}>
                   +{reward}
                 </div>
                 <div style={{ fontSize: 12, color: "#43355f" }}>
-                  {isPast ? "Получено" : isCurrent ? "Доступно" : "Скоро"}
+                  {isPast ? t.bonus.claimed : isCurrent ? t.bonus.available : t.bonus.soon}
                 </div>
               </div>
             );
@@ -6783,14 +6789,14 @@ function DailyBonusModal({
             onClick={onClaim}
             style={{ ...primaryButtonStyle, marginTop: 18, width: "100%" }}
           >
-            Получить +{getRewardForDay(currentDay)} очков
+            {t.bonus.claim} +{getRewardForDay(currentDay)} {t.bonus.pointsWord}
           </button>
         ) : (
           <button
             onClick={onClose}
             style={{ ...secondaryButtonStyle, marginTop: 18, width: "100%" }}
           >
-            Продолжить
+            {t.common.continue}
           </button>
         )}
       </div>

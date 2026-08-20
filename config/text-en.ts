@@ -42,6 +42,9 @@ export const TEXT_EN = {
     day: "Day",
     claim: "Claim",
     claimed: "Claimed",
+    available: "Available",
+    soon: "Soon",
+    pointsWord: "points",
   },
 
   polls: {

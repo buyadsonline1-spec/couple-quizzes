@@ -42,6 +42,9 @@ export const TEXT_RU = {
     day: "День",
     claim: "Получить",
     claimed: "Получено",
+    available: "Доступно",
+    soon: "Скоро",
+    pointsWord: "очков",
   },
 
   polls: {
