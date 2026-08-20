@@ -119,6 +119,74 @@ export const TEXT_EN = {
   streakInfo: "Streak",
   pairInvite: "Invite partner",
   pairConnected: "Pair connected",
+  maxLevel: "Max level",
+
+  dailyQuestionHint: "Answer together every day and earn bonuses 💞",
+  streakDaysLabel: "Streak",
+  streakDaysWord: "days",
+  youAreInPair: "You are a pair 💕",
+  youCreatedPair: "You created a pair 💞",
+  keepGettingToKnow: "Keep getting to know each other 💫",
+  sendCodeOrLink:
+    "Send the code or link to your partner so they can join your pair.",
+  defaultUserName: "User",
+  connectedFallback: "Connected",
+  partnerNotConnectedYet: "Partner hasn't connected yet",
+  partnerNotJoinedYet: "Partner hasn't joined yet",
+  compatibilityCalculatedPrefix: "Calculated from ",
+  compatibilityCalculatedMid: " of ",
+  compatibilityCalculatedSuffix: " topics",
+  takePollsPrompt:
+    "Take polls together and find out how compatible you are 💞",
+  takePollsButton: "Take polls",
+  themesCompletedPrefix: "Topics completed: ",
+
+  compatibilityInfo: {
+    notCalculatedTitle: "Compatibility not calculated yet",
+    notCalculatedText:
+      "Complete at least one shared poll together and you'll see your compatibility percentage, pair type, and a breakdown by topic here.",
+    headerLabel: "Pair compatibility",
+    strongSides: "Your pair's strengths",
+    growthZones: "What's worth paying attention to",
+    byThemes: "Compatibility by topic",
+  },
+
+  invite: {
+    subtitle:
+      "First create an invite code, then send the link or give the code to your partner.",
+    enterCodeAlert: "Enter the invite code",
+    createFirstAlert: "First create an invite code",
+    linkCopiedAlert: "Link copied",
+    copyFailedAlert: "Couldn't copy the link",
+    createStepTitle: "1. Create an invite code",
+    createStepText: "This will create your invite to connect your pair.",
+    creating: "Creating...",
+    createCode: "Create invite code",
+    linkTitle: "Invite link",
+    copy: "Copy",
+    shareLink: "Send link",
+    joinByCode: "Join by code",
+    enterCodeTitle: "Enter invite code",
+    enterCodeText: "If you were sent a code, enter it here.",
+    codePlaceholder: "E.g.: AB12CD",
+    joining: "Connecting...",
+    join: "Connect",
+  },
+
+  streakInfoScreen: {
+    title: "Pair streak",
+    daysShort: "d",
+    description:
+      "You're both answering the question of the day back to back and building your pair's streak.",
+    nextBonus: "Next bonus",
+    maxReached: "Maximum milestone reached 👑",
+    milestonesTitle: "Streak milestones",
+    milestonesDesc:
+      "The longer the streak, the more bonus points your pair earns.",
+    reached: "earned",
+    next: "next",
+    daysInARow: "days in a row",
+  },
 },
 
   referrals: {

@@ -3336,7 +3336,7 @@ function PairScreen({
     color: "#4b446a",
   }}
 >
-  Отвечайте вместе каждый день и получайте бонусы 💞
+  {t.pair.dailyQuestionHint}
 </div>
 <div
   style={{
@@ -3346,7 +3346,7 @@ function PairScreen({
     fontWeight: 700,
   }}
 >
-  🔥 Серия: {dailyPairStreak?.current || 0} дней
+  🔥 {t.pair.streakDaysLabel}: {dailyPairStreak?.current || 0} {t.pair.streakDaysWord}
 </div>
 
       {!hasPairCreated ? (
@@ -3415,7 +3415,7 @@ function PairScreen({
     color: "#1f1d3a",
   }}
 >
-  {hasFullPair ? "Вы в паре 💕" : "Вы создали пару 💞"}
+  {hasFullPair ? t.pair.youAreInPair : t.pair.youCreatedPair}
 </div>
 
 <div
@@ -3425,7 +3425,7 @@ function PairScreen({
     color: "#4b446a",
   }}
 >
-  Продолжайте узнавать друг друга 💫
+  {t.pair.keepGettingToKnow}
 </div>
 
               {!hasPartnerConnected && (
@@ -3437,8 +3437,7 @@ function PairScreen({
                     fontSize: 14,
                   }}
                 >
-                  Отправь код или ссылку партнёру, чтобы он подключился к вашей
-                  паре.
+                  {t.pair.sendCodeOrLink}
                 </div>
               )}
 
@@ -3460,7 +3459,7 @@ function PairScreen({
                   )}
 
                   <div style={{ minWidth: 0 }}>
-                    <div style={{ color: "#2c2647", fontWeight: 700 }}>Ты</div>
+                    <div style={{ color: "#2c2647", fontWeight: 700 }}>{t.pair.you}</div>
                     <div
                       style={{
                         color: "#1c1733",
@@ -3473,7 +3472,7 @@ function PairScreen({
                     >
                       {[user?.first_name, user?.last_name]
                         .filter(Boolean)
-                        .join(" ") || "Пользователь"}
+                        .join(" ") || t.pair.defaultUserName}
                     </div>
                     <div
                       style={{
@@ -3527,7 +3526,7 @@ function PairScreen({
 
                   <div style={{ minWidth: 0 }}>
                     <div style={{ color: "#2c2647", fontWeight: 700 }}>
-                      Партнёр
+                      {t.pair.partner}
                     </div>
                     <div
                       style={{
@@ -3540,12 +3539,12 @@ function PairScreen({
                       }}
                     >
                       {hasPartnerConnected
-                        ? `${pair.partner?.firstName || "Подключён"}${
+                        ? `${pair.partner?.firstName || t.pair.connectedFallback}${
                             pair.partner?.lastName
                               ? ` ${pair.partner.lastName}`
                               : ""
                           }`
-                        : "Партнёр ещё не подключился"}
+                        : t.pair.partnerNotConnectedYet}
                     </div>
                     <div
                       style={{
@@ -3557,7 +3556,7 @@ function PairScreen({
                     >
                       {hasPartnerConnected
   ? pair.partner?.username && `@${pair.partner.username}`
-  : "Партнёр ещё не присоединился"}
+  : t.pair.partnerNotJoinedYet}
                     </div>
                   </div>
                 </div>
@@ -3608,7 +3607,7 @@ function PairScreen({
                         fontWeight: 700,
                       }}
                     >
-                      Текущий уровень
+                      {t.pair.currentLevel}
                     </div>
                     <div
                       style={{
@@ -3725,8 +3724,8 @@ function PairScreen({
                     }}
                   >
                     {compatibilityProfile.completedThemes > 0
-  ? `Рассчитано по ${compatibilityProfile.completedThemes} из ${compatibilityProfile.totalThemes} тем`
-  : "Пройдите парные опросы и узнайте, насколько вы подходите друг другу 💞"}
+  ? `${t.pair.compatibilityCalculatedPrefix}${compatibilityProfile.completedThemes}${t.pair.compatibilityCalculatedMid}${compatibilityProfile.totalThemes}${t.pair.compatibilityCalculatedSuffix}`
+  : t.pair.takePollsPrompt}
                   </div>
 
                   {compatibilityProfile.completedThemes === 0 && (
@@ -3739,7 +3738,7 @@ function PairScreen({
                         marginTop: 14,
                       }}
                     >
-                      Пройти опросы
+                      {t.pair.takePollsButton}
                     </button>
                   )}
                 </div>
@@ -3807,7 +3806,7 @@ function PairScreen({
                       lineHeight: 1.45,
                     }}
                   >
-                    Тем пройдено: {pairStats.completedThemes}
+                    {t.pair.themesCompletedPrefix}{pairStats.completedThemes}
                   </div>
                 </div>
               )}
@@ -3835,6 +3834,8 @@ function PairCompatibilityInfoScreen({
   onBack: () => void;
   onOpenPolls: () => void;
 }) {
+  const market = getMarket();
+  const t = market === "fi" ? TEXT_FI : market === "en" ? TEXT_EN : TEXT_RU;
   const profile = buildCompatibilityProfile(appState.pollAnswers || {});
   const hasData = profile.completedThemes > 0;
 
@@ -3860,7 +3861,7 @@ function PairCompatibilityInfoScreen({
               color: "#1f1d3a",
             }}
           >
-            Совместимость пока не рассчитана
+            {t.pair.compatibilityInfo.notCalculatedTitle}
           </div>
 
           <div
@@ -3871,8 +3872,7 @@ function PairCompatibilityInfoScreen({
               color: "#5b547d",
             }}
           >
-            Пройдите вместе хотя бы один общий парный опрос — и здесь появится
-            процент совместимости, тип пары и разбор по темам.
+            {t.pair.compatibilityInfo.notCalculatedText}
           </div>
 
           <button
@@ -3880,7 +3880,7 @@ function PairCompatibilityInfoScreen({
             onClick={onOpenPolls}
             style={{ ...primaryButtonStyle, width: "100%", marginTop: 20 }}
           >
-            Пройти опросы
+            {t.pair.takePollsButton}
           </button>
 
           <div
@@ -3890,12 +3890,12 @@ function PairCompatibilityInfoScreen({
               color: "#7a7396",
             }}
           >
-            Рассчитано по 0 из {profile.totalThemes} тем
+            {t.pair.compatibilityCalculatedPrefix}0{t.pair.compatibilityCalculatedMid}{profile.totalThemes}{t.pair.compatibilityCalculatedSuffix}
           </div>
         </div>
 
         <button onClick={onBack} style={secondaryButtonStyle}>
-          Назад
+          {t.common.back}
         </button>
       </div>
     );
@@ -3913,7 +3913,7 @@ function PairCompatibilityInfoScreen({
         }}
       >
         <div style={{ fontSize: 15, fontWeight: 800, color: "#5b547d" }}>
-          💞 Совместимость пары
+          💞 {t.pair.compatibilityInfo.headerLabel}
         </div>
 
         <div
@@ -3967,13 +3967,13 @@ function PairCompatibilityInfoScreen({
             color: "#615a86",
           }}
         >
-          Рассчитано по {profile.completedThemes} из {profile.totalThemes} тем
+          {t.pair.compatibilityCalculatedPrefix}{profile.completedThemes}{t.pair.compatibilityCalculatedMid}{profile.totalThemes}{t.pair.compatibilityCalculatedSuffix}
         </div>
       </div>
 
       <div style={{ ...cardBaseStyle(), padding: 16 }}>
         <div style={{ fontSize: 16, fontWeight: 900, color: "#1f1d3a" }}>
-          ✨ Сильные стороны пары
+          ✨ {t.pair.compatibilityInfo.strongSides}
         </div>
 
         <div
@@ -4004,7 +4004,7 @@ function PairCompatibilityInfoScreen({
 
       <div style={{ ...cardBaseStyle(), padding: 16 }}>
         <div style={{ fontSize: 16, fontWeight: 900, color: "#1f1d3a" }}>
-          🌱 На что стоит обратить внимание
+          🌱 {t.pair.compatibilityInfo.growthZones}
         </div>
 
         <div
@@ -4035,7 +4035,7 @@ function PairCompatibilityInfoScreen({
 
       <div style={{ ...cardBaseStyle(), padding: 16 }}>
         <div style={{ fontSize: 16, fontWeight: 900, color: "#1f1d3a" }}>
-          📊 Совместимость по темам
+          📊 {t.pair.compatibilityInfo.byThemes}
         </div>
 
         <div style={{ marginTop: 12, display: "grid", gap: 10 }}>
@@ -4089,7 +4089,7 @@ function PairCompatibilityInfoScreen({
       </div>
 
       <button onClick={onBack} style={secondaryButtonStyle}>
-        Назад
+        {t.common.back}
       </button>
     </div>
   );
@@ -4133,7 +4133,7 @@ const REWARD_CATEGORIES =
     const code = joinCode.trim().toUpperCase();
 
     if (!code) {
-      alert("Введите код приглашения");
+      alert(t.pair.invite.enterCodeAlert);
       return;
     }
 
@@ -4148,21 +4148,21 @@ const REWARD_CATEGORIES =
 
   async function handleCopyLink() {
     if (!inviteLink) {
-      alert("Сначала создай код приглашения");
+      alert(t.pair.invite.createFirstAlert);
       return;
     }
 
     try {
       await navigator.clipboard.writeText(inviteLink);
-      alert("Ссылка скопирована");
+      alert(t.pair.invite.linkCopiedAlert);
     } catch {
-      alert("Не удалось скопировать ссылку");
+      alert(t.pair.invite.copyFailedAlert);
     }
   }
 
   function handleShareLink() {
     if (!inviteLink) {
-      alert("Сначала создай код приглашения");
+      alert(t.pair.invite.createFirstAlert);
       return;
     }
 
@@ -4176,7 +4176,7 @@ const REWARD_CATEGORIES =
     <div style={{ padding: 16, display: "grid", gap: 14 }}>
       <div style={{ ...cardBaseStyle(), padding: 18 }}>
         <div style={{ fontSize: 28, fontWeight: 900, color: "#1f1d3a" }}>
-          Пригласить партнёра
+          {t.pair.invitePartner}
         </div>
         <div
           style={{
@@ -4186,14 +4186,14 @@ const REWARD_CATEGORIES =
             lineHeight: 1.45,
           }}
         >
-          Сначала создай код приглашения, потом отправь ссылку или дай код партнёру.
+          {t.pair.invite.subtitle}
         </div>
       </div>
 
       {!pair.inviteCode && (
         <div style={{ ...cardBaseStyle(), padding: 18 }}>
           <div style={{ fontSize: 18, fontWeight: 900, color: "#1f1d3a" }}>
-            1. Создать код приглашения
+            {t.pair.invite.createStepTitle}
           </div>
 
           <div
@@ -4204,7 +4204,7 @@ const REWARD_CATEGORIES =
               fontSize: 14,
             }}
           >
-            Это создаст твоё приглашение для подключения пары.
+            {t.pair.invite.createStepText}
           </div>
 
           <button
@@ -4218,7 +4218,7 @@ const REWARD_CATEGORIES =
               cursor: creating ? "not-allowed" : "pointer",
             }}
           >
-            {creating ? "Создаём..." : "Создать код приглашения"}
+            {creating ? t.pair.invite.creating : t.pair.invite.createCode}
           </button>
         </div>
       )}
@@ -4232,7 +4232,7 @@ const REWARD_CATEGORIES =
               color: "#1f1d3a",
             }}
           >
-            Ссылка-приглашение
+            {t.pair.invite.linkTitle}
           </div>
 
           <div
@@ -4269,7 +4269,7 @@ const REWARD_CATEGORIES =
                 fontSize: 16,
               }}
             >
-              Копировать
+              {t.pair.invite.copy}
             </button>
 
             <button
@@ -4281,7 +4281,7 @@ const REWARD_CATEGORIES =
                 padding: "14px 16px",
               }}
             >
-              Отправить ссылку
+              {t.pair.invite.shareLink}
             </button>
           </div>
         </div>
@@ -4291,13 +4291,13 @@ const REWARD_CATEGORIES =
         onClick={() => setShowJoinInput((prev) => !prev)}
         style={{ ...primaryButtonStyle, width: "100%", marginTop: 0 }}
       >
-        Добавить по коду
+        {t.pair.invite.joinByCode}
       </button>
 
       {showJoinInput && (
         <div style={{ ...cardBaseStyle(), padding: 18 }}>
           <div style={{ fontSize: 18, fontWeight: 900, color: "#1f1d3a" }}>
-            Ввести код приглашения
+            {t.pair.invite.enterCodeTitle}
           </div>
 
           <div
@@ -4308,13 +4308,13 @@ const REWARD_CATEGORIES =
               fontSize: 14,
             }}
           >
-            Если тебе отправили код, введи его здесь.
+            {t.pair.invite.enterCodeText}
           </div>
 
           <input
             value={joinCode}
             onChange={(e) => setJoinCode(e.target.value.toUpperCase())}
-            placeholder="Например: AB12CD"
+            placeholder={t.pair.invite.codePlaceholder}
             style={{
               width: "100%",
               marginTop: 12,
@@ -4341,7 +4341,7 @@ const REWARD_CATEGORIES =
               cursor: joining ? "not-allowed" : "pointer",
             }}
           >
-            {joining ? "Подключаем..." : "Подключиться"}
+            {joining ? t.pair.invite.joining : t.pair.invite.join}
           </button>
         </div>
       )}
@@ -4362,6 +4362,8 @@ function PairStreakInfoScreen({
   appState: AppState;
   onBack: () => void;
 }) {
+  const market = getMarket();
+  const t = market === "fi" ? TEXT_FI : market === "en" ? TEXT_EN : TEXT_RU;
 
   const [showStreakInfo, setShowStreakInfo] = useState(false);
   const milestones = [
@@ -4410,7 +4412,7 @@ function PairStreakInfoScreen({
             color: "#6c6487",
           }}
         >
-          🔥 Серия пары
+          🔥 {t.pair.streakInfoScreen.title}
         </div>
 
         <div
@@ -4423,7 +4425,7 @@ function PairStreakInfoScreen({
             letterSpacing: "-0.03em",
           }}
         >
-          {current} дн.
+          {current} {t.pair.streakInfoScreen.daysShort}
         </div>
 
         <div
@@ -4434,7 +4436,7 @@ function PairStreakInfoScreen({
             color: "rgba(43,33,72,0.72)",
           }}
         >
-          Вы оба отвечаете на вопрос дня подряд и прокачиваете серию пары.
+          {t.pair.streakInfoScreen.description}
         </div>
 
         <div
@@ -4462,7 +4464,7 @@ function PairStreakInfoScreen({
                 color: "#6c6487",
               }}
             >
-              Следующий бонус
+              {t.pair.streakInfoScreen.nextBonus}
             </div>
 
             <div
@@ -4473,8 +4475,8 @@ function PairStreakInfoScreen({
               }}
             >
               {nextMilestone
-                ? `${nextMilestone.days} дн. · +${nextMilestone.reward} очков`
-                : "Максимальный рубеж достигнут 👑"}
+                ? `${nextMilestone.days} ${t.pair.streakInfoScreen.daysShort} · +${nextMilestone.reward} ${t.bonus.pointsWord}`
+                : t.pair.streakInfoScreen.maxReached}
             </div>
           </div>
 
@@ -4514,7 +4516,7 @@ function PairStreakInfoScreen({
             color: "#1f1d3a",
           }}
         >
-          🏆 Рубежи серии
+          🏆 {t.pair.streakInfoScreen.milestonesTitle}
         </div>
 
         <div
@@ -4525,7 +4527,7 @@ function PairStreakInfoScreen({
             color: "rgba(43,33,72,0.72)",
           }}
         >
-          Чем длиннее серия, тем больше бонусных очков получает ваша пара.
+          {t.pair.streakInfoScreen.milestonesDesc}
         </div>
 
        
@@ -4602,7 +4604,7 @@ function PairStreakInfoScreen({
                         borderRadius: 999,
                       }}
                     >
-                      получено
+                      {t.pair.streakInfoScreen.reached}
                     </div>
                   )}
 
@@ -4617,7 +4619,7 @@ function PairStreakInfoScreen({
                         borderRadius: 999,
                       }}
                     >
-                      следующий
+                      {t.pair.streakInfoScreen.next}
                     </div>
                   )}
                 </div>
@@ -4642,7 +4644,7 @@ function PairStreakInfoScreen({
                     color: "#6c6487",
                   }}
                 >
-                  дней подряд
+                  {t.pair.streakInfoScreen.daysInARow}
                 </div>
 
                 <div

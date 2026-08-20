@@ -121,6 +121,74 @@ export const TEXT_FI = {
     streakInfo: "Putki",
     pairInvite: "Kutsu kumppani",
     pairConnected: "Pari yhdistetty",
+    maxLevel: "Enimmäistaso",
+
+    dailyQuestionHint: "Vastatkaa yhdessä joka päivä ja saatte bonuksia 💞",
+    streakDaysLabel: "Putki",
+    streakDaysWord: "päivää",
+    youAreInPair: "Olette pari 💕",
+    youCreatedPair: "Loitte parin 💞",
+    keepGettingToKnow: "Jatkakaa tutustumista toisiinne 💫",
+    sendCodeOrLink:
+      "Lähetä koodi tai linkki kumppanillesi, jotta hän voi liittyä pariinne.",
+    defaultUserName: "Käyttäjä",
+    connectedFallback: "Yhdistetty",
+    partnerNotConnectedYet: "Kumppani ei ole vielä yhdistänyt",
+    partnerNotJoinedYet: "Kumppani ei ole vielä liittynyt",
+    compatibilityCalculatedPrefix: "Laskettu ",
+    compatibilityCalculatedMid: "/",
+    compatibilityCalculatedSuffix: " aiheesta",
+    takePollsPrompt:
+      "Vastatkaa yhdessä kyselyihin ja selvittäkää, kuinka yhteensopivia olette 💞",
+    takePollsButton: "Vastaa kyselyihin",
+    themesCompletedPrefix: "Aiheita suoritettu: ",
+
+    compatibilityInfo: {
+      notCalculatedTitle: "Yhteensopivuutta ei ole vielä laskettu",
+      notCalculatedText:
+        "Vastatkaa yhdessä ainakin yhteen yhteiseen kyselyyn, niin näette täällä yhteensopivuusprosentin, parityypin ja aihekohtaisen erittelyn.",
+      headerLabel: "Parin yhteensopivuus",
+      strongSides: "Parinne vahvuudet",
+      growthZones: "Mihin kannattaa kiinnittää huomiota",
+      byThemes: "Yhteensopivuus aiheittain",
+    },
+
+    invite: {
+      subtitle:
+        "Luo ensin kutsukoodi, lähetä sitten linkki tai anna koodi kumppanillesi.",
+      enterCodeAlert: "Syötä kutsukoodi",
+      createFirstAlert: "Luo ensin kutsukoodi",
+      linkCopiedAlert: "Linkki kopioitu",
+      copyFailedAlert: "Linkin kopiointi epäonnistui",
+      createStepTitle: "1. Luo kutsukoodi",
+      createStepText: "Tämä luo kutsun parin yhdistämistä varten.",
+      creating: "Luodaan...",
+      createCode: "Luo kutsukoodi",
+      linkTitle: "Kutsulinkki",
+      copy: "Kopioi",
+      shareLink: "Lähetä linkki",
+      joinByCode: "Liity koodilla",
+      enterCodeTitle: "Syötä kutsukoodi",
+      enterCodeText: "Jos sait koodin, syötä se tähän.",
+      codePlaceholder: "Esim.: AB12CD",
+      joining: "Yhdistetään...",
+      join: "Yhdistä",
+    },
+
+    streakInfoScreen: {
+      title: "Parin putki",
+      daysShort: "pv",
+      description:
+        "Vastaatte molemmat päivän kysymykseen peräkkäisinä päivinä ja kasvatatte parin putkea.",
+      nextBonus: "Seuraava bonus",
+      maxReached: "Enimmäisraja saavutettu 👑",
+      milestonesTitle: "Putken rajapyykit",
+      milestonesDesc:
+        "Mitä pidempi putki, sitä enemmän bonuspisteitä parinne saa.",
+      reached: "saatu",
+      next: "seuraava",
+      daysInARow: "päivää putkeen",
+    },
   },
 
   referrals: {
