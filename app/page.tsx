@@ -6812,6 +6812,8 @@ function DailyBonusModal({
 // Xcode, план явно откладывает это, чтобы не блокировать базовую
 // обёртку).
 function AuthScreen() {
+  const market = getMarket();
+  const t = market === "fi" ? TEXT_FI : market === "en" ? TEXT_EN : TEXT_RU;
   const [mode, setMode] = useState<"sign-in" | "sign-up">("sign-in");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -6829,7 +6831,7 @@ function AuthScreen() {
 
   async function handleSubmit() {
     if (!email || !password) {
-      setError("Введите email и пароль");
+      setError(t.auth.emailPasswordRequired);
       return;
     }
 
@@ -6857,7 +6859,7 @@ function AuthScreen() {
           // (антиэнумерация) — показываем один и тот же нейтральный
           // текст в обоих случаях, ничего не раскрывая.
           setCheckEmailMessage(
-            `Мы отправили письмо со ссылкой подтверждения на ${email}. Перейдите по ней, а затем войдите в аккаунт.`
+            `${t.auth.checkEmailPrefix}${email}${t.auth.checkEmailSuffix}`
           );
           setLoading(false);
           return;
@@ -6883,7 +6885,7 @@ function AuthScreen() {
       window.location.reload();
     } catch (err) {
       console.error("AuthScreen submit error:", err);
-      setError("Что-то пошло не так, попробуйте ещё раз");
+      setError(t.auth.genericError);
       setLoading(false);
     }
   }
@@ -6926,7 +6928,7 @@ function AuthScreen() {
       window.location.reload();
     } catch (err) {
       console.error("Apple sign-in error:", err);
-      setError("Не удалось войти через Apple ID, попробуйте ещё раз");
+      setError(t.auth.appleSignInError);
       setLoading(false);
     }
   }
@@ -6955,7 +6957,7 @@ function AuthScreen() {
               color: "#1f1d3a",
             }}
           >
-            Проверьте почту
+            {t.auth.checkEmailTitle}
           </div>
           <div style={{ marginTop: 10, color: "#3a345c", fontSize: 15 }}>
             {checkEmailMessage}
@@ -6968,7 +6970,7 @@ function AuthScreen() {
             }}
             style={{ ...primaryButtonStyle, width: "100%", marginTop: 18 }}
           >
-            Понятно
+            {t.auth.gotIt}
           </button>
         </div>
       </div>
@@ -6993,12 +6995,12 @@ function AuthScreen() {
           Couple Quizzes
         </div>
         <div style={{ marginTop: 6, color: "#3a345c", fontSize: 14 }}>
-          {mode === "sign-up" ? "Создайте аккаунт" : "Войдите в аккаунт"}
+          {mode === "sign-up" ? t.auth.signUpTitle : t.auth.signInTitle}
         </div>
 
         <input
           type="email"
-          placeholder="Email"
+          placeholder={t.auth.emailPlaceholder}
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           style={{
@@ -7013,7 +7015,7 @@ function AuthScreen() {
         />
         <input
           type="password"
-          placeholder="Пароль"
+          placeholder={t.auth.passwordPlaceholder}
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           style={{
@@ -7044,10 +7046,10 @@ function AuthScreen() {
           }}
         >
           {loading
-            ? "Подождите..."
+            ? t.auth.submitLoading
             : mode === "sign-up"
-              ? "Создать аккаунт"
-              : "Войти"}
+              ? t.auth.submitSignUp
+              : t.auth.submit}
         </button>
 
         <div
@@ -7059,7 +7061,7 @@ function AuthScreen() {
             fontSize: 12,
           }}
         >
-          или
+          {t.auth.or}
         </div>
 
         <button
@@ -7077,7 +7079,7 @@ function AuthScreen() {
             gap: 8,
           }}
         >
-          <span style={{ fontSize: 18 }}></span> Войти через Apple ID
+          <span style={{ fontSize: 18 }}></span> {t.auth.appleSignIn}
         </button>
 
         <button
@@ -7092,8 +7094,8 @@ function AuthScreen() {
           }}
         >
           {mode === "sign-up"
-            ? "У меня уже есть аккаунт"
-            : "Создать новый аккаунт"}
+            ? t.auth.switchToSignIn
+            : t.auth.switchToSignUp}
         </button>
       </div>
     </div>
