@@ -27,6 +27,9 @@ export const TEXT_RU = {
     loading: "Загрузка...",
     noData: "Пока нет данных",
     done: "Готово",
+    show: "Показать",
+    hide: "Скрыть",
+    toMenu: "В меню",
   },
 
   home: {
@@ -34,6 +37,19 @@ export const TEXT_RU = {
     toNextLevel: "До следующего уровня",
     yourPoints: "Ваши очки",
     newbies: "Новички",
+    maxLevelReached: "Максимальный уровень",
+  },
+
+  welcome: {
+    subtitle: "Узнайте друг друга ещё лучше 💞",
+    featurePolls: "Парные опросы",
+    featureGames: "Игры для двоих",
+    featureTop: "Соревнуйтесь в топе",
+  },
+
+  aiPsychologist: {
+    menuTitle: "AI-психолог для пары",
+    menuSubtitle: "Расскажи, что происходит — разберём вместе",
   },
 
   bonus: {
@@ -81,6 +97,18 @@ export const TEXT_RU = {
     questions90Desc:
       "Случайные глубокие вопросы про любовь, чувства и отношения.",
     start: "Начать",
+    playAgain: "Сыграть снова",
+    nextPage: "Следующая →",
+    prevPage: "← Предыдущая",
+    finishedTitle: "Игра завершена 🎮",
+    completedSuffix: "пройдена.",
+    correctAnswersLabel: "Правильных ответов:",
+    resultLabel: "Результат:",
+    rewardLabel: "Награда:",
+    claimPoints: "Забрать очки",
+    questionProgress: "Вопрос {current} из {total}",
+    nextButton: "Дальше",
+    exitGame: "Выйти из игры",
   },
 
   rewards: {
@@ -91,6 +119,28 @@ export const TEXT_RU = {
     spin: "Крутить колесо",
     notEnoughPoints: "Недостаточно очков",
     yourBalance: "Ваш баланс",
+
+    wheelScreen: {
+      spinCostPrefix: "Одно вращение стоит",
+      pointsLabel: "⭐ Очков:",
+      todayLabel: "Сегодня:",
+      freeSpinsLabel: " · бесплатных прокрутов:",
+      spinFailedMessage: "Не удалось прокрутить колесо. Попробуй ещё раз.",
+      spinningLabel: "Крутим...",
+      spinButtonPrefix: "Крутить за",
+      bonusPointsMessage: "Бонус: +{value} очков!",
+      bonusSpinMessage:
+        "Бонус: +1 бесплатный прокрут! Следующее вращение будет бесплатным и не потратит дневной лимит.",
+      prizeWonMessage: "Тебе выпал приз: {title} ({categoryTitle})",
+      wonRewardsTitle: "Выпавшие призы",
+      emptyPrizesText: "Пока здесь пусто. Заработай очки и крутанни колесо.",
+      categoryLabel: "Категория:",
+      collapsePrizes: "Свернуть призы",
+      showAllPrizes: "Показать все призы",
+      congratsTitle: "🎉 Поздравляем!",
+      wonPrizeText: "Вы выиграли приз 🎁 Напишите менеджеру, чтобы получить его",
+      claimPrizeButton: "Забрать приз 🎁",
+    },
   },
 
  pair: {
@@ -213,6 +263,52 @@ export const TEXT_RU = {
     topPairsReward: "Пары из топа получают +500 очков",
     weeklyRewardHint:
       "Награда появляется только после завершения недели и только для пар из топ-3 прошлой недели",
+
+    screen: {
+      soloSubtitle:
+        "Соревнуйся с другими игроками и поднимайся в личном рейтинге.",
+      pairSubtitle:
+        "Зарабатывайте очки вместе и поднимайте вашу пару в рейтинге.",
+      refresh: "Обновить",
+      soloTabLabel: "👤 Сольный топ",
+      pairTabLabel: "💕 Парный топ",
+      currentWeekBadge: "Текущая неделя",
+      soloRankingTitle: "👤 Рейтинг игроков",
+      pairRankingTitle: "💕 Рейтинг пар",
+      soloEmpty:
+        "В сольном рейтинге пока никого нет. Пройди первый тест, опрос или игру!",
+      pairEmpty:
+        "В парном рейтинге пока никого нет. Подключи партнёра и начните зарабатывать очки вместе!",
+      youSuffix: " (Вы)",
+      leaderOfWeek: "Лидер недели",
+      placeTemplate: "Место #{place}",
+      collapseRanking: "Свернуть рейтинг",
+      showTop10: "Показать топ-10",
+      yourPlaceTitle: "👤 Твоё место",
+      yourPlaceText:
+        "Ты занимаешь {place}-е место и заработал {points} очков за текущую неделю.",
+      yourPlaceEmptyText:
+        "Ты пока не участвуешь в сольном рейтинге. Заработай первые очки!",
+      yourPairPlaceTitle: "💕 Место вашей пары",
+      pairNeedsPartnerText:
+        "Сначала подключи партнёра, чтобы участвовать в парном рейтинге.",
+      yourPairPlaceText:
+        "Ваша пара занимает {place}-е место и заработала {points} очков за текущую неделю.",
+      pairNoRankYetText:
+        "Ваша пара пока не появилась в рейтинге. Заработайте первые совместные очки!",
+      weeklyRewardTitle: "🎁 Награда недели",
+      soloRewardComingSoon:
+        "Награды сольного рейтинга скоро появятся. Сейчас можно соревноваться за место в топе.",
+      topThreeRewardPrefix: "Пары, занявшие первые три места, получают",
+      connectPartnerForRankingText:
+        "Подключите партнёра, чтобы участвовать в парном рейтинге.",
+      rewardAlreadyClaimedText: "Награда за прошлую неделю уже получена ✅",
+      rewardAvailableText:
+        "Ваша пара вошла в топ-3 прошлой недели! Можно забрать награду 🎉",
+      rewardOnlyTopThreeText:
+        "Награда доступна только парам из топ-3 по итогам прошлой недели.",
+      claimRewardButton: "Забрать +500 очков",
+    },
   },
 
   profile: {
@@ -233,8 +329,91 @@ export const TEXT_RU = {
   notifications: {
     newLevel: "Новый уровень!",
     rewardReceived: "Награда получена!",
-    sectionCompleted: "Раздел полностью пройден!",
+    sectionCompleted: "Раздел пройден!",
     bonusReceived: "Бонус получен!",
+    great: "Класс!",
+  },
+
+  dailyPairQuestion: {
+    title: "Вопрос дня 💞",
+    subtitle:
+      "Вы оба отвечаете на один и тот же вопрос. Когда ответят оба — можно сравнить результат.",
+    pairRequiredAlert: "Сначала нужно подключить пару",
+    alreadyAnsweredAlert: "Ты уже ответил(а) на вопрос дня",
+    answerLockedAlert: "Ответ на сегодня уже сохранён и его нельзя изменить",
+    streakAlert: "🔥 Серия {days} дней!\n+{points} очков",
+    matchAlert: "💘 Вы совпали!\n+{points} очков",
+    streakAndMatchAlert:
+      "🔥 Серия {days} дней!\n+{streakPoints} очков\n💘 Совпадение ответов!\n+{matchPoints} очков",
+    answeredWord: "ответил(а)",
+    notAnsweredWord: "ещё не ответил(а)",
+    sameAnswerHint: "Вы выбрали один и тот же вариант",
+    differentAnswerHint: "Ваши ответы отличаются — обсудите это 💬",
+    matchedTitle: "💘 Совпадение!",
+    differentTitle: "✨ Разные ответы",
+    pairPointsSuffix: "очков паре",
+    milestoneReached: "Рубеж достигнут!",
+    streakDaysInARow: "Вы отвечаете вместе уже {days} дней подряд 💞",
+    historyTitle: "История",
+    matchedShort: "Совпали 💘",
+    differentShort: "Разные ответы ✨",
+  },
+
+  paywall: {
+    title: "Полный доступ",
+    subtitle:
+      "Вы прошли все бесплатные опросы. Откройте полный доступ к Couple Quizzes.",
+    featurePolls: "🔓 Все опросы",
+    featureGames: "🎮 Все игры",
+    featureTests: "🧠 Все тесты",
+    featureWheel: "🎡 Рулетка призов",
+    featureBonusPoints: "🎁 +500 очков",
+    featureDesign: "🎨 Специальный дизайн",
+    unlockButton: "Разблокировать Premium",
+    choosePaymentSubtitle: "Выбери удобный способ оплаты",
+    openingPayment: "Открываем оплату...",
+    payWithStars: "⭐ Оплатить через Stars",
+    payWithTribute: "💎 Оплатить через Tribute",
+  },
+
+  completionBonus: {
+    prefix: "Ты полностью завершил",
+    pollsWord: " опросы",
+    testsWord: " тесты",
+    sectionWord: " раздел",
+    suffix: " и получаешь бонус!",
+    pairPointsLabel: "очков пары",
+    claimRewardButton: "Забрать награду",
+  },
+
+  errors: {
+    telegramUserNotConfirmed: "Не удалось подтвердить пользователя Telegram",
+    telegramUserNotFound: "Не удалось получить пользователя Telegram",
+    telegramNotDetected: "Не удалось определить Telegram",
+    saveAnswerFailed: "Не удалось сохранить ответ, попробуй ещё раз",
+    pairJoinFailed: "Не удалось подключиться. Проверь код приглашения.",
+    pairJoinedSuccess: "Пара успешно подключена 💕",
+    pairCreateInviteFailedPrefix: "Не удалось создать приглашение:",
+    pairCreateInviteFailed: "Не удалось создать приглашение",
+    wheelSpinFailed: "Не удалось прокрутить колесо, попробуй ещё раз",
+    wheelInsufficientPoints: "Недостаточно очков для вращения колеса.",
+    wheelDailyLimitReached: "Сегодня лимит вращений исчерпан (3 в день).",
+    pairRequiredForSpin: "Сначала нужно создать пару",
+    bonusAlreadyClaimedToday: "Бонус на сегодня уже забран — приходи завтра 💫",
+    bonusClaimFailed: "Не удалось начислить бонус, попробуй ещё раз",
+    noActiveSession: "Нет активной сессии, попробуйте войти заново",
+    purchaseNotConfirmed: "Не удалось подтвердить покупку",
+    paymentCreateFailed: "Не удалось создать оплату",
+    paymentLinkMissing: "Ссылка на оплату не получена",
+    telegramInvoiceUnavailable: "Telegram WebApp openInvoice недоступен",
+    paymentOpenFailed: "Не удалось открыть оплату",
+    linkAppearsAfterProfile: "Ссылка появится после загрузки профиля",
+    inviteLinkCopied: "Ссылка приглашения скопирована",
+  },
+
+  giveaway: {
+    ticketEarned: "🎟️ Вы получили +1 билет за прохождение опроса!",
+    totalTicketsLabel: "Всего билетов:",
   },
 
   genderSelect: {
