@@ -46,6 +46,9 @@ export const TEXT_FI = {
     day: "Päivä",
     claim: "Lunasta",
     claimed: "Lunastettu",
+    available: "Saatavilla",
+    soon: "Pian",
+    pointsWord: "pistettä",
   },
 
   polls: {
