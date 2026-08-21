@@ -6908,7 +6908,7 @@ function AuthScreen() {
         if (authError) {
           console.error("signInWithPassword error:", authError);
           setError(
-            `${authError.message} [status=${(authError as any).status} code=${(authError as any).code} name=${authError.name} email="${JSON.stringify(email)}" pw=${JSON.stringify(password)}]`
+            `${authError.message} [status=${(authError as any).status} code=${(authError as any).code} name=${authError.name} email="${email}" pwlen=${password.length}]`
           );
           setLoading(false);
           return;
