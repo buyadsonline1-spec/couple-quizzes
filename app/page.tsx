@@ -6899,16 +6899,22 @@ function AuthScreen() {
           return;
         }
       } else {
-        const { error: authError } = await supabase.auth.signInWithPassword({
-          email,
-          password,
-        });
+        const { data: signInData, error: authError } =
+          await supabase.auth.signInWithPassword({
+            email,
+            password,
+          });
 
         if (authError) {
-          setError(authError.message);
+          console.error("signInWithPassword error:", authError);
+          setError(
+            `${authError.message} [status=${(authError as any).status} code=${(authError as any).code} name=${authError.name} email="${email}" pwlen=${password.length}]`
+          );
           setLoading(false);
           return;
         }
+
+        console.log("signInWithPassword success:", signInData?.user?.email);
       }
 
       // Простой и надёжный способ подхватить новую сессию — весь
