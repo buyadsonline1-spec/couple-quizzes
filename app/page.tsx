@@ -5454,7 +5454,7 @@ const t = market === "fi" ? TEXT_FI : market === "en" ? TEXT_EN : TEXT_RU;
     >
       <div>
         <div style={{ fontSize: 24, fontWeight: 900, color: "#1f1d3a" }}>
-          Вопрос дня 💞
+          {t.dailyPairQuestion.title}
         </div>
         <div
           style={{
@@ -5597,7 +5597,7 @@ const t = market === "fi" ? TEXT_FI : market === "en" ? TEXT_EN : TEXT_RU;
           lineHeight: 1,
         }}
       >
-        {appState.dailyPairStreak.current} дн.
+        {appState.dailyPairStreak.current} {t.pair.streakInfoScreen.daysShort}
       </div>
 
       <div
@@ -5608,7 +5608,7 @@ const t = market === "fi" ? TEXT_FI : market === "en" ? TEXT_EN : TEXT_RU;
           color: "rgba(36,27,64,0.72)",
         }}
       >
-        Оба ответили на вопрос дня подряд
+        {t.pair.streakInfoScreen.bothAnsweredStreak}
       </div>
     </div>
 
@@ -5754,7 +5754,7 @@ const t = market === "fi" ? TEXT_FI : market === "en" ? TEXT_EN : TEXT_RU;
                 color: "#1f1d3a",
               }}
             >
-              Рубеж достигнут!
+              {t.dailyPairQuestion.milestoneReached}
             </div>
 
             <div
@@ -5765,7 +5765,10 @@ const t = market === "fi" ? TEXT_FI : market === "en" ? TEXT_EN : TEXT_RU;
     lineHeight: 1.45,
   }}
 >
-  Вы отвечаете вместе уже {appState.dailyPairStreak.current} дней подряд 💞
+  {t.dailyPairQuestion.streakDaysInARow.replace(
+    "{days}",
+    String(appState.dailyPairStreak.current)
+  )}
 </div>
 
 <div
@@ -5792,7 +5795,7 @@ const t = market === "fi" ? TEXT_FI : market === "en" ? TEXT_EN : TEXT_RU;
       }}
     >
       <div style={{ fontSize: 18, fontWeight: 900, color: "#1f1d3a" }}>
-        История
+        {t.pair.historyTitle}
       </div>
 
       <button
@@ -5915,10 +5918,10 @@ function PollsEntryScreen({
     <div style={{ padding: 16, display: "grid", gap: 14 }}>
       <div style={{ ...cardBaseStyle(), padding: 18 }}>
         <div style={{ fontSize: 28, fontWeight: 900, color: "#1f1d3a" }}>
-          Опросы
+          {t.polls.title}
         </div>
         <div style={{ marginTop: 8, color: "#3a345c", fontSize: 15, lineHeight: 1.45 }}>
-          Выберите, кто сейчас проходит опрос.
+          {t.polls.chooseWhoTakes}
         </div>
       </div>
 
@@ -8470,7 +8473,7 @@ function handleLoveQuestionFinish() {
       <div style={{ fontSize: 24 }}>РАБОТАЕТ ПСИХОЛОГ 🧠</div>
 
       <button onClick={() => setActiveGameId(null)}>
-        Назад
+        {t.common.back}
       </button>
     </div>
   );
@@ -8571,7 +8574,7 @@ function handleLoveQuestionFinish() {
           padding: "10px 16px",
         }}
       >
-        Назад
+        {t.common.back}
       </button>
 
       <button
@@ -8583,7 +8586,7 @@ function handleLoveQuestionFinish() {
         
         }}
       >
-        Следующая →
+        {t.games.nextPage}
       </button>
     </>
   ) : (
@@ -8596,7 +8599,7 @@ function handleLoveQuestionFinish() {
           padding: "10px 16px",
         }}
       >
-        ← Предыдущая
+        {t.games.prevPage}
       </button>
 
       <button
@@ -8607,7 +8610,7 @@ function handleLoveQuestionFinish() {
           padding: "10px 16px",
         }}
       >
-        В меню
+        {t.common.toMenu}
       </button>
     </>
   )}
@@ -8653,7 +8656,7 @@ function handleLoveQuestionFinish() {
     <div style={{ padding: 16, display: "grid", gap: 14 }}>
       <div style={{ ...cardBaseStyle(), padding: 18 }}>
         <div style={{ fontSize: 28, fontWeight: 900, color: "#1f1d3a" }}>
-          Экспресс-чек отношений 🩺
+          {t.aiPsychologist.checkTitle}
         </div>
 
         <div
@@ -8664,8 +8667,7 @@ function handleLoveQuestionFinish() {
             fontSize: 14,
           }}
         >
-          Ответьте на несколько вопросов, и психолог поможет понять,
-          что сейчас происходит в ваших отношениях.
+          {t.aiPsychologist.checkIntro}
         </div>
       </div>
 
@@ -8678,7 +8680,9 @@ function handleLoveQuestionFinish() {
               fontWeight: 800,
             }}
           >
-            Вопрос {aiStep + 1} из {RELATIONSHIP_CHECK_QUESTIONS.length}
+            {t.aiPsychologist.questionOfPrefix} {aiStep + 1}{" "}
+            {t.aiPsychologist.questionOfMid}{" "}
+            {RELATIONSHIP_CHECK_QUESTIONS.length}
           </div>
 
           <div
@@ -8721,7 +8725,7 @@ function handleLoveQuestionFinish() {
                 fontWeight: 800,
               }}
             >
-              Ваш результат
+              {t.aiPsychologist.yourResult}
             </div>
 
             <div
@@ -8762,7 +8766,7 @@ function handleLoveQuestionFinish() {
 
           <div style={{ ...cardBaseStyle(), padding: 18 }}>
             <div style={{ fontSize: 18, fontWeight: 900, color: "#1f1d3a" }}>
-              Что можно сделать уже сейчас 💞
+              {t.aiPsychologist.whatToDoNow}
             </div>
 
             <div style={{ display: "grid", gap: 10, marginTop: 14 }}>
@@ -8787,7 +8791,7 @@ function handleLoveQuestionFinish() {
 
           <div style={{ ...cardBaseStyle(), padding: 18 }}>
   <div style={{ fontSize: 18, fontWeight: 900, color: "#1f1d3a" }}>
-    Разбор по темам 📊
+    {t.aiPsychologist.breakdownByTopics}
   </div>
 
   <div style={{ display: "grid", gap: 10, marginTop: 14 }}>
@@ -8830,7 +8834,7 @@ function handleLoveQuestionFinish() {
             onClick={() => startGame("ai-psychologist")}
             style={{ ...primaryButtonStyle, width: "100%" }}
           >
-            Пройти ещё раз
+            {t.games.playAgain}
           </button>
         </>
       )}
@@ -8839,7 +8843,7 @@ function handleLoveQuestionFinish() {
         onClick={() => setActiveGameId(null)}
         style={{ ...secondaryButtonStyle, width: "100%" }}
       >
-        Назад к играм
+        {market !== "ru" ? "Back to games" : "Назад к играм"}
       </button>
     </div>
   );
@@ -8894,23 +8898,29 @@ if (activeGame?.id === "never-have-i-ever") {
       <div style={{ padding: 16 }}>
         <div style={{ ...cardBaseStyle(), padding: 20 }}>
           <div style={{ fontSize: 30, fontWeight: 900, color: "#1f1d3a" }}>
-            Игра завершена 🎮
+            {t.games.finishedTitle}
           </div>
           <div style={{ marginTop: 10, color: "#3a345c", lineHeight: 1.5 }}>
-            <b>{activeGame.title}</b> пройдена.
+            <b>{activeGame.title}</b> {t.games.completedSuffix}
             <br />
-            Правильных ответов: <b>{correctAnswers} из {total}</b>
+            {t.games.correctAnswersLabel}{" "}
+            <b>
+              {correctAnswers} {t.common.of} {total}
+            </b>
             <br />
-            Результат: <b>{percent}%</b>
+            {t.games.resultLabel} <b>{percent}%</b>
             <br />
-            Награда: <b>+{activeGame.reward} очков</b>
+            {t.games.rewardLabel}{" "}
+            <b>
+              +{activeGame.reward} {t.games.pointsUnit}
+            </b>
           </div>
 
           <button
             onClick={handleFinish}
             style={{ ...primaryButtonStyle, width: "100%", marginTop: 16 }}
           >
-            Забрать очки
+            {t.games.claimPoints}
           </button>
         </div>
       </div>
@@ -8928,7 +8938,9 @@ if (activeGame?.id === "never-have-i-ever") {
         {activeGame.title}
       </div>
       <div style={{ marginTop: 8, color: "#4b446a" }}>
-        Вопрос {currentQuestionIndex + 1} из {activeGame.questions.length}
+        {t.games.questionProgress
+          .replace("{current}", String(currentQuestionIndex + 1))
+          .replace("{total}", String(activeGame.questions.length))}
       </div>
     </div>
 
@@ -8986,12 +8998,12 @@ if (activeGame?.id === "never-have-i-ever") {
         }}
       >
         {currentQuestionIndex === activeGame.questions.length - 1
-          ? "Завершить"
-          : "Дальше"}
+          ? t.common.finish
+          : t.games.nextButton}
       </button>
 
       <button onClick={() => setActiveGameId(null)} style={secondaryButtonStyle}>
-        Выйти из игры
+        {t.games.exitGame}
       </button>
     </div>
 
@@ -11040,7 +11052,7 @@ const visibleRewards = rewardsExpanded
     <div style={{ padding: 12, display: "grid", gap: 10 }}>
      <div style={{ ...cardBaseStyle(), padding: 14 }}>
   <div style={{ fontSize: 24, fontWeight: 900, color: "#1f1d3a" }}>
-    Колесо призов
+    {t.rewards.wheel}
   </div>
   <div style={{ marginTop: 4, color: "#3a345c", fontSize: 13, lineHeight: 1.4 }}>
     Одно вращение стоит <b>{WHEEL_SPIN_COST}</b> очков
@@ -11278,8 +11290,7 @@ const visibleRewards = rewardsExpanded
           lineHeight: 1.4,
         }}
       >
-        Вы выиграли приз 🎁  
-        Напишите менеджеру, чтобы получить его
+        {t.rewards.wheelScreen.wonPrizeText}
       </div>
 
       {/* 🔘 кнопка */}
@@ -11307,7 +11318,7 @@ const visibleRewards = rewardsExpanded
           fontSize: 16,
         }}
       >
-        Забрать приз 🎁
+        {t.rewards.wheelScreen.claimPrizeButton}
       </button>
 
       {/* ❌ закрыть */}
@@ -11322,7 +11333,7 @@ const visibleRewards = rewardsExpanded
           cursor: "pointer",
         }}
       >
-        Закрыть
+        {t.common.close}
       </button>
     </div>
   </div>
@@ -11330,12 +11341,12 @@ const visibleRewards = rewardsExpanded
 
       <div style={{ ...cardBaseStyle(), padding: 18 }}>
         <div style={{ fontSize: 22, fontWeight: 900, color: "#1f1d3a" }}>
-          Выпавшие призы
+          {t.rewards.wheelScreen.wonRewardsTitle}
         </div>
 
         {wonRewards.length === 0 ? (
           <div style={{ marginTop: 10, color: "#4a4468", lineHeight: 1.5 }}>
-            Пока здесь пусто. Заработай очки и крутанни колесо.
+            {t.rewards.wheelScreen.emptyPrizesText}
           </div>
         ) : (
           <div style={{ display: "grid", gap: 10, marginTop: 14 }}>
@@ -11793,8 +11804,8 @@ function TopPlayersScreen({
             }}
           >
             {topMode === "solo"
-              ? "👤 Рейтинг игроков"
-              : "💕 Рейтинг пар"}
+              ? t.top.screen.soloRankingTitle
+              : t.top.screen.pairRankingTitle}
           </div>
 
           <div
@@ -11808,7 +11819,7 @@ function TopPlayersScreen({
               whiteSpace: "nowrap",
             }}
           >
-            Текущая неделя
+            {t.top.screen.currentWeekBadge}
           </div>
         </div>
 
@@ -11826,8 +11837,8 @@ function TopPlayersScreen({
             }}
           >
             {topMode === "solo"
-              ? "В сольном рейтинге пока никого нет. Пройди первый тест, опрос или игру!"
-              : "В парном рейтинге пока никого нет. Подключи партнёра и начните зарабатывать очки вместе!"}
+              ? t.top.screen.soloEmpty
+              : t.top.screen.pairEmpty}
           </div>
         ) : (
           <>
@@ -12122,8 +12133,8 @@ function TopPlayersScreen({
                 }}
               >
                 {topExpanded
-                  ? "Свернуть рейтинг"
-                  : "Показать топ-10"}
+                  ? t.top.screen.collapseRanking
+                  : t.top.screen.showTop10}
               </button>
             )}
           </>
@@ -12225,7 +12236,7 @@ function TopPlayersScreen({
             color: "#1f1d3a",
           }}
         >
-          🎁 Награда недели
+          {t.top.screen.weeklyRewardTitle}
         </div>
 
         {topMode === "solo" ? (
@@ -12241,8 +12252,7 @@ function TopPlayersScreen({
               fontWeight: 700,
             }}
           >
-            Награды сольного рейтинга скоро появятся. Сейчас
-            можно соревноваться за место в топе.
+            {t.top.screen.soloRewardComingSoon}
           </div>
         ) : (
           <>
@@ -12254,8 +12264,8 @@ function TopPlayersScreen({
                 fontSize: 13,
               }}
             >
-              Пары, занявшие первые три места, получают{" "}
-              <b>+500 очков</b>.
+              {t.top.screen.topThreeRewardPrefix}{" "}
+              <b>+500 {t.top.points.toLowerCase()}</b>.
             </div>
 
             <div
@@ -12271,12 +12281,12 @@ function TopPlayersScreen({
               }}
             >
               {!pair.pairId
-                ? "Подключите партнёра, чтобы участвовать в парном рейтинге."
+                ? t.top.screen.connectPartnerForRankingText
                 : wasPairTopThreeLastWeek
                 ? alreadyClaimedLastWeek
-                  ? "Награда за прошлую неделю уже получена ✅"
-                  : "Ваша пара вошла в топ-3 прошлой недели! Можно забрать награду 🎉"
-                : "Награда доступна только парам из топ-3 по итогам прошлой недели."}
+                  ? t.top.screen.rewardAlreadyClaimedText
+                  : t.top.screen.rewardAvailableText
+                : t.top.screen.rewardOnlyTopThreeText}
             </div>
 
             {canClaimWeeklyReward && (
@@ -12289,7 +12299,7 @@ function TopPlayersScreen({
                   marginTop: 12,
                 }}
               >
-                Забрать +500 очков
+                {t.top.screen.claimRewardButton}
               </button>
             )}
           </>
@@ -12440,7 +12450,7 @@ if (result.success) {
         onClick={onBack}
         style={secondaryButtonStyle}
       >
-        Назад
+        {t.common.back}
       </button>
     </div>
   );
@@ -12491,25 +12501,24 @@ return (
           textAlign: "center",
         }}
       >
-         Пригласить друзей
+         {t.referrals.title}
       </div>
     </div>
 
     {/* Основная карточка */}
     <div style={{ ...cardBaseStyle(), padding: 18 }}>
         <div style={{ fontSize: 18, fontWeight: 900, color: "#1f1d3a" }}>
-          Твоя реферальная программа
+          {t.referrals.programTitle}
         </div>
 
         <div style={{ marginTop: 10, fontSize: 14, lineHeight: 1.5, color: "#5f5a7a" }}>
-          Приглашай друзей в Couple Quizzes и получай +200 очков за каждого нового пользователя,
-          который зашел по твоей ссылке.
+          {t.referrals.subtitle}
         </div>
 
         <div style={{ display: "grid", gap: 10, marginTop: 16 }}>
           <div style={{ ...cardBaseStyle(), padding: 14 }}>
             <div style={{ fontSize: 13, color: "#7b7698", fontWeight: 700 }}>
-              Приглашено друзей
+              {t.referrals.invitedFriends}
             </div>
             <div style={{ marginTop: 6, fontSize: 28, fontWeight: 900, color: "#1f1d3a" }}>
               {appState.referrals.invitedUsers.length}
@@ -12518,7 +12527,7 @@ return (
 
           <div style={{ ...cardBaseStyle(), padding: 14 }}>
             <div style={{ fontSize: 13, color: "#7b7698", fontWeight: 700 }}>
-              Заработано очков
+              {t.referrals.earnedPoints}
             </div>
             <div style={{ marginTop: 6, fontSize: 28, fontWeight: 900, color: "#6b46ff" }}>
               +{appState.referrals.totalReward}
@@ -12528,7 +12537,7 @@ return (
 
         <div style={{ marginTop: 16 }}>
           <div style={{ fontSize: 13, color: "#7b7698", fontWeight: 700, marginBottom: 8 }}>
-            Твоя ссылка
+            {t.referrals.yourLink}
           </div>
 
           <div
@@ -12542,7 +12551,7 @@ return (
               wordBreak: "break-word",
             }}
           >
-            {inviteLink || "Ссылка появится после загрузки профиля"}
+            {inviteLink || t.referrals.linkLoadingFallback}
           </div>
         </div>
 
@@ -12550,7 +12559,7 @@ return (
           style={{ ...primaryButtonStyle, width: "100%", marginTop: 16 }}
           onClick={handleInvite}
         >
-          Пригласить друзей
+          {t.referrals.inviteButton}
         </button>
       </div>
 
@@ -12682,7 +12691,7 @@ const t = market === "fi" ? TEXT_FI : market === "en" ? TEXT_EN : TEXT_RU;
         cursor: "pointer",
       }}
     >
-      Разблокировать Premium ✨
+      {t.paywall.unlockButton} ✨
     </button>
 
     <button
@@ -12735,7 +12744,7 @@ const t = market === "fi" ? TEXT_FI : market === "en" ? TEXT_EN : TEXT_RU;
 
       <div style={{ ...cardBaseStyle(), padding: 18 }}>
   <div style={{ fontSize: 22, fontWeight: 900, color: "#1f1d3a" }}>
-    Пригласи друзей 👥
+    {market !== "ru" ? "Invite friends 👥" : "Пригласи друзей 👥"}
   </div>
 
   <div
@@ -12746,8 +12755,7 @@ const t = market === "fi" ? TEXT_FI : market === "en" ? TEXT_EN : TEXT_RU;
       lineHeight: 1.45,
     }}
   >
-    Получай +200 очков за каждого друга,
-    который откроет приложение по твоей ссылке.
+    {t.referrals.cardText}
   </div>
 
 
@@ -12756,9 +12764,9 @@ const t = market === "fi" ? TEXT_FI : market === "en" ? TEXT_EN : TEXT_RU;
   onClick={() => onNavigate("referrals")}
   style={{ ...primaryButtonStyle, width: "100%", marginTop: 12 }}
 >
-  Пригласить друзей
+  {t.referrals.inviteButton}
 </button>
-  
+
 </div>
 
 <button
@@ -16115,7 +16123,7 @@ showPaywall={() => {
   >
     <div style={{ ...cardBaseStyle(), padding: 20 }}>
       <div style={{ fontSize: 28, fontWeight: 900, color: "#1f1d3a" }}>
-        Полный доступ
+        {t.paywall.title}
       </div>
 
       <div
@@ -16126,7 +16134,7 @@ showPaywall={() => {
           fontSize: 15,
         }}
       >
-        Вы прошли все бесплатные опросы. Откройте полный доступ к Couple Quizzes.
+        {t.paywall.subtitle}
       </div>
 
       <div
@@ -16140,12 +16148,12 @@ showPaywall={() => {
           fontWeight: 700,
         }}
       >
-        🔓 Все опросы<br />
-        🎮 Все игры<br />
-        🧠 Все тесты<br />
-        🎡 Рулетка призов<br />
-        🎁 +500 очков<br />
-        🎨 Специальный дизайн
+        {t.paywall.featurePolls}<br />
+        {t.paywall.featureGames}<br />
+        {t.paywall.featureTests}<br />
+        {t.paywall.featureWheel}<br />
+        {t.paywall.featureBonusPoints}<br />
+        {t.paywall.featureDesign}
       </div>
 
       <div
@@ -16167,7 +16175,7 @@ showPaywall={() => {
           marginTop: 16,
         }}
       >
-        Разблокировать Premium
+        {t.paywall.unlockButton}
       </button>
 
       <button
@@ -16211,13 +16219,13 @@ showPaywall={() => {
         </div>
 
         <div style={completionSubtitleStyle}>
-          Ты полностью завершил
+          {t.completionBonus.prefix}
           {completionBonusData?.section === "polls"
-            ? " опросы"
+            ? t.completionBonus.pollsWord
             : completionBonusData?.section === "tests"
-            ? " тесты"
-            : " раздел"}
-          {" "}и получаешь бонус!
+            ? t.completionBonus.testsWord
+            : t.completionBonus.sectionWord}
+          {t.completionBonus.suffix}
         </div>
 
         <div style={completionPointsStyle}>
@@ -16225,7 +16233,7 @@ showPaywall={() => {
         </div>
 
         <div style={completionPointsLabelStyle}>
-          очков пары
+          {t.completionBonus.pairPointsLabel}
         </div>
 
         <button
@@ -16235,7 +16243,7 @@ showPaywall={() => {
             setCompletionBonusData(null);
           }}
         >
-          Забрать награду
+          {t.completionBonus.claimRewardButton}
         </button>
       </div>
     </div>
@@ -16273,7 +16281,7 @@ showPaywall={() => {
           textAlign: "center",
         }}
       >
-        Полный доступ
+        {t.paywall.title}
       </div>
 
       <div
@@ -16285,7 +16293,7 @@ showPaywall={() => {
           textAlign: "center",
         }}
       >
-        Выбери удобный способ оплаты
+        {t.paywall.choosePaymentSubtitle}
       </div>
 
       <button
@@ -16343,7 +16351,7 @@ showPaywall={() => {
         }}
         onClick={() => setShowPaymentChoice(false)}
       >
-        Отмена
+        {t.common.cancel}
       </button>
     </div>
   </div>

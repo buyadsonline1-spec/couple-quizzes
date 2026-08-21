@@ -34,6 +34,7 @@ export const TEXT_FI = {
     show: "Näytä",
     hide: "Piilota",
     toMenu: "Valikkoon",
+    of: "/",
   },
 
   home: {
@@ -54,6 +55,13 @@ export const TEXT_FI = {
   aiPsychologist: {
     menuTitle: "Tekoälypsykologi pareille",
     menuSubtitle: "Kerro, mitä on meneillään — käydään se yhdessä läpi",
+    checkTitle: "Parisuhteen pikatarkistus 🩺",
+    checkIntro: "Vastaa muutamaan kysymykseen, niin psykologi auttaa ymmärtämään, mitä suhteessanne on juuri nyt meneillään.",
+    questionOfPrefix: "Kysymys",
+    questionOfMid: "/",
+    yourResult: "Tuloksesi",
+    whatToDoNow: "Mitä voitte tehdä jo nyt 💞",
+    breakdownByTopics: "Erittely aiheittain 📊",
   },
 
   bonus: {
@@ -73,6 +81,7 @@ export const TEXT_FI = {
     empty: "Ei vielä kyselyitä",
     completed: "Suoritettu",
     reward: "Palkinto",
+    chooseWhoTakes: "Valitse, kuka tekee kyselyn nyt.",
   },
 
   tests: {
@@ -113,6 +122,7 @@ export const TEXT_FI = {
     questionProgress: "Kysymys {current}/{total}",
     nextButton: "Seuraava",
     exitGame: "Poistu pelistä",
+    pointsUnit: "pistettä",
   },
 
   rewards: {
@@ -149,6 +159,7 @@ export const TEXT_FI = {
 
   pair: {
     title: "Pari",
+    historyTitle: "Historia",
     subtitle: "Teidän edistymisenne parina",
     level: "Taso",
     compatibility: "Yhteensopivuus",
@@ -238,11 +249,13 @@ export const TEXT_FI = {
       reached: "saatu",
       next: "seuraava",
       daysInARow: "päivää putkeen",
+    bothAnsweredStreak: "Vastasitte molemmat päivän kysymykseen putkeen",
     },
   },
 
   referrals: {
     title: "Kutsu ystäviä",
+    programTitle: "Suositteluohjelmasi",
     subtitle:
       "Kutsu ystäviä Couple Quizzesiin ja saat +200 pistettä jokaisesta uudesta käyttäjästä, joka avaa sovelluksen linkkisi kautta.",
     invitedFriends: "Kutsutut ystävät",
@@ -251,6 +264,7 @@ export const TEXT_FI = {
     inviteButton: "Kutsu ystäviä",
     cardText:
       "Saat +200 pistettä jokaisesta ystävästä, joka avaa sovelluksen linkkisi kautta.",
+    linkLoadingFallback: "Linkki näkyy, kun profiilisi on latautunut",
   },
 
   top: {

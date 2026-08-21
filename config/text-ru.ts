@@ -30,6 +30,7 @@ export const TEXT_RU = {
     show: "Показать",
     hide: "Скрыть",
     toMenu: "В меню",
+    of: "из",
   },
 
   home: {
@@ -50,6 +51,13 @@ export const TEXT_RU = {
   aiPsychologist: {
     menuTitle: "AI-психолог для пары",
     menuSubtitle: "Расскажи, что происходит — разберём вместе",
+    checkTitle: "Экспресс-чек отношений 🩺",
+    checkIntro: "Ответьте на несколько вопросов, и психолог поможет понять, что сейчас происходит в ваших отношениях.",
+    questionOfPrefix: "Вопрос",
+    questionOfMid: "из",
+    yourResult: "Ваш результат",
+    whatToDoNow: "Что можно сделать уже сейчас 💞",
+    breakdownByTopics: "Разбор по темам 📊",
   },
 
   bonus: {
@@ -69,6 +77,7 @@ export const TEXT_RU = {
     empty: "Опросы пока недоступны",
     completed: "Пройдено",
     reward: "Награда",
+    chooseWhoTakes: "Выберите, кто сейчас проходит опрос.",
   },
 
   tests: {
@@ -109,6 +118,7 @@ export const TEXT_RU = {
     questionProgress: "Вопрос {current} из {total}",
     nextButton: "Дальше",
     exitGame: "Выйти из игры",
+    pointsUnit: "очков",
   },
 
   rewards: {
@@ -145,6 +155,7 @@ export const TEXT_RU = {
 
  pair: {
   title: "Пара",
+    historyTitle: "История",
   subtitle: "Ваш прогресс как пары",
   level: "Уровень",
   compatibility: "Совместимость",
@@ -236,11 +247,13 @@ export const TEXT_RU = {
     reached: "получено",
     next: "следующий",
     daysInARow: "дней подряд",
+    bothAnsweredStreak: "Оба ответили на вопрос дня подряд",
   },
 },
 
   referrals: {
     title: "Пригласить друзей",
+    programTitle: "Твоя реферальная программа",
     subtitle:
       "Приглашай друзей в Couple Quizzes и получай +200 очков за каждого нового пользователя, который зашел по твоей ссылке.",
     invitedFriends: "Приглашено друзей",
@@ -249,6 +262,7 @@ export const TEXT_RU = {
     inviteButton: "Пригласить друзей",
     cardText:
       "Получай +200 очков за каждого друга, который откроет приложение по твоей ссылке.",
+    linkLoadingFallback: "Ссылка появится после загрузки профиля",
   },
 
   top: {

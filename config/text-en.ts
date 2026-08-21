@@ -30,6 +30,7 @@ export const TEXT_EN = {
     show: "Show",
     hide: "Hide",
     toMenu: "To menu",
+    of: "of",
   },
 
   home: {
@@ -50,6 +51,13 @@ export const TEXT_EN = {
   aiPsychologist: {
     menuTitle: "AI psychologist for couples",
     menuSubtitle: "Tell us what's going on — let's work through it together",
+    checkTitle: "Relationship Check-up 🩺",
+    checkIntro: "Answer a few questions and the psychologist will help you understand what's going on in your relationship right now.",
+    questionOfPrefix: "Question",
+    questionOfMid: "of",
+    yourResult: "Your result",
+    whatToDoNow: "What you can do right now 💞",
+    breakdownByTopics: "Breakdown by topic 📊",
   },
 
   bonus: {
@@ -69,6 +77,7 @@ export const TEXT_EN = {
     empty: "No polls available yet",
     completed: "Completed",
     reward: "Reward",
+    chooseWhoTakes: "Choose who is taking the poll now.",
   },
 
   tests: {
@@ -109,6 +118,7 @@ export const TEXT_EN = {
     questionProgress: "Question {current} of {total}",
     nextButton: "Next",
     exitGame: "Exit game",
+    pointsUnit: "points",
   },
 
   rewards: {
@@ -145,6 +155,7 @@ export const TEXT_EN = {
 
  pair: {
   title: "Pair",
+    historyTitle: "History",
   subtitle: "Your progress as a couple",
   level: "Level",
   compatibility: "Compatibility",
@@ -236,11 +247,13 @@ export const TEXT_EN = {
     reached: "earned",
     next: "next",
     daysInARow: "days in a row",
+    bothAnsweredStreak: "You both answered the daily question in a row",
   },
 },
 
   referrals: {
     title: "Invite Friends",
+    programTitle: "Your referral program",
     subtitle:
       "Invite friends to Couple Quizzes and get +200 points for each new user who opens the app using your link.",
     invitedFriends: "Friends invited",
@@ -249,6 +262,7 @@ export const TEXT_EN = {
     inviteButton: "Invite friends",
     cardText:
       "Get +200 points for each friend who opens the app using your link.",
+    linkLoadingFallback: "The link will appear once your profile loads",
   },
 
   top: {
