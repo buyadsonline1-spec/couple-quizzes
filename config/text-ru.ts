@@ -132,6 +132,7 @@ export const TEXT_RU = {
 
     wheelScreen: {
       spinCostPrefix: "Одно вращение стоит",
+      bonusSegmentLabel: "Бонус",
       pointsLabel: "⭐ Очков:",
       todayLabel: "Сегодня:",
       freeSpinsLabel: " · бесплатных прокрутов:",
@@ -150,6 +151,7 @@ export const TEXT_RU = {
       congratsTitle: "🎉 Поздравляем!",
       wonPrizeText: "Вы выиграли приз 🎁 Напишите менеджеру, чтобы получить его",
       claimPrizeButton: "Забрать приз 🎁",
+      managerMessageTemplate: "Здравствуйте! Я выиграл приз: {title} 🎁",
     },
   },
 

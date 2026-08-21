@@ -132,6 +132,7 @@ export const TEXT_EN = {
 
     wheelScreen: {
       spinCostPrefix: "One spin costs",
+      bonusSegmentLabel: "Bonus",
       pointsLabel: "⭐ Points:",
       todayLabel: "Today:",
       freeSpinsLabel: " · free spins:",
@@ -150,6 +151,7 @@ export const TEXT_EN = {
       congratsTitle: "🎉 Congratulations!",
       wonPrizeText: "You won a prize 🎁 Message the manager to claim it",
       claimPrizeButton: "Claim prize 🎁",
+      managerMessageTemplate: "Hello! I won a prize: {title} 🎁",
     },
   },
 

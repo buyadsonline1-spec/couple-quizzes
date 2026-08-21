@@ -2655,7 +2655,7 @@ const LOVE_QUESTIONS: LoveQuestion[] = [
   { id: "lq90", text: market !== "ru" ? "What does it mean to you to truly love someone?" : "Что для тебя значит любить по-настоящему?", textRu: "Что для тебя значит любить по-настоящему?", textEn: "What does it mean to you to truly love someone?" },
 ];
 
-const PAIR_LEVELS = [
+const PAIR_LEVELS_RU = [
   { level: 1, title: "Новички", points: 0 },
   { level: 2, title: "Искра", points: 300 },
   { level: 3, title: "Сближение", points: 700 },
@@ -2665,6 +2665,35 @@ const PAIR_LEVELS = [
   { level: 7, title: "Идеальный союз", points: 3500 },
   { level: 8, title: "Легенды любви", points: 5000 },
 ] as const;
+
+const PAIR_LEVELS_EN = [
+  { level: 1, title: "Newcomers", points: 0 },
+  { level: 2, title: "Spark", points: 300 },
+  { level: 3, title: "Growing Closer", points: 700 },
+  { level: 4, title: "Warm Bond", points: 1200 },
+  { level: 5, title: "In Sync", points: 1800 },
+  { level: 6, title: "Strong Couple", points: 2500 },
+  { level: 7, title: "Perfect Match", points: 3500 },
+  { level: 8, title: "Legends of Love", points: 5000 },
+] as const;
+
+const PAIR_LEVELS_FI = [
+  { level: 1, title: "Aloittelijat", points: 0 },
+  { level: 2, title: "Kipinä", points: 300 },
+  { level: 3, title: "Lähentyminen", points: 700 },
+  { level: 4, title: "Lämmin side", points: 1200 },
+  { level: 5, title: "Samalla aaltopituudella", points: 1800 },
+  { level: 6, title: "Vahva pari", points: 2500 },
+  { level: 7, title: "Täydellinen liitto", points: 3500 },
+  { level: 8, title: "Rakkauden legendat", points: 5000 },
+] as const;
+
+const PAIR_LEVELS =
+  market === "fi"
+    ? PAIR_LEVELS_FI
+    : market === "en"
+    ? PAIR_LEVELS_EN
+    : PAIR_LEVELS_RU;
 
 function getRelationshipCheckResult(answers: number[]) {
   const positiveCategories = new Set(["closeness", "support"]);
@@ -10926,7 +10955,7 @@ const visibleRewards = rewardsExpanded
   // поэтому для колеса добавляем этот сектор только для отображения.
   const BONUS_DISPLAY_CATEGORY = {
     id: "bonus",
-    title: "Бонус",
+    title: t.rewards.wheelScreen.bonusSegmentLabel,
     emoji: "🎁",
   };
   const wheelDisplayCategories = [...wheelCategories, BONUS_DISPLAY_CATEGORY];
@@ -11032,15 +11061,19 @@ const visibleRewards = rewardsExpanded
       setSelectedRewardId(result.spinId);
 
       if (result.outcomeType === "bonus_points") {
-        setMessage(`Бонус: +${result.bonusValue ?? 500} очков!`);
-      } else if (result.outcomeType === "bonus_spin") {
         setMessage(
-          "Бонус: +1 бесплатный прокрут! Следующее вращение будет " +
-            "бесплатным и не потратит дневной лимит.",
+          t.rewards.wheelScreen.bonusPointsMessage.replace(
+            "{value}",
+            String(result.bonusValue ?? 500),
+          ),
         );
+      } else if (result.outcomeType === "bonus_spin") {
+        setMessage(t.rewards.wheelScreen.bonusSpinMessage);
       } else {
         setMessage(
-          `Тебе выпал приз: ${result.title} (${result.categoryTitle})`,
+          t.rewards.wheelScreen.prizeWonMessage
+            .replace("{title}", result.title)
+            .replace("{categoryTitle}", result.categoryTitle),
         );
       }
 
@@ -11055,7 +11088,8 @@ const visibleRewards = rewardsExpanded
     {t.rewards.wheel}
   </div>
   <div style={{ marginTop: 4, color: "#3a345c", fontSize: 13, lineHeight: 1.4 }}>
-    Одно вращение стоит <b>{WHEEL_SPIN_COST}</b> очков
+    {t.rewards.wheelScreen.spinCostPrefix} <b>{WHEEL_SPIN_COST}</b>{" "}
+    {t.games.pointsUnit}
   </div>
 
   <div
@@ -11069,14 +11103,14 @@ const visibleRewards = rewardsExpanded
       color: "#241b40",
     }}
   >
-    ⭐ Очков: {points}
+    {t.rewards.wheelScreen.pointsLabel} {points}
   </div>
 
   {spinsInfo && (
     <div style={{ marginTop: 6, color: "#3a345c", fontSize: 13 }}>
-      Сегодня: {spinsInfo.used} / 3
+      {t.rewards.wheelScreen.todayLabel} {spinsInfo.used} / 3
       {spinsInfo.bonusCredits > 0
-        ? ` · бесплатных прокрутов: ${spinsInfo.bonusCredits}`
+        ? ` ${t.rewards.wheelScreen.freeSpinsLabel} ${spinsInfo.bonusCredits}`
         : ""}
     </div>
   )}
@@ -11216,7 +11250,9 @@ const visibleRewards = rewardsExpanded
               isSpinning || points < WHEEL_SPIN_COST ? "not-allowed" : "pointer",
           }}
         >
-          {isSpinning ? "Крутим..." : `Крутить за ${WHEEL_SPIN_COST} очков`}
+          {isSpinning
+            ? t.rewards.wheelScreen.spinningLabel
+            : `${t.rewards.wheelScreen.spinButtonPrefix} ${WHEEL_SPIN_COST} ${t.games.pointsUnit}`}
         </button>
 
         {message ? (
@@ -11266,7 +11302,7 @@ const visibleRewards = rewardsExpanded
     >
       {/* 🎉 Заголовок */}
       <div style={{ fontSize: 26, fontWeight: 900 }}>
-        🎉 Поздравляем!
+        {t.rewards.wheelScreen.congratsTitle}
       </div>
 
       {/* 🎁 Приз */}
@@ -11297,7 +11333,10 @@ const visibleRewards = rewardsExpanded
       <button
         onClick={() => {
           const text = encodeURIComponent(
-            `Здравствуйте! Я выиграл приз: ${selectedReward.title} 🎁`
+            t.rewards.wheelScreen.managerMessageTemplate.replace(
+              "{title}",
+              selectedReward.title
+            )
           );
           const url = `${MANAGER_CHAT_URL}?text=${text}`;
 
@@ -11370,7 +11409,7 @@ const visibleRewards = rewardsExpanded
                   {reward.title}
                 </div>
                 <div style={{ marginTop: 4, fontSize: 14, color: "#4d466c" }}>
-                  Категория: {reward.categoryTitle}
+                  {t.rewards.wheelScreen.categoryLabel} {reward.categoryTitle}
                 </div>
                 <div style={{ marginTop: 2, fontSize: 13, color: "#5b5578" }}>
                   {reward.wonAt}
@@ -11390,8 +11429,8 @@ const visibleRewards = rewardsExpanded
     }}
   >
     {rewardsExpanded
-      ? "Свернуть призы"
-      : "Показать все призы"}
+      ? t.rewards.wheelScreen.collapsePrizes
+      : t.rewards.wheelScreen.showAllPrizes}
   </button>
 )}
       </div>
@@ -11656,8 +11695,8 @@ function TopPlayersScreen({
               }}
             >
               {topMode === "solo"
-                ? "Соревнуйся с другими игроками и поднимайся в личном рейтинге."
-                : "Зарабатывайте очки вместе и поднимайте вашу пару в рейтинге."}
+                ? t.top.screen.soloSubtitle
+                : t.top.screen.pairSubtitle}
             </div>
           </div>
 
@@ -11699,7 +11738,7 @@ function TopPlayersScreen({
               ↻
             </span>
 
-            {refreshing ? "..." : "Обновить"}
+            {refreshing ? "..." : t.top.screen.refresh}
           </button>
         </div>
 
@@ -11744,7 +11783,7 @@ function TopPlayersScreen({
               WebkitTapHighlightColor: "transparent",
             }}
           >
-            👤 Сольный топ
+            {t.top.screen.soloTabLabel}
           </button>
 
           <button
@@ -11775,7 +11814,7 @@ function TopPlayersScreen({
               WebkitTapHighlightColor: "transparent",
             }}
           >
-            💕 Парный топ
+            {t.top.screen.pairTabLabel}
           </button>
         </div>
       </div>
@@ -11971,13 +12010,16 @@ function TopPlayersScreen({
                             }}
                           >
                             {isTop1
-                              ? "Лидер недели"
+                              ? t.top.screen.leaderOfWeek
                               : userRow.username
                               ? `@${userRow.username.replace(
                                   /^@/,
                                   ""
                                 )}`
-                              : `Место #${userRow.place}`}
+                              : t.top.screen.placeTemplate.replace(
+                                  "{place}",
+                                  String(userRow.place)
+                                )}
                           </div>
                         </div>
 
@@ -12085,7 +12127,7 @@ function TopPlayersScreen({
                             {pairRow.pair_title}
 
                             {pairRow.isCurrentPair
-                              ? " (Вы)"
+                              ? t.top.screen.youSuffix
                               : ""}
                           </div>
 
@@ -12097,8 +12139,11 @@ function TopPlayersScreen({
                             }}
                           >
                             {isTop1
-                              ? "Лидеры недели"
-                              : `Место #${pairRow.place}`}
+                              ? t.top.leadersOfWeek
+                              : t.top.screen.placeTemplate.replace(
+                                  "{place}",
+                                  String(pairRow.place)
+                                )}
                           </div>
                         </div>
 
@@ -12160,7 +12205,7 @@ function TopPlayersScreen({
               color: "#1f1d3a",
             }}
           >
-            👤 Твоё место
+            {t.top.screen.yourPlaceTitle}
           </div>
 
           <div
@@ -12176,8 +12221,13 @@ function TopPlayersScreen({
             }}
           >
             {currentUserRow
-              ? `Ты занимаешь ${currentUserRow.place}-е место и заработал ${currentUserRow.total_points} очков за текущую неделю.`
-              : "Ты пока не участвуешь в сольном рейтинге. Заработай первые очки!"}
+              ? t.top.screen.yourPlaceText
+                  .replace("{place}", String(currentUserRow.place))
+                  .replace(
+                    "{points}",
+                    String(currentUserRow.total_points)
+                  )
+              : t.top.screen.yourPlaceEmptyText}
           </div>
         </div>
       )}
@@ -12197,7 +12247,7 @@ function TopPlayersScreen({
               color: "#1f1d3a",
             }}
           >
-            💕 Место вашей пары
+            {t.top.screen.yourPairPlaceTitle}
           </div>
 
           <div
@@ -12213,10 +12263,15 @@ function TopPlayersScreen({
             }}
           >
             {!pair.pairId
-              ? "Сначала подключи партнёра, чтобы участвовать в парном рейтинге."
+              ? t.top.screen.pairNeedsPartnerText
               : currentPairRow
-              ? `Ваша пара занимает ${currentPairRow.place}-е место и заработала ${currentPairRow.total_points} очков за текущую неделю.`
-              : "Ваша пара пока не появилась в рейтинге. Заработайте первые совместные очки!"}
+              ? t.top.screen.yourPairPlaceText
+                  .replace("{place}", String(currentPairRow.place))
+                  .replace(
+                    "{points}",
+                    String(currentPairRow.total_points)
+                  )
+              : t.top.screen.pairNoRankYetText}
           </div>
         </div>
       )}

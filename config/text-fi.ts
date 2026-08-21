@@ -136,6 +136,7 @@ export const TEXT_FI = {
 
     wheelScreen: {
       spinCostPrefix: "Yksi pyöräytys maksaa",
+      bonusSegmentLabel: "Bonus",
       pointsLabel: "⭐ Pisteitä:",
       todayLabel: "Tänään:",
       freeSpinsLabel: " · ilmaisia pyöräytyksiä:",
@@ -154,6 +155,7 @@ export const TEXT_FI = {
       congratsTitle: "🎉 Onneksi olkoon!",
       wonPrizeText: "Voitit palkinnon 🎁 Ota yhteyttä managerille lunastaaksesi sen",
       claimPrizeButton: "Lunasta palkinto 🎁",
+      managerMessageTemplate: "Hei! Voitin palkinnon: {title} 🎁",
     },
   },
 
