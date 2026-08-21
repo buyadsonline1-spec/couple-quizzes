@@ -4833,7 +4833,7 @@ function AiPsychologistChatScreen({
       setErrorText(
         language === "en"
           ? "Could not verify Telegram user"
-          : "Не удалось подтвердить пользователя Telegram"
+          : t.errors.telegramUserNotConfirmed
       );
       return;
     }
@@ -5327,7 +5327,7 @@ const t = market === "fi" ? TEXT_FI : market === "en" ? TEXT_EN : TEXT_RU;
     const initData = window.Telegram?.WebApp?.initData;
 
     if (!initData) {
-      alert("Не удалось подтвердить пользователя Telegram");
+      alert(t.errors.telegramUserNotConfirmed);
       return;
     }
 
@@ -5351,12 +5351,12 @@ const t = market === "fi" ? TEXT_FI : market === "en" ? TEXT_EN : TEXT_RU;
 
         if (!response.ok) {
           console.error("saveAnswer error:", data);
-          alert("Не удалось сохранить ответ, попробуй ещё раз");
+          alert(t.errors.saveAnswerFailed);
           return;
         }
       } catch (error) {
         console.error("saveAnswer request error:", error);
-        alert("Не удалось сохранить ответ, попробуй ещё раз");
+        alert(t.errors.saveAnswerFailed);
         return;
       }
 
@@ -5365,7 +5365,7 @@ const t = market === "fi" ? TEXT_FI : market === "en" ? TEXT_EN : TEXT_RU;
           alert("Ответ на сегодня уже сохранён и его нельзя изменить");
         } else {
           console.error("Daily pair answer not accepted:", data?.reason);
-          alert("Не удалось сохранить ответ, попробуй ещё раз");
+          alert(t.errors.saveAnswerFailed);
         }
         return;
       }
@@ -10956,7 +10956,7 @@ const visibleRewards = rewardsExpanded
   async function handleSpin() {
     if (isSpinning) return;
     if (points < WHEEL_SPIN_COST) {
-      setMessage("Недостаточно очков для вращения колеса.");
+      setMessage(t.errors.wheelInsufficientPoints);
       return;
     }
 
@@ -10972,7 +10972,7 @@ const visibleRewards = rewardsExpanded
 
     if (!result) {
       setIsSpinning(false);
-      setMessage("Не удалось прокрутить колесо. Попробуй ещё раз.");
+      setMessage(t.errors.wheelSpinFailed);
       return;
     }
 
@@ -12379,7 +12379,7 @@ function FreePremiumScreen({
     const initData = window.Telegram?.WebApp?.initData;
 
     if (!initData) {
-      alert("Не удалось определить Telegram");
+      alert(t.errors.telegramNotDetected);
       return;
     }
 
@@ -13781,7 +13781,7 @@ const handleBuyPremium = async () => {
       const supabaseAccessToken = sessionData.session?.access_token;
 
       if (!supabaseAccessToken) {
-        throw new Error("Нет активной сессии, попробуйте войти заново");
+        throw new Error(t.errors.noActiveSession);
       }
 
       const verifyRes = await fetch("/api/payments/apple-iap-verify", {
@@ -13795,7 +13795,7 @@ const handleBuyPremium = async () => {
       const verifyData = await verifyRes.json();
 
       if (!verifyRes.ok || !verifyData?.ok) {
-        throw new Error(verifyData?.error || "Не удалось подтвердить покупку");
+        throw new Error(verifyData?.error || t.errors.purchaseNotConfirmed);
       }
 
       const hasPremium = Boolean(verifyData.isPremium);
@@ -13830,12 +13830,12 @@ const handleBuyPremium = async () => {
     console.log("BUY PREMIUM RESPONSE:", data);
 
     if (!res.ok) {
-      throw new Error(data?.error || "Не удалось создать оплату");
+      throw new Error(data?.error || t.errors.paymentCreateFailed);
     }
 
     const invoiceLink = data?.invoiceLink;
     if (!invoiceLink) {
-      throw new Error("Ссылка на оплату не получена");
+      throw new Error(t.errors.paymentLinkMissing);
     }
 
     if (window.Telegram?.WebApp?.openInvoice) {
@@ -13879,7 +13879,7 @@ const handleBuyPremium = async () => {
   }
 });
     } else {
-      throw new Error("Telegram WebApp openInvoice недоступен");
+      throw new Error(t.errors.telegramInvoiceUnavailable);
     }
   } catch (error) {
     // Пользователь сам отменил системный диалог StoreKit — это не
@@ -14552,7 +14552,7 @@ const handleJoinByCode = async (inviteCode: string) => {
   const actualUser = getTelegramUserSafe(user);
 
   if (!actualUser?.id) {
-    alert("Не удалось получить пользователя Telegram");
+    alert(t.errors.telegramUserNotFound);
     return;
   }
 
@@ -14562,7 +14562,7 @@ const handleJoinByCode = async (inviteCode: string) => {
   const joinedPair = await joinPairByInviteCode(actualUser.id, inviteCode.trim().toUpperCase());
 
   if (!joinedPair) {
-    alert("Не удалось подключиться. Проверь код приглашения.");
+    alert(t.errors.pairJoinFailed);
     return;
   }
 
@@ -14580,7 +14580,7 @@ await refreshPairData({
 });
 
 
-alert("Пара успешно подключена 💕");
+alert(t.errors.pairJoinedSuccess);
 setScreen("pair");
 };
 
@@ -14590,7 +14590,7 @@ const handleCreateInvite = async () => {
   const actualUser = getTelegramUserSafe(user);
 
   if (!actualUser?.id) {
-    alert("Не удалось получить пользователя Telegram");
+    alert(t.errors.telegramUserNotFound);
     return;
   }
 
@@ -14612,7 +14612,7 @@ const handleCreateInvite = async () => {
   const initData = window.Telegram?.WebApp?.initData;
 
   if (!initData) {
-    alert("Не удалось подтвердить пользователя Telegram");
+    alert(t.errors.telegramUserNotConfirmed);
     return;
   }
 
@@ -14630,7 +14630,7 @@ const handleCreateInvite = async () => {
     if (!response.ok || !createData?.ok) {
       console.error("create pair error:", createData);
       alert(
-        `Не удалось создать приглашение: ${
+        `${t.errors.pairCreateInviteFailedPrefix} ${
           createData?.reason || "unknown error"
         }`
       );
@@ -14638,7 +14638,7 @@ const handleCreateInvite = async () => {
     }
   } catch (error) {
     console.error("create pair request error:", error);
-    alert("Не удалось создать приглашение");
+    alert(t.errors.pairCreateInviteFailed);
     return;
   }
 
@@ -15210,16 +15210,16 @@ const handleClaimBonus = async () => {
           setClaimableDay(Number(data.streakDay));
         }
 
-        alert("Бонус на сегодня уже забран — приходи завтра 💫");
+        alert(t.errors.bonusAlreadyClaimedToday);
       } else {
-        alert("Не удалось начислить бонус, попробуй ещё раз");
+        alert(t.errors.bonusClaimFailed);
       }
 
       return;
     }
   } catch (error) {
     console.error("handleClaimBonus request error:", error);
-    alert("Не удалось начислить бонус, попробуй ещё раз");
+    alert(t.errors.bonusClaimFailed);
     return;
   }
 
@@ -15266,7 +15266,7 @@ async function completeGiveawayAction(
     return {
       success: false,
       ticketAdded: false,
-      message: "Не удалось подтвердить пользователя Telegram",
+      message: t.errors.telegramUserNotConfirmed,
     };
   }
 
@@ -15619,7 +15619,7 @@ if (finishedAllTests && !appState.completionBonusesClaimed.tests) {
 
  const handleSpinReward = async (): Promise<WonReward | null> => {
   if (!appState.pair.pairId) {
-    alert("Сначала нужно создать пару");
+    alert(t.errors.pairRequiredForSpin);
     return null;
   }
 
@@ -15627,7 +15627,7 @@ if (finishedAllTests && !appState.completionBonusesClaimed.tests) {
 
   if (!initData) {
     console.error("handleSpinReward: Telegram initData отсутствует");
-    alert("Не удалось подтвердить пользователя Telegram");
+    alert(t.errors.telegramUserNotConfirmed);
     return null;
   }
 
@@ -15652,20 +15652,20 @@ if (finishedAllTests && !appState.completionBonusesClaimed.tests) {
 
     if (!response.ok) {
       console.error("REWARDS SPIN ERROR:", data);
-      alert("Не удалось прокрутить колесо, попробуй ещё раз");
+      alert(t.errors.wheelSpinFailed);
       return null;
     }
   } catch (error) {
     console.error("REWARDS SPIN REQUEST ERROR:", error);
-    alert("Не удалось прокрутить колесо, попробуй ещё раз");
+    alert(t.errors.wheelSpinFailed);
     return null;
   }
 
   if (!data?.awarded) {
     if (data?.reason === "insufficient-points") {
-      alert("Недостаточно очков для вращения колеса.");
+      alert(t.errors.wheelInsufficientPoints);
     } else if (data?.reason === "daily-limit-reached") {
-      alert("Сегодня лимит вращений исчерпан (3 в день).");
+      alert(t.errors.wheelDailyLimitReached);
     } else {
       console.error("Wheel spin not awarded:", data?.reason);
     }
