@@ -6905,9 +6905,7 @@ function AuthScreen() {
         });
 
         if (authError) {
-          setError(
-            `${authError.message} [dbg email="${email}" len=${email.length}/${password.length}]`
-          );
+          setError(authError.message);
           setLoading(false);
           return;
         }
