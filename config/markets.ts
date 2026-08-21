@@ -25,6 +25,19 @@ function detectMarketFromCode(code: string | undefined | null): Market | null {
 
 export function getMarket(): Market {
   if (typeof window !== "undefined") {
+    // ?lang=en в URL — явный оверрайд (используется, например, для
+    // ссылок поддержки на конкретном языке или для снятия скриншотов
+    // App Store на разных языках без смены системных настроек).
+    // Сохраняем в localStorage, чтобы выбор держался и после перехода
+    // на другой экран/перезагрузки.
+    const fromQuery = new URLSearchParams(window.location.search).get(
+      "lang"
+    );
+    if (fromQuery === "ru" || fromQuery === "en" || fromQuery === "fi") {
+      window.localStorage.setItem("couple-quizzes-lang", fromQuery);
+      return fromQuery;
+    }
+
     const saved = window.localStorage.getItem("couple-quizzes-lang");
     if (saved === "ru" || saved === "en" || saved === "fi") {
       return saved;
