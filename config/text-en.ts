@@ -1,4 +1,15 @@
 export const TEXT_EN = {
+  account: {
+    deleteAccountTitle: "Delete account",
+    deleteAccountText:
+      "This permanently deletes your login and personal data (name, photo, username). This can't be undone.",
+    deleteAccountButton: "Delete account",
+    deleteAccountConfirmText: "Really delete your account? This can't be undone.",
+    deleteAccountConfirmButton: "Yes, delete permanently",
+    deleteAccountCancelButton: "Cancel",
+    deleteAccountError: "Couldn't delete your account. Please try again.",
+  },
+
   appName: "Couple Quizzes",
 
   menu: {

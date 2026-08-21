@@ -12673,6 +12673,47 @@ const t = market === "fi" ? TEXT_FI : market === "en" ? TEXT_EN : TEXT_RU;
 
  const pairStats = calculatePairStats(pairPollAnswers);
 
+  // Apple Guideline 5.1.1(v) — apps with account creation must offer
+  // in-app account deletion. Only the Capacitor build has a real
+  // Supabase Auth account to delete; Telegram users never see this.
+  const [confirmingDelete, setConfirmingDelete] = useState(false);
+  const [deletingAccount, setDeletingAccount] = useState(false);
+
+  async function handleDeleteAccount() {
+    setDeletingAccount(true);
+    try {
+      const { data: sessionData } = await supabase.auth.getSession();
+      const accessToken = sessionData.session?.access_token;
+
+      if (!accessToken) {
+        alert(t.account.deleteAccountError);
+        setDeletingAccount(false);
+        return;
+      }
+
+      const response = await fetch("/api/account/delete", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ supabaseAccessToken: accessToken }),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok || !result.ok) {
+        alert(t.account.deleteAccountError);
+        setDeletingAccount(false);
+        return;
+      }
+
+      await supabase.auth.signOut();
+      window.location.reload();
+    } catch (error) {
+      console.error("handleDeleteAccount error:", error);
+      alert(t.account.deleteAccountError);
+      setDeletingAccount(false);
+    }
+  }
+
 
   return (
     <div style={{ padding: 16, display: "grid", gap: 14 }}>
@@ -12824,6 +12865,76 @@ const t = market === "fi" ? TEXT_FI : market === "en" ? TEXT_EN : TEXT_RU;
 
 </div>
 
+{isCapacitorApp() && (
+  <div style={{ ...cardBaseStyle(), padding: 18 }}>
+    <div style={{ fontSize: 16, fontWeight: 900, color: "#8a2f2f" }}>
+      {t.account.deleteAccountTitle}
+    </div>
+    <div
+      style={{
+        marginTop: 6,
+        color: "#4b446a",
+        fontSize: 13,
+        lineHeight: 1.45,
+      }}
+    >
+      {t.account.deleteAccountText}
+    </div>
+
+    {confirmingDelete ? (
+      <div style={{ display: "grid", gap: 8, marginTop: 12 }}>
+        <div style={{ fontSize: 13, fontWeight: 800, color: "#8a2f2f" }}>
+          {t.account.deleteAccountConfirmText}
+        </div>
+        <button
+          onClick={handleDeleteAccount}
+          disabled={deletingAccount}
+          style={{
+            border: "none",
+            borderRadius: 16,
+            padding: "12px 16px",
+            background: "#c1352f",
+            color: "#fff",
+            fontWeight: 800,
+            fontSize: 14,
+            cursor: deletingAccount ? "default" : "pointer",
+            opacity: deletingAccount ? 0.7 : 1,
+          }}
+        >
+          {deletingAccount
+            ? t.common.loading
+            : t.account.deleteAccountConfirmButton}
+        </button>
+        <button
+          onClick={() => setConfirmingDelete(false)}
+          disabled={deletingAccount}
+          style={secondaryButtonStyle}
+        >
+          {t.account.deleteAccountCancelButton}
+        </button>
+      </div>
+    ) : (
+      <button
+        onClick={() => setConfirmingDelete(true)}
+        style={{
+          border: "1px solid rgba(193,53,47,0.35)",
+          borderRadius: 16,
+          padding: "12px 16px",
+          background: "rgba(193,53,47,0.08)",
+          color: "#8a2f2f",
+          fontWeight: 800,
+          fontSize: 14,
+          cursor: "pointer",
+          marginTop: 12,
+          width: "100%",
+        }}
+      >
+        {t.account.deleteAccountButton}
+      </button>
+    )}
+  </div>
+)}
+
 <button
   onClick={onBack}
   style={{
@@ -12834,7 +12945,7 @@ const t = market === "fi" ? TEXT_FI : market === "en" ? TEXT_EN : TEXT_RU;
 >
   {t.common.back}
 </button>
-  
+
     </div>
   );
 }

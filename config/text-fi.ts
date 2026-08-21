@@ -3,6 +3,17 @@
 // kannattaa vielä tarkistuttaa äidinkielisellä puhujalla, koska
 // tekoälykäännös voi kuulostaa paikoin hieman kankealta.
 export const TEXT_FI = {
+  account: {
+    deleteAccountTitle: "Poista tili",
+    deleteAccountText:
+      "Tämä poistaa pysyvästi kirjautumisesi ja henkilötietosi (nimi, kuva, käyttäjätunnus). Tätä ei voi perua.",
+    deleteAccountButton: "Poista tili",
+    deleteAccountConfirmText: "Poistetaanko tili varmasti? Tätä ei voi perua.",
+    deleteAccountConfirmButton: "Kyllä, poista pysyvästi",
+    deleteAccountCancelButton: "Peruuta",
+    deleteAccountError: "Tilin poistaminen epäonnistui. Yritä uudelleen.",
+  },
+
   appName: "Couple Quizzes",
 
   menu: {

@@ -1,4 +1,15 @@
 export const TEXT_RU = {
+  account: {
+    deleteAccountTitle: "Удалить аккаунт",
+    deleteAccountText:
+      "Это навсегда удалит вход в аккаунт и личные данные (имя, фото, имя пользователя). Действие необратимо.",
+    deleteAccountButton: "Удалить аккаунт",
+    deleteAccountConfirmText: "Точно удалить аккаунт? Это нельзя отменить.",
+    deleteAccountConfirmButton: "Да, удалить навсегда",
+    deleteAccountCancelButton: "Отмена",
+    deleteAccountError: "Не удалось удалить аккаунт. Попробуйте ещё раз.",
+  },
+
   appName: "Couple Quizzes",
 
   menu: {
