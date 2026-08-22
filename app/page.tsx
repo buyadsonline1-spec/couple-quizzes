@@ -7396,7 +7396,11 @@ function MainMenu({
 
   
   const firstName = user?.first_name || "Друг";
-  const hasPair = !!appState.pair?.pairId;
+  // pairId появляется уже после того, как ОДИН человек создал
+  // приглашение — партнёр мог ещё не подключиться. Плашку с уровнем
+  // пары показываем только когда пара реально укомплектована (оба
+  // участника), иначе до этого момента остаётся призыв создать пару.
+  const hasPair = !!appState.pair?.pairId && !!appState.pair?.partner;
 
   return (
     <div style={{ padding: 10, paddingTop: 8 }}>
