@@ -171,6 +171,10 @@ export const TEXT_FI = {
   },
 
   pair: {
+    leavePairButton: "Poistu parista",
+    leavePairConfirmText: "Poistutaanko parista varmasti? Tämä katkaisee yhteyden kumppaniin, mutta ei poista pisteitä tai historiaa.",
+    leavePairConfirmButton: "Kyllä, poistu",
+    leavePairCancelButton: "Peruuta",
     title: "Pari",
     historyTitle: "Historia",
     subtitle: "Teidän edistymisenne parina",
@@ -420,6 +424,7 @@ export const TEXT_FI = {
     telegramNotDetected: "Telegramia ei tunnistettu",
     saveAnswerFailed: "Vastauksen tallennus epäonnistui, yritä uudelleen",
     pairJoinFailed: "Yhdistäminen epäonnistui. Tarkista kutsukoodi.",
+    pairLeaveFailed: "Parista poistuminen epäonnistui. Yritä uudelleen.",
     pairJoinedSuccess: "Pari yhdistetty onnistuneesti 💕",
     pairCreateInviteFailedPrefix: "Kutsun luonti epäonnistui:",
     pairCreateInviteFailed: "Kutsun luonti epäonnistui",

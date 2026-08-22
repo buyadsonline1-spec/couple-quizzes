@@ -167,6 +167,10 @@ export const TEXT_EN = {
   },
 
  pair: {
+    leavePairButton: "Leave pair",
+    leavePairConfirmText: "Really leave this pair? This disconnects you from your partner, but doesn't delete points or history.",
+    leavePairConfirmButton: "Yes, leave pair",
+    leavePairCancelButton: "Cancel",
   title: "Pair",
     historyTitle: "History",
   subtitle: "Your progress as a couple",
@@ -414,6 +418,7 @@ export const TEXT_EN = {
     telegramNotDetected: "Couldn't detect Telegram",
     saveAnswerFailed: "Couldn't save your answer, try again",
     pairJoinFailed: "Couldn't connect. Check your invite code.",
+    pairLeaveFailed: "Couldn't leave the pair. Please try again.",
     pairJoinedSuccess: "Pair connected successfully 💕",
     pairCreateInviteFailedPrefix: "Couldn't create invite:",
     pairCreateInviteFailed: "Couldn't create invite",

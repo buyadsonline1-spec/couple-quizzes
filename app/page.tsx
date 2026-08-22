@@ -3263,6 +3263,7 @@ function PairScreen({
   onOpenDailyQuestion,
   onOpenCompatibilityInfo,
   onOpenPolls,
+  onLeavePair,
   t,
 }: {
   user: TgUser | null;
@@ -3279,11 +3280,14 @@ function PairScreen({
   onOpenDailyQuestion: () => void;
   onOpenCompatibilityInfo: () => void;
   onOpenPolls: () => void;
+  onLeavePair: () => void;
   t: any;
 }) {
   const hasPairCreated = !!pair.pairId;
   const hasPartnerConnected = !!pair.partner;
   const hasFullPair = hasPairCreated && hasPartnerConnected;
+
+  const [confirmingLeavePair, setConfirmingLeavePair] = useState(false);
 
   const pairStats = calculatePairStats(pairPollAnswers);
   const compatibilityProfile = buildCompatibilityProfile(pairPollAnswers || {});
@@ -3842,6 +3846,56 @@ function PairScreen({
             </div>
           </div>
         </>
+      )}
+
+      {hasPairCreated && (
+        <div style={{ ...cardBaseStyle(), padding: 16 }}>
+          {confirmingLeavePair ? (
+            <div style={{ display: "grid", gap: 8 }}>
+              <div style={{ fontSize: 13, fontWeight: 800, color: "#8a2f2f" }}>
+                {t.pair.leavePairConfirmText}
+              </div>
+              <button
+                onClick={onLeavePair}
+                style={{
+                  border: "none",
+                  borderRadius: 16,
+                  padding: "12px 16px",
+                  background: "#c1352f",
+                  color: "#fff",
+                  fontWeight: 800,
+                  fontSize: 14,
+                  cursor: "pointer",
+                }}
+              >
+                {t.pair.leavePairConfirmButton}
+              </button>
+              <button
+                onClick={() => setConfirmingLeavePair(false)}
+                style={secondaryButtonStyle}
+              >
+                {t.pair.leavePairCancelButton}
+              </button>
+            </div>
+          ) : (
+            <button
+              onClick={() => setConfirmingLeavePair(true)}
+              style={{
+                border: "1px solid rgba(193,53,47,0.35)",
+                borderRadius: 16,
+                padding: "12px 16px",
+                background: "rgba(193,53,47,0.08)",
+                color: "#8a2f2f",
+                fontWeight: 800,
+                fontSize: 14,
+                cursor: "pointer",
+                width: "100%",
+              }}
+            >
+              {t.pair.leavePairButton}
+            </button>
+          )}
+        </div>
       )}
 
       <button
@@ -12790,23 +12844,24 @@ const t = market === "fi" ? TEXT_FI : market === "en" ? TEXT_EN : TEXT_RU;
       {t.paywall.unlockButton} ✨
     </button>
 
-    <button
-  onClick={() => onNavigate("freePremium")}
-  style={{
-    marginTop: 6,
-    padding: "6px 10px",
-    fontSize: 12,
-    borderRadius: 999,
-    border: "1px solid rgba(143,107,255,0.3)",
-    background: "rgba(255,255,255,0.4)",
-    color: "#241b40",
-    fontWeight: 700,
-    cursor: "pointer",
-  }}
->
-  🎁 Получить Premium бесплатно
-</button>
-
+    {!isCapacitorApp() && (
+      <button
+        onClick={() => onNavigate("freePremium")}
+        style={{
+          marginTop: 6,
+          padding: "6px 10px",
+          fontSize: 12,
+          borderRadius: 999,
+          border: "1px solid rgba(143,107,255,0.3)",
+          background: "rgba(255,255,255,0.4)",
+          color: "#241b40",
+          fontWeight: 700,
+          cursor: "pointer",
+        }}
+      >
+        🎁 Получить Premium бесплатно
+      </button>
+    )}
 
   </div>
 )}
@@ -14722,6 +14777,38 @@ const syncWeeklyUserLeaderboard = async (
 
 
 
+const handleLeavePair = async () => {
+  const initData = window.Telegram?.WebApp?.initData;
+
+  if (!initData) {
+    alert(t.errors.telegramUserNotConfirmed);
+    return;
+  }
+
+  try {
+    const response = await fetch("/api/pair/leave", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ initData }),
+    });
+
+    const result = await response.json();
+
+    if (!result.ok) {
+      alert(t.errors.pairLeaveFailed);
+      return;
+    }
+
+    // Простой и надёжный способ подхватить обновлённое (уже без пары)
+    // состояние — тот же приём, что и после auth-действий: bootstrap
+    // на маунте сам подтянет свежие данные с сервера.
+    window.location.reload();
+  } catch (error) {
+    console.error("handleLeavePair error:", error);
+    alert(t.errors.pairLeaveFailed);
+  }
+};
+
 const handleJoinByCode = async (inviteCode: string) => {
   const actualUser = getTelegramUserSafe(user);
 
@@ -16218,6 +16305,7 @@ showPaywall={() => {
   onOpenInvite={() => setScreen("pair-invite")}
   onOpenDailyQuestion={() => setScreen("daily-pair-question")}
   onOpenCompatibilityInfo={() => setScreen("pair-compatibility-info")}
+  onLeavePair={handleLeavePair}
   onOpenPolls={() => {
     // "polls" как единого экрана не существует — как и в MainMenu,
     // опросы разделены на polls-boy/polls-girl по полу профиля.

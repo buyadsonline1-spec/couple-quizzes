@@ -167,6 +167,10 @@ export const TEXT_RU = {
   },
 
  pair: {
+    leavePairButton: "Расстаться с парой",
+    leavePairConfirmText: "Точно расстаться с парой? Это отменит связь с партнёром, но не удалит очки и историю.",
+    leavePairConfirmButton: "Да, расстаться",
+    leavePairCancelButton: "Отмена",
   title: "Пара",
     historyTitle: "История",
   subtitle: "Ваш прогресс как пары",
@@ -419,6 +423,7 @@ export const TEXT_RU = {
     telegramNotDetected: "Не удалось определить Telegram",
     saveAnswerFailed: "Не удалось сохранить ответ, попробуй ещё раз",
     pairJoinFailed: "Не удалось подключиться. Проверь код приглашения.",
+    pairLeaveFailed: "Не удалось расстаться с парой. Попробуйте ещё раз.",
     pairJoinedSuccess: "Пара успешно подключена 💕",
     pairCreateInviteFailedPrefix: "Не удалось создать приглашение:",
     pairCreateInviteFailed: "Не удалось создать приглашение",
