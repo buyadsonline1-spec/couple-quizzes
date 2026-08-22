@@ -3849,7 +3849,7 @@ function PairScreen({
       )}
 
       {hasPairCreated && (
-        <div style={{ ...cardBaseStyle(), padding: 16 }}>
+        <div style={{ ...cardBaseStyle(), padding: 16, marginTop: 10 }}>
           {confirmingLeavePair ? (
             <div style={{ display: "grid", gap: 8 }}>
               <div style={{ fontSize: 13, fontWeight: 800, color: "#8a2f2f" }}>
@@ -16421,7 +16421,7 @@ showPaywall={() => {
           color: "#6b46ff",
         }}
       >
-        299 ₽
+        {isCapacitorApp() ? "299 ₽" : "149 ₽"}
       </div>
 
       <button

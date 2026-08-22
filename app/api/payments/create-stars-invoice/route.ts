@@ -53,7 +53,7 @@ export async function POST(req: NextRequest) {
           prices: [
             {
               label: "Premium на 30 дней",
-              amount: 299,
+              amount: 149,
             },
           ],
         }),
