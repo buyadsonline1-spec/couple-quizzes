@@ -12844,7 +12844,10 @@ const t = market === "fi" ? TEXT_FI : market === "en" ? TEXT_EN : TEXT_RU;
       {t.paywall.unlockButton} ✨
     </button>
 
-    {!isCapacitorApp() && (
+    {/* Временно скрыто на всех платформах по просьбе Артёма (не
+        только в iOS) — легко вернуть, поменяв false обратно на
+        условие/true. */}
+    {false && (
       <button
         onClick={() => onNavigate("freePremium")}
         style={{

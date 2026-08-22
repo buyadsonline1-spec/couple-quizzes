@@ -906,14 +906,6 @@ bot.onText(
                   },
                 },
               ],
-              [
-                {
-                  text:
-                    "🎁 Участвовать в розыгрыше",
-                  callback_data:
-                    "giveaway_join",
-                },
-              ],
             ],
           },
         }
