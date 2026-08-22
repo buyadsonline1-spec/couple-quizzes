@@ -51,6 +51,8 @@ export const TEXT_FI = {
   home: {
     pairLevel: "Parin taso",
     toNextLevel: "Seuraavalle tasolle",
+    noPairGreeting: "Hei, {name}! 👋",
+    noPairText: "Luo pari kumppanisi kanssa tehdäksenne testejä ja kyselyitä yhdessä ja ansaitaksenne bonuksia",
     yourPoints: "Sinun pisteesi",
     newbies: "Aloittelijat",
     maxLevelReached: "Enimmäistaso",

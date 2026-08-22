@@ -47,6 +47,8 @@ export const TEXT_EN = {
   home: {
     pairLevel: "Pair level",
     toNextLevel: "To the next level",
+    noPairGreeting: "Hi, {name}! 👋",
+    noPairText: "Create a pair with your partner to take tests and polls together and earn bonuses",
     yourPoints: "Your points",
     newbies: "Newbies",
     maxLevelReached: "Maximum level",

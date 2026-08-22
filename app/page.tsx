@@ -7396,6 +7396,7 @@ function MainMenu({
 
   
   const firstName = user?.first_name || "Друг";
+  const hasPair = !!appState.pair?.pairId;
 
   return (
     <div style={{ padding: 10, paddingTop: 8 }}>
@@ -7421,6 +7422,7 @@ function MainMenu({
 </div>
   
 
+  {hasPair ? (
   <div
   style={{
     marginTop: 10,
@@ -7511,6 +7513,50 @@ function MainMenu({
   : t.home.maxLevelReached}
 </div>
       </div>
+  ) : (
+    <button
+      onClick={() => onNavigate("pair")}
+      style={{
+        marginTop: 10,
+        padding: "12px 12px",
+        borderRadius: 16,
+        background: "linear-gradient(135deg, rgba(143,107,255,0.24), rgba(255,118,186,0.20))",
+        width: "100%",
+        boxSizing: "border-box",
+        border: "none",
+        textAlign: "left",
+        cursor: "pointer",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "space-between",
+        gap: 10,
+      }}
+    >
+      <div style={{ minWidth: 0 }}>
+        <div
+          style={{
+            fontSize: 14,
+            fontWeight: 900,
+            color: "#1f1d3a",
+            lineHeight: 1.25,
+          }}
+        >
+          {t.home.noPairGreeting.replace("{name}", firstName)}
+        </div>
+        <div
+          style={{
+            marginTop: 4,
+            fontSize: 12,
+            color: "#4b446a",
+            lineHeight: 1.35,
+          }}
+        >
+          {t.home.noPairText}
+        </div>
+      </div>
+      <div style={{ fontSize: 20, flexShrink: 0 }}>💞</div>
+    </button>
+  )}
     </div>
 
     <div
