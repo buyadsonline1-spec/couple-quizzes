@@ -200,6 +200,7 @@ export const TEXT_RU = {
   pairInvite: "Пригласить партнёра",
   pairConnected: "Пара подключена",
   maxLevel: "Макс. уровень",
+  levelsMilestonesTitle: "Рубежи уровней",
 
   dailyQuestionHint: "Отвечайте вместе каждый день и получайте бонусы 💞",
   streakDaysLabel: "Серия",

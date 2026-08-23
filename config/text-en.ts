@@ -200,6 +200,7 @@ export const TEXT_EN = {
   pairInvite: "Invite partner",
   pairConnected: "Pair connected",
   maxLevel: "Max level",
+  levelsMilestonesTitle: "Level milestones",
 
   dailyQuestionHint: "Answer together every day and earn bonuses 💞",
   streakDaysLabel: "Streak",

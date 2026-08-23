@@ -82,6 +82,7 @@ type Screen =
   | "gender-select"
   | "daily-pair-question"
   | "pair-streak-info"
+  | "pair-level-info"
   | "paywall"
   | "pair-compatibility-info"
   | "freePremium"
@@ -3262,6 +3263,7 @@ function PairScreen({
   onOpenInvite,
   onOpenDailyQuestion,
   onOpenCompatibilityInfo,
+  onOpenLevelInfo,
   onOpenPolls,
   onLeavePair,
   t,
@@ -3279,6 +3281,7 @@ function PairScreen({
   onOpenInvite: () => void;
   onOpenDailyQuestion: () => void;
   onOpenCompatibilityInfo: () => void;
+  onOpenLevelInfo: () => void;
   onOpenPolls: () => void;
   onLeavePair: () => void;
   t: any;
@@ -3610,241 +3613,130 @@ function PairScreen({
             </div>
           </div>
 
-          <div style={{ marginTop: 10 }}>
-            <div style={{ ...cardBaseStyle(), padding: 18 }}>
-              <div style={{ fontSize: 22, fontWeight: 900, color: "#1f1d3a" }}>
-                {t.pair.level}
-              </div>
-
-              <div
-                style={{
-                  marginTop: 14,
-                  padding: "18px 16px",
-                  borderRadius: 18,
-                  background: "rgba(255,255,255,0.24)",
-                }}
-              >
-                <div
-                  style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                    gap: 12,
-                  }}
-                >
-                  <div>
-                    <div
-                      style={{
-                        color: "#5a5378",
-                        fontSize: 13,
-                        fontWeight: 700,
-                      }}
-                    >
-                      {t.pair.currentLevel}
-                    </div>
-                    <div
-                      style={{
-                        marginTop: 6,
-                        fontSize: 30,
-                        fontWeight: 900,
-                        color: "#1f1d3a",
-                        lineHeight: 1,
-                      }}
-                    >
-                      {pairLevel.title}
-                    </div>
-                  </div>
-
-                  <div
-                    style={{
-                      minWidth: 64,
-                      height: 64,
-                      borderRadius: 18,
-                      background: "linear-gradient(135deg,#8f6bff,#ff76ba)",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      color: "#fff",
-                      fontSize: 22,
-                      fontWeight: 900,
-                      boxShadow: "0 6px 18px rgba(143,107,255,0.22)",
-                      flexShrink: 0,
-                    }}
-                  >
-                    {pairLevel.level}
-                  </div>
-                </div>
-
-                <div style={{ marginTop: 16 }}>
-                  <div
-                    style={{
-                      height: 10,
-                      borderRadius: 999,
-                      background: "rgba(255,255,255,0.60)",
-                      overflow: "hidden",
-                    }}
-                  >
-                    <div
-                      style={{
-                        width: `${pairLevel.progressPercent}%`,
-                        height: "100%",
-                        borderRadius: 999,
-                        background: "linear-gradient(90deg,#8f6bff,#ff76ba)",
-                      }}
-                    />
-                  </div>
-
-                  <div
-                    style={{
-                      marginTop: 8,
-                      display: "flex",
-                      justifyContent: "space-between",
-                      gap: 10,
-                      fontSize: 12,
-                      color: "#5a5378",
-                      fontWeight: 700,
-                      flexWrap: "wrap",
-                    }}
-                  >
-                    <span>
-                      {pairLevel.nextLevelPoints
-                        ? // Берём из pairLevel (посчитан от очков ПАРЫ), а
-                          // не из points — тот был солo-балансом
-                          // пользователя и не совпадал с самим прогресс-баром.
-                          `${
-                            pairLevel.currentLevelPoints +
-                            pairLevel.progressInLevel
-                          } / ${pairLevel.nextLevelPoints}`
-                        : t.pair.maxLevel}
-                    </span>
-
-                    <span>
-                      {pairLevel.nextLevelPoints
-                        ? `${t.pair.untilNext}: ${
-                            pairLevel.progressMax - pairLevel.progressInLevel
-                          }`
-                        : ""}
-                    </span>
-                  </div>
-                </div>
-              </div>
+          <button
+            type="button"
+            onClick={onOpenLevelInfo}
+            style={{
+              ...cardBaseStyle(),
+              marginTop: 10,
+              padding: 14,
+              width: "100%",
+              border: "none",
+              textAlign: "left",
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              gap: 12,
+            }}
+          >
+            <div
+              style={{
+                minWidth: 44,
+                height: 44,
+                borderRadius: 14,
+                background: "linear-gradient(135deg,#8f6bff,#ff76ba)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                color: "#fff",
+                fontWeight: 900,
+                fontSize: 16,
+                flexShrink: 0,
+              }}
+            >
+              {pairLevel.level}
             </div>
-          </div>
 
-          <div style={{ marginTop: 10 }}>
-            <div style={{ ...cardBaseStyle(), padding: 18 }}>
+            <div style={{ flex: 1, minWidth: 0 }}>
               <div
                 style={{
                   display: "flex",
+                  alignItems: "baseline",
                   justifyContent: "space-between",
-                  alignItems: "flex-start",
-                  gap: 10,
+                  gap: 8,
                 }}
               >
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div
-                    style={{ fontSize: 22, fontWeight: 900, color: "#1f1d3a" }}
-                  >
-                    {t.pair.compatibility}
-                  </div>
-
-                  <div
-                    style={{
-                      marginTop: 10,
-                      fontSize: 14,
-                      color: "#5a5378",
-                      lineHeight: 1.45,
-                    }}
-                  >
-                    {compatibilityProfile.completedThemes > 0
-  ? `${t.pair.compatibilityCalculatedPrefix}${compatibilityProfile.completedThemes}${t.pair.compatibilityCalculatedMid}${compatibilityProfile.totalThemes}${t.pair.compatibilityCalculatedSuffix}`
-  : t.pair.takePollsPrompt}
-                  </div>
-
-                  {compatibilityProfile.completedThemes === 0 && (
-                    <button
-                      type="button"
-                      onClick={onOpenPolls}
-                      style={{
-                        ...primaryButtonStyle,
-                        width: "100%",
-                        marginTop: 14,
-                      }}
-                    >
-                      {t.pair.takePollsButton}
-                    </button>
-                  )}
+                <div style={{ fontSize: 15, fontWeight: 900, color: "#1f1d3a" }}>
+                  {pairLevel.title}
                 </div>
-
-                <button
-                  onClick={onOpenCompatibilityInfo}
-                  type="button"
-                  style={{
-                    width: 34,
-                    height: 34,
-                    borderRadius: 999,
-                    border: "1px solid rgba(143,107,255,0.22)",
-                    background: "rgba(255,255,255,0.85)",
-                    color: "#7c5cff",
-                    fontSize: 16,
-                    fontWeight: 800,
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    cursor: "pointer",
-                    boxShadow: "0 8px 20px rgba(124,92,255,0.10)",
-                    flexShrink: 0,
-                  }}
-                >
-                  ℹ️
-                </button>
+                <div style={{ fontSize: 11, color: "#7a7396", fontWeight: 700, flexShrink: 0 }}>
+                  {pairLevel.nextLevelPoints
+                    ? `${
+                        pairLevel.currentLevelPoints + pairLevel.progressInLevel
+                      } / ${pairLevel.nextLevelPoints}`
+                    : t.pair.maxLevel}
+                </div>
               </div>
 
-              {compatibilityProfile.completedThemes > 0 && (
+              <div
+                style={{
+                  marginTop: 6,
+                  height: 6,
+                  borderRadius: 999,
+                  background: "rgba(31,29,58,0.10)",
+                  overflow: "hidden",
+                }}
+              >
                 <div
                   style={{
-                    marginTop: 14,
-                    padding: "18px 16px",
-                    borderRadius: 18,
-                    background: "rgba(255,255,255,0.24)",
-                    textAlign: "center",
+                    width: `${pairLevel.progressPercent}%`,
+                    height: "100%",
+                    borderRadius: 999,
+                    background: "linear-gradient(90deg,#8f6bff,#ff76ba)",
                   }}
-                >
-                  <div
-                    style={{
-                      fontSize: 34,
-                      fontWeight: 900,
-                      color: "#6b46ff",
-                    }}
-                  >
-                    {compatibilityProfile.overallPercent}%
-                  </div>
-
-                  <div
-                    style={{
-                      marginTop: 8,
-                      color: "#4d466c",
-                      fontSize: 14,
-                      lineHeight: 1.45,
-                    }}
-                  >
-                    {compatibilityProfile.pairType}
-                  </div>
-
-                  <div
-                    style={{
-                      marginTop: 12,
-                      color: "#5a5378",
-                      fontSize: 12,
-                      lineHeight: 1.45,
-                    }}
-                  >
-                    {t.pair.themesCompletedPrefix}{pairStats.completedThemes}
-                  </div>
-                </div>
-              )}
+                />
+              </div>
             </div>
-          </div>
+
+            <div style={{ fontSize: 20, color: "#8f6bff", flexShrink: 0 }}>
+              ›
+            </div>
+          </button>
+
+          <button
+            type="button"
+            onClick={onOpenCompatibilityInfo}
+            style={{
+              ...cardBaseStyle(),
+              marginTop: 10,
+              padding: 14,
+              width: "100%",
+              border: "none",
+              textAlign: "left",
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              gap: 12,
+            }}
+          >
+            <div style={{ fontSize: 26, flexShrink: 0 }}>💜</div>
+
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ fontSize: 15, fontWeight: 900, color: "#1f1d3a" }}>
+                {compatibilityProfile.completedThemes > 0
+                  ? `${compatibilityProfile.overallPercent}% — ${compatibilityProfile.pairType}`
+                  : t.pair.compatibility}
+              </div>
+              <div
+                style={{
+                  marginTop: 2,
+                  fontSize: 12,
+                  color: "#7a7396",
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                  whiteSpace: "nowrap",
+                }}
+              >
+                {compatibilityProfile.completedThemes > 0
+                  ? `${t.pair.compatibilityCalculatedPrefix}${compatibilityProfile.completedThemes}${t.pair.compatibilityCalculatedMid}${compatibilityProfile.totalThemes}${t.pair.compatibilityCalculatedSuffix}`
+                  : t.pair.takePollsPrompt}
+              </div>
+            </div>
+
+            <div style={{ fontSize: 20, color: "#8f6bff", flexShrink: 0 }}>
+              ›
+            </div>
+          </button>
         </>
       )}
 
@@ -4764,6 +4656,214 @@ function PairStreakInfoScreen({
 
 
 
+    </div>
+  );
+}
+
+function PairLevelInfoScreen({
+  pairLevel,
+  onBack,
+}: {
+  pairLevel: PairLevelInfo;
+  onBack: () => void;
+}) {
+  const market = getMarket();
+  const t = market === "fi" ? TEXT_FI : market === "en" ? TEXT_EN : TEXT_RU;
+
+  const currentPoints =
+    pairLevel.currentLevelPoints + pairLevel.progressInLevel;
+
+  return (
+    <div style={{ padding: 16, display: "grid", gap: 14 }}>
+      <div
+        style={{
+          ...cardBaseStyle(),
+          padding: 20,
+          textAlign: "center",
+          background:
+            "linear-gradient(160deg, rgba(255,145,190,0.20), rgba(143,107,255,0.18))",
+        }}
+      >
+        <div style={{ fontSize: 15, fontWeight: 800, color: "#6c6487" }}>
+          🏅 {t.pair.level}
+        </div>
+
+        <div
+          style={{
+            marginTop: 10,
+            fontSize: 34,
+            fontWeight: 900,
+            color: "#1f1d3a",
+            lineHeight: 1.1,
+          }}
+        >
+          {pairLevel.title}
+        </div>
+
+        <div
+          style={{
+            marginTop: 4,
+            fontSize: 14,
+            fontWeight: 800,
+            color: "#7c5cff",
+          }}
+        >
+          lvl {pairLevel.level}
+        </div>
+
+        <div
+          style={{
+            marginTop: 16,
+            padding: "14px 16px",
+            borderRadius: 18,
+            background: "rgba(255,255,255,0.42)",
+            border: "1px solid rgba(255,255,255,0.4)",
+          }}
+        >
+          <div
+            style={{
+              height: 10,
+              borderRadius: 999,
+              background: "rgba(255,255,255,0.60)",
+              overflow: "hidden",
+            }}
+          >
+            <div
+              style={{
+                width: `${pairLevel.progressPercent}%`,
+                height: "100%",
+                borderRadius: 999,
+                background: "linear-gradient(90deg,#8f6bff,#ff76ba)",
+              }}
+            />
+          </div>
+
+          <div
+            style={{
+              marginTop: 8,
+              display: "flex",
+              justifyContent: "space-between",
+              gap: 10,
+              fontSize: 12,
+              color: "#5a5378",
+              fontWeight: 700,
+              flexWrap: "wrap",
+            }}
+          >
+            <span>
+              {pairLevel.nextLevelPoints
+                ? `${currentPoints} / ${pairLevel.nextLevelPoints}`
+                : t.pair.maxLevel}
+            </span>
+
+            <span>
+              {pairLevel.nextLevelPoints
+                ? `${t.pair.untilNext}: ${
+                    pairLevel.progressMax - pairLevel.progressInLevel
+                  }`
+                : ""}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <div style={{ ...cardBaseStyle(), padding: 18 }}>
+        <div style={{ fontSize: 18, fontWeight: 900, color: "#1f1d3a" }}>
+          🏆 {t.pair.levelsMilestonesTitle}
+        </div>
+
+        <div
+          style={{
+            display: "grid",
+            gap: 10,
+            marginTop: 14,
+          }}
+        >
+          {PAIR_LEVELS.map((level) => {
+            const achieved = level.level <= pairLevel.level;
+            const isCurrent = pairLevel.level === level.level;
+            const isNext = level.level === pairLevel.level + 1;
+
+            return (
+              <div
+                key={level.level}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  gap: 10,
+                  padding: "12px 14px",
+                  borderRadius: 18,
+                  background: isCurrent
+                    ? "linear-gradient(135deg, rgba(255,236,244,0.98), rgba(255,255,255,0.92))"
+                    : "rgba(255,255,255,0.30)",
+                  border: isCurrent
+                    ? "2px solid rgba(255,118,186,0.28)"
+                    : "1px solid transparent",
+                  opacity: achieved || isNext ? 1 : 0.55,
+                }}
+              >
+                <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                  <div
+                    style={{
+                      minWidth: 34,
+                      height: 34,
+                      borderRadius: 999,
+                      background: achieved
+                        ? "linear-gradient(135deg,#8f6bff,#ff76ba)"
+                        : "rgba(255,255,255,0.6)",
+                      color: achieved ? "#fff" : "#5a5378",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      fontWeight: 900,
+                      fontSize: 13,
+                      flexShrink: 0,
+                    }}
+                  >
+                    {level.level}
+                  </div>
+                  <div>
+                    <div
+                      style={{ fontSize: 14, fontWeight: 800, color: "#1f1d3a" }}
+                    >
+                      {level.title}
+                    </div>
+                    <div style={{ fontSize: 12, color: "#7a7396" }}>
+                      {level.points} {t.bonus.pointsWord}
+                    </div>
+                  </div>
+                </div>
+
+                {(achieved || isNext) && (
+                  <div
+                    style={{
+                      fontSize: 11,
+                      fontWeight: 800,
+                      color: isNext ? "#7c5cff" : "#ff5ea8",
+                      background: "rgba(255,255,255,0.82)",
+                      padding: "5px 8px",
+                      borderRadius: 999,
+                      flexShrink: 0,
+                    }}
+                  >
+                    {isNext
+                      ? t.pair.streakInfoScreen.next
+                      : t.pair.streakInfoScreen.reached}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      <button
+        onClick={onBack}
+        style={{ ...secondaryButtonStyle, width: "100%" }}
+      >
+        {t.common.back}
+      </button>
     </div>
   );
 }
@@ -16358,6 +16458,7 @@ showPaywall={() => {
   onOpenInvite={() => setScreen("pair-invite")}
   onOpenDailyQuestion={() => setScreen("daily-pair-question")}
   onOpenCompatibilityInfo={() => setScreen("pair-compatibility-info")}
+  onOpenLevelInfo={() => setScreen("pair-level-info")}
   onLeavePair={handleLeavePair}
   onOpenPolls={() => {
     // "polls" как единого экрана не существует — как и в MainMenu,
@@ -16414,6 +16515,13 @@ showPaywall={() => {
       }
       setScreen(appState.profile.gender === "boy" ? "polls-boy" : "polls-girl");
     }}
+  />
+)}
+
+{screen === "pair-level-info" && (
+  <PairLevelInfoScreen
+    pairLevel={getPairLevelInfo(animatedPairPoints)}
+    onBack={() => setScreen("pair")}
   />
 )}
 

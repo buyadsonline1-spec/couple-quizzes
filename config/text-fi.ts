@@ -202,6 +202,7 @@ export const TEXT_FI = {
     pairInvite: "Kutsu kumppani",
     pairConnected: "Pari yhdistetty",
     maxLevel: "Enimmäistaso",
+  levelsMilestonesTitle: "Tasojen virstanpylväät",
 
     dailyQuestionHint: "Vastatkaa yhdessä joka päivä ja saatte bonuksia 💞",
     streakDaysLabel: "Putki",
