@@ -68,11 +68,15 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Раньше без пары ответ вообще не сохранялся ({ok:false,
+    // reason:"no-pair"}) — тихо терялся, без единого сообщения
+    // пользователю. Реальная проблема: почти никто не проходит опрос
+    // повторно после создания пары, так что эти ответы были просто
+    // потеряны навсегда. pair_id теперь может быть null — сам ответ
+    // всё равно пишется на telegram_id, и позже, когда пара появится,
+    // его можно будет учесть (см. миграцию
+    // allow_solo_poll_submissions.sql).
     const pairId = profile?.pair_id ?? null;
-
-    if (!pairId) {
-      return NextResponse.json({ ok: false, reason: "no-pair" });
-    }
 
     const { error: upsertError } = await supabaseAdmin
       .from("poll_submissions")
@@ -94,7 +98,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const pairPollAnswers = await loadPairPollAnswersForPair(pairId);
+    const pairPollAnswers = pairId
+      ? await loadPairPollAnswersForPair(pairId)
+      : {};
 
     return NextResponse.json({ ok: true, pairPollAnswers });
   } catch (error) {
