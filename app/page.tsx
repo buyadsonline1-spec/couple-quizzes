@@ -10646,7 +10646,7 @@ function TestsScreen({
 }: {
   completedTestIds: string[];
   onBack: () => void;
-  onCompleteTest: (test: TestDefinition) => Promise<void>;
+  onCompleteTest: (test: TestDefinition, answers: number[]) => Promise<void>;
 
   pair: PairState;
   // См. комментарий в PollsScreen — pair.isPremium читает несуществующую
@@ -10808,7 +10808,7 @@ function selectOption(optionIndex: number) {
 async function handleFinish() {
   if (!activeTest) return;
 
-  onCompleteTest(activeTest);
+  onCompleteTest(activeTest, answers);
 
   await confirmGiveawayAction("test");
 
@@ -15904,9 +15904,29 @@ if (finishedAllPolls && !appState.completionBonusesClaimed.polls) {
 
 
 
-   const handleCompleteTest = async (test: TestDefinition) => {
+   const handleCompleteTest = async (test: TestDefinition, testAnswers: number[]) => {
   const alreadyCompleted = appState.completedTestIds.includes(test.id);
   const rewardToAdd = alreadyCompleted ? 0 : test.reward;
+
+  // Раньше результат теста считался только на клиенте и нигде не
+  // сохранялся — как только человек уходил с экрана, он терялся
+  // навсегда. Сохраняем сырые ответы (не готовый текст результата —
+  // его всегда можно пересчитать); не блокируем основной флоу очков,
+  // если запрос не удался.
+  const initDataForTest = window.Telegram?.WebApp?.initData;
+  if (initDataForTest && testAnswers.length > 0) {
+    fetch("/api/test/submit", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        initData: initDataForTest,
+        testId: test.id,
+        answers: testAnswers,
+      }),
+    }).catch((error) => {
+      console.error("test submit error:", error);
+    });
+  }
 
   let nextSoloPoints = appState.soloPoints;
 
