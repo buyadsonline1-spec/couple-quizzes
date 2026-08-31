@@ -4,6 +4,16 @@
 // tekoälykäännös voi kuulostaa paikoin hieman kankealta.
 export const TEXT_FI = {
   account: {
+    settingsTitle: "Tilin asetukset",
+    nicknameLabel: "Nimi",
+    nicknamePlaceholder: "Miten sinua kutsutaan",
+    nicknameSaveButton: "Tallenna",
+    nicknameSaving: "Tallennetaan...",
+    nicknameSaved: "Nimi päivitetty",
+    nicknameError: "Nimen tallennus epäonnistui",
+    languageLabel: "Sovelluksen kieli",
+    genderLabel: "Sukupuoli",
+    changeGenderButton: "Muuta",
     deleteAccountTitle: "Poista tili",
     deleteAccountText:
       "Tämä poistaa pysyvästi kirjautumisesi ja henkilötietosi (nimi, kuva, käyttäjätunnus). Tätä ei voi perua.",
@@ -90,6 +100,8 @@ export const TEXT_FI = {
     top: "Kärkikaksikot",
     topPlayers: "Kärkikaksikot",
     profile: "Profiili ja tilastot",
+  pollsAndTests: "Kyselyt ja testit",
+  pairAndProfile: "Pari ja profiili",
   },
 
   common: {

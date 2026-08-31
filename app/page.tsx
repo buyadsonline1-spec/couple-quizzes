@@ -91,7 +91,9 @@ type Screen =
   | "dating-profile"
   | "dating-swipe"
   | "dating-matches"
-  | "dating-chat";
+  | "dating-chat"
+  | "polls-tests-menu"
+  | "pair-profile-menu";
 
 
 
@@ -8636,17 +8638,38 @@ function MainMenu({
 >
 
     <div style={{ minWidth: 0, flex: 1 }}>
-      <div
-  style={{
-    fontSize: 18,
-    fontWeight: 900,
-    color: "#1f1d3a",
-    lineHeight: 1.1,
-  }}
->
-  Couple Quizzes
-</div>
-  
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
+        <div
+    style={{
+      fontSize: 18,
+      fontWeight: 900,
+      color: "#1f1d3a",
+      lineHeight: 1.1,
+    }}
+  >
+    Couple Quizzes
+  </div>
+        <button
+          onClick={() => onNavigate("profile")}
+          aria-label={t.account.settingsTitle}
+          style={{
+            flexShrink: 0,
+            width: 34,
+            height: 34,
+            borderRadius: 999,
+            border: "none",
+            background: "rgba(255,255,255,0.32)",
+            fontSize: 17,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            cursor: "pointer",
+          }}
+        >
+          ⚙️
+        </button>
+      </div>
+
 
   {hasPair ? (
   <div
@@ -8892,44 +8915,104 @@ function MainMenu({
         <div style={{ fontSize: 20, color: "#7c5cff", flexShrink: 0 }}>→</div>
       </button>
 
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
-          gap: 10,
-        }}
-      >
-        <MenuButton label={t.menu.polls}
-  emoji="💌"
-  onClick={() => {
-    if (!appState.profile.gender) {
-      onNavigate("gender-select");
-      return;
-    }
+      {isCapacitorApp() ? (
+        // iOS-сборка — сетка ровно как была на момент отправки на
+        // проверку Apple, без изменений (Знакомства ей не видны и так,
+        // отдельная новая сетка ниже — только для Telegram).
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
+            gap: 10,
+          }}
+        >
+          <MenuButton label={t.menu.polls}
+    emoji="💌"
+    onClick={() => {
+      if (!appState.profile.gender) {
+        onNavigate("gender-select");
+        return;
+      }
 
-    onNavigate(appState.profile.gender === "boy" ? "polls-boy" : "polls-girl");
-  }}
-/>
-        <MenuButton label={t.menu.games} emoji="🎮" onClick={() => onNavigate("games")} />
-        <MenuButton label={t.menu.tests} emoji="🧠" onClick={() => onNavigate("tests")} />
-        <MenuButton label={t.menu.rewards} emoji="🎡" onClick={() => onNavigate("rewards")} />
-        <MenuButton label={t.menu.pair} emoji="💕" onClick={() => onNavigate("pair")} />
-        <MenuButton label={t.menu.topPlayers} emoji="🏆" onClick={() => onNavigate("top")} />
-        {!isCapacitorApp() && (
-          <MenuButton
-            label={t.dating.swipeTitle}
-            emoji="💘"
-            onClick={onOpenDating}
-          />
-        )}
+      onNavigate(appState.profile.gender === "boy" ? "polls-boy" : "polls-girl");
+    }}
+  />
+          <MenuButton label={t.menu.games} emoji="🎮" onClick={() => onNavigate("games")} />
+          <MenuButton label={t.menu.tests} emoji="🧠" onClick={() => onNavigate("tests")} />
+          <MenuButton label={t.menu.rewards} emoji="🎡" onClick={() => onNavigate("rewards")} />
+          <MenuButton label={t.menu.pair} emoji="💕" onClick={() => onNavigate("pair")} />
+          <MenuButton label={t.menu.topPlayers} emoji="🏆" onClick={() => onNavigate("top")} />
 
-        <div style={{ gridColumn: "1 / -1" }}>
-          <MenuButton label={t.menu.profile}
-            emoji="👤"
-            onClick={() => onNavigate("profile")}
-          />
+          <div style={{ gridColumn: "1 / -1" }}>
+            <MenuButton label={t.menu.profile}
+              emoji="👤"
+              onClick={() => onNavigate("profile")}
+            />
+          </div>
         </div>
+      ) : (
+        // Telegram — компактная сетка 3×2: родственные пункты сведены в
+        // одну плитку с мини-выбором (как уже устроен выбор пола перед
+        // опросом), чтобы Знакомства не оставались одни в лишнем ряду.
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
+            gap: 10,
+          }}
+        >
+          <MenuButton label={t.menu.pollsAndTests} emoji="💌🧠" onClick={() => onNavigate("polls-tests-menu")} />
+          <MenuButton label={t.menu.games} emoji="🎮" onClick={() => onNavigate("games")} />
+          <MenuButton label={t.menu.rewards} emoji="🎡" onClick={() => onNavigate("rewards")} />
+          <MenuButton label={t.menu.topPlayers} emoji="🏆" onClick={() => onNavigate("top")} />
+          <MenuButton label={t.menu.pairAndProfile} emoji="💕👤" onClick={() => onNavigate("pair-profile-menu")} />
+          <MenuButton label={t.dating.swipeTitle} emoji="💘" onClick={onOpenDating} />
+        </div>
+      )}
+    </div>
+  );
+}
+
+function MenuChooserScreen({
+  onBack,
+  options,
+  t,
+}: {
+  onBack: () => void;
+  options: Array<{ label: string; emoji: string; onClick: () => void }>;
+  t: any;
+}) {
+  return (
+    <div style={{ padding: 16, display: "grid", gap: 14 }}>
+      <div style={{ display: "grid", gap: 10 }}>
+        {options.map((option) => (
+          <button
+            key={option.label}
+            onClick={option.onClick}
+            style={{
+              ...cardBaseStyle(),
+              padding: 22,
+              border: "none",
+              display: "flex",
+              alignItems: "center",
+              gap: 14,
+              cursor: "pointer",
+              textAlign: "left",
+              width: "100%",
+            }}
+          >
+            <div style={{ fontSize: 30, flexShrink: 0 }}>{option.emoji}</div>
+            <div style={{ fontSize: 17, fontWeight: 900, color: "#1f1d3a" }}>
+              {option.label}
+            </div>
+            <div style={{ marginLeft: "auto", fontSize: 20, color: "#7c5cff" }}>→</div>
+          </button>
+        ))}
       </div>
+
+      <button onClick={onBack} style={secondaryButtonStyle}>
+        {t.common.back}
+      </button>
     </div>
   );
 }
@@ -14005,10 +14088,11 @@ function ProfileAndStatsScreen({
  pairPollAnswers,
   referrals,
   isPremium,
+  currentGender,
   onBack,
   onNavigate,
 }: {
-  
+
 
   user: TgUser | null;
   points: number;
@@ -14024,6 +14108,7 @@ function ProfileAndStatsScreen({
 
   };
   isPremium: boolean;
+  currentGender: "boy" | "girl" | null;
   onBack: () => void;
 }) {
 
@@ -14041,6 +14126,40 @@ const t = market === "fi" ? TEXT_FI : market === "en" ? TEXT_EN : TEXT_RU;
   // Supabase Auth account to delete; Telegram users never see this.
   const [confirmingDelete, setConfirmingDelete] = useState(false);
   const [deletingAccount, setDeletingAccount] = useState(false);
+
+  const [nickname, setNickname] = useState(fullName === "Пользователь" ? "" : fullName);
+  const [savingNickname, setSavingNickname] = useState(false);
+  const [nicknameMessage, setNicknameMessage] = useState<string | null>(null);
+
+  async function handleSaveNickname() {
+    const initData = window.Telegram?.WebApp?.initData;
+    if (!initData || !nickname.trim()) return;
+
+    setSavingNickname(true);
+    setNicknameMessage(null);
+
+    try {
+      const response = await fetch("/api/profile/update-name", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ initData, displayName: nickname.trim() }),
+      });
+      const result = await response.json();
+
+      setNicknameMessage(result?.ok ? t.account.nicknameSaved : t.account.nicknameError);
+    } catch (error) {
+      console.error("handleSaveNickname error:", error);
+      setNicknameMessage(t.account.nicknameError);
+    } finally {
+      setSavingNickname(false);
+    }
+  }
+
+  function handleChangeLanguage(lang: "ru" | "en" | "fi") {
+    if (typeof window === "undefined") return;
+    window.localStorage.setItem("couple-quizzes-lang", lang);
+    window.location.reload();
+  }
 
   async function handleDeleteAccount() {
     setDeletingAccount(true);
@@ -14230,6 +14349,111 @@ const t = market === "fi" ? TEXT_FI : market === "en" ? TEXT_EN : TEXT_RU;
   {t.referrals.inviteButton}
 </button>
 
+</div>
+
+<div style={{ ...cardBaseStyle(), padding: 18 }}>
+  <div style={{ fontSize: 18, fontWeight: 900, color: "#1f1d3a", marginBottom: 14 }}>
+    {t.account.settingsTitle}
+  </div>
+
+  <div style={{ display: "grid", gap: 16 }}>
+    <div>
+      <div style={{ fontSize: 12.5, fontWeight: 800, color: "#5a5378", marginBottom: 6 }}>
+        {t.account.nicknameLabel}
+      </div>
+      <div style={{ display: "flex", gap: 8 }}>
+        <input
+          value={nickname}
+          onChange={(e) => setNickname(e.target.value)}
+          placeholder={t.account.nicknamePlaceholder}
+          maxLength={60}
+          style={{
+            flex: 1,
+            border: "1px solid rgba(255,255,255,0.5)",
+            borderRadius: 14,
+            background: "rgba(255,255,255,0.55)",
+            padding: "12px 14px",
+            fontSize: 14,
+            color: "#1f1d3a",
+          }}
+        />
+        <button
+          onClick={handleSaveNickname}
+          disabled={savingNickname}
+          style={{
+            ...primaryButtonStyle,
+            padding: "12px 18px",
+            opacity: savingNickname ? 0.7 : 1,
+          }}
+        >
+          {savingNickname ? t.account.nicknameSaving : t.account.nicknameSaveButton}
+        </button>
+      </div>
+      {nicknameMessage && (
+        <div style={{ marginTop: 6, fontSize: 12, color: "#5a5378" }}>{nicknameMessage}</div>
+      )}
+    </div>
+
+    <div>
+      <div style={{ fontSize: 12.5, fontWeight: 800, color: "#5a5378", marginBottom: 6 }}>
+        {t.account.languageLabel}
+      </div>
+      <div style={{ display: "flex", gap: 8 }}>
+        {(["ru", "en", "fi"] as const).map((lang) => (
+          <button
+            key={lang}
+            onClick={() => handleChangeLanguage(lang)}
+            style={{
+              flex: 1,
+              padding: "10px 8px",
+              borderRadius: 13,
+              border: "none",
+              fontSize: 13,
+              fontWeight: 800,
+              cursor: "pointer",
+              background:
+                market === lang
+                  ? "linear-gradient(135deg, #8f6bff, #ff76ba)"
+                  : "rgba(255,255,255,0.4)",
+              color: market === lang ? "#fff" : "#393253",
+            }}
+          >
+            {lang === "ru" ? "Русский" : lang === "en" ? "English" : "Suomi"}
+          </button>
+        ))}
+      </div>
+    </div>
+
+    <div>
+      <div style={{ fontSize: 12.5, fontWeight: 800, color: "#5a5378", marginBottom: 6 }}>
+        {t.account.genderLabel}
+      </div>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+        <div style={{ fontSize: 14, fontWeight: 800, color: "#1f1d3a" }}>
+          {currentGender === "boy"
+            ? t.genderSelect.boy
+            : currentGender === "girl"
+            ? t.genderSelect.girl
+            : "—"}
+        </div>
+        <button
+          onClick={() => onNavigate("gender-select")}
+          style={{
+            border: "1px solid rgba(143,107,255,0.35)",
+            borderRadius: 12,
+            padding: "8px 14px",
+            background: "rgba(255,255,255,0.4)",
+            color: "#6b46ff",
+            fontWeight: 800,
+            fontSize: 12.5,
+            cursor: "pointer",
+          }}
+        >
+          {t.account.changeGenderButton}
+        </button>
+      </div>
+    </div>
+  </div>
 </div>
 
 {isCapacitorApp() && (
@@ -17796,6 +18020,7 @@ showPaywall={() => {
   pairPollAnswers={appState.pairPollAnswers}
   referrals={appState.referrals}
   isPremium={appState.isPremium}
+  currentGender={appState.profile.gender}
   onNavigate={setScreen}
   onBack={() => setScreen("menu")}
 />
@@ -17951,6 +18176,42 @@ showPaywall={() => {
     onBlock={handleBlockDatingUser}
     onReport={handleReportDatingUser}
     onBack={() => setScreen("dating-matches")}
+  />
+)}
+
+{screen === "polls-tests-menu" && (
+  <MenuChooserScreen
+    t={t}
+    onBack={() => setScreen("menu")}
+    options={[
+      {
+        label: t.menu.polls,
+        emoji: "💌",
+        onClick: () => {
+          if (!appState.profile.gender) {
+            setScreen("gender-select");
+            return;
+          }
+          setScreen(appState.profile.gender === "boy" ? "polls-boy" : "polls-girl");
+        },
+      },
+      {
+        label: t.menu.tests,
+        emoji: "🧠",
+        onClick: () => setScreen("tests"),
+      },
+    ]}
+  />
+)}
+
+{screen === "pair-profile-menu" && (
+  <MenuChooserScreen
+    t={t}
+    onBack={() => setScreen("menu")}
+    options={[
+      { label: t.menu.pair, emoji: "💕", onClick: () => setScreen("pair") },
+      { label: t.menu.profile, emoji: "👤", onClick: () => setScreen("profile") },
+    ]}
   />
 )}
 

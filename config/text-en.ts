@@ -1,5 +1,15 @@
 export const TEXT_EN = {
   account: {
+    settingsTitle: "Account settings",
+    nicknameLabel: "Name",
+    nicknamePlaceholder: "What should we call you",
+    nicknameSaveButton: "Save",
+    nicknameSaving: "Saving...",
+    nicknameSaved: "Name updated",
+    nicknameError: "Couldn't save the name",
+    languageLabel: "App language",
+    genderLabel: "Gender",
+    changeGenderButton: "Change",
     deleteAccountTitle: "Delete account",
     deleteAccountText:
       "This permanently deletes your login and personal data (name, photo, username). This can't be undone.",
@@ -86,6 +96,8 @@ export const TEXT_EN = {
   top: "Top Players",
   topPlayers: "Top Players",
   profile: "Profile & Stats",
+  pollsAndTests: "Polls and tests",
+  pairAndProfile: "Pair and profile",
 },
 
   common: {

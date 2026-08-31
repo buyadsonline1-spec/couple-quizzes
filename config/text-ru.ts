@@ -1,5 +1,15 @@
 export const TEXT_RU = {
   account: {
+    settingsTitle: "Настройки аккаунта",
+    nicknameLabel: "Имя",
+    nicknamePlaceholder: "Как к тебе обращаться",
+    nicknameSaveButton: "Сохранить",
+    nicknameSaving: "Сохраняем...",
+    nicknameSaved: "Имя обновлено",
+    nicknameError: "Не удалось сохранить имя",
+    languageLabel: "Язык приложения",
+    genderLabel: "Пол",
+    changeGenderButton: "Изменить",
     deleteAccountTitle: "Удалить аккаунт",
     deleteAccountText:
       "Это навсегда удалит вход в аккаунт и личные данные (имя, фото, имя пользователя). Действие необратимо.",
@@ -86,6 +96,8 @@ export const TEXT_RU = {
   top: "Топ игроков",
   topPlayers: "Топ игроков",
   profile: "Профиль и статистика",
+  pollsAndTests: "Опросы и тесты",
+  pairAndProfile: "Пара и профиль",
 },
 
   common: {
