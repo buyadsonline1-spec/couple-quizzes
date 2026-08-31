@@ -8974,16 +8974,35 @@ function MainMenu({
 }
 
 function MenuChooserScreen({
+  title,
+  subtitle,
   onBack,
   options,
   t,
 }: {
+  title?: string;
+  subtitle?: string;
   onBack: () => void;
-  options: Array<{ label: string; emoji: string; onClick: () => void }>;
+  options: Array<{ label: string; description?: string; emoji: string; onClick: () => void }>;
   t: any;
 }) {
   return (
     <div style={{ padding: 16, display: "grid", gap: 14 }}>
+      {(title || subtitle) && (
+        <div style={{ padding: "4px 4px 0" }}>
+          {title && (
+            <div style={{ fontSize: 22, fontWeight: 900, color: "#1f1d3a" }}>
+              {title}
+            </div>
+          )}
+          {subtitle && (
+            <div style={{ fontSize: 14, color: "#6b6690", marginTop: 4, lineHeight: 1.4 }}>
+              {subtitle}
+            </div>
+          )}
+        </div>
+      )}
+
       <div style={{ display: "grid", gap: 10 }}>
         {options.map((option) => (
           <button
@@ -8991,7 +9010,7 @@ function MenuChooserScreen({
             onClick={option.onClick}
             style={{
               ...cardBaseStyle(),
-              padding: 22,
+              padding: 20,
               border: "none",
               display: "flex",
               alignItems: "center",
@@ -9001,11 +9020,32 @@ function MenuChooserScreen({
               width: "100%",
             }}
           >
-            <div style={{ fontSize: 30, flexShrink: 0 }}>{option.emoji}</div>
-            <div style={{ fontSize: 17, fontWeight: 900, color: "#1f1d3a" }}>
-              {option.label}
+            <div
+              style={{
+                fontSize: 26,
+                flexShrink: 0,
+                width: 48,
+                height: 48,
+                borderRadius: 14,
+                background: "rgba(124,92,255,0.12)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              {option.emoji}
             </div>
-            <div style={{ marginLeft: "auto", fontSize: 20, color: "#7c5cff" }}>→</div>
+            <div style={{ display: "grid", gap: 3 }}>
+              <div style={{ fontSize: 17, fontWeight: 900, color: "#1f1d3a" }}>
+                {option.label}
+              </div>
+              {option.description && (
+                <div style={{ fontSize: 13, color: "#6b6690", lineHeight: 1.35 }}>
+                  {option.description}
+                </div>
+              )}
+            </div>
+            <div style={{ marginLeft: "auto", fontSize: 20, color: "#7c5cff", flexShrink: 0 }}>→</div>
           </button>
         ))}
       </div>
@@ -18182,10 +18222,13 @@ showPaywall={() => {
 {screen === "polls-tests-menu" && (
   <MenuChooserScreen
     t={t}
+    title={t.menu.pollsAndTests}
+    subtitle={t.menu.pollsAndTestsSubtitle}
     onBack={() => setScreen("menu")}
     options={[
       {
         label: t.menu.polls,
+        description: t.menu.pollsDesc,
         emoji: "💌",
         onClick: () => {
           if (!appState.profile.gender) {
@@ -18197,6 +18240,7 @@ showPaywall={() => {
       },
       {
         label: t.menu.tests,
+        description: t.menu.testsDesc,
         emoji: "🧠",
         onClick: () => setScreen("tests"),
       },
@@ -18207,10 +18251,22 @@ showPaywall={() => {
 {screen === "pair-profile-menu" && (
   <MenuChooserScreen
     t={t}
+    title={t.menu.pairAndProfile}
+    subtitle={t.menu.pairAndProfileSubtitle}
     onBack={() => setScreen("menu")}
     options={[
-      { label: t.menu.pair, emoji: "💕", onClick: () => setScreen("pair") },
-      { label: t.menu.profile, emoji: "👤", onClick: () => setScreen("profile") },
+      {
+        label: t.menu.pair,
+        description: t.menu.pairDesc,
+        emoji: "💕",
+        onClick: () => setScreen("pair"),
+      },
+      {
+        label: t.menu.profile,
+        description: t.menu.profileDesc,
+        emoji: "👤",
+        onClick: () => setScreen("profile"),
+      },
     ]}
   />
 )}

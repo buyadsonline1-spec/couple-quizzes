@@ -101,7 +101,13 @@ export const TEXT_FI = {
     topPlayers: "Kärkikaksikot",
     profile: "Profiili ja tilastot",
   pollsAndTests: "Kyselyt ja testit",
+  pollsAndTestsSubtitle: "Tutustukaa toisiinne kysymysten ja hauskojen psykologisten testien avulla",
+  pollsDesc: "Vastatkaa kysymyksiin yhdessä kumppanin kanssa ja vertailkaa vastauksia",
+  testsDesc: "Tee testi ja opi jotain uutta itsestäsi ja suhteestasi",
   pairAndProfile: "Pari ja profiili",
+  pairAndProfileSubtitle: "Hallitse paria ja omia henkilökohtaisia asetuksiasi",
+  pairDesc: "Parin taso, yhteensopivuus ja yhteiset tilastot",
+  profileDesc: "Henkilökohtaiset tilastot, saavutukset ja tilin asetukset",
   },
 
   common: {

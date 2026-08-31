@@ -97,7 +97,13 @@ export const TEXT_EN = {
   topPlayers: "Top Players",
   profile: "Profile & Stats",
   pollsAndTests: "Polls and tests",
+  pollsAndTestsSubtitle: "Get to know each other through questions and fun psychology tests",
+  pollsDesc: "Answer questions together with your partner and compare answers",
+  testsDesc: "Take a test and learn something new about yourself and your relationship",
   pairAndProfile: "Pair and profile",
+  pairAndProfileSubtitle: "Manage your pair and your personal settings",
+  pairDesc: "Pair level, compatibility and shared stats",
+  profileDesc: "Personal stats, achievements and account settings",
 },
 
   common: {
