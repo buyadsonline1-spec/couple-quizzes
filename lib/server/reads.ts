@@ -55,6 +55,33 @@ export async function loadPairPollAnswersForPair(
   return result;
 }
 
+// Для Знакомств: ответы конкретного человека (не пары) — теперь, когда
+// /api/poll/submit сохраняет ответы независимо от наличия пары (см.
+// allow_solo_poll_submissions.sql), у одиночек тоже есть что читать.
+export async function loadPollAnswersForTelegramId(
+  telegramId: number
+): Promise<Record<string, number[]>> {
+  const { data, error } = await supabaseAdmin
+    .from("poll_submissions")
+    .select("poll_id, answers")
+    .eq("telegram_id", telegramId);
+
+  if (error || !data) {
+    console.error("loadPollAnswersForTelegramId error:", error);
+    return {};
+  }
+
+  const result: Record<string, number[]> = {};
+
+  for (const row of data) {
+    if (row?.poll_id && Array.isArray(row.answers)) {
+      result[row.poll_id] = row.answers.map((value: unknown) => Number(value));
+    }
+  }
+
+  return result;
+}
+
 export type DailyPairAnswerRow = {
   telegram_id: number;
   question_id: string;

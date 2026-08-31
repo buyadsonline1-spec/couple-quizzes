@@ -86,7 +86,12 @@ type Screen =
   | "paywall"
   | "pair-compatibility-info"
   | "freePremium"
-  | "ai-psychologist-chat";
+  | "ai-psychologist-chat"
+  | "dating-intro"
+  | "dating-profile"
+  | "dating-swipe"
+  | "dating-matches"
+  | "dating-chat";
 
 
 
@@ -4868,6 +4873,1121 @@ function PairLevelInfoScreen({
   );
 }
 
+// ============================================================
+// Знакомства (Dating) — только для Telegram Mini App (см. проверку
+// isCapacitorApp() в точках входа ниже), пока App Store review не
+// пройдено. Подбор построен на существующем алгоритме совместимости
+// (см. lib/server/dating-compatibility.ts) — не случайные свайпы.
+// ============================================================
+
+type DatingProfile = {
+  displayName: string;
+  age: number;
+  bio: string | null;
+  photoUrl: string | null;
+  gender: "boy" | "girl";
+  seekingGender: "boy" | "girl" | "any";
+  personalitySummary: Record<string, string>;
+};
+
+type DatingCandidate = {
+  telegramId: number;
+  displayName: string;
+  age: number;
+  bio: string | null;
+  photoUrl: string | null;
+  gender: "boy" | "girl";
+  personalitySummary: Record<string, string>;
+  compatibility: {
+    overallPercent: number;
+    completedThemes: number;
+    totalThemes: number;
+  };
+};
+
+type DatingMatch = {
+  matchId: string;
+  matchedAt: string;
+  partnerTelegramId: number;
+  partnerDisplayName: string;
+  partnerPhotoUrl: string | null;
+  lastMessage: {
+    text: string;
+    createdAt: string;
+    senderTelegramId: number;
+  } | null;
+};
+
+function DatingIntroScreen({
+  onBack,
+  onStart,
+  t,
+}: {
+  onBack: () => void;
+  onStart: () => void;
+  t: any;
+}) {
+  const steps = [
+    [t.dating.step1Title, t.dating.step1Text],
+    [t.dating.step2Title, t.dating.step2Text],
+    [t.dating.step3Title, t.dating.step3Text],
+    [t.dating.step4Title, t.dating.step4Text],
+  ];
+
+  return (
+    <div style={{ padding: 16, display: "grid", gap: 14 }}>
+      <div style={{ ...cardBaseStyle(), padding: 20, textAlign: "center" }}>
+        <div
+          style={{
+            width: 88,
+            height: 88,
+            borderRadius: 24,
+            background:
+              "linear-gradient(135deg, rgba(143,107,255,0.30), rgba(255,118,186,0.28))",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            fontSize: 40,
+            margin: "4px auto 6px",
+          }}
+        >
+          💘
+        </div>
+        <div style={{ fontSize: 26, fontWeight: 900, color: "#1f1d3a" }}>
+          {t.dating.introTitle}
+        </div>
+        <div
+          style={{
+            marginTop: 8,
+            fontSize: 14,
+            color: "#4b446a",
+            lineHeight: 1.5,
+          }}
+        >
+          {t.dating.introSubtitle}
+        </div>
+      </div>
+
+      <div style={{ ...cardBaseStyle(), padding: 20 }}>
+        <div style={{ fontSize: 15, fontWeight: 900, color: "#1f1d3a", marginBottom: 14 }}>
+          {t.dating.howItWorksTitle}
+        </div>
+        <div style={{ display: "grid", gap: 14 }}>
+          {steps.map(([title, text], index) => (
+            <div key={index} style={{ display: "flex", alignItems: "flex-start", gap: 12 }}>
+              <div
+                style={{
+                  flexShrink: 0,
+                  width: 30,
+                  height: 30,
+                  borderRadius: 999,
+                  background: "linear-gradient(135deg, #8f6bff, #ff76ba)",
+                  color: "#fff",
+                  fontWeight: 900,
+                  fontSize: 13,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                {index + 1}
+              </div>
+              <div>
+                <div style={{ fontSize: 14, fontWeight: 800, color: "#1f1d3a" }}>
+                  {title}
+                </div>
+                <div style={{ fontSize: 12.5, color: "#5a5378", lineHeight: 1.4 }}>
+                  {text}
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: 8,
+          padding: "12px 14px",
+          borderRadius: 16,
+          background: "rgba(255,255,255,0.30)",
+          fontSize: 12.5,
+          fontWeight: 700,
+          color: "#5a3d14",
+        }}
+      >
+        <span style={{ fontSize: 16 }}>👑</span>
+        <span>{t.dating.premiumNote}</span>
+      </div>
+
+      <button onClick={onStart} style={{ ...primaryButtonStyle, width: "100%" }}>
+        {t.dating.startButton}
+      </button>
+
+      <button onClick={onBack} style={secondaryButtonStyle}>
+        {t.common.back}
+      </button>
+    </div>
+  );
+}
+
+function DatingProfileScreen({
+  initialProfile,
+  defaultGender,
+  onBack,
+  onSave,
+  onUploadPhoto,
+  t,
+}: {
+  initialProfile: DatingProfile | null;
+  defaultGender: "boy" | "girl" | null;
+  onBack: () => void;
+  onSave: (profile: {
+    displayName: string;
+    age: number;
+    bio: string;
+    photoUrl: string | null;
+    gender: "boy" | "girl";
+    seekingGender: "boy" | "girl" | "any";
+  }) => Promise<boolean>;
+  onUploadPhoto: (file: File) => Promise<string | null>;
+  t: any;
+}) {
+  const [displayName, setDisplayName] = useState(initialProfile?.displayName ?? "");
+  const [age, setAge] = useState(initialProfile?.age ? String(initialProfile.age) : "");
+  const [bio, setBio] = useState(initialProfile?.bio ?? "");
+  const [gender, setGender] = useState<"boy" | "girl">(
+    initialProfile?.gender ?? defaultGender ?? "boy"
+  );
+  const [seekingGender, setSeekingGender] = useState<"boy" | "girl" | "any">(
+    initialProfile?.seekingGender ?? "any"
+  );
+  const [photoUrl, setPhotoUrl] = useState<string | null>(initialProfile?.photoUrl ?? null);
+  const [uploading, setUploading] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const personalityTags = initialProfile?.personalitySummary
+    ? Object.entries(initialProfile.personalitySummary)
+    : [];
+
+  async function handlePickPhoto(event: React.ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    setUploading(true);
+    setError(null);
+
+    const uploadedUrl = await onUploadPhoto(file);
+
+    if (!uploadedUrl) {
+      setError(t.dating.photoUploadError);
+    } else {
+      setPhotoUrl(uploadedUrl);
+    }
+
+    setUploading(false);
+  }
+
+  async function handleSave() {
+    setError(null);
+
+    const ageNumber = Number(age);
+
+    if (!displayName.trim() || !Number.isInteger(ageNumber) || ageNumber < 18) {
+      setError(t.dating.saveError);
+      return;
+    }
+
+    setSaving(true);
+
+    const ok = await onSave({
+      displayName: displayName.trim(),
+      age: ageNumber,
+      bio: bio.trim(),
+      photoUrl,
+      gender,
+      seekingGender,
+    });
+
+    setSaving(false);
+
+    if (!ok) {
+      setError(t.dating.saveError);
+    }
+  }
+
+  const genderChoiceStyle = (active: boolean): CSSProperties => ({
+    flex: 1,
+    padding: "10px 8px",
+    borderRadius: 13,
+    border: "none",
+    fontSize: 13,
+    fontWeight: 800,
+    cursor: "pointer",
+    background: active ? "linear-gradient(135deg, #8f6bff, #ff76ba)" : "rgba(255,255,255,0.4)",
+    color: active ? "#fff" : "#393253",
+  });
+
+  return (
+    <div style={{ padding: 16, display: "grid", gap: 14 }}>
+      <div style={{ fontSize: 22, fontWeight: 900, color: "#1f1d3a" }}>
+        {t.dating.profileTitle}
+      </div>
+
+      <div style={{ ...cardBaseStyle(), padding: 20, textAlign: "center" }}>
+        <label
+          htmlFor="dating-photo-input"
+          style={{
+            width: 96,
+            height: 96,
+            borderRadius: 999,
+            background: photoUrl ? "transparent" : "rgba(255,255,255,0.35)",
+            border: photoUrl ? "none" : "2px dashed rgba(143,107,255,0.45)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            margin: "0 auto 6px",
+            flexDirection: "column",
+            gap: 4,
+            cursor: "pointer",
+            overflow: "hidden",
+          }}
+        >
+          {photoUrl ? (
+            <img
+              src={photoUrl}
+              alt=""
+              style={{ width: "100%", height: "100%", objectFit: "cover" }}
+            />
+          ) : (
+            <>
+              <div style={{ fontSize: 26, color: "#7c5cff", lineHeight: 1 }}>+</div>
+              <div style={{ fontSize: 10.5, fontWeight: 800, color: "#6b46ff" }}>
+                {uploading ? "..." : "Фото"}
+              </div>
+            </>
+          )}
+        </label>
+        <input
+          id="dating-photo-input"
+          type="file"
+          accept="image/jpeg,image/png,image/webp"
+          style={{ display: "none" }}
+          onChange={handlePickPhoto}
+        />
+        <div style={{ fontSize: 12, color: "#5a5378" }}>
+          {uploading ? t.dating.photoUploading : t.dating.photoHint}
+        </div>
+      </div>
+
+      <div style={{ ...cardBaseStyle(), padding: 20 }}>
+        <div style={{ display: "grid", gap: 14 }}>
+          <div>
+            <div style={{ fontSize: 12.5, fontWeight: 800, color: "#5a5378", marginBottom: 6 }}>
+              {t.dating.nameLabel}
+            </div>
+            <input
+              value={displayName}
+              onChange={(e) => setDisplayName(e.target.value)}
+              placeholder={t.dating.namePlaceholder}
+              maxLength={60}
+              style={{
+                width: "100%",
+                boxSizing: "border-box",
+                border: "1px solid rgba(255,255,255,0.5)",
+                borderRadius: 14,
+                background: "rgba(255,255,255,0.55)",
+                padding: "12px 14px",
+                fontSize: 14,
+                color: "#1f1d3a",
+              }}
+            />
+          </div>
+
+          <div>
+            <div style={{ fontSize: 12.5, fontWeight: 800, color: "#5a5378", marginBottom: 6 }}>
+              {t.dating.ageLabel}
+            </div>
+            <input
+              value={age}
+              onChange={(e) => setAge(e.target.value.replace(/[^0-9]/g, ""))}
+              placeholder={t.dating.agePlaceholder}
+              inputMode="numeric"
+              maxLength={3}
+              style={{
+                width: 96,
+                boxSizing: "border-box",
+                border: "1px solid rgba(255,255,255,0.5)",
+                borderRadius: 14,
+                background: "rgba(255,255,255,0.55)",
+                padding: "12px 14px",
+                fontSize: 14,
+                color: "#1f1d3a",
+              }}
+            />
+          </div>
+
+          <div>
+            <div style={{ fontSize: 12.5, fontWeight: 800, color: "#5a5378", marginBottom: 6 }}>
+              {t.dating.bioLabel}
+            </div>
+            <textarea
+              value={bio}
+              onChange={(e) => setBio(e.target.value)}
+              placeholder={t.dating.bioPlaceholder}
+              maxLength={500}
+              style={{
+                width: "100%",
+                boxSizing: "border-box",
+                border: "1px solid rgba(255,255,255,0.5)",
+                borderRadius: 14,
+                background: "rgba(255,255,255,0.55)",
+                padding: "12px 14px",
+                fontSize: 14,
+                color: "#1f1d3a",
+                minHeight: 80,
+                lineHeight: 1.4,
+                resize: "none",
+                fontFamily: "inherit",
+              }}
+            />
+          </div>
+
+          <div>
+            <div style={{ fontSize: 12.5, fontWeight: 800, color: "#5a5378", marginBottom: 6 }}>
+              {t.dating.seekingLabel}
+            </div>
+            <div style={{ display: "flex", gap: 8 }}>
+              <button
+                type="button"
+                onClick={() => setSeekingGender("boy")}
+                style={genderChoiceStyle(seekingGender === "boy")}
+              >
+                {t.dating.seekingBoy}
+              </button>
+              <button
+                type="button"
+                onClick={() => setSeekingGender("girl")}
+                style={genderChoiceStyle(seekingGender === "girl")}
+              >
+                {t.dating.seekingGirl}
+              </button>
+              <button
+                type="button"
+                onClick={() => setSeekingGender("any")}
+                style={genderChoiceStyle(seekingGender === "any")}
+              >
+                {t.dating.seekingAny}
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div style={{ ...cardBaseStyle(), padding: 20 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
+          <span style={{ fontSize: 16 }}>🧠</span>
+          <div style={{ fontSize: 14, fontWeight: 900, color: "#1f1d3a" }}>
+            {t.dating.personalityTitle}
+          </div>
+        </div>
+        <div style={{ fontSize: 12, color: "#5a5378", marginBottom: 12, lineHeight: 1.4 }}>
+          {t.dating.personalityHint}
+        </div>
+        {personalityTags.length > 0 ? (
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+            {personalityTags.map(([key, value]) => (
+              <span
+                key={key}
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 5,
+                  padding: "7px 11px",
+                  borderRadius: 999,
+                  background: "rgba(255,255,255,0.42)",
+                  border: "1px solid rgba(255,255,255,0.5)",
+                  fontSize: 12,
+                  fontWeight: 700,
+                  color: "#2f2b52",
+                }}
+              >
+                {value}
+              </span>
+            ))}
+          </div>
+        ) : (
+          <div style={{ fontSize: 12.5, color: "#8a84a6", fontStyle: "italic" }}>
+            {t.dating.personalityEmpty}
+          </div>
+        )}
+      </div>
+
+      {error && (
+        <div style={{ fontSize: 13, color: "#c1352f", fontWeight: 700, textAlign: "center" }}>
+          {error}
+        </div>
+      )}
+
+      <button
+        onClick={handleSave}
+        disabled={saving}
+        style={{ ...primaryButtonStyle, width: "100%", opacity: saving ? 0.7 : 1 }}
+      >
+        {saving ? t.dating.savingButton : t.dating.saveButton}
+      </button>
+
+      <button onClick={onBack} style={secondaryButtonStyle}>
+        {t.common.back}
+      </button>
+    </div>
+  );
+}
+
+function DatingSwipeScreen({
+  candidates,
+  loading,
+  onSwipe,
+  onOpenMatches,
+  onBack,
+  t,
+}: {
+  candidates: DatingCandidate[];
+  loading: boolean;
+  onSwipe: (candidate: DatingCandidate, action: "like" | "pass") => void;
+  onOpenMatches: () => void;
+  onBack: () => void;
+  t: any;
+}) {
+  const current = candidates[0] ?? null;
+  const next = candidates[1] ?? null;
+
+  return (
+    <div style={{ padding: 16, display: "grid", gap: 14 }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+        <div>
+          <div style={{ fontSize: 20, fontWeight: 900, color: "#1f1d3a" }}>
+            {t.dating.swipeTitle}
+          </div>
+          <div style={{ fontSize: 11.5, color: "#4b446a", marginTop: 2 }}>
+            {t.dating.swipeHint}
+          </div>
+        </div>
+        <button
+          onClick={onOpenMatches}
+          style={{
+            border: "none",
+            background: "rgba(255,255,255,0.35)",
+            borderRadius: 999,
+            width: 40,
+            height: 40,
+            fontSize: 18,
+            cursor: "pointer",
+          }}
+        >
+          💬
+        </button>
+      </div>
+
+      <div style={{ position: "relative", height: 480 }}>
+        {loading ? (
+          <div
+            style={{
+              ...cardBaseStyle(),
+              position: "absolute",
+              inset: 0,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              fontSize: 14,
+              color: "#4b446a",
+              fontWeight: 700,
+            }}
+          >
+            {t.dating.loadingCandidates}
+          </div>
+        ) : !current ? (
+          <div
+            style={{
+              ...cardBaseStyle(),
+              position: "absolute",
+              inset: 0,
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              justifyContent: "center",
+              textAlign: "center",
+              padding: 24,
+            }}
+          >
+            <div style={{ fontSize: 40, marginBottom: 10 }}>💔</div>
+            <div style={{ fontSize: 16, fontWeight: 900, color: "#1f1d3a" }}>
+              {t.dating.noCandidatesTitle}
+            </div>
+            <div style={{ marginTop: 6, fontSize: 13, color: "#5a5378", lineHeight: 1.4 }}>
+              {t.dating.noCandidatesText}
+            </div>
+          </div>
+        ) : (
+          <>
+            {next && (
+              <div
+                style={{
+                  position: "absolute",
+                  inset: 0,
+                  borderRadius: 24,
+                  background: "rgba(255,255,255,0.30)",
+                  border: "1px solid rgba(255,255,255,0.4)",
+                  transform: "scale(0.96) translateY(10px)",
+                  opacity: 0.7,
+                }}
+              />
+            )}
+            <div
+              style={{
+                position: "absolute",
+                inset: 0,
+                borderRadius: 24,
+                overflow: "hidden",
+                background: "linear-gradient(160deg, #cbb6ee, #f0c3e6)",
+                boxShadow: "0 18px 40px rgba(37,34,78,0.22)",
+                display: "flex",
+                flexDirection: "column",
+                justifyContent: "flex-end",
+              }}
+            >
+              {current.photoUrl ? (
+                <img
+                  src={current.photoUrl}
+                  alt=""
+                  style={{
+                    position: "absolute",
+                    inset: 0,
+                    width: "100%",
+                    height: "100%",
+                    objectFit: "cover",
+                  }}
+                />
+              ) : (
+                <div
+                  style={{
+                    position: "absolute",
+                    inset: 0,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    fontSize: 90,
+                    opacity: 0.9,
+                  }}
+                >
+                  🙂
+                </div>
+              )}
+
+              <div
+                style={{
+                  position: "absolute",
+                  top: 14,
+                  right: 14,
+                  background: "rgba(255,255,255,0.85)",
+                  borderRadius: 999,
+                  padding: "7px 12px",
+                  fontSize: 12.5,
+                  fontWeight: 900,
+                  color: "#6b46ff",
+                  boxShadow: "0 6px 16px rgba(37,34,78,0.16)",
+                }}
+              >
+                💜 {current.compatibility.overallPercent}% {t.dating.compatibilityBadge}
+              </div>
+
+              <div
+                style={{
+                  position: "relative",
+                  background:
+                    "linear-gradient(0deg, rgba(20,15,40,0.72) 0%, rgba(20,15,40,0.0) 100%)",
+                  padding: "60px 18px 18px",
+                  color: "#fff",
+                }}
+              >
+                <div style={{ fontSize: 22, fontWeight: 900, marginBottom: 6 }}>
+                  {current.displayName}, {current.age}
+                </div>
+                {current.bio && (
+                  <div style={{ fontSize: 13, lineHeight: 1.4, opacity: 0.92, marginBottom: 10 }}>
+                    {current.bio}
+                  </div>
+                )}
+                {Object.entries(current.personalitySummary || {}).length > 0 && (
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+                    {Object.entries(current.personalitySummary).map(([key, value]) => (
+                      <span
+                        key={key}
+                        style={{
+                          fontSize: 11,
+                          fontWeight: 700,
+                          padding: "5px 10px",
+                          borderRadius: 999,
+                          background: "rgba(255,255,255,0.22)",
+                        }}
+                      >
+                        {String(value)}
+                      </span>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          </>
+        )}
+      </div>
+
+      {current && (
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 26 }}>
+          <button
+            onClick={() => onSwipe(current, "pass")}
+            style={{
+              width: 62,
+              height: 62,
+              borderRadius: 999,
+              border: "none",
+              background: "#fff",
+              color: "#ff5d7a",
+              fontSize: 26,
+              cursor: "pointer",
+              boxShadow: "0 10px 22px rgba(37,34,78,0.18)",
+            }}
+          >
+            ✕
+          </button>
+          <button
+            onClick={() => onSwipe(current, "like")}
+            style={{
+              width: 62,
+              height: 62,
+              borderRadius: 999,
+              border: "none",
+              background: "linear-gradient(135deg, #8f6bff, #ff76ba)",
+              color: "#fff",
+              fontSize: 26,
+              cursor: "pointer",
+              boxShadow: "0 10px 22px rgba(37,34,78,0.18)",
+            }}
+          >
+            ♥
+          </button>
+        </div>
+      )}
+
+      <button onClick={onBack} style={secondaryButtonStyle}>
+        {t.common.back}
+      </button>
+    </div>
+  );
+}
+
+function DatingMatchesScreen({
+  matches,
+  onOpenChat,
+  onOpenSwipe,
+  onBack,
+  t,
+}: {
+  matches: DatingMatch[];
+  onOpenChat: (match: DatingMatch) => void;
+  onOpenSwipe: () => void;
+  onBack: () => void;
+  t: any;
+}) {
+  return (
+    <div style={{ padding: 16, display: "grid", gap: 14 }}>
+      <div>
+        <div style={{ fontSize: 22, fontWeight: 900, color: "#1f1d3a" }}>
+          {t.dating.matchesTitle}
+        </div>
+        <div style={{ fontSize: 13, color: "#4b446a", marginTop: 4 }}>
+          {t.dating.matchesSubtitle}
+        </div>
+      </div>
+
+      {matches.length === 0 ? (
+        <div style={{ ...cardBaseStyle(), padding: 24, textAlign: "center" }}>
+          <div style={{ fontSize: 15, fontWeight: 900, color: "#1f1d3a" }}>
+            {t.dating.emptyMatchesTitle}
+          </div>
+          <div style={{ marginTop: 6, fontSize: 13, color: "#5a5378", lineHeight: 1.4 }}>
+            {t.dating.emptyMatchesText}
+          </div>
+          <button
+            onClick={onOpenSwipe}
+            style={{ ...primaryButtonStyle, width: "100%", marginTop: 16 }}
+          >
+            {t.dating.goToSwipeButton}
+          </button>
+        </div>
+      ) : (
+        <div style={{ ...cardBaseStyle(), padding: 8 }}>
+          {matches.map((match, index) => (
+            <div
+              key={match.matchId}
+              onClick={() => onOpenChat(match)}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 12,
+                padding: "12px 10px",
+                borderRadius: 16,
+                borderTop:
+                  index > 0 ? "1px solid rgba(255,255,255,0.28)" : "none",
+                cursor: "pointer",
+              }}
+            >
+              <div
+                style={{
+                  width: 52,
+                  height: 52,
+                  borderRadius: 999,
+                  flexShrink: 0,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  fontSize: 24,
+                  background: "linear-gradient(135deg, #cbb6ee, #f0c3e6)",
+                  border: "2px solid rgba(255,255,255,0.6)",
+                  overflow: "hidden",
+                }}
+              >
+                {match.partnerPhotoUrl ? (
+                  <img
+                    src={match.partnerPhotoUrl}
+                    alt=""
+                    style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                  />
+                ) : (
+                  "🙂"
+                )}
+              </div>
+              <div style={{ minWidth: 0, flex: 1 }}>
+                <div style={{ fontSize: 15, fontWeight: 900, color: "#1f1d3a", marginBottom: 2 }}>
+                  {match.partnerDisplayName}
+                </div>
+                <div
+                  style={{
+                    fontSize: 12.5,
+                    color: match.lastMessage ? "#5a5378" : "#ff5ea8",
+                    fontWeight: match.lastMessage ? 400 : 800,
+                    whiteSpace: "nowrap",
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                  }}
+                >
+                  {match.lastMessage ? match.lastMessage.text : t.dating.newMatchLabel}
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      <button onClick={onBack} style={secondaryButtonStyle}>
+        {t.common.back}
+      </button>
+    </div>
+  );
+}
+
+function DatingChatScreen({
+  match,
+  messages,
+  myTelegramId,
+  onSend,
+  onBlock,
+  onReport,
+  onBack,
+  t,
+}: {
+  match: DatingMatch;
+  messages: Array<{ id: string; senderTelegramId: number; text: string; createdAt: string }>;
+  myTelegramId: number | null;
+  onSend: (text: string) => Promise<void>;
+  onBlock: () => void;
+  onReport: () => void;
+  onBack: () => void;
+  t: any;
+}) {
+  const [text, setText] = useState("");
+  const [showMenu, setShowMenu] = useState(false);
+  const [confirmAction, setConfirmAction] = useState<"block" | "report" | null>(null);
+
+  async function handleSend() {
+    const trimmed = text.trim();
+    if (!trimmed) return;
+    setText("");
+    await onSend(trimmed);
+  }
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}>
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: 10,
+          padding: 16,
+          background: "rgba(255,255,255,0.22)",
+          borderBottom: "1px solid rgba(255,255,255,0.28)",
+          position: "relative",
+        }}
+      >
+        <button
+          onClick={onBack}
+          style={{ border: "none", background: "none", fontSize: 18, color: "#1f1d3a", cursor: "pointer" }}
+        >
+          ←
+        </button>
+        <div
+          style={{
+            width: 38,
+            height: 38,
+            borderRadius: 999,
+            background: "linear-gradient(135deg, #cbb6ee, #f0c3e6)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            fontSize: 18,
+            border: "2px solid rgba(255,255,255,0.6)",
+            flexShrink: 0,
+            overflow: "hidden",
+          }}
+        >
+          {match.partnerPhotoUrl ? (
+            <img
+              src={match.partnerPhotoUrl}
+              alt=""
+              style={{ width: "100%", height: "100%", objectFit: "cover" }}
+            />
+          ) : (
+            "🙂"
+          )}
+        </div>
+        <div style={{ fontSize: 15, fontWeight: 900, color: "#1f1d3a" }}>
+          {match.partnerDisplayName}
+        </div>
+        <button
+          onClick={() => setShowMenu((prev) => !prev)}
+          style={{
+            marginLeft: "auto",
+            border: "none",
+            background: "none",
+            fontSize: 20,
+            fontWeight: 900,
+            color: "#4b446a",
+            cursor: "pointer",
+            padding: "4px 8px",
+          }}
+        >
+          ⋯
+        </button>
+
+        {showMenu && (
+          <div
+            style={{
+              position: "absolute",
+              top: 54,
+              right: 16,
+              background: "#fff",
+              borderRadius: 16,
+              boxShadow: "0 10px 30px rgba(37,34,78,0.22)",
+              overflow: "hidden",
+              zIndex: 10,
+              minWidth: 160,
+            }}
+          >
+            <button
+              onClick={() => {
+                setShowMenu(false);
+                setConfirmAction("report");
+              }}
+              style={{
+                display: "block",
+                width: "100%",
+                textAlign: "left",
+                padding: "12px 16px",
+                border: "none",
+                background: "none",
+                fontSize: 13,
+                fontWeight: 700,
+                color: "#201b39",
+                cursor: "pointer",
+              }}
+            >
+              {t.dating.reportButton}
+            </button>
+            <button
+              onClick={() => {
+                setShowMenu(false);
+                setConfirmAction("block");
+              }}
+              style={{
+                display: "block",
+                width: "100%",
+                textAlign: "left",
+                padding: "12px 16px",
+                border: "none",
+                background: "none",
+                fontSize: 13,
+                fontWeight: 700,
+                color: "#c1352f",
+                cursor: "pointer",
+                borderTop: "1px solid rgba(0,0,0,0.06)",
+              }}
+            >
+              {t.dating.blockButton}
+            </button>
+          </div>
+        )}
+      </div>
+
+      {confirmAction && (
+        <div style={{ padding: 16, background: "rgba(193,53,47,0.08)" }}>
+          <div style={{ fontSize: 13, fontWeight: 700, color: "#8a2f2f", marginBottom: 10 }}>
+            {confirmAction === "block" ? t.dating.blockConfirmText : t.dating.reportConfirmText}
+          </div>
+          <div style={{ display: "flex", gap: 8 }}>
+            <button
+              onClick={() => {
+                if (confirmAction === "block") onBlock();
+                else onReport();
+                setConfirmAction(null);
+              }}
+              style={{
+                flex: 1,
+                border: "none",
+                borderRadius: 14,
+                padding: "10px 12px",
+                background: "#c1352f",
+                color: "#fff",
+                fontWeight: 800,
+                fontSize: 13,
+                cursor: "pointer",
+              }}
+            >
+              {confirmAction === "block" ? t.dating.blockButton : t.dating.reportButton}
+            </button>
+            <button
+              onClick={() => setConfirmAction(null)}
+              style={{
+                flex: 1,
+                border: "1px solid rgba(0,0,0,0.12)",
+                borderRadius: 14,
+                padding: "10px 12px",
+                background: "#fff",
+                color: "#201b39",
+                fontWeight: 800,
+                fontSize: 13,
+                cursor: "pointer",
+              }}
+            >
+              {t.dating.actionCancelButton}
+            </button>
+          </div>
+        </div>
+      )}
+
+      <div style={{ flex: 1, padding: 16, display: "flex", flexDirection: "column", gap: 10 }}>
+        {messages.length === 0 ? (
+          <div
+            style={{
+              alignSelf: "center",
+              fontSize: 12.5,
+              color: "#4b446a",
+              marginTop: 20,
+            }}
+          >
+            {t.dating.chatEmpty}
+          </div>
+        ) : (
+          messages.map((message) => {
+            const isMine = message.senderTelegramId === myTelegramId;
+            return (
+              <div
+                key={message.id}
+                style={{
+                  alignSelf: isMine ? "flex-end" : "flex-start",
+                  maxWidth: "76%",
+                  padding: "11px 14px",
+                  borderRadius: 18,
+                  fontSize: 14,
+                  lineHeight: 1.4,
+                  background: isMine
+                    ? "linear-gradient(135deg, #8f6bff, #ff76ba)"
+                    : "rgba(255,255,255,0.65)",
+                  color: isMine ? "#fff" : "#1f1d3a",
+                  borderBottomRightRadius: isMine ? 6 : 18,
+                  borderBottomLeftRadius: isMine ? 18 : 6,
+                }}
+              >
+                {message.text}
+              </div>
+            );
+          })
+        )}
+      </div>
+
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: 10,
+          padding: "12px 16px",
+          background: "rgba(255,255,255,0.22)",
+          borderTop: "1px solid rgba(255,255,255,0.28)",
+        }}
+      >
+        <input
+          value={text}
+          onChange={(e) => setText(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") handleSend();
+          }}
+          placeholder={t.dating.chatPlaceholder}
+          style={{
+            flex: 1,
+            border: "1px solid rgba(255,255,255,0.5)",
+            borderRadius: 999,
+            background: "rgba(255,255,255,0.55)",
+            padding: "11px 16px",
+            fontSize: 14,
+            color: "#1f1d3a",
+          }}
+        />
+        <button
+          onClick={handleSend}
+          style={{
+            width: 42,
+            height: 42,
+            borderRadius: 999,
+            border: "none",
+            background: "linear-gradient(135deg, #8f6bff, #ff76ba)",
+            color: "#fff",
+            fontSize: 17,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            flexShrink: 0,
+            cursor: "pointer",
+          }}
+        >
+          ➤
+        </button>
+      </div>
+    </div>
+  );
+}
+
 type AiPsychologistMessage = {
   role: "user" | "assistant";
   content: string;
@@ -7484,6 +8604,7 @@ function MainMenu({
   pairLevel,
   appState,
   onNavigate,
+  onOpenDating,
   t,
 }: {
   points: number;
@@ -7492,6 +8613,7 @@ function MainMenu({
   appState: AppState;
   t: any;
   onNavigate: (screen: Screen) => void;
+  onOpenDating: () => void;
 }) {
 
   
@@ -7661,6 +8783,36 @@ function MainMenu({
       <div style={{ fontSize: 20, flexShrink: 0 }}>💞</div>
     </button>
   )}
+
+  {/* Знакомства пока только в Telegram — iOS-ревью Apple ещё не
+      пройдено, а раздел трогает третьих лиц (переписка, фото) и
+      требует отдельного модерационного/возрастного контура, который
+      ещё не готов для повторной отправки. См. onOpenDating. */}
+  {!hasPair && !isCapacitorApp() && (
+    <button
+      onClick={onOpenDating}
+      style={{
+        marginTop: 10,
+        padding: "12px 12px",
+        borderRadius: 16,
+        background: "rgba(255,255,255,0.28)",
+        width: "100%",
+        boxSizing: "border-box",
+        border: "1px dashed rgba(143,107,255,0.35)",
+        textAlign: "left",
+        cursor: "pointer",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "space-between",
+        gap: 10,
+      }}
+    >
+      <div style={{ fontSize: 13, fontWeight: 800, color: "#5a3d99" }}>
+        {t.dating.introTitle}
+      </div>
+      <div style={{ fontSize: 18, flexShrink: 0 }}>💘</div>
+    </button>
+  )}
     </div>
 
     <div
@@ -7763,6 +8915,13 @@ function MainMenu({
         <MenuButton label={t.menu.rewards} emoji="🎡" onClick={() => onNavigate("rewards")} />
         <MenuButton label={t.menu.pair} emoji="💕" onClick={() => onNavigate("pair")} />
         <MenuButton label={t.menu.topPlayers} emoji="🏆" onClick={() => onNavigate("top")} />
+        {!isCapacitorApp() && (
+          <MenuButton
+            label={t.dating.swipeTitle}
+            emoji="💘"
+            onClick={onOpenDating}
+          />
+        )}
 
         <div style={{ gridColumn: "1 / -1" }}>
           <MenuButton label={t.menu.profile}
@@ -14962,6 +16121,189 @@ const handleLeavePair = async () => {
   }
 };
 
+// ---- Знакомства ----
+
+async function datingFetch(path: string, body: Record<string, unknown> = {}) {
+  const initData = window.Telegram?.WebApp?.initData;
+  if (!initData) return null;
+
+  try {
+    const response = await fetch(path, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ initData, ...body }),
+    });
+    return await response.json();
+  } catch (error) {
+    console.error(`datingFetch ${path} error:`, error);
+    return null;
+  }
+}
+
+const handleOpenDating = () => {
+  if (!appState.isPremium) {
+    setPaywallBackScreen("menu");
+    setScreen("paywall");
+    return;
+  }
+
+  if (datingProfile) {
+    setScreen("dating-swipe");
+    loadDatingCandidates();
+  } else {
+    setScreen("dating-intro");
+  }
+};
+
+async function loadDatingCandidates() {
+  setDatingCandidatesLoading(true);
+  const result = await datingFetch("/api/dating/candidates");
+  setDatingCandidatesLoading(false);
+
+  if (result?.ok) {
+    setDatingCandidates(result.candidates ?? []);
+  }
+}
+
+async function handleSaveDatingProfile(profile: {
+  displayName: string;
+  age: number;
+  bio: string;
+  photoUrl: string | null;
+  gender: "boy" | "girl";
+  seekingGender: "boy" | "girl" | "any";
+}): Promise<boolean> {
+  const result = await datingFetch("/api/dating/profile", {
+    displayName: profile.displayName,
+    age: profile.age,
+    bio: profile.bio,
+    photoUrl: profile.photoUrl,
+    gender: profile.gender,
+    seekingGender: profile.seekingGender,
+    personalitySummary: datingProfile?.personalitySummary ?? {},
+  });
+
+  if (!result?.ok) return false;
+
+  setDatingProfile({
+    displayName: profile.displayName,
+    age: profile.age,
+    bio: profile.bio,
+    photoUrl: profile.photoUrl,
+    gender: profile.gender,
+    seekingGender: profile.seekingGender,
+    personalitySummary: datingProfile?.personalitySummary ?? {},
+  });
+
+  setScreen("dating-swipe");
+  loadDatingCandidates();
+  return true;
+}
+
+async function handleUploadDatingPhoto(file: File): Promise<string | null> {
+  const initData = window.Telegram?.WebApp?.initData;
+  if (!initData) return null;
+
+  try {
+    const form = new FormData();
+    form.append("initData", initData);
+    form.append("file", file);
+
+    const response = await fetch("/api/dating/photo", {
+      method: "POST",
+      body: form,
+    });
+
+    const result = await response.json();
+    return result?.ok ? result.photoUrl : null;
+  } catch (error) {
+    console.error("handleUploadDatingPhoto error:", error);
+    return null;
+  }
+}
+
+async function handleDatingSwipe(candidate: DatingCandidate, action: "like" | "pass") {
+  setDatingCandidates((prev) => prev.filter((c) => c.telegramId !== candidate.telegramId));
+
+  const result = await datingFetch("/api/dating/swipe", {
+    toTelegramId: candidate.telegramId,
+    action,
+  });
+
+  if (result?.ok && result.matched) {
+    alert(t.dating.matchAlertText);
+  }
+}
+
+async function loadDatingMatches() {
+  const result = await datingFetch("/api/dating/matches");
+  if (result?.ok) {
+    setDatingMatches(result.matches ?? []);
+  }
+}
+
+async function handleOpenDatingChat(match: DatingMatch) {
+  setActiveChatMatch(match);
+  setActiveChatMessages([]);
+  setScreen("dating-chat");
+
+  const result = await datingFetch("/api/dating/messages/list", {
+    matchId: match.matchId,
+  });
+
+  if (result?.ok) {
+    setActiveChatMessages(result.messages ?? []);
+  }
+}
+
+async function handleSendDatingMessage(text: string) {
+  if (!activeChatMatch) return;
+
+  const result = await datingFetch("/api/dating/messages/send", {
+    matchId: activeChatMatch.matchId,
+    text,
+  });
+
+  if (result?.ok) {
+    const refreshed = await datingFetch("/api/dating/messages/list", {
+      matchId: activeChatMatch.matchId,
+    });
+    if (refreshed?.ok) {
+      setActiveChatMessages(refreshed.messages ?? []);
+    }
+  }
+}
+
+async function handleBlockDatingUser() {
+  if (!activeChatMatch) return;
+
+  const result = await datingFetch("/api/dating/block", {
+    blockedTelegramId: activeChatMatch.partnerTelegramId,
+  });
+
+  if (result?.ok) {
+    alert(t.dating.blockedSuccess);
+    setDatingMatches((prev) => prev.filter((m) => m.matchId !== activeChatMatch.matchId));
+    setActiveChatMatch(null);
+    setScreen("dating-matches");
+  }
+}
+
+async function handleReportDatingUser() {
+  if (!activeChatMatch) return;
+
+  const result = await datingFetch("/api/dating/report", {
+    reportedTelegramId: activeChatMatch.partnerTelegramId,
+  });
+
+  if (result?.ok) {
+    alert(t.dating.reportedSuccess);
+    setDatingMatches((prev) => prev.filter((m) => m.matchId !== activeChatMatch.matchId));
+    setActiveChatMatch(null);
+    setScreen("dating-matches");
+  }
+}
+
 const handleJoinByCode = async (inviteCode: string) => {
   const actualUser = getTelegramUserSafe(user);
 
@@ -15097,6 +16439,16 @@ const [showPaymentChoice, setShowPaymentChoice] =
 
 const TRIBUTE_LINK =
   "https://t.me/tribute/app?startapp=sMuC";
+
+// Знакомства — только Telegram (см. isCapacitorApp() у точек входа).
+const [datingProfile, setDatingProfile] = useState<DatingProfile | null>(null);
+const [datingCandidates, setDatingCandidates] = useState<DatingCandidate[]>([]);
+const [datingCandidatesLoading, setDatingCandidatesLoading] = useState(false);
+const [datingMatches, setDatingMatches] = useState<DatingMatch[]>([]);
+const [activeChatMatch, setActiveChatMatch] = useState<DatingMatch | null>(null);
+const [activeChatMessages, setActiveChatMessages] = useState<
+  Array<{ id: string; senderTelegramId: number; text: string; createdAt: string }>
+>([]);
 
 
   
@@ -16323,6 +17675,7 @@ if (finishedAllTests && !appState.completionBonusesClaimed.tests) {
     user={user}
     pairLevel={getPairLevelInfo(animatedPairPoints)}
     appState={appState}
+    onOpenDating={handleOpenDating}
    onNavigate={(next) => {
   // Раздел открывается всегда — сам paywall (если нужен) показывает
   // конкретный экран (PollsScreen/TestsScreen), а не общий счётчик.
@@ -16542,6 +17895,62 @@ showPaywall={() => {
   <PairLevelInfoScreen
     pairLevel={getPairLevelInfo(animatedPairPoints)}
     onBack={() => setScreen("pair")}
+  />
+)}
+
+{screen === "dating-intro" && (
+  <DatingIntroScreen
+    t={t}
+    onBack={() => setScreen("menu")}
+    onStart={() => setScreen("dating-profile")}
+  />
+)}
+
+{screen === "dating-profile" && (
+  <DatingProfileScreen
+    t={t}
+    initialProfile={datingProfile}
+    defaultGender={appState.profile.gender}
+    onBack={() => setScreen("dating-intro")}
+    onSave={handleSaveDatingProfile}
+    onUploadPhoto={handleUploadDatingPhoto}
+  />
+)}
+
+{screen === "dating-swipe" && (
+  <DatingSwipeScreen
+    t={t}
+    candidates={datingCandidates}
+    loading={datingCandidatesLoading}
+    onSwipe={handleDatingSwipe}
+    onOpenMatches={() => {
+      loadDatingMatches();
+      setScreen("dating-matches");
+    }}
+    onBack={() => setScreen("menu")}
+  />
+)}
+
+{screen === "dating-matches" && (
+  <DatingMatchesScreen
+    t={t}
+    matches={datingMatches}
+    onOpenChat={handleOpenDatingChat}
+    onOpenSwipe={() => setScreen("dating-swipe")}
+    onBack={() => setScreen("dating-swipe")}
+  />
+)}
+
+{screen === "dating-chat" && activeChatMatch && (
+  <DatingChatScreen
+    t={t}
+    match={activeChatMatch}
+    messages={activeChatMessages}
+    myTelegramId={user?.id ?? null}
+    onSend={handleSendDatingMessage}
+    onBlock={handleBlockDatingUser}
+    onReport={handleReportDatingUser}
+    onBack={() => setScreen("dating-matches")}
   />
 )}
 
