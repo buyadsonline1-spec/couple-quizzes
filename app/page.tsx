@@ -14131,6 +14131,7 @@ function ProfileAndStatsScreen({
   currentGender,
   onBack,
   onNavigate,
+  onDisplayNameSaved,
 }: {
 
 
@@ -14150,6 +14151,7 @@ function ProfileAndStatsScreen({
   isPremium: boolean;
   currentGender: "boy" | "girl" | null;
   onBack: () => void;
+  onDisplayNameSaved?: (name: string) => void;
 }) {
 
 
@@ -14187,6 +14189,9 @@ const t = market === "fi" ? TEXT_FI : market === "en" ? TEXT_EN : TEXT_RU;
       const result = await response.json();
 
       setNicknameMessage(result?.ok ? t.account.nicknameSaved : t.account.nicknameError);
+      if (result?.ok) {
+        onDisplayNameSaved?.(nickname.trim());
+      }
     } catch (error) {
       console.error("handleSaveNickname error:", error);
       setNicknameMessage(t.account.nicknameError);
@@ -16903,6 +16908,21 @@ if (isCapacitorApp() && bootstrapData.profile?.telegramId) {
   setUser((prev) => (prev ? { ...prev, id: realTelegramId } : prev));
 }
 
+// Если пользователь вручную поменял ник в настройках аккаунта,
+// сохранённое в profiles имя должно перекрывать живое имя из
+// Telegram/Apple/Google — иначе сам пользователь как открыл
+// приложение, так и продолжит видеть старое имя (Telegram initData
+// на этот сохранённый ник вообще не знает и не влияет).
+if (bootstrapData.profile?.displayNameCustom && bootstrapData.profile?.firstName) {
+  const customFirstName = String(bootstrapData.profile.firstName);
+  const customLastName = bootstrapData.profile.lastName
+    ? String(bootstrapData.profile.lastName)
+    : "";
+  setUser((prev) =>
+    prev ? { ...prev, first_name: customFirstName, last_name: customLastName } : prev
+  );
+}
+
 const soloPointsFromDb = Number(bootstrapData.profile?.soloPoints ?? 0);
 const soloWeeklyPointsFromDb = Number(
   bootstrapData.profile?.soloWeeklyPoints ?? 0
@@ -18063,6 +18083,9 @@ showPaywall={() => {
   currentGender={appState.profile.gender}
   onNavigate={setScreen}
   onBack={() => setScreen("menu")}
+  onDisplayNameSaved={(name) =>
+    setUser((prev) => (prev ? { ...prev, first_name: name, last_name: "" } : prev))
+  }
 />
 
 )}

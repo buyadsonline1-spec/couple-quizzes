@@ -27,6 +27,19 @@ export type TelegramInitDataValidation = {
   // звать bootstrap_profile для него нельзя (та функция отклоняет
   // telegramId <= 0, а тут синтетический отрицательный id).
   authMethod?: "telegram" | "supabase";
+  // Только для authMethod "supabase" — bootstrap_profile_from_auth уже
+  // сходил в profiles за актуальными данными, /api/bootstrap читает их
+  // отсюда вместо повторного RPC-вызова (bootstrap_profile отклоняет
+  // синтетический отрицательный telegramId).
+  soloPoints?: number;
+  soloWeeklyPoints?: number;
+  soloWeeklyPointsWeek?: string | null;
+  displayNameCustom?: boolean;
+  // Реальное сохранённое в profiles имя — в отличие от firstName выше
+  // (который для supabase-пути — это имя из Apple/Google, а не то,
+  // что пользователь мог вручную поменять в настройках аккаунта).
+  dbFirstName?: string | null;
+  dbLastName?: string | null;
   // start_param идёт из ТОЙ ЖЕ подписанной initData, что и telegramId —
   // используется в app/api/referral/claim/route.ts как криптографически
   // надёжный источник referrerTelegramId (вида "ref_<id>"), клиент не
@@ -199,6 +212,12 @@ async function validateSupabaseAuthToken(
           ? authUser.user_metadata.avatar_url
           : null,
       authMethod: "supabase",
+      soloPoints: Number(bootstrapData.soloPoints ?? 0),
+      soloWeeklyPoints: Number(bootstrapData.soloWeeklyPoints ?? 0),
+      soloWeeklyPointsWeek: bootstrapData.soloWeeklyPointsWeek ?? null,
+      displayNameCustom: Boolean(bootstrapData.displayNameCustom),
+      dbFirstName: bootstrapData.firstName ?? null,
+      dbLastName: bootstrapData.lastName ?? null,
     };
   } catch (error) {
     console.error("validateSupabaseAuthToken error:", error);

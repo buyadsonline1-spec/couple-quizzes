@@ -48,10 +48,24 @@ export async function POST(request: NextRequest) {
       soloPoints?: number;
       soloWeeklyPoints?: number;
       soloWeeklyPointsWeek?: string | null;
+      firstName?: string | null;
+      lastName?: string | null;
+      displayNameCustom?: boolean;
     } = {};
 
     if (validation.authMethod === "supabase") {
-      profileData = {};
+      // validateRequestAuth уже сходил в bootstrap_profile_from_auth —
+      // берём готовые данные оттуда вместо пустого объекта, иначе
+      // клиент никогда не узнáет сохранённое в profiles имя (в т.ч.
+      // кастомный ник) для standalone iOS-аккаунтов.
+      profileData = {
+        soloPoints: validation.soloPoints,
+        soloWeeklyPoints: validation.soloWeeklyPoints,
+        soloWeeklyPointsWeek: validation.soloWeeklyPointsWeek,
+        firstName: validation.dbFirstName,
+        lastName: validation.dbLastName,
+        displayNameCustom: validation.displayNameCustom,
+      };
     } else {
       // Профиль: та же bootstrap_profile RPC, что и /api/profile/bootstrap
       // (display-поля из initData, никогда из тела запроса) — здесь же
@@ -108,6 +122,9 @@ export async function POST(request: NextRequest) {
         soloPoints: Number(profileData.soloPoints ?? 0),
         soloWeeklyPoints: Number(profileData.soloWeeklyPoints ?? 0),
         soloWeeklyPointsWeek: profileData.soloWeeklyPointsWeek ?? null,
+        firstName: profileData.firstName ?? null,
+        lastName: profileData.lastName ?? null,
+        displayNameCustom: Boolean(profileData.displayNameCustom),
       },
       isPremium,
       pair,
