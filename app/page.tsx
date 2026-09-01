@@ -8136,6 +8136,23 @@ function DailyBonusModal({
   );
 }
 
+// SHA-256 хэш строки в hex — Web Crypto (crypto.subtle) доступен и в
+// WKWebView. Нужен для Sign in with Apple: Apple кладёт nonce в JWT
+// ВЕРБАТИМ (без хэширования — см. authorize() ниже), а Supabase
+// (signInWithIdToken) наоборот сам хэширует переданный ему nonce перед
+// сравнением с claim'ом токена. Значит в запрос к Apple нужно отдавать
+// ХЭШ, а в Supabase — исходную (сырую) строку, иначе хэши разойдутся и
+// подпись "не совпадёт" при любой валидной сессии — этим объяснялся
+// баг "App displayed an error when we attempted to Sign in with
+// Apple" из ревью Apple (Guideline 2.1a).
+async function sha256Hex(input: string): Promise<string> {
+  const data = new TextEncoder().encode(input);
+  const hashBuffer = await crypto.subtle.digest("SHA-256", data);
+  return Array.from(new Uint8Array(hashBuffer))
+    .map((byte) => byte.toString(16).padStart(2, "0"))
+    .join("");
+}
+
 // Phase 2 (App Store план): экран входа только для Capacitor-сборки —
 // Telegram-пользователи его никогда не видят (isCapacitorApp() у них
 // всегда false, экран "auth" даже не устанавливается как screen).
@@ -8227,28 +8244,36 @@ function AuthScreen() {
     setError(null);
 
     try {
-      // Плагин подключён (@capacitor-community/apple-sign-in), но
-      // реально протестировать нативный флоу можно только после
-      // сборки в Xcode (нужны entitlements) — до этого просто
-      // аккуратно ловим ошибку и показываем сообщение, ничего не
-      // падает.
+      // Плагин подключён (@capacitor-community/apple-sign-in). Нативная
+      // (iOS) реализация плагина игнорирует clientId/redirectURI —
+      // читает только scopes/state/nonce (см. Plugin.swift) — ими
+      // управлять нельзя отсюда, только на стороне Apple/Supabase.
+      // ВАЖНО, отдельно от кода: identityToken.aud на iOS — это bundle
+      // id самого приложения (com.couplequizzes.app), а не clientId
+      // ниже. В Supabase Dashboard → Authentication → Apple provider
+      // это значение обязано быть в списке "Authorized Client IDs"
+      // (не только сам Services ID) — иначе signInWithIdToken падает
+      // с ошибкой audience, даже если nonce всё верно.
       const { SignInWithApple } = await import(
         "@capacitor-community/apple-sign-in"
       );
 
-      const nonce = crypto.randomUUID();
+      const rawNonce = crypto.randomUUID();
+      const hashedNonce = await sha256Hex(rawNonce);
 
       const result = await SignInWithApple.authorize({
         clientId: "com.couplequizzes.signin",
         redirectURI: "https://eudiyzokazypcalizcls.supabase.co/auth/v1/callback",
         scopes: "email name",
-        nonce,
+        // Хэш — на запрос к Apple (см. sha256Hex выше).
+        nonce: hashedNonce,
       });
 
       const { error: authError } = await supabase.auth.signInWithIdToken({
         provider: "apple",
         token: result.response.identityToken,
-        nonce,
+        // Исходная строка — Supabase сам хэширует её перед сверкой.
+        nonce: rawNonce,
       });
 
       if (authError) {
