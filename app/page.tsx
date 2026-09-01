@@ -8939,7 +8939,7 @@ function MainMenu({
   />
           <MenuButton label={t.menu.games} emoji="🎮" onClick={() => onNavigate("games")} />
           <MenuButton label={t.menu.tests} emoji="🧠" onClick={() => onNavigate("tests")} />
-          <MenuButton label={t.menu.rewards} emoji="🎡" onClick={() => onNavigate("rewards")} />
+          <MenuButton label={t.menu.rewards} emoji="🎁" onClick={() => onNavigate("rewards")} />
           <MenuButton label={t.menu.pair} emoji="💕" onClick={() => onNavigate("pair")} />
           <MenuButton label={t.menu.topPlayers} emoji="🏆" onClick={() => onNavigate("top")} />
 
@@ -12520,27 +12520,32 @@ const visibleRewards = rewardsExpanded
       bonusCredits: result.bonusSpinCredits,
     });
 
-    // Реальный приз — крутим к его категории; любой из двух бонусов —
-    // к служебному сектору "Бонус" в конце (см. BONUS_DISPLAY_CATEGORY).
-    const targetIndex =
-      result.outcomeType === "prize"
-        ? Math.max(
-            0,
-            resultDisplayCategories.findIndex(
-              (category) => category.id === result.categoryId,
-            ),
-          )
-        : resultDisplayCategories.length - 1;
-    const resultSegmentAngle = 360 / resultDisplayCategories.length;
-    const spins = 5;
-    const targetCenterAngle =
-      targetIndex * resultSegmentAngle + resultSegmentAngle / 2;
-    const targetRotation = spins * 360 + (360 - targetCenterAngle);
+    // Анимация вращения — только для Telegram-версии с настоящим
+    // колесом. На iOS (см. рендер ниже) колеса физически нет, крутить
+    // нечего — там просто короткая пауза перед раскрытием приза.
+    if (!isCapacitorApp()) {
+      // Реальный приз — крутим к его категории; любой из двух бонусов —
+      // к служебному сектору "Бонус" в конце (см. BONUS_DISPLAY_CATEGORY).
+      const targetIndex =
+        result.outcomeType === "prize"
+          ? Math.max(
+              0,
+              resultDisplayCategories.findIndex(
+                (category) => category.id === result.categoryId,
+              ),
+            )
+          : resultDisplayCategories.length - 1;
+      const resultSegmentAngle = 360 / resultDisplayCategories.length;
+      const spins = 5;
+      const targetCenterAngle =
+        targetIndex * resultSegmentAngle + resultSegmentAngle / 2;
+      const targetRotation = spins * 360 + (360 - targetCenterAngle);
 
-    setRotation((prev) => {
-      const normalizedPrev = ((prev % 360) + 360) % 360;
-      return prev - normalizedPrev + targetRotation;
-    });
+      setRotation((prev) => {
+        const normalizedPrev = ((prev % 360) + 360) % 360;
+        return prev - normalizedPrev + targetRotation;
+      });
+    }
 
     setTimeout(() => {
       setIsSpinning(false);
@@ -12564,18 +12569,20 @@ const visibleRewards = rewardsExpanded
       }
 
       setShowRewardScreen(true);
-    }, 4300);
+    }, isCapacitorApp() ? 900 : 4300);
   }
 
   return (
     <div style={{ padding: 12, display: "grid", gap: 10 }}>
      <div style={{ ...cardBaseStyle(), padding: 14 }}>
   <div style={{ fontSize: 24, fontWeight: 900, color: "#1f1d3a" }}>
-    {t.rewards.wheel}
+    {isCapacitorApp() ? t.rewards.wheelScreen.iosTitle : t.rewards.wheel}
   </div>
   <div style={{ marginTop: 4, color: "#3a345c", fontSize: 13, lineHeight: 1.4 }}>
-    {t.rewards.wheelScreen.spinCostPrefix} <b>{WHEEL_SPIN_COST}</b>{" "}
-    {t.games.pointsUnit}
+    {isCapacitorApp()
+      ? t.rewards.wheelScreen.iosCostPrefix
+      : t.rewards.wheelScreen.spinCostPrefix}{" "}
+    <b>{WHEEL_SPIN_COST}</b> {t.games.pointsUnit}
   </div>
 
   <div
@@ -12596,12 +12603,72 @@ const visibleRewards = rewardsExpanded
     <div style={{ marginTop: 6, color: "#3a345c", fontSize: 13 }}>
       {t.rewards.wheelScreen.todayLabel} {spinsInfo.used} / 3
       {spinsInfo.bonusCredits > 0
-        ? ` ${t.rewards.wheelScreen.freeSpinsLabel} ${spinsInfo.bonusCredits}`
+        ? ` ${
+            isCapacitorApp()
+              ? t.rewards.wheelScreen.iosFreeSpinsLabel
+              : t.rewards.wheelScreen.freeSpinsLabel
+          } ${spinsInfo.bonusCredits}`
         : ""}
     </div>
   )}
 </div>
 
+      {isCapacitorApp() ? (
+        // Apple Guideline "simulated gambling" (индивидуальные аккаунты
+        // разработчика не могут публиковать приложения с механикой,
+        // визуально похожей на рулетку/слот) — тот же бонус, та же
+        // серверная RPC (spin_reward_wheel), но БЕЗ колеса: карточка с
+        // подарком, которая открывается по нажатию. В Telegram
+        // ниже остаётся оригинальное колесо без изменений.
+        <div style={{ ...cardBaseStyle(), padding: 24, textAlign: "center" }}>
+          <div
+            style={{
+              fontSize: 72,
+              lineHeight: 1,
+              filter: isSpinning ? "grayscale(0.15)" : "none",
+              transform: isSpinning ? "scale(0.94)" : "scale(1)",
+              transition: "transform 0.3s ease",
+            }}
+          >
+            {isSpinning ? "✨" : "🎁"}
+          </div>
+
+          <button
+            onClick={handleSpin}
+            disabled={isSpinning || points < WHEEL_SPIN_COST}
+            style={{
+              ...primaryButtonStyle,
+              width: "100%",
+              marginTop: 18,
+              padding: "14px",
+              fontSize: 16,
+              opacity: isSpinning || points < WHEEL_SPIN_COST ? 0.6 : 1,
+              cursor:
+                isSpinning || points < WHEEL_SPIN_COST ? "not-allowed" : "pointer",
+            }}
+          >
+            {isSpinning
+              ? t.rewards.wheelScreen.iosOpeningLabel
+              : `${t.rewards.wheelScreen.iosOpenButtonPrefix} ${WHEEL_SPIN_COST} ${t.games.pointsUnit}`}
+          </button>
+
+          {message ? (
+            <div
+              style={{
+                marginTop: 12,
+                padding: "12px 14px",
+                borderRadius: 16,
+                background: "rgba(255,255,255,0.22)",
+                color: "#2f2850",
+                fontWeight: 700,
+                lineHeight: 1.45,
+              }}
+            >
+              {message}
+            </div>
+          ) : null}
+        </div>
+      ) : (
       <div style={{ ...cardBaseStyle(), padding: 18 }}>
         <div
           style={{
@@ -12757,8 +12824,9 @@ const visibleRewards = rewardsExpanded
           </div>
         ) : null}
       </div>
+      )}
 
-     
+
 
 {showRewardScreen && selectedReward && (
   <div

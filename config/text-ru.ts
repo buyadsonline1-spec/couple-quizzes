@@ -228,6 +228,14 @@ export const TEXT_RU = {
 
     wheelScreen: {
       spinCostPrefix: "Одно вращение стоит",
+      // iOS-вариант этого экрана без визуала колеса (Apple не пропускает
+      // simulated gambling с индивидуальных аккаунтов разработчика) —
+      // тот же бонус, но подан как открытие подарка, а не как рулетка.
+      iosTitle: "Ежедневный бонус",
+      iosCostPrefix: "Одно открытие стоит",
+      iosOpenButtonPrefix: "Открыть за",
+      iosOpeningLabel: "Открываем...",
+      iosFreeSpinsLabel: " · бесплатных открытий:",
       bonusSegmentLabel: "Бонус",
       pointsLabel: "⭐ Очков:",
       todayLabel: "Сегодня:",

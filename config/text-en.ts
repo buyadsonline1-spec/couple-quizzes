@@ -228,6 +228,11 @@ export const TEXT_EN = {
 
     wheelScreen: {
       spinCostPrefix: "One spin costs",
+      iosTitle: "Daily bonus",
+      iosCostPrefix: "One reveal costs",
+      iosOpenButtonPrefix: "Open for",
+      iosOpeningLabel: "Opening...",
+      iosFreeSpinsLabel: " · free openings:",
       bonusSegmentLabel: "Bonus",
       pointsLabel: "⭐ Points:",
       todayLabel: "Today:",

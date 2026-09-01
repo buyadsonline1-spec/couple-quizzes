@@ -232,6 +232,11 @@ export const TEXT_FI = {
 
     wheelScreen: {
       spinCostPrefix: "Yksi pyöräytys maksaa",
+      iosTitle: "Päivittäinen bonus",
+      iosCostPrefix: "Yhden avaamisen hinta on",
+      iosOpenButtonPrefix: "Avaa hintaan",
+      iosOpeningLabel: "Avataan...",
+      iosFreeSpinsLabel: " · ilmaisia avauksia:",
       bonusSegmentLabel: "Bonus",
       pointsLabel: "⭐ Pisteitä:",
       todayLabel: "Tänään:",
