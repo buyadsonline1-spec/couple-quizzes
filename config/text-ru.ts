@@ -492,6 +492,9 @@ export const TEXT_RU = {
     featureGames: "🎮 Все игры",
     featureTests: "🧠 Все тесты",
     featureWheel: "🎡 Рулетка призов",
+    // iOS-формулировка того же пункта — без слова "рулетка" (см. фикс
+    // rewards.wheelScreen.iosTitle для той же причины).
+    featureWheelIos: "🎁 Бонусы и подарки",
     featureBonusPoints: "🎁 +500 очков",
     featureDesign: "🎨 Специальный дизайн",
     unlockButton: "Разблокировать Premium",
@@ -499,6 +502,12 @@ export const TEXT_RU = {
     openingPayment: "Открываем оплату...",
     payWithStars: "⭐ Оплатить через Stars",
     payWithTribute: "💎 Оплатить через Tribute",
+    subscribeButton: "Оформить Premium",
+    restoreButton: "Восстановить покупки",
+    restoringLabel: "Восстанавливаем...",
+    subscriptionLength: "Подписка с автопродлением, 1 месяц",
+    termsLink: "Условия использования",
+    privacyLink: "Политика конфиденциальности",
   },
 
   completionBonus: {
@@ -529,6 +538,7 @@ export const TEXT_RU = {
     bonusClaimFailed: "Не удалось начислить бонус, попробуй ещё раз",
     noActiveSession: "Нет активной сессии, попробуйте войти заново",
     purchaseNotConfirmed: "Не удалось подтвердить покупку",
+    noPurchasesToRestore: "Активных покупок не найдено",
     paymentCreateFailed: "Не удалось создать оплату",
     paymentLinkMissing: "Ссылка на оплату не получена",
     telegramInvoiceUnavailable: "Telegram WebApp openInvoice недоступен",

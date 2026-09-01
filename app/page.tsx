@@ -30,6 +30,27 @@ const market = getMarket();
 const t = market === "fi" ? TEXT_FI : market === "en" ? TEXT_EN : TEXT_RU;
 const MANAGER_CHAT_URL = "https://t.me/Couple_quizzes_support";
 
+// Guideline 3.1.2(c) — auto-renewable subscription экран обязан
+// показывать рабочие ссылки на Terms of Use (EULA) и Privacy Policy.
+// Мы не пишем свой EULA — используем стандартный Apple EULA (это
+// официально разрешённый и самый простой путь, тот же линк нужно
+// добавить в App Description в App Store Connect).
+const APPLE_STANDARD_EULA_URL =
+  "https://www.apple.com/legal/internal/terms/site/itunes/dev/stdeula/";
+
+function openExternalLink(url: string) {
+  if (typeof window === "undefined") return;
+  // Telegram-специфичный API открывает системный браузер поверх
+  // Mini App, не убивая её сессию; вне Telegram (обычный браузер,
+  // Capacitor/WKWebView) обычный window.open с target=_blank даёт то
+  // же самое — уже используется в этом файле как fallback-паттерн.
+  if (window.Telegram?.WebApp?.openLink) {
+    window.Telegram.WebApp.openLink(url);
+  } else {
+    window.open(url, "_blank");
+  }
+}
+
 const REWARD_CATEGORIES =
   market === "en" ? REWARD_CATEGORIES_EN : REWARD_CATEGORIES_RU;
 
@@ -44,6 +65,7 @@ declare global {
         initData?: string;
         openInvoice?: (url: string, callback?: (status: string) => void) => void;
         openTelegramLink?: (url: string) => void;
+        openLink?: (url: string) => void;
         ready?: () => void;
         expand?: () => void;
         initDataUnsafe?: {
@@ -15636,6 +15658,84 @@ async function confirmGiveawayAction(
   }
 }
 
+// Общий хвост для покупки и восстановления на iOS — оба в итоге сводятся
+// к "есть подписанный Apple JWS, отправить на верификацию, применить
+// isPremium к состоянию". Раньше это было продублировано только внутри
+// handleBuyPremium; restore (Guideline 3.1.1) переиспользует то же самое.
+async function verifyAppleTransactionAndApply(
+  signedTransaction: string
+): Promise<boolean> {
+  const { data: sessionData } = await supabase.auth.getSession();
+  const supabaseAccessToken = sessionData.session?.access_token;
+
+  if (!supabaseAccessToken) {
+    throw new Error(t.errors.noActiveSession);
+  }
+
+  const verifyRes = await fetch("/api/payments/apple-iap-verify", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ supabaseAccessToken, signedTransaction }),
+  });
+  const verifyData = await verifyRes.json();
+
+  if (!verifyRes.ok || !verifyData?.ok) {
+    throw new Error(verifyData?.error || t.errors.purchaseNotConfirmed);
+  }
+
+  const hasPremium = Boolean(verifyData.isPremium);
+
+  setAppState((prev) => ({
+    ...prev,
+    isPremium: hasPremium,
+  }));
+
+  if (hasPremium) {
+    setShowPaymentChoice(false);
+    if (screen === "paywall") {
+      setScreen(paywallBackScreen || "menu");
+    }
+  }
+
+  return hasPremium;
+}
+
+const handleRestorePurchase = async () => {
+  try {
+    setPremiumLoading(true);
+
+    const { ApplePurchase, APPLE_PREMIUM_MONTH_PRODUCT_ID } = await import(
+      "@/lib/applePurchase"
+    );
+
+    const restoreResult = await ApplePurchase.restore({
+      productId: APPLE_PREMIUM_MONTH_PRODUCT_ID,
+    });
+
+    const hasPremium = await verifyAppleTransactionAndApply(
+      restoreResult.jwsRepresentation
+    );
+
+    if (!hasPremium) {
+      alert(t.errors.purchaseNotConfirmed);
+    }
+  } catch (error) {
+    if (
+      error instanceof Error &&
+      error.message.includes("NO_PURCHASES_TO_RESTORE")
+    ) {
+      alert(t.errors.noPurchasesToRestore);
+      return;
+    }
+    console.error("RESTORE PURCHASE ERROR:", error);
+    alert(
+      error instanceof Error ? error.message : t.errors.purchaseNotConfirmed
+    );
+  } finally {
+    setPremiumLoading(false);
+  }
+};
+
 const handleBuyPremium = async () => {
   try {
     setPremiumLoading(true);
@@ -15655,40 +15755,7 @@ const handleBuyPremium = async () => {
         productId: APPLE_PREMIUM_MONTH_PRODUCT_ID,
       });
 
-      const { data: sessionData } = await supabase.auth.getSession();
-      const supabaseAccessToken = sessionData.session?.access_token;
-
-      if (!supabaseAccessToken) {
-        throw new Error(t.errors.noActiveSession);
-      }
-
-      const verifyRes = await fetch("/api/payments/apple-iap-verify", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          supabaseAccessToken,
-          signedTransaction: purchaseResult.jwsRepresentation,
-        }),
-      });
-      const verifyData = await verifyRes.json();
-
-      if (!verifyRes.ok || !verifyData?.ok) {
-        throw new Error(verifyData?.error || t.errors.purchaseNotConfirmed);
-      }
-
-      const hasPremium = Boolean(verifyData.isPremium);
-
-      setAppState((prev) => ({
-        ...prev,
-        isPremium: hasPremium,
-      }));
-
-      if (hasPremium) {
-        setShowPaymentChoice(false);
-        if (screen === "paywall") {
-          setScreen(paywallBackScreen || "menu");
-        }
-      }
+      await verifyAppleTransactionAndApply(purchaseResult.jwsRepresentation);
 
       return;
     }
@@ -18403,7 +18470,7 @@ showPaywall={() => {
         {t.paywall.featurePolls}<br />
         {t.paywall.featureGames}<br />
         {t.paywall.featureTests}<br />
-        {t.paywall.featureWheel}<br />
+        {isCapacitorApp() ? t.paywall.featureWheelIos : t.paywall.featureWheel}<br />
         {t.paywall.featureBonusPoints}<br />
         {t.paywall.featureDesign}
       </div>
@@ -18417,6 +18484,10 @@ showPaywall={() => {
         }}
       >
         {isCapacitorApp() ? "299 ₽" : "149 ₽"}
+      </div>
+
+      <div style={{ marginTop: 2, fontSize: 13, color: "#5f5a7a" }}>
+        {t.paywall.subscriptionLength}
       </div>
 
       <button
@@ -18548,6 +18619,54 @@ showPaywall={() => {
         {t.paywall.choosePaymentSubtitle}
       </div>
 
+      {isCapacitorApp() ? (
+        // Guideline 3.1.1 — на iOS ТОЛЬКО собственный Apple In-App
+        // Purchase, никаких альтернативных способов оплаты (Stars/
+        // Tribute — Telegram-специфичные, показывать их здесь на iOS
+        // само по себе основание для отказа). handleBuyPremium уже
+        // ветвится на ApplePurchase внутри при isCapacitorApp().
+        <>
+          <button
+            style={{
+              ...primaryButtonStyle,
+              width: "100%",
+              marginTop: 18,
+              opacity: premiumLoading ? 0.7 : 1,
+            }}
+            disabled={premiumLoading}
+            onClick={() => {
+              handleBuyPremium();
+            }}
+          >
+            {premiumLoading
+              ? t.paywall.openingPayment
+              : t.paywall.subscribeButton}
+          </button>
+
+          <button
+            style={{
+              width: "100%",
+              marginTop: 10,
+              border: "1px solid rgba(31,29,58,0.12)",
+              background: "#fff",
+              color: "#1f1d3a",
+              borderRadius: 16,
+              padding: "14px 16px",
+              fontSize: 16,
+              fontWeight: 800,
+              cursor: "pointer",
+              opacity: premiumLoading ? 0.7 : 1,
+            }}
+            disabled={premiumLoading}
+            onClick={() => {
+              handleRestorePurchase();
+            }}
+          >
+            {premiumLoading ? t.paywall.restoringLabel : t.paywall.restoreButton}
+          </button>
+        </>
+      ) : (
+        <>
       <button
         style={{
           ...primaryButtonStyle,
@@ -18587,6 +18706,49 @@ showPaywall={() => {
       >
         💎 Оплатить через Tribute
       </button>
+        </>
+      )}
+
+      {/* Guideline 3.1.2(c) — рабочие ссылки на Terms of Use и Privacy
+          Policy прямо в покупочном флоу. */}
+      <div
+        style={{
+          marginTop: 14,
+          display: "flex",
+          justifyContent: "center",
+          gap: 14,
+          fontSize: 12,
+        }}
+      >
+        <button
+          style={{
+            background: "none",
+            border: "none",
+            color: "#6b46ff",
+            fontSize: 12,
+            fontWeight: 700,
+            cursor: "pointer",
+            textDecoration: "underline",
+          }}
+          onClick={() => openExternalLink(APPLE_STANDARD_EULA_URL)}
+        >
+          {t.paywall.termsLink}
+        </button>
+        <button
+          style={{
+            background: "none",
+            border: "none",
+            color: "#6b46ff",
+            fontSize: 12,
+            fontWeight: 700,
+            cursor: "pointer",
+            textDecoration: "underline",
+          }}
+          onClick={() => openExternalLink(`${window.location.origin}/privacy`)}
+        >
+          {t.paywall.privacyLink}
+        </button>
+      </div>
 
       <button
         style={{

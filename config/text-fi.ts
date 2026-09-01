@@ -490,6 +490,7 @@ export const TEXT_FI = {
     featureGames: "🎮 Kaikki pelit",
     featureTests: "🧠 Kaikki testit",
     featureWheel: "🎡 Palkintopyörä",
+    featureWheelIos: "🎁 Bonukset ja lahjat",
     featureBonusPoints: "🎁 +500 pistettä",
     featureDesign: "🎨 Erikoismuotoilu",
     unlockButton: "Avaa Premium",
@@ -497,6 +498,12 @@ export const TEXT_FI = {
     openingPayment: "Avataan maksua...",
     payWithStars: "⭐ Maksa Starsilla",
     payWithTribute: "💎 Maksa Tributella",
+    subscribeButton: "Tilaa Premium",
+    restoreButton: "Palauta ostokset",
+    restoringLabel: "Palautetaan...",
+    subscriptionLength: "Automaattisesti uusiutuva tilaus, 1 kuukausi",
+    termsLink: "Käyttöehdot",
+    privacyLink: "Tietosuojakäytäntö",
   },
 
   completionBonus: {
@@ -527,6 +534,7 @@ export const TEXT_FI = {
     bonusClaimFailed: "Bonuksen lisäys epäonnistui, yritä uudelleen",
     noActiveSession: "Ei aktiivista istuntoa, kirjaudu uudelleen",
     purchaseNotConfirmed: "Ostoa ei voitu vahvistaa",
+    noPurchasesToRestore: "Aktiivisia ostoksia ei löytynyt",
     paymentCreateFailed: "Maksun luonti epäonnistui",
     paymentLinkMissing: "Maksulinkkiä ei saatu",
     telegramInvoiceUnavailable: "Telegram WebApp openInvoice ei ole käytettävissä",

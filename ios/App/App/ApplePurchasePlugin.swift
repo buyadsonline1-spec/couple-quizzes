@@ -20,7 +20,8 @@ public class ApplePurchasePlugin: CAPPlugin, CAPBridgedPlugin {
     public let identifier = "ApplePurchasePlugin"
     public let jsName = "ApplePurchase"
     public let pluginMethods: [CAPPluginMethod] = [
-        CAPPluginMethod(name: "purchase", returnType: CAPPluginReturnPromise)
+        CAPPluginMethod(name: "purchase", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "restore", returnType: CAPPluginReturnPromise)
     ]
 
     @objc func purchase(_ call: CAPPluginCall) {
@@ -66,6 +67,48 @@ public class ApplePurchasePlugin: CAPPlugin, CAPBridgedPlugin {
                 }
             } catch {
                 call.reject("Purchase failed: \(error.localizedDescription)")
+            }
+        }
+    }
+
+    // Guideline 3.1.1 — любая покупка, которая может быть восстановлена
+    // (не расходуемая, включая подписки), обязана иметь явную кнопку
+    // "Restore Purchases" в UI, не полагающуюся на автоматическое
+    // восстановление при запуске. Возвращает тот же шейп, что и
+    // purchase(), чтобы клиент мог прогнать результат через тот же
+    // /api/payments/apple-iap-verify без отдельной ветки.
+    @objc func restore(_ call: CAPPluginCall) {
+        let requestedProductId = call.getString("productId")
+
+        Task {
+            do {
+                // Принудительно синкаем локальный StoreKit-стейт с Apple —
+                // без этого currentEntitlements может быть пуст после
+                // переустановки приложения или входа под другим Apple ID
+                // на этом устройстве, хотя подписка у пользователя реально
+                // активна.
+                try await AppStore.sync()
+
+                for await verification in Transaction.currentEntitlements {
+                    guard case .verified(let transaction) = verification else {
+                        continue
+                    }
+
+                    if let requestedProductId = requestedProductId,
+                       transaction.productID != requestedProductId {
+                        continue
+                    }
+
+                    call.resolve([
+                        "jwsRepresentation": verification.jwsRepresentation,
+                        "transactionId": String(transaction.id)
+                    ])
+                    return
+                }
+
+                call.reject("NO_PURCHASES_TO_RESTORE")
+            } catch {
+                call.reject("Restore failed: \(error.localizedDescription)")
             }
         }
     }

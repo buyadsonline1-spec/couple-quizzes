@@ -11,6 +11,11 @@ export interface ApplePurchaseResult {
 
 export interface ApplePurchasePlugin {
   purchase(options: { productId: string }): Promise<ApplePurchaseResult>;
+  // Guideline 3.1.1 — сихронизирует локальный StoreKit-стейт с Apple
+  // (AppStore.sync()) и возвращает уже существующую активную покупку
+  // productId, если она есть; отклоняет с "NO_PURCHASES_TO_RESTORE",
+  // если восстанавливать нечего.
+  restore(options: { productId: string }): Promise<ApplePurchaseResult>;
 }
 
 export const ApplePurchase = registerPlugin<ApplePurchasePlugin>(

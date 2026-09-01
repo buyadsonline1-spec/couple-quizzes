@@ -484,6 +484,7 @@ export const TEXT_EN = {
     featureGames: "🎮 All games",
     featureTests: "🧠 All tests",
     featureWheel: "🎡 Prize wheel",
+    featureWheelIos: "🎁 Bonuses and gifts",
     featureBonusPoints: "🎁 +500 points",
     featureDesign: "🎨 Special design",
     unlockButton: "Unlock Premium",
@@ -491,6 +492,12 @@ export const TEXT_EN = {
     openingPayment: "Opening payment...",
     payWithStars: "⭐ Pay with Stars",
     payWithTribute: "💎 Pay with Tribute",
+    subscribeButton: "Subscribe to Premium",
+    restoreButton: "Restore Purchases",
+    restoringLabel: "Restoring...",
+    subscriptionLength: "Auto-renewing subscription, 1 month",
+    termsLink: "Terms of Use",
+    privacyLink: "Privacy Policy",
   },
 
   completionBonus: {
@@ -521,6 +528,7 @@ export const TEXT_EN = {
     bonusClaimFailed: "Couldn't add the bonus, try again",
     noActiveSession: "No active session, please sign in again",
     purchaseNotConfirmed: "Couldn't confirm the purchase",
+    noPurchasesToRestore: "No active purchases found",
     paymentCreateFailed: "Couldn't create the payment",
     paymentLinkMissing: "Didn't receive a payment link",
     telegramInvoiceUnavailable: "Telegram WebApp openInvoice is unavailable",
