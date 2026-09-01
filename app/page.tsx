@@ -12668,16 +12668,82 @@ const visibleRewards = rewardsExpanded
         // подарком, которая открывается по нажатию. В Telegram
         // ниже остаётся оригинальное колесо без изменений.
         <div style={{ ...cardBaseStyle(), padding: 24, textAlign: "center" }}>
+          <style>
+            {`
+              @keyframes giftShakeWrap {
+                0%, 100% { transform: rotate(0deg); }
+                10% { transform: rotate(-7deg); }
+                20% { transform: rotate(7deg); }
+                30% { transform: rotate(-7deg); }
+                40% { transform: rotate(7deg); }
+                50% { transform: rotate(-4deg); }
+                60%, 100% { transform: rotate(0deg); }
+              }
+              @keyframes giftLidFly {
+                0%, 55% { transform: translateY(0) rotate(0deg); opacity: 1; }
+                100% { transform: translateY(-46px) rotate(-35deg); opacity: 0; }
+              }
+              @keyframes giftBoxPop {
+                0%, 55% { transform: scale(1); }
+                65% { transform: scale(1.08); }
+                100% { transform: scale(1); }
+              }
+              @keyframes giftSparkle {
+                0%, 55% { opacity: 0; transform: scale(0.4) translateY(0); }
+                70% { opacity: 1; transform: scale(1.1) translateY(-10px); }
+                100% { opacity: 0; transform: scale(1) translateY(-26px); }
+              }
+            `}
+          </style>
+
           <div
+            key={isSpinning ? "opening" : "idle"}
             style={{
-              fontSize: 72,
-              lineHeight: 1,
-              filter: isSpinning ? "grayscale(0.15)" : "none",
-              transform: isSpinning ? "scale(0.94)" : "scale(1)",
-              transition: "transform 0.3s ease",
+              position: "relative",
+              height: 96,
+              display: "flex",
+              alignItems: "flex-end",
+              justifyContent: "center",
             }}
           >
-            {isSpinning ? "✨" : "🎁"}
+            {isSpinning ? (
+              <>
+                <div style={{ position: "absolute", top: -4, left: "30%", fontSize: 20, animation: "giftSparkle 0.9s ease" }}>✨</div>
+                <div style={{ position: "absolute", top: -8, left: "56%", fontSize: 16, animation: "giftSparkle 0.9s ease 0.08s both" }}>✨</div>
+                <div style={{ position: "absolute", top: 0, left: "45%", fontSize: 14, animation: "giftSparkle 0.9s ease 0.15s both" }}>⭐</div>
+
+                <div style={{ animation: "giftShakeWrap 0.9s ease", transformOrigin: "bottom center" }}>
+                  <div
+                    style={{
+                      width: 78,
+                      height: 24,
+                      margin: "0 auto",
+                      background: "linear-gradient(135deg,#ff8fc7,#c78bff)",
+                      borderRadius: "10px 10px 4px 4px",
+                      position: "relative",
+                      animation: "giftLidFly 0.9s ease forwards",
+                    }}
+                  >
+                    <div style={{ position: "absolute", top: -14, left: "50%", transform: "translateX(-50%)", fontSize: 20 }}>🎀</div>
+                  </div>
+                  <div
+                    style={{
+                      width: 66,
+                      height: 46,
+                      margin: "0 auto",
+                      background: "linear-gradient(135deg,#8f6bff,#ff76ba)",
+                      borderRadius: "4px 4px 10px 10px",
+                      position: "relative",
+                      animation: "giftBoxPop 0.9s ease",
+                    }}
+                  >
+                    <div style={{ position: "absolute", left: "50%", top: 0, bottom: 0, width: 8, marginLeft: -4, background: "rgba(255,255,255,0.55)" }} />
+                  </div>
+                </div>
+              </>
+            ) : (
+              <div style={{ fontSize: 72, lineHeight: 1 }}>🎁</div>
+            )}
           </div>
 
           <button
