@@ -16635,14 +16635,32 @@ async function datingFetch(path: string, body: Record<string, unknown> = {}) {
   }
 }
 
-const handleOpenDating = () => {
+const handleOpenDating = async () => {
   if (!appState.isPremium) {
     setPaywallBackScreen("menu");
     setScreen("paywall");
     return;
   }
 
-  if (datingProfile) {
+  // datingProfile — локальный стейт, который переживает только
+  // текущую сессию (заполняется сразу после сохранения анкеты) и
+  // обнуляется при перезагрузке Mini App. Данные в БД при этом никуда
+  // не деваются — переспрашиваем сервер, а не доверяем локальному
+  // стейту, иначе пользователь с уже заполненной анкетой после
+  // перезагрузки снова видит экран создания анкеты. setDatingProfile
+  // асинхронный, поэтому решение "какой экран показать" принимаем по
+  // локальной переменной, а не по датингProfile сразу после сеттера.
+  let profile = datingProfile;
+
+  if (!profile) {
+    const result = await datingFetch("/api/dating/profile/state");
+    if (result?.ok && result.profile) {
+      profile = result.profile;
+      setDatingProfile(profile);
+    }
+  }
+
+  if (profile) {
     setScreen("dating-swipe");
     loadDatingCandidates();
   } else {
