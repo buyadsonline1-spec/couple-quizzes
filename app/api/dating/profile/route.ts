@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/server/supabase-admin";
 import { validateRequestAuth } from "@/lib/server/telegram-auth";
 import { loadTestSubmissionsForTelegramId } from "@/lib/server/reads";
-import { buildPersonalitySummary } from "@/lib/server/test-results";
+import { buildPersonalitySummary, type Market } from "@/lib/server/test-results";
 
 // Создание/обновление анкеты Знакомств. Раздел открыт всем — Premium
 // требуется только для общения после мэтча и для свайпов сверх
@@ -63,10 +63,15 @@ export async function POST(request: NextRequest) {
     // тегов результатов тестов, хотя описание экрана обещало "собран
     // автоматически". Считаем на сервере из test_submissions — тот же
     // источник, что и подсказки для начала переписки (get_dating_matches).
+    const market: Market =
+      body.market === "ru" || body.market === "en" || body.market === "fi"
+        ? body.market
+        : "en";
+
     const testSubmissions = await loadTestSubmissionsForTelegramId(
       validation.telegramId
     );
-    const personalitySummary = buildPersonalitySummary(testSubmissions);
+    const personalitySummary = buildPersonalitySummary(testSubmissions, market);
 
     const { data, error } = await supabaseAdmin.rpc("upsert_dating_profile", {
       p_telegram_id: validation.telegramId,

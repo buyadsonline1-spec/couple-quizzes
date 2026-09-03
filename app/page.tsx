@@ -3215,43 +3215,127 @@ function getNextStreakBonus(streak: number) {
   return STREAK_BONUSES.find((item) => item.days > streak) ?? null;
 }
 
-function getScaleResult(totalScore: number, maxScore: number): TestResult {
-  const ratio = totalScore / maxScore;
-
-  if (ratio < 0.45) {
-    return {
+// Результаты тестов раньше были захардкожены на русском независимо от
+// market (t.* сюда не заходил вообще — эти функции просто строили
+// TestResult напрямую). Ключи вопросов/вариантов ответа в TESTS выше
+// вообще не имеют финской версии (только market !== "ru" ? EN : RU) —
+// так исторически сложилось для контента самих тестов; результаты
+// приводим к тому же RU/EN, а вот компактные лейблы (нужны и для
+// Знакомств, personality_summary) даём полноценно на всех трёх, это
+// не требует дублирования длинных описаний вопросов.
+const TRUST_LEVEL_RESULTS: Record<Market, TestResult[]> = {
+  ru: [
+    {
       title: "Низкий уровень доверия",
       subtitle: "Есть напряжение и осторожность",
       description:
         "Похоже, в отношениях тебе пока не всегда спокойно и безопасно. Это не приговор — чаще всего доверие растёт через честные разговоры, стабильность и предсказуемость.",
-    };
-  }
-
-  if (ratio < 0.75) {
-    return {
+    },
+    {
       title: "Средний уровень доверия",
       subtitle: "Основа есть, но не без сомнений",
       description:
         "У вас уже есть база доверия, но в некоторых ситуациях тревога и сомнения всё ещё могут включаться. Здесь хорошо работают открытость, уважение границ и регулярный контакт.",
-    };
-  }
+    },
+    {
+      title: "Высокий уровень доверия",
+      subtitle: "В отношениях много опоры и безопасности",
+      description:
+        "Ты чувствуешь рядом с партнёром стабильность, принятие и эмоциональную безопасность. Это сильная основа для близких и зрелых отношений.",
+    },
+  ],
+  en: [
+    {
+      title: "Low trust level",
+      subtitle: "There's tension and caution",
+      description:
+        "It looks like you don't always feel calm and safe in the relationship yet. That's not a verdict — trust usually grows through honest conversations, stability, and predictability.",
+    },
+    {
+      title: "Medium trust level",
+      subtitle: "There's a foundation, but some doubts remain",
+      description:
+        "You already have a base of trust, but anxiety and doubt can still kick in in some situations. Openness, respecting boundaries, and staying in regular contact help here.",
+    },
+    {
+      title: "High trust level",
+      subtitle: "Your relationship has a lot of support and safety",
+      description:
+        "You feel stability, acceptance, and emotional safety with your partner. That's a strong foundation for a close, mature relationship.",
+    },
+  ],
+  fi: [
+    {
+      title: "Matala luottamustaso",
+      subtitle: "Suhteessa on jännitteitä ja varovaisuutta",
+      description:
+        "Vaikuttaa siltä, ettet vielä aina tunne oloasi rauhalliseksi ja turvalliseksi suhteessa. Tämä ei ole tuomio — luottamus kasvaa yleensä rehellisten keskustelujen, vakauden ja ennustettavuuden kautta.",
+    },
+    {
+      title: "Keskitason luottamus",
+      subtitle: "Perusta on olemassa, mutta epäilyksiäkin on",
+      description:
+        "Teillä on jo luottamuksen perusta, mutta ahdistus ja epäily voivat yhä nousta pintaan tietyissä tilanteissa. Avoimuus, rajojen kunnioittaminen ja säännöllinen yhteys auttavat tässä.",
+    },
+    {
+      title: "Korkea luottamustaso",
+      subtitle: "Suhteessa on paljon tukea ja turvaa",
+      description:
+        "Tunnet kumppanisi kanssa vakautta, hyväksyntää ja emotionaalista turvaa. Tämä on vahva perusta läheiselle ja kypsälle suhteelle.",
+    },
+  ],
+};
 
-   return {
-    title: "Высокий уровень доверия",
-    subtitle: "В отношениях много опоры и безопасности",
-    description:
-      "Ты чувствуешь рядом с партнёром стабильность, принятие и эмоциональную безопасность. Это сильная основа для близких и зрелых отношений.",
-  };
+function getScaleResult(totalScore: number, maxScore: number, market: Market): TestResult {
+  const ratio = totalScore / maxScore;
+  const results = TRUST_LEVEL_RESULTS[market];
+
+  if (ratio < 0.45) return results[0];
+  if (ratio < 0.75) return results[1];
+  return results[2];
 }
-  
-function getLoveLanguageResult(answerIndexes: number[]): TestResult {
-  const labels = [
-    "Слова поддержки",
-    "Прикосновения",
-    "Подарки",
-    "Время вместе",
-    "Помощь и забота",
-  ];
+
+const LOVE_LANGUAGE_CONTENT: Record<
+  Market,
+  { additionalLanguagePrefix: string; labels: string[]; descriptions: string[] }
+> = {
+  ru: {
+    additionalLanguagePrefix: "Дополнительный язык",
+    labels: ["Слова поддержки", "Прикосновения", "Подарки", "Время вместе", "Помощь и забота"],
+    descriptions: [
+      "Для тебя особенно важны слова, поддержка, комплименты и искренние признания.",
+      "Ты сильнее всего чувствуешь любовь через объятия, поцелуи, нежность и телесный контакт.",
+      "Тебе особенно приятны подарки, сюрпризы и материальные знаки внимания как символ любви.",
+      "Для тебя важнее всего качественное время вместе, когда внимание принадлежит только вам двоим.",
+      "Ты ярче всего чувствуешь любовь через действия: помощь, заботу и участие в твоей жизни.",
+    ],
+  },
+  en: {
+    additionalLanguagePrefix: "Secondary language",
+    labels: ["Words of affirmation", "Touch", "Gifts", "Quality time", "Acts of service"],
+    descriptions: [
+      "Words, support, compliments, and sincere affirmations matter most to you.",
+      "You feel love strongest through hugs, kisses, tenderness, and physical touch.",
+      "Gifts, surprises, and tangible tokens of affection mean the most to you as a sign of love.",
+      "Quality time together, where attention belongs only to the two of you, matters most to you.",
+      "You feel love most vividly through actions: help, care, and involvement in your life.",
+    ],
+  },
+  fi: {
+    additionalLanguagePrefix: "Toissijainen kieli",
+    labels: ["Kannustavat sanat", "Kosketus", "Lahjat", "Yhteinen aika", "Palvelusteot"],
+    descriptions: [
+      "Sinulle tärkeintä ovat sanat, tuki, kohteliaisuudet ja vilpittömät tunnustukset.",
+      "Tunnet rakkauden vahvimmin halausten, suudelmien, hellyyden ja fyysisen kosketuksen kautta.",
+      "Lahjat, yllätykset ja aineelliset rakkauden osoitukset merkitsevät sinulle eniten.",
+      "Sinulle tärkeintä on laatuaika yhdessä, jolloin huomio kuuluu vain teille kahdelle.",
+      "Tunnet rakkauden kirkkaimmin tekojen kautta: avun, huolenpidon ja osallistumisen elämääsi.",
+    ],
+  },
+};
+
+function getLoveLanguageResult(answerIndexes: number[], market: Market): TestResult {
+  const content = LOVE_LANGUAGE_CONTENT[market];
 
   const counts = [0, 0, 0, 0, 0];
   answerIndexes.forEach((idx) => {
@@ -3268,18 +3352,9 @@ function getLoveLanguageResult(answerIndexes: number[]): TestResult {
     .sort((a, b) => counts[b] - counts[a])[0];
 
   return {
-    title: labels[topIndex],
-    subtitle: `Дополнительный язык: ${labels[secondary]}`,
-    description:
-      topIndex === 0
-        ? "Для тебя особенно важны слова, поддержка, комплименты и искренние признания."
-        : topIndex === 1
-        ? "Ты сильнее всего чувствуешь любовь через объятия, поцелуи, нежность и телесный контакт."
-        : topIndex === 2
-        ? "Тебе особенно приятны подарки, сюрпризы и материальные знаки внимания как символ любви."
-        : topIndex === 3
-        ? "Для тебя важнее всего качественное время вместе, когда внимание принадлежит только вам двоим."
-        : "Ты ярче всего чувствуешь любовь через действия: помощь, заботу и участие в твоей жизни.",
+    title: content.labels[topIndex],
+    subtitle: `${content.additionalLanguagePrefix}: ${content.labels[secondary]}`,
+    description: content.descriptions[topIndex],
   };
 }
 
@@ -7309,14 +7384,47 @@ const t = market === "fi" ? TEXT_FI : market === "en" ? TEXT_EN : TEXT_RU;
 
 
 
-function getPersonalityResult(answerIndexes: number[]): TestResult {
-  const labels = [
-    "Заботливый",
-    "Уверенный",
-    "Романтичный",
-    "Спокойный",
-    "Энергичный",
-  ];
+const PERSONALITY_CONTENT: Record<
+  Market,
+  { subtitle: string; labels: string[]; descriptions: string[] }
+> = {
+  ru: {
+    subtitle: "Твоя ведущая сильная сторона",
+    labels: ["Заботливый", "Уверенный", "Романтичный", "Спокойный", "Энергичный"],
+    descriptions: [
+      "Твоя сила — в эмпатии, тепле и умении быть рядом тогда, когда это особенно нужно.",
+      "Твоя сильная сторона — решительность, внутренний стержень и умение брать на себя ответственность.",
+      "Твоя энергия проявляется в нежности, чувственности, красоте эмоций и умении создавать атмосферу.",
+      "Твоя сила — в стабильности, выдержке и умении сохранять опору даже в непростые моменты.",
+      "Твой главный плюс — яркость, живость, энергия и способность зажигать людей вокруг.",
+    ],
+  },
+  en: {
+    subtitle: "Your leading strength",
+    labels: ["Caring", "Confident", "Romantic", "Calm", "Energetic"],
+    descriptions: [
+      "Your strength is empathy, warmth, and knowing how to be there when it matters most.",
+      "Your strength is decisiveness, inner resolve, and the ability to take responsibility.",
+      "Your energy shows up as tenderness, sensuality, emotional beauty, and setting the mood.",
+      "Your strength is stability, endurance, and staying grounded even in tough moments.",
+      "Your biggest asset is brightness, liveliness, energy, and the ability to light people up.",
+    ],
+  },
+  fi: {
+    subtitle: "Johtava vahvuutesi",
+    labels: ["Huolehtivainen", "Itsevarma", "Romanttinen", "Rauhallinen", "Energinen"],
+    descriptions: [
+      "Vahvuutesi on empatia, lämpö ja kyky olla läsnä juuri silloin, kun sitä eniten tarvitaan.",
+      "Vahvuutesi on päättäväisyys, sisäinen luja tahto ja kyky ottaa vastuuta.",
+      "Energiasi näkyy hellyytenä, aistillisuutena, tunteiden kauneutena ja tunnelman luomisena.",
+      "Vahvuutesi on vakaus, kestävyys ja kyky pysyä tukevana myös vaikeina hetkinä.",
+      "Suurin vahvuutesi on kirkkaus, eloisuus, energia ja kyky sytyttää ihmiset ympärilläsi.",
+    ],
+  },
+};
+
+function getPersonalityResult(answerIndexes: number[], market: Market): TestResult {
+  const content = PERSONALITY_CONTENT[market];
 
   const counts = [0, 0, 0, 0, 0];
   answerIndexes.forEach((idx) => {
@@ -7328,18 +7436,10 @@ function getPersonalityResult(answerIndexes: number[]): TestResult {
     if (counts[i] > counts[topIndex]) topIndex = i;
   }
 
-  const descriptions = [
-    "Твоя сила — в эмпатии, тепле и умении быть рядом тогда, когда это особенно нужно.",
-    "Твоя сильная сторона — решительность, внутренний стержень и умение брать на себя ответственность.",
-    "Твоя энергия проявляется в нежности, чувственности, красоте эмоций и умении создавать атмосферу.",
-    "Твоя сила — в стабильности, выдержке и умении сохранять опору даже в непростые моменты.",
-    "Твой главный плюс — яркость, живость, энергия и способность зажигать людей вокруг.",
-  ];
-
   return {
-    title: labels[topIndex],
-    subtitle: "Твоя ведущая сильная сторона",
-    description: descriptions[topIndex],
+    title: content.labels[topIndex],
+    subtitle: content.subtitle,
+    description: content.descriptions[topIndex],
   };
 }
 
@@ -12178,14 +12278,14 @@ function selectOption(optionIndex: number) {
     if (activeTest.kind === "scale") {
       const totalScore = answers.reduce((sum, value) => sum + value, 0);
       const maxScore = activeTest.questions.length * 4;
-      return getScaleResult(totalScore, maxScore);
+      return getScaleResult(totalScore, maxScore, market);
     }
 
     if (activeTest.kind === "love-language") {
-      return getLoveLanguageResult(answers);
+      return getLoveLanguageResult(answers, market);
     }
 
-    return getPersonalityResult(answers);
+    return getPersonalityResult(answers, market);
   }
 
   async function confirmGiveawayAction(
@@ -16809,7 +16909,11 @@ async function datingFetch(path: string, body: Record<string, unknown> = {}) {
     const response = await fetch(path, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ initData, ...body }),
+      // market — сервер не может определить его сам (getMarket()
+      // читает localStorage/navigator, доступные только в браузере),
+      // а personality summary/icebreakers должны быть на языке
+      // пользователя, не всегда на русском по умолчанию.
+      body: JSON.stringify({ initData, market: getMarket(), ...body }),
     });
     return await response.json();
   } catch (error) {
@@ -19031,7 +19135,7 @@ showPaywall={() => {
           handleBuyPremium();
         }}
       >
-        {premiumLoading ? "Открываем оплату..." : "⭐ Оплатить через Stars"}
+        {premiumLoading ? t.paywall.openingPayment : t.paywall.payWithStars}
       </button>
 
       <button
@@ -19055,7 +19159,7 @@ showPaywall={() => {
           }
         }}
       >
-        💎 Оплатить через Tribute
+        {t.paywall.payWithTribute}
       </button>
         </>
       )}

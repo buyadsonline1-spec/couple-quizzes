@@ -5,7 +5,7 @@ import {
   loadTestSubmissionsForTelegramId,
   loadTestSubmissionsForTelegramIds,
 } from "@/lib/server/reads";
-import { buildPersonalitySummary, buildDatingIcebreakers } from "@/lib/server/test-results";
+import { buildPersonalitySummary, buildDatingIcebreakers, type Market } from "@/lib/server/test-results";
 
 type MatchRow = {
   matchId: string;
@@ -43,6 +43,13 @@ export async function POST(request: NextRequest) {
 
     const matches: MatchRow[] = data.matches ?? [];
 
+    // Локализуем под маркет ЗАПРАШИВАЮЩЕГО — это подсказка ему, каждый
+    // видит icebreakers на своём языке независимо от языка партнёра.
+    const market: Market =
+      body.market === "ru" || body.market === "en" || body.market === "fi"
+        ? body.market
+        : "en";
+
     // Заготовленные фразы для начала переписки видны всем (даже без
     // Premium — отправку сообщения гейтит отдельно /api/dating/messages/
     // send), считаются по результатам тестов обеих сторон. Своих тестов
@@ -50,14 +57,15 @@ export async function POST(request: NextRequest) {
     const selfSubmissions = await loadTestSubmissionsForTelegramId(
       validation.telegramId
     );
-    const selfSummary = buildPersonalitySummary(selfSubmissions);
+    const selfSummary = buildPersonalitySummary(selfSubmissions, market);
 
     const partnerIds = matches.map((m) => m.partnerTelegramId);
     const submissionsByPartner = await loadTestSubmissionsForTelegramIds(partnerIds);
 
     const matchesWithIcebreakers = matches.map((match) => {
       const partnerSummary = buildPersonalitySummary(
-        submissionsByPartner.get(match.partnerTelegramId) ?? []
+        submissionsByPartner.get(match.partnerTelegramId) ?? [],
+        market
       );
 
       return {
@@ -65,7 +73,8 @@ export async function POST(request: NextRequest) {
         icebreakers: buildDatingIcebreakers(
           selfSummary,
           partnerSummary,
-          match.partnerDisplayName
+          match.partnerDisplayName,
+          market
         ),
       };
     });
