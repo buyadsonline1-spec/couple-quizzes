@@ -410,6 +410,8 @@ type WeeklyPairLeaderboardRow = {
   week_key: string;
   pair_id: string;
   pair_title: string;
+  partner_1_photo_url: string | null;
+  partner_2_photo_url: string | null;
   total_points: number;
   updated_at: string;
 };
@@ -13755,26 +13757,100 @@ function TopPlayersScreen({
                           {getPlaceEmoji(pairRow.place)}
                         </div>
 
-                        <div
-                          style={{
-                            width: 42,
-                            height: 42,
+                        {(() => {
+                          // Реальные фото партнёров вместо общего
+                          // эмодзи 💕 — имена парсим из pair_title
+                          // ("Имя1 + Имя2", формат фиксирован триггером
+                          // sync_pair_weekly_leaderboard) только для
+                          // инициалов-заглушек, когда фото нет.
+                          const [name1, name2] =
+                            pairRow.pair_title.split(" + ");
+                          const initial1 = (name1 || "P")
+                            .trim()
+                            .charAt(0)
+                            .toUpperCase();
+                          const initial2 = (name2 || "P")
+                            .trim()
+                            .charAt(0)
+                            .toUpperCase();
+                          const circleBase: CSSProperties = {
+                            width: 30,
+                            height: 30,
                             borderRadius: 999,
                             display: "flex",
                             alignItems: "center",
                             justifyContent: "center",
-                            flexShrink: 0,
-                            background:
-                              "linear-gradient(135deg, #ff85bc, #ff8c86)",
-                            color: "#ffffff",
-                            fontSize: 19,
+                            fontSize: 13,
                             fontWeight: 900,
-                            border:
-                              "2px solid rgba(255,255,255,0.55)",
-                          }}
-                        >
-                          💕
-                        </div>
+                            color: "#ffffff",
+                            border: "2px solid rgba(255,255,255,0.85)",
+                            objectFit: "cover",
+                          };
+
+                          return (
+                            <div
+                              style={{
+                                position: "relative",
+                                width: 46,
+                                height: 34,
+                                flexShrink: 0,
+                              }}
+                            >
+                              <div
+                                style={{
+                                  position: "absolute",
+                                  left: 0,
+                                  top: 0,
+                                  zIndex: 1,
+                                }}
+                              >
+                                {pairRow.partner_1_photo_url ? (
+                                  <img
+                                    src={pairRow.partner_1_photo_url}
+                                    alt={name1 || ""}
+                                    style={circleBase}
+                                  />
+                                ) : (
+                                  <div
+                                    style={{
+                                      ...circleBase,
+                                      background:
+                                        "linear-gradient(135deg, #9d81ff, #ff8bbd)",
+                                    }}
+                                  >
+                                    {initial1}
+                                  </div>
+                                )}
+                              </div>
+                              <div
+                                style={{
+                                  position: "absolute",
+                                  left: 16,
+                                  top: 4,
+                                  zIndex: 2,
+                                }}
+                              >
+                                {pairRow.partner_2_photo_url ? (
+                                  <img
+                                    src={pairRow.partner_2_photo_url}
+                                    alt={name2 || ""}
+                                    style={circleBase}
+                                  />
+                                ) : (
+                                  <div
+                                    style={{
+                                      ...circleBase,
+                                      background:
+                                        "linear-gradient(135deg, #ff85bc, #ff8c86)",
+                                    }}
+                                  >
+                                    {initial2}
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          );
+                        })()}
 
                         <div
                           style={{
