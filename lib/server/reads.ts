@@ -82,6 +82,55 @@ export async function loadPollAnswersForTelegramId(
   return result;
 }
 
+// Раздельно от poll-ответов — test_submissions хранит результаты
+// психологических тестов (Trust Level/Love Language/Personal
+// Strengths), нужных для personality summary анкеты Знакомств и
+// подсказок для начала переписки (см. lib/server/test-results.ts).
+export async function loadTestSubmissionsForTelegramId(
+  telegramId: number
+): Promise<Array<{ test_id: string; answers: unknown }>> {
+  const { data, error } = await supabaseAdmin
+    .from("test_submissions")
+    .select("test_id, answers")
+    .eq("telegram_id", telegramId);
+
+  if (error || !data) {
+    console.error("loadTestSubmissionsForTelegramId error:", error);
+    return [];
+  }
+
+  return data;
+}
+
+// Батчем для набора telegram_id сразу (кандидаты/мэтчи), а не по
+// одному — тот же принцип, что и с poll_submissions в
+// /api/dating/candidates.
+export async function loadTestSubmissionsForTelegramIds(
+  telegramIds: number[]
+): Promise<Map<number, Array<{ test_id: string; answers: unknown }>>> {
+  const result = new Map<number, Array<{ test_id: string; answers: unknown }>>();
+  if (telegramIds.length === 0) return result;
+
+  const { data, error } = await supabaseAdmin
+    .from("test_submissions")
+    .select("telegram_id, test_id, answers")
+    .in("telegram_id", telegramIds);
+
+  if (error || !data) {
+    console.error("loadTestSubmissionsForTelegramIds error:", error);
+    return result;
+  }
+
+  for (const row of data) {
+    if (!row?.telegram_id) continue;
+    const existing = result.get(row.telegram_id) ?? [];
+    existing.push({ test_id: row.test_id, answers: row.answers });
+    result.set(row.telegram_id, existing);
+  }
+
+  return result;
+}
+
 export type DailyPairAnswerRow = {
   telegram_id: number;
   question_id: string;

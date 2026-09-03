@@ -32,7 +32,7 @@ export const TEXT_EN = {
     step3Text: "Profiles are shown by compatibility, highest first",
     step4Title: "Mutual like — start chatting",
     step4Text: "Chat opens right inside the app",
-    premiumNote: "This section requires Premium",
+    premiumNote: "Free: 5 profiles a day. Chatting with a match and unlimited profiles need Premium",
     startButton: "Get started",
 
     profileTitle: "Your profile",
@@ -63,6 +63,10 @@ export const TEXT_EN = {
     noCandidatesText: "Check back later — new people join all the time",
     matchAlertText: "It's a match! You can chat now 🎉",
     loadingCandidates: "Finding profiles...",
+    swipesRemainingLabel: "Left today: {count}/5",
+    dailyLimitTitle: "You're out of free profiles for today",
+    dailyLimitText: "Come back tomorrow for a fresh limit — or get Premium to browse without limits.",
+    dailyLimitUnlockButton: "Remove the limit with Premium",
 
     matchesTitle: "Matches",
     matchesSubtitle: "Mutual likes — feel free to message first",
@@ -73,6 +77,10 @@ export const TEXT_EN = {
 
     chatPlaceholder: "Message...",
     chatEmpty: "It's quiet here — say hi first",
+    chatLockedTitle: "Chatting needs Premium",
+    chatLockedText: "You've already matched! Sending a message needs Premium — meanwhile, here are some ideas to start with.",
+    icebreakersTitle: "Ideas for your first message",
+    unlockChatButton: "Unlock chat with Premium",
     blockButton: "Block",
     reportButton: "Report",
     blockConfirmText: "Block this person? The match and chat will disappear.",

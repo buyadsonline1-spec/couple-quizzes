@@ -3,6 +3,9 @@ import { supabaseAdmin } from "@/lib/server/supabase-admin";
 import { validateRequestAuth } from "@/lib/server/telegram-auth";
 import { checkIsPremium } from "@/lib/server/pair-state";
 
+// Раздел открыт всем — Premium снимает только дневной лимит (5 свайпов
+// в день для остальных, см. record_dating_swipe) и требуется отдельно
+// для переписки (см. messages/send).
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
@@ -17,13 +20,6 @@ export async function POST(request: NextRequest) {
     }
 
     const isPremium = await checkIsPremium(validation.telegramId);
-
-    if (!isPremium) {
-      return NextResponse.json(
-        { ok: false, reason: "premium-required" },
-        { status: 403 }
-      );
-    }
 
     const toTelegramId = Number(body.toTelegramId);
     const action = body.action;
@@ -46,13 +42,16 @@ export async function POST(request: NextRequest) {
       p_from_telegram_id: validation.telegramId,
       p_to_telegram_id: toTelegramId,
       p_action: action,
+      p_is_premium: isPremium,
     });
 
     if (error || !data?.ok) {
-      console.error("record_dating_swipe error:", error || data);
+      if (data?.reason !== "daily-limit-reached") {
+        console.error("record_dating_swipe error:", error || data);
+      }
       return NextResponse.json(
         { ok: false, reason: data?.reason || "internal-error" },
-        { status: 500 }
+        { status: data?.reason === "daily-limit-reached" ? 403 : 500 }
       );
     }
 

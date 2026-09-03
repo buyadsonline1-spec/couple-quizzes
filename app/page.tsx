@@ -4937,6 +4937,10 @@ type DatingMatch = {
   partnerTelegramId: number;
   partnerDisplayName: string;
   partnerPhotoUrl: string | null;
+  // Готовые фразы для начала разговора, посчитанные на сервере по
+  // результатам тестов обоих — видны всем (даже без Premium), но
+  // отправить сообщение всё равно можно только с Premium.
+  icebreakers: string[];
   lastMessage: {
     text: string;
     createdAt: string;
@@ -5379,6 +5383,8 @@ function DatingSwipeScreen({
   onSwipe,
   onOpenMatches,
   onBack,
+  swipesRemaining,
+  onUpgrade,
   t,
 }: {
   candidates: DatingCandidate[];
@@ -5386,6 +5392,10 @@ function DatingSwipeScreen({
   onSwipe: (candidate: DatingCandidate, action: "like" | "pass") => void;
   onOpenMatches: () => void;
   onBack: () => void;
+  // null = Premium (без лимита); число — сколько бесплатных анкет
+  // осталось сегодня.
+  swipesRemaining: number | null;
+  onUpgrade: () => void;
   t: any;
 }) {
   const current = candidates[0] ?? null;
@@ -5401,6 +5411,22 @@ function DatingSwipeScreen({
           <div style={{ fontSize: 11.5, color: "#4b446a", marginTop: 2 }}>
             {t.dating.swipeHint}
           </div>
+          {swipesRemaining !== null && (
+            <div
+              style={{
+                marginTop: 6,
+                display: "inline-block",
+                padding: "4px 10px",
+                borderRadius: 999,
+                background: "rgba(255,255,255,0.4)",
+                fontSize: 11,
+                fontWeight: 800,
+                color: "#5a3d14",
+              }}
+            >
+              {t.dating.swipesRemainingLabel.replace("{count}", String(swipesRemaining))}
+            </div>
+          )}
         </div>
         <button
           onClick={onOpenMatches}
@@ -5434,6 +5460,32 @@ function DatingSwipeScreen({
             }}
           >
             {t.dating.loadingCandidates}
+          </div>
+        ) : swipesRemaining === 0 ? (
+          <div
+            style={{
+              ...cardBaseStyle(),
+              position: "absolute",
+              inset: 0,
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              justifyContent: "center",
+              textAlign: "center",
+              padding: 24,
+              gap: 14,
+            }}
+          >
+            <div style={{ fontSize: 40 }}>👑</div>
+            <div style={{ fontSize: 16, fontWeight: 900, color: "#1f1d3a" }}>
+              {t.dating.dailyLimitTitle}
+            </div>
+            <div style={{ fontSize: 13, color: "#5a5378", lineHeight: 1.4 }}>
+              {t.dating.dailyLimitText}
+            </div>
+            <button onClick={onUpgrade} style={{ ...primaryButtonStyle, width: "100%" }}>
+              {t.dating.dailyLimitUnlockButton}
+            </button>
           </div>
         ) : !current ? (
           <div
@@ -5733,6 +5785,9 @@ function DatingChatScreen({
   onBlock,
   onReport,
   onBack,
+  locked,
+  onUnlock,
+  icebreakers,
   t,
 }: {
   match: DatingMatch;
@@ -5742,6 +5797,13 @@ function DatingChatScreen({
   onBlock: () => void;
   onReport: () => void;
   onBack: () => void;
+  // Знакомства бесплатны, включая мэтчи, но переписка — только Premium.
+  // Свободный пользователь всё равно видит, что мэтч есть, и получает
+  // готовые идеи для первого сообщения (мотивация оформить подписку),
+  // просто не может их фактически отправить.
+  locked?: boolean;
+  onUnlock?: () => void;
+  icebreakers?: string[];
   t: any;
 }) {
   const [text, setText] = useState("");
@@ -5923,93 +5985,138 @@ function DatingChatScreen({
         </div>
       )}
 
-      <div style={{ flex: 1, padding: 16, display: "flex", flexDirection: "column", gap: 10 }}>
-        {messages.length === 0 ? (
-          <div
-            style={{
-              alignSelf: "center",
-              fontSize: 12.5,
-              color: "#4b446a",
-              marginTop: 20,
-            }}
-          >
-            {t.dating.chatEmpty}
+      {locked ? (
+        <div style={{ flex: 1, padding: 16, display: "grid", gap: 12, alignContent: "start" }}>
+          <div style={{ ...cardBaseStyle(), padding: 18, textAlign: "center" }}>
+            <div style={{ fontSize: 30, marginBottom: 6 }}>🔒</div>
+            <div style={{ fontSize: 16, fontWeight: 900, color: "#1f1d3a" }}>
+              {t.dating.chatLockedTitle}
+            </div>
+            <div style={{ marginTop: 6, fontSize: 13, color: "#5a5378", lineHeight: 1.4 }}>
+              {t.dating.chatLockedText}
+            </div>
           </div>
-        ) : (
-          messages.map((message) => {
-            const isMine = message.senderTelegramId === myTelegramId;
-            return (
+
+          {icebreakers && icebreakers.length > 0 && (
+            <div style={{ ...cardBaseStyle(), padding: 16 }}>
+              <div style={{ fontSize: 13, fontWeight: 900, color: "#1f1d3a", marginBottom: 10 }}>
+                {t.dating.icebreakersTitle}
+              </div>
+              <div style={{ display: "grid", gap: 8 }}>
+                {icebreakers.map((line, index) => (
+                  <div
+                    key={index}
+                    style={{
+                      padding: "10px 12px",
+                      borderRadius: 14,
+                      background: "rgba(255,255,255,0.55)",
+                      fontSize: 13,
+                      lineHeight: 1.4,
+                      color: "#2f2850",
+                    }}
+                  >
+                    💬 {line}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          <button onClick={onUnlock} style={{ ...primaryButtonStyle, width: "100%" }}>
+            {t.dating.unlockChatButton}
+          </button>
+        </div>
+      ) : (
+        <>
+          <div style={{ flex: 1, padding: 16, display: "flex", flexDirection: "column", gap: 10 }}>
+            {messages.length === 0 ? (
               <div
-                key={message.id}
                 style={{
-                  alignSelf: isMine ? "flex-end" : "flex-start",
-                  maxWidth: "76%",
-                  padding: "11px 14px",
-                  borderRadius: 18,
-                  fontSize: 14,
-                  lineHeight: 1.4,
-                  background: isMine
-                    ? "linear-gradient(135deg, #8f6bff, #ff76ba)"
-                    : "rgba(255,255,255,0.65)",
-                  color: isMine ? "#fff" : "#1f1d3a",
-                  borderBottomRightRadius: isMine ? 6 : 18,
-                  borderBottomLeftRadius: isMine ? 18 : 6,
+                  alignSelf: "center",
+                  fontSize: 12.5,
+                  color: "#4b446a",
+                  marginTop: 20,
                 }}
               >
-                {message.text}
+                {t.dating.chatEmpty}
               </div>
-            );
-          })
-        )}
-      </div>
+            ) : (
+              messages.map((message) => {
+                const isMine = message.senderTelegramId === myTelegramId;
+                return (
+                  <div
+                    key={message.id}
+                    style={{
+                      alignSelf: isMine ? "flex-end" : "flex-start",
+                      maxWidth: "76%",
+                      padding: "11px 14px",
+                      borderRadius: 18,
+                      fontSize: 14,
+                      lineHeight: 1.4,
+                      background: isMine
+                        ? "linear-gradient(135deg, #8f6bff, #ff76ba)"
+                        : "rgba(255,255,255,0.65)",
+                      color: isMine ? "#fff" : "#1f1d3a",
+                      borderBottomRightRadius: isMine ? 6 : 18,
+                      borderBottomLeftRadius: isMine ? 18 : 6,
+                    }}
+                  >
+                    {message.text}
+                  </div>
+                );
+              })
+            )}
+          </div>
 
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          gap: 10,
-          padding: "12px 16px",
-          background: "rgba(255,255,255,0.22)",
-          borderTop: "1px solid rgba(255,255,255,0.28)",
-        }}
-      >
-        <input
-          value={text}
-          onChange={(e) => setText(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === "Enter") handleSend();
-          }}
-          placeholder={t.dating.chatPlaceholder}
-          style={{
-            flex: 1,
-            border: "1px solid rgba(255,255,255,0.5)",
-            borderRadius: 999,
-            background: "rgba(255,255,255,0.55)",
-            padding: "11px 16px",
-            fontSize: 14,
-            color: "#1f1d3a",
-          }}
-        />
-        <button
-          onClick={handleSend}
-          style={{
-            width: 42,
-            height: 42,
-            borderRadius: 999,
-            border: "none",
-            background: "linear-gradient(135deg, #8f6bff, #ff76ba)",
-            color: "#fff",
-            fontSize: 17,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            flexShrink: 0,
-            cursor: "pointer",
-          }}
-        >
-          ➤
-        </button>
-      </div>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 10,
+              padding: "12px 16px",
+              background: "rgba(255,255,255,0.22)",
+              borderTop: "1px solid rgba(255,255,255,0.28)",
+            }}
+          >
+            <input
+              value={text}
+              onChange={(e) => setText(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") handleSend();
+              }}
+              placeholder={t.dating.chatPlaceholder}
+              style={{
+                flex: 1,
+                border: "1px solid rgba(255,255,255,0.5)",
+                borderRadius: 999,
+                background: "rgba(255,255,255,0.55)",
+                padding: "11px 16px",
+                fontSize: 14,
+                color: "#1f1d3a",
+              }}
+            />
+            <button
+              onClick={handleSend}
+              style={{
+                width: 42,
+                height: 42,
+                borderRadius: 999,
+                border: "none",
+                background: "linear-gradient(135deg, #8f6bff, #ff76ba)",
+                color: "#fff",
+                fontSize: 17,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                flexShrink: 0,
+                cursor: "pointer",
+              }}
+            >
+              ➤
+            </button>
+          </div>
+        </>
+      )}
     </div>
   );
 }
@@ -16712,12 +16819,9 @@ async function datingFetch(path: string, body: Record<string, unknown> = {}) {
 }
 
 const handleOpenDating = async () => {
-  if (!appState.isPremium) {
-    setPaywallBackScreen("menu");
-    setScreen("paywall");
-    return;
-  }
-
+  // Раздел открыт всем — Premium больше не требуется для входа, только
+  // для общения после мэтча (handleOpenDatingChat) и для свайпов сверх
+  // дневного бесплатного лимита (5/день, см. record_dating_swipe).
   // datingProfile — локальный стейт, который переживает только
   // текущую сессию (заполняется сразу после сохранения анкеты) и
   // обнуляется при перезагрузке Mini App. Данные в БД при этом никуда
@@ -16751,6 +16855,9 @@ async function loadDatingCandidates() {
 
   if (result?.ok) {
     setDatingCandidates(result.candidates ?? []);
+    setDatingSwipesRemaining(
+      result.dailyLimit?.isPremium ? null : result.dailyLimit?.remaining ?? null
+    );
   }
 }
 
@@ -16769,11 +16876,14 @@ async function handleSaveDatingProfile(profile: {
     photoUrl: profile.photoUrl,
     gender: profile.gender,
     seekingGender: profile.seekingGender,
-    personalitySummary: datingProfile?.personalitySummary ?? {},
   });
 
   if (!result?.ok) return false;
 
+  // personalitySummary теперь считает сервер из результатов тестов
+  // (не то, что было на клиенте раньше) — берём его из ответа, а не
+  // из старого локального стейта, иначе после сохранения теги на
+  // своей же анкете ещё один цикл выглядели бы пустыми/устаревшими.
   setDatingProfile({
     displayName: profile.displayName,
     age: profile.age,
@@ -16781,7 +16891,7 @@ async function handleSaveDatingProfile(profile: {
     photoUrl: profile.photoUrl,
     gender: profile.gender,
     seekingGender: profile.seekingGender,
-    personalitySummary: datingProfile?.personalitySummary ?? {},
+    personalitySummary: result.personalitySummary ?? {},
   });
 
   setScreen("dating-swipe");
@@ -16819,7 +16929,22 @@ async function handleDatingSwipe(candidate: DatingCandidate, action: "like" | "p
     action,
   });
 
-  if (result?.ok && result.matched) {
+  if (!result?.ok) {
+    if (result?.reason === "daily-limit-reached") {
+      setDatingSwipesRemaining(0);
+      setPaywallBackScreen("dating-swipe");
+      setScreen("paywall");
+    }
+    return;
+  }
+
+  if (!appState.isPremium) {
+    setDatingSwipesRemaining((prev) =>
+      prev === null ? null : Math.max(0, prev - 1)
+    );
+  }
+
+  if (result.matched) {
     alert(t.dating.matchAlertText);
   }
 }
@@ -16835,6 +16960,13 @@ async function handleOpenDatingChat(match: DatingMatch) {
   setActiveChatMatch(match);
   setActiveChatMessages([]);
   setScreen("dating-chat");
+
+  // Свайпы, мэтчи и заготовленные фразы для начала разговора видны
+  // всем; сама переписка (загрузка/отправка сообщений) — только
+  // Premium. Экран dating-chat сам рисует locked-превью вместо чата,
+  // когда appState.isPremium === false — сообщения в этом случае даже
+  // не запрашиваем.
+  if (!appState.isPremium) return;
 
   const result = await datingFetch("/api/dating/messages/list", {
     matchId: match.matchId,
@@ -17034,6 +17166,12 @@ const [datingProfile, setDatingProfile] = useState<DatingProfile | null>(null);
 const [datingCandidates, setDatingCandidates] = useState<DatingCandidate[]>([]);
 const [datingCandidatesLoading, setDatingCandidatesLoading] = useState(false);
 const [datingMatches, setDatingMatches] = useState<DatingMatch[]>([]);
+// null = Premium (без лимита) или ещё не загружали; число — сколько
+// бесплатных анкет осталось сегодня (лимит для не-Premium — 5/день,
+// см. record_dating_swipe). Обновляется при загрузке кандидатов и
+// декрементируется локально на каждый свайп, чтобы не дёргать сервер
+// лишний раз за одним числом.
+const [datingSwipesRemaining, setDatingSwipesRemaining] = useState<number | null>(null);
 const [activeChatMatch, setActiveChatMatch] = useState<DatingMatch | null>(null);
 const [activeChatMessages, setActiveChatMessages] = useState<
   Array<{ id: string; senderTelegramId: number; text: string; createdAt: string }>
@@ -17043,6 +17181,23 @@ const [activeChatMessages, setActiveChatMessages] = useState<
   
   const [screen, setScreen] = useState<Screen>("welcome");
   const [paywallBackScreen, setPaywallBackScreen] = useState<Screen>("menu");
+
+  // Догружает сообщения, если пользователь открыл чат ДО того, как
+  // оформил Premium прямо из locked-превью (handleOpenDatingChat не
+  // грузит сообщения не-Premium — иначе после успешной покупки и
+  // возврата на dating-chat (paywallBackScreen) экран так и остался
+  // бы пустым, хотя сообщения уже реально доступны).
+  useEffect(() => {
+    if (screen !== "dating-chat" || !appState.isPremium || !activeChatMatch) return;
+
+    datingFetch("/api/dating/messages/list", { matchId: activeChatMatch.matchId }).then(
+      (result) => {
+        if (result?.ok) setActiveChatMessages(result.messages ?? []);
+      }
+    );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [screen, appState.isPremium, activeChatMatch?.matchId]);
+
   const [user, setUser] = useState<TgUser | null>(null);
   const [showDailyBonus, setShowDailyBonus] = useState(true);
   const [claimableDay, setClaimableDay] = useState(1);
@@ -18531,6 +18686,11 @@ showPaywall={() => {
     candidates={datingCandidates}
     loading={datingCandidatesLoading}
     onSwipe={handleDatingSwipe}
+    swipesRemaining={datingSwipesRemaining}
+    onUpgrade={() => {
+      setPaywallBackScreen("dating-swipe");
+      setScreen("paywall");
+    }}
     onOpenMatches={() => {
       loadDatingMatches();
       setScreen("dating-matches");
@@ -18559,6 +18719,12 @@ showPaywall={() => {
     onBlock={handleBlockDatingUser}
     onReport={handleReportDatingUser}
     onBack={() => setScreen("dating-matches")}
+    locked={!appState.isPremium}
+    icebreakers={activeChatMatch.icebreakers}
+    onUnlock={() => {
+      setPaywallBackScreen("dating-chat");
+      setScreen("paywall");
+    }}
   />
 )}
 

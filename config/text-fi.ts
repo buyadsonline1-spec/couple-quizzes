@@ -36,7 +36,7 @@ export const TEXT_FI = {
     step3Text: "Profiilit näytetään yhteensopivuuden mukaan, paras ensin",
     step4Title: "Molemminpuolinen tykkäys — aloita keskustelu",
     step4Text: "Chat avautuu suoraan sovelluksessa",
-    premiumNote: "Tämä osio vaatii Premiumin",
+    premiumNote: "Ilmaiseksi: 5 profiilia päivässä. Osuman kanssa jutteluun ja rajattomaan selaamiseen tarvitset Premiumin",
     startButton: "Aloita",
 
     profileTitle: "Profiilisi",
@@ -67,6 +67,10 @@ export const TEXT_FI = {
     noCandidatesText: "Käy myöhemmin uudelleen — uusia ihmisiä liittyy jatkuvasti",
     matchAlertText: "Se on osuma! Voitte jutella nyt 🎉",
     loadingCandidates: "Etsitään profiileja...",
+    swipesRemainingLabel: "Jäljellä tänään: {count}/5",
+    dailyLimitTitle: "Tämän päivän ilmaiset profiilit loppuivat",
+    dailyLimitText: "Tule takaisin huomenna, kun raja nollautuu — tai hanki Premium ja selaa rajattomasti.",
+    dailyLimitUnlockButton: "Poista raja Premiumilla",
 
     matchesTitle: "Osumat",
     matchesSubtitle: "Molemminpuoliset tykkäykset — voit viestiä ensin",
@@ -77,6 +81,10 @@ export const TEXT_FI = {
 
     chatPlaceholder: "Viesti...",
     chatEmpty: "Täällä on hiljaista — sano hei ensin",
+    chatLockedTitle: "Keskustelu vaatii Premiumin",
+    chatLockedText: "Teillä on jo osuma! Viestin lähettäminen vaatii Premiumin — tässä välissä muutama idea aloitukseen.",
+    icebreakersTitle: "Ideoita ensimmäiseen viestiin",
+    unlockChatButton: "Avaa keskustelu Premiumilla",
     blockButton: "Estä",
     reportButton: "Ilmoita",
     blockConfirmText: "Estetäänkö tämä henkilö? Osuma ja keskustelu katoavat.",

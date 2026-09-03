@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/server/supabase-admin";
 import { validateRequestAuth } from "@/lib/server/telegram-auth";
-import { checkIsPremium } from "@/lib/server/pair-state";
+import { loadTestSubmissionsForTelegramId } from "@/lib/server/reads";
+import { buildPersonalitySummary } from "@/lib/server/test-results";
 
-// Создание/обновление анкеты Знакомств. Требует Premium — бизнес-
-// правило проверяется здесь, а не в SQL (upsert_dating_profile сам по
-// себе premium ничего не знает), чтобы не размазывать это условие
-// между TS и SQL.
+// Создание/обновление анкеты Знакомств. Раздел открыт всем — Premium
+// требуется только для общения после мэтча и для свайпов сверх
+// дневного бесплатного лимита (5/день), не для самой анкеты/входа.
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
@@ -20,15 +20,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const isPremium = await checkIsPremium(validation.telegramId);
-
-    if (!isPremium) {
-      return NextResponse.json(
-        { ok: false, reason: "premium-required" },
-        { status: 403 }
-      );
-    }
-
     const displayName =
       typeof body.displayName === "string" ? body.displayName.trim() : "";
     const age = Number(body.age);
@@ -37,10 +28,6 @@ export async function POST(request: NextRequest) {
       typeof body.photoUrl === "string" ? body.photoUrl : null;
     const gender = body.gender;
     const seekingGender = body.seekingGender;
-    const personalitySummary =
-      body.personalitySummary && typeof body.personalitySummary === "object"
-        ? body.personalitySummary
-        : {};
 
     if (!displayName || displayName.length > 60) {
       return NextResponse.json(
@@ -70,6 +57,17 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // personalitySummary больше не берём из тела запроса — раньше
+    // клиент всегда слал сюда пустой объект (никакого кода, который бы
+    // реально его считал, не было), и анкета навсегда оставалась без
+    // тегов результатов тестов, хотя описание экрана обещало "собран
+    // автоматически". Считаем на сервере из test_submissions — тот же
+    // источник, что и подсказки для начала переписки (get_dating_matches).
+    const testSubmissions = await loadTestSubmissionsForTelegramId(
+      validation.telegramId
+    );
+    const personalitySummary = buildPersonalitySummary(testSubmissions);
+
     const { data, error } = await supabaseAdmin.rpc("upsert_dating_profile", {
       p_telegram_id: validation.telegramId,
       p_display_name: displayName,
@@ -89,7 +87,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    return NextResponse.json({ ok: true });
+    return NextResponse.json({ ok: true, personalitySummary });
   } catch (error) {
     console.error("DATING PROFILE ERROR:", error);
     return NextResponse.json(

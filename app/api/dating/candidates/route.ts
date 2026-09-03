@@ -15,6 +15,13 @@ type Candidate = {
   personalitySummary: Record<string, unknown>;
 };
 
+// Раздел открыт всем — этот лимит только про то, сколько анкет можно
+// пролистать (свайпнуть) в день без Premium; сам факт входа/просмотра
+// ленты Premium не требует. Держим то же число, что и в
+// record_dating_swipe (SQL — источник истины при реальном свайпе, это
+// только для отображения "осталось N сегодня" на клиенте).
+const FREE_DAILY_SWIPE_LIMIT = 5;
+
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
@@ -28,17 +35,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const isPremium = await checkIsPremium(validation.telegramId);
-
-    if (!isPremium) {
-      return NextResponse.json(
-        { ok: false, reason: "premium-required" },
-        { status: 403 }
-      );
-    }
-
-    const [{ data: selfProfile }, { data: rpcData, error: rpcError }] =
+    const [isPremium, { data: selfProfile }, { data: rpcData, error: rpcError }, swipesToday] =
       await Promise.all([
+        checkIsPremium(validation.telegramId),
         supabaseAdmin
           .from("dating_profiles")
           .select("gender")
@@ -48,7 +47,17 @@ export async function POST(request: NextRequest) {
           p_telegram_id: validation.telegramId,
           p_limit: 30,
         }),
+        supabaseAdmin
+          .rpc("get_dating_swipes_today", { p_telegram_id: validation.telegramId })
+          .then((res) => Number(res.data ?? 0)),
       ]);
+
+    const dailyLimit = {
+      isPremium,
+      remaining: isPremium
+        ? null
+        : Math.max(0, FREE_DAILY_SWIPE_LIMIT - swipesToday),
+    };
 
     if (rpcError || !rpcData?.ok) {
       return NextResponse.json(
@@ -60,7 +69,7 @@ export async function POST(request: NextRequest) {
     const candidates: Candidate[] = rpcData.candidates ?? [];
 
     if (candidates.length === 0 || !selfProfile?.gender) {
-      return NextResponse.json({ ok: true, candidates: [] });
+      return NextResponse.json({ ok: true, candidates: [], dailyLimit });
     }
 
     const selfAnswers = await loadPollAnswersForTelegramId(

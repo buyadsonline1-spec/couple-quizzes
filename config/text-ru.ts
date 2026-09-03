@@ -32,7 +32,7 @@ export const TEXT_RU = {
     step3Text: "Анкеты показываются по убыванию совместимости, не вперемешку",
     step4Title: "Взаимный лайк — переписка",
     step4Text: "Чат открывается прямо в приложении",
-    premiumNote: "Раздел доступен с Premium-подпиской",
+    premiumNote: "Бесплатно: 5 анкет в день. Переписка с мэтчем и безлимит — с Premium",
     startButton: "Начать",
 
     profileTitle: "Твоя анкета",
@@ -63,6 +63,10 @@ export const TEXT_RU = {
     noCandidatesText: "Загляни попозже — новые люди появляются постоянно",
     matchAlertText: "Взаимный лайк! Можно писать 🎉",
     loadingCandidates: "Подбираем анкеты...",
+    swipesRemainingLabel: "Осталось сегодня: {count}/5",
+    dailyLimitTitle: "Бесплатные анкеты на сегодня закончились",
+    dailyLimitText: "Возвращайся завтра — лимит обновится. Или оформи Premium и смотри анкеты без ограничений.",
+    dailyLimitUnlockButton: "Снять лимит с Premium",
 
     matchesTitle: "Мэтчи",
     matchesSubtitle: "Взаимные лайки — можно писать первым",
@@ -73,6 +77,10 @@ export const TEXT_RU = {
 
     chatPlaceholder: "Сообщение...",
     chatEmpty: "Пока тишина — напиши первым",
+    chatLockedTitle: "Переписка — с Premium",
+    chatLockedText: "Мэтч уже есть! Чтобы написать первым, нужен Premium — а идеи для сообщения уже готовы ниже.",
+    icebreakersTitle: "Идеи для первого сообщения",
+    unlockChatButton: "Открыть переписку с Premium",
     blockButton: "Заблокировать",
     reportButton: "Пожаловаться",
     blockConfirmText: "Заблокировать этого человека? Мэтч и переписка исчезнут.",

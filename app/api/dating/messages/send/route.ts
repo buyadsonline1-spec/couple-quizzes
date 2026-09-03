@@ -1,7 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/server/supabase-admin";
 import { validateRequestAuth } from "@/lib/server/telegram-auth";
+import { checkIsPremium } from "@/lib/server/pair-state";
 
+// Знакомства (лента, свайпы, мэтчи, подсказки для первого сообщения)
+// бесплатны для всех — но сама переписка требует Premium, независимо
+// от того, что мэтч уже есть. Проверяется здесь и в messages/list, а
+// не только на клиенте (клиентский гейт — просто UX, не защита).
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
@@ -12,6 +17,15 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         { error: "Invalid Telegram data" },
         { status: 401 }
+      );
+    }
+
+    const isPremium = await checkIsPremium(validation.telegramId);
+
+    if (!isPremium) {
+      return NextResponse.json(
+        { ok: false, reason: "premium-required" },
+        { status: 403 }
       );
     }
 
