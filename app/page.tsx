@@ -325,10 +325,12 @@ type TestQuestion = {
   text: string;
   textRu: string;
   textEn: string;
+  textFi: string;
   image?: string;
   options: string[];
   optionsRu: string[];
   optionsEn: string[];
+  optionsFi: string[];
 };
 
 type TestDefinition = {
@@ -337,9 +339,11 @@ type TestDefinition = {
   title: string;
   titleRu: string;
   titleEn: string;
+  titleFi: string;
   description: string;
   descriptionRu: string;
   descriptionEn: string;
+  descriptionFi: string;
   reward: number;
   kind: TestKind;
   questions: TestQuestion[];
@@ -436,6 +440,7 @@ const WHEEL_SPIN_COST = 2000;
 
 const SCALE_OPTIONS_RU = ["Никогда", "Редко", "Иногда", "Часто", "Всегда"];
 const SCALE_OPTIONS_EN = ["Never", "Rarely", "Sometimes", "Often", "Always"];
+const SCALE_OPTIONS_FI = ["Ei koskaan", "Harvoin", "Joskus", "Usein", "Aina"];
 
 const TEST_IMAGES: Record<string, string> = {
   "trust-level": "/images/tests/trust-level.png",
@@ -448,17 +453,24 @@ const TESTS: TestDefinition[] = [
     id: "trust-level",
     image: TEST_IMAGES["trust-level"],
     title:
-      market !== "ru"
-        ? "Trust Level in a Relationship"
-        : "Уровень доверия к партнёру",
+      market === "fi"
+        ? "Luottamustaso suhteessa"
+        : market === "ru"
+        ? "Уровень доверия к партнёру"
+        : "Trust Level in a Relationship",
     titleRu: "Уровень доверия к партнёру",
     titleEn: "Trust Level in a Relationship",
+    titleFi: "Luottamustaso suhteessa",
     description:
-      market !== "ru"
-        ? "Shows how calm, secure, and confident you feel in your relationship."
-        : "Покажет, насколько спокойно и уверенно ты чувствуешь себя в отношениях.",
+      market === "fi"
+        ? "Näyttää, kuinka rauhalliseksi ja turvalliseksi tunnet olosi suhteessasi."
+        : market === "ru"
+        ? "Покажет, насколько спокойно и уверенно ты чувствуешь себя в отношениях."
+        : "Shows how calm, secure, and confident you feel in your relationship.",
     descriptionRu:
       "Покажет, насколько спокойно и уверенно ты чувствуешь себя в отношениях.",
+    descriptionFi:
+      "Näyttää, kuinka rauhalliseksi ja turvalliseksi tunnet olosi suhteessasi.",
     descriptionEn:
       "Shows how calm, secure, and confident you feel in your relationship.",
     reward: TEST_REWARD,
@@ -467,98 +479,130 @@ const TESTS: TestDefinition[] = [
       {
         id: "t1",
         text:
-          market !== "ru"
-            ? "I feel comfortable sharing my worries with my partner."
-            : "Мне комфортно делиться с партнёром своими переживаниями.",
+          market === "fi"
+            ? "Minun on mukava jakaa huoleni kumppanini kanssa."
+            : market === "ru"
+            ? "Мне комфортно делиться с партнёром своими переживаниями."
+            : "I feel comfortable sharing my worries with my partner.",
         textRu: "Мне комфортно делиться с партнёром своими переживаниями.",
         textEn: "I feel comfortable sharing my worries with my partner.",
-        options: market !== "ru" ? SCALE_OPTIONS_EN : SCALE_OPTIONS_RU,
+        textFi: "Minun on mukava jakaa huoleni kumppanini kanssa.",
+        options: market === "fi" ? SCALE_OPTIONS_FI : market === "ru" ? SCALE_OPTIONS_RU : SCALE_OPTIONS_EN,
         optionsRu: SCALE_OPTIONS_RU,
         optionsEn: SCALE_OPTIONS_EN,
+        optionsFi: SCALE_OPTIONS_FI,
       },
       {
         id: "t2",
         text:
-          market !== "ru"
-            ? "I am not afraid that my partner will judge my feelings."
-            : "Я не боюсь, что партнёр осудит мои чувства.",
+          market === "fi"
+            ? "En pelkää, että kumppanini tuomitsee tunteeni."
+            : market === "ru"
+            ? "Я не боюсь, что партнёр осудит мои чувства."
+            : "I am not afraid that my partner will judge my feelings.",
         textRu: "Я не боюсь, что партнёр осудит мои чувства.",
         textEn: "I am not afraid that my partner will judge my feelings.",
-        options: market !== "ru" ? SCALE_OPTIONS_EN : SCALE_OPTIONS_RU,
+        textFi: "En pelkää, että kumppanini tuomitsee tunteeni.",
+        options: market === "fi" ? SCALE_OPTIONS_FI : market === "ru" ? SCALE_OPTIONS_RU : SCALE_OPTIONS_EN,
         optionsRu: SCALE_OPTIONS_RU,
         optionsEn: SCALE_OPTIONS_EN,
+        optionsFi: SCALE_OPTIONS_FI,
       },
       {
         id: "t3",
         text:
-          market !== "ru"
-            ? "I trust my partner's words without unnecessary doubt."
-            : "Я верю словам партнёра без лишних сомнений.",
+          market === "fi"
+            ? "Luotan kumppanini sanoihin ilman turhia epäilyjä."
+            : market === "ru"
+            ? "Я верю словам партнёра без лишних сомнений."
+            : "I trust my partner's words without unnecessary doubt.",
         textRu: "Я верю словам партнёра без лишних сомнений.",
         textEn: "I trust my partner's words without unnecessary doubt.",
-        options: market !== "ru" ? SCALE_OPTIONS_EN : SCALE_OPTIONS_RU,
+        textFi: "Luotan kumppanini sanoihin ilman turhia epäilyjä.",
+        options: market === "fi" ? SCALE_OPTIONS_FI : market === "ru" ? SCALE_OPTIONS_RU : SCALE_OPTIONS_EN,
         optionsRu: SCALE_OPTIONS_RU,
         optionsEn: SCALE_OPTIONS_EN,
+        optionsFi: SCALE_OPTIONS_FI,
       },
       {
         id: "t4",
         text:
-          market !== "ru"
-            ? "I feel calm when my partner spends time without me."
-            : "Мне спокойно, когда партнёр проводит время без меня.",
+          market === "fi"
+            ? "Minulla on rauhallinen olo, kun kumppanini viettää aikaa ilman minua."
+            : market === "ru"
+            ? "Мне спокойно, когда партнёр проводит время без меня."
+            : "I feel calm when my partner spends time without me.",
         textRu: "Мне спокойно, когда партнёр проводит время без меня.",
         textEn: "I feel calm when my partner spends time without me.",
-        options: market !== "ru" ? SCALE_OPTIONS_EN : SCALE_OPTIONS_RU,
+        textFi: "Minulla on rauhallinen olo, kun kumppanini viettää aikaa ilman minua.",
+        options: market === "fi" ? SCALE_OPTIONS_FI : market === "ru" ? SCALE_OPTIONS_RU : SCALE_OPTIONS_EN,
         optionsRu: SCALE_OPTIONS_RU,
         optionsEn: SCALE_OPTIONS_EN,
+        optionsFi: SCALE_OPTIONS_FI,
       },
       {
         id: "t5",
         text:
-          market !== "ru"
-            ? "I feel safe when I am with my partner."
-            : "Я чувствую себя в безопасности рядом с партнёром.",
+          market === "fi"
+            ? "Tunnen oloni turvalliseksi kumppanini seurassa."
+            : market === "ru"
+            ? "Я чувствую себя в безопасности рядом с партнёром."
+            : "I feel safe when I am with my partner.",
         textRu: "Я чувствую себя в безопасности рядом с партнёром.",
         textEn: "I feel safe when I am with my partner.",
-        options: market !== "ru" ? SCALE_OPTIONS_EN : SCALE_OPTIONS_RU,
+        textFi: "Tunnen oloni turvalliseksi kumppanini seurassa.",
+        options: market === "fi" ? SCALE_OPTIONS_FI : market === "ru" ? SCALE_OPTIONS_RU : SCALE_OPTIONS_EN,
         optionsRu: SCALE_OPTIONS_RU,
         optionsEn: SCALE_OPTIONS_EN,
+        optionsFi: SCALE_OPTIONS_FI,
       },
       {
         id: "t6",
         text:
-          market !== "ru"
-            ? "If a problem comes up, I believe we can talk it through."
-            : "Если возникает проблема, я верю, что мы сможем её обсудить.",
+          market === "fi"
+            ? "Jos ongelma ilmenee, uskon, että pystymme keskustelemaan siitä."
+            : market === "ru"
+            ? "Если возникает проблема, я верю, что мы сможем её обсудить."
+            : "If a problem comes up, I believe we can talk it through.",
         textRu: "Если возникает проблема, я верю, что мы сможем её обсудить.",
         textEn: "If a problem comes up, I believe we can talk it through.",
-        options: market !== "ru" ? SCALE_OPTIONS_EN : SCALE_OPTIONS_RU,
+        textFi: "Jos ongelma ilmenee, uskon, että pystymme keskustelemaan siitä.",
+        options: market === "fi" ? SCALE_OPTIONS_FI : market === "ru" ? SCALE_OPTIONS_RU : SCALE_OPTIONS_EN,
         optionsRu: SCALE_OPTIONS_RU,
         optionsEn: SCALE_OPTIONS_EN,
+        optionsFi: SCALE_OPTIONS_FI,
       },
       {
         id: "t7",
         text:
-          market !== "ru"
-            ? "I do not expect tricks or betrayal from my partner."
-            : "Я не жду подвоха от партнёра.",
+          market === "fi"
+            ? "En odota kumppaniltani juonittelua tai petosta."
+            : market === "ru"
+            ? "Я не жду подвоха от партнёра."
+            : "I do not expect tricks or betrayal from my partner.",
         textRu: "Я не жду подвоха от партнёра.",
         textEn: "I do not expect tricks or betrayal from my partner.",
-        options: market !== "ru" ? SCALE_OPTIONS_EN : SCALE_OPTIONS_RU,
+        textFi: "En odota kumppaniltani juonittelua tai petosta.",
+        options: market === "fi" ? SCALE_OPTIONS_FI : market === "ru" ? SCALE_OPTIONS_RU : SCALE_OPTIONS_EN,
         optionsRu: SCALE_OPTIONS_RU,
         optionsEn: SCALE_OPTIONS_EN,
+        optionsFi: SCALE_OPTIONS_FI,
       },
       {
         id: "t8",
         text:
-          market !== "ru"
-            ? "It is easy for me to be myself in this relationship."
-            : "Мне легко быть собой в этих отношениях.",
+          market === "fi"
+            ? "Minun on helppo olla oma itseni tässä suhteessa."
+            : market === "ru"
+            ? "Мне легко быть собой в этих отношениях."
+            : "It is easy for me to be myself in this relationship.",
         textRu: "Мне легко быть собой в этих отношениях.",
         textEn: "It is easy for me to be myself in this relationship.",
-        options: market !== "ru" ? SCALE_OPTIONS_EN : SCALE_OPTIONS_RU,
+        textFi: "Minun on helppo olla oma itseni tässä suhteessa.",
+        options: market === "fi" ? SCALE_OPTIONS_FI : market === "ru" ? SCALE_OPTIONS_RU : SCALE_OPTIONS_EN,
         optionsRu: SCALE_OPTIONS_RU,
         optionsEn: SCALE_OPTIONS_EN,
+        optionsFi: SCALE_OPTIONS_FI,
       },
     ],
   },
@@ -566,43 +610,60 @@ const TESTS: TestDefinition[] = [
   {
     id: "love-language",
      image: TEST_IMAGES["love-language"],
-    title: market !== "ru" ? "Love Language" : "Язык любви",
+    title:
+      market === "fi" ? "Rakkauden kieli" : market === "ru" ? "Язык любви" : "Love Language",
     titleRu: "Язык любви",
     titleEn: "Love Language",
+    titleFi: "Rakkauden kieli",
     description:
-      market !== "ru"
-        ? "Helps determine how you most naturally feel love and care."
-        : "Определит, как тебе приятнее всего чувствовать любовь и заботу.",
+      market === "fi"
+        ? "Auttaa selvittämään, miten tunnet rakkautta ja huolenpitoa luontevimmin."
+        : market === "ru"
+        ? "Определит, как тебе приятнее всего чувствовать любовь и заботу."
+        : "Helps determine how you most naturally feel love and care.",
     descriptionRu:
       "Определит, как тебе приятнее всего чувствовать любовь и заботу.",
     descriptionEn:
       "Helps determine how you most naturally feel love and care.",
+    descriptionFi:
+      "Auttaa selvittämään, miten tunnet rakkautta ja huolenpitoa luontevimmin.",
     reward: TEST_REWARD,
     kind: "love-language",
     questions: [
       {
         id: "l1",
         text:
-          market !== "ru"
-            ? "What would feel nicest to receive from your partner?"
-            : "Что приятнее получить от партнёра?",
+          market === "fi"
+            ? "Mikä tuntuisi mukavimmalta saada kumppaniltasi?"
+            : market === "ru"
+            ? "Что приятнее получить от партнёра?"
+            : "What would feel nicest to receive from your partner?",
         textRu: "Что приятнее получить от партнёра?",
         textEn: "What would feel nicest to receive from your partner?",
+        textFi: "Mikä tuntuisi mukavimmalta saada kumppaniltasi?",
         options:
-          market !== "ru"
+          market === "fi"
             ? [
-                "Warm words and compliments",
-                "Hugs and touch",
-                "A gift or surprise",
-                "Quality time together",
-                "Help with everyday things",
+                "Lämpimiä sanoja ja kohteliaisuuksia",
+                "Halauksia ja kosketusta",
+                "Lahjan tai yllätyksen",
+                "Yhteistä aikaa kahdestaan",
+                "Apua arjen asioissa",
               ]
-            : [
+            : market === "ru"
+            ? [
                 "Тёплые слова и комплименты",
                 "Объятия и прикосновения",
                 "Подарок или сюрприз",
                 "Совместное время только вдвоём",
                 "Помощь в делах",
+              ]
+            : [
+                "Warm words and compliments",
+                "Hugs and touch",
+                "A gift or surprise",
+                "Quality time together",
+                "Help with everyday things",
               ],
         optionsRu: [
           "Тёплые слова и комплименты",
@@ -618,30 +679,48 @@ const TESTS: TestDefinition[] = [
           "Quality time together",
           "Help with everyday things",
         ],
+        optionsFi: [
+          "Lämpimiä sanoja ja kohteliaisuuksia",
+          "Halauksia ja kosketusta",
+          "Lahjan tai yllätyksen",
+          "Yhteistä aikaa kahdestaan",
+          "Apua arjen asioissa",
+        ],
       },
       {
         id: "l2",
         text:
-          market !== "ru"
-            ? "When do you feel especially happy in a relationship?"
-            : "Когда тебе особенно хорошо в отношениях?",
+          market === "fi"
+            ? "Milloin sinulla on erityisen hyvä olo suhteessa?"
+            : market === "ru"
+            ? "Когда тебе особенно хорошо в отношениях?"
+            : "When do you feel especially happy in a relationship?",
         textRu: "Когда тебе особенно хорошо в отношениях?",
         textEn: "When do you feel especially happy in a relationship?",
+        textFi: "Milloin sinulla on erityisen hyvä olo suhteessa?",
         options:
-          market !== "ru"
+          market === "fi"
             ? [
-                "When I am praised and supported",
-                "When I am hugged and kissed",
-                "When I get unexpected gifts",
-                "When I get full attention",
-                "When I am helped without asking",
+                "Kun minua kehutaan ja tuetaan",
+                "Kun minua halataan ja suudellaan",
+                "Kun saan odottamattomia lahjoja",
+                "Kun saan täyden huomion",
+                "Kun minua autetaan pyytämättä",
               ]
-            : [
+            : market === "ru"
+            ? [
                 "Когда меня хвалят и поддерживают",
                 "Когда меня обнимают и целуют",
                 "Когда делают неожиданные подарки",
                 "Когда уделяют мне всё внимание",
                 "Когда помогают без просьб",
+              ]
+            : [
+                "When I am praised and supported",
+                "When I am hugged and kissed",
+                "When I get unexpected gifts",
+                "When I get full attention",
+                "When I am helped without asking",
               ],
         optionsRu: [
           "Когда меня хвалят и поддерживают",
@@ -657,30 +736,48 @@ const TESTS: TestDefinition[] = [
           "When I get full attention",
           "When I am helped without asking",
         ],
+        optionsFi: [
+          "Kun minua kehutaan ja tuetaan",
+          "Kun minua halataan ja suudellaan",
+          "Kun saan odottamattomia lahjoja",
+          "Kun saan täyden huomion",
+          "Kun minua autetaan pyytämättä",
+        ],
       },
       {
         id: "l3",
         text:
-          market !== "ru"
-            ? "What do you remember the most?"
-            : "Что ты запоминаешь сильнее всего?",
+          market === "fi"
+            ? "Minkä muistat vahvimmin?"
+            : market === "ru"
+            ? "Что ты запоминаешь сильнее всего?"
+            : "What do you remember the most?",
         textRu: "Что ты запоминаешь сильнее всего?",
         textEn: "What do you remember the most?",
+        textFi: "Minkä muistat vahvimmin?",
         options:
-          market !== "ru"
+          market === "fi"
             ? [
-                "Beautiful words",
-                "Tender gestures",
-                "Material signs of attention",
-                "Time spent together",
-                "Real care shown through actions",
+                "Kauniit sanat",
+                "Hellät eleet",
+                "Aineelliset huomionosoitukset",
+                "Yhdessä vietetyn ajan",
+                "Teoin osoitetun todellisen huolenpidon",
               ]
-            : [
+            : market === "ru"
+            ? [
                 "Красивые слова",
                 "Нежные жесты",
                 "Материальные знаки внимания",
                 "Проведённое вместе время",
                 "Реальную заботу в действиях",
+              ]
+            : [
+                "Beautiful words",
+                "Tender gestures",
+                "Material signs of attention",
+                "Time spent together",
+                "Real care shown through actions",
               ],
         optionsRu: [
           "Красивые слова",
@@ -696,30 +793,48 @@ const TESTS: TestDefinition[] = [
           "Time spent together",
           "Real care shown through actions",
         ],
+        optionsFi: [
+          "Kauniit sanat",
+          "Hellät eleet",
+          "Aineelliset huomionosoitukset",
+          "Yhdessä vietetyn ajan",
+          "Teoin osoitetun todellisen huolenpidon",
+        ],
       },
       {
         id: "l4",
         text:
-          market !== "ru"
-            ? "What makes it easiest for you to feel loved?"
-            : "Как тебе легче почувствовать любовь?",
+          market === "fi"
+            ? "Miten sinun on helpointa tuntea itsesi rakastetuksi?"
+            : market === "ru"
+            ? "Как тебе легче почувствовать любовь?"
+            : "What makes it easiest for you to feel loved?",
         textRu: "Как тебе легче почувствовать любовь?",
         textEn: "What makes it easiest for you to feel loved?",
+        textFi: "Miten sinun on helpointa tuntea itsesi rakastetuksi?",
         options:
-          market !== "ru"
+          market === "fi"
             ? [
-                "Hearing it in words",
-                "Feeling it physically",
-                "Receiving something symbolic",
-                "Spending longer time together",
-                "Seeing help and involvement",
+                "Kuulla se sanoina",
+                "Tuntea se fyysisesti",
+                "Saada jotain symbolista",
+                "Viettää pidempään aikaa yhdessä",
+                "Nähdä apua ja osallistumista",
               ]
-            : [
+            : market === "ru"
+            ? [
                 "Услышать это словами",
                 "Почувствовать физически",
                 "Получить что-то символичное",
                 "Побыть рядом подольше",
                 "Увидеть помощь и участие",
+              ]
+            : [
+                "Hearing it in words",
+                "Feeling it physically",
+                "Receiving something symbolic",
+                "Spending longer time together",
+                "Seeing help and involvement",
               ],
         optionsRu: [
           "Услышать это словами",
@@ -735,30 +850,42 @@ const TESTS: TestDefinition[] = [
           "Spending longer time together",
           "Seeing help and involvement",
         ],
+        optionsFi: [
+          "Kuulla se sanoina",
+          "Tuntea se fyysisesti",
+          "Saada jotain symbolista",
+          "Viettää pidempään aikaa yhdessä",
+          "Nähdä apua ja osallistumista",
+        ],
       },
       {
         id: "l5",
         text:
-          market !== "ru"
-            ? "What upsets you the most when it is missing?"
-            : "Что тебя расстраивает сильнее всего, когда этого не хватает?",
+          market === "fi"
+            ? "Mikä harmittaa sinua eniten, kun sitä puuttuu?"
+            : market === "ru"
+            ? "Что тебя расстраивает сильнее всего, когда этого не хватает?"
+            : "What upsets you the most when it is missing?",
         textRu: "Что тебя расстраивает сильнее всего, когда этого не хватает?",
         textEn: "What upsets you the most when it is missing?",
+        textFi: "Mikä harmittaa sinua eniten, kun sitä puuttuu?",
         options:
-          market !== "ru"
+          market === "fi"
+            ? ["Tuki ja sanat", "Hellyys", "Lahjat ja yllätykset", "Yhteinen aika", "Apu ja huolenpito"]
+            : market === "ru"
             ? [
-                "Support and words",
-                "Tenderness",
-                "Gifts and surprises",
-                "Time together",
-                "Help and care",
-              ]
-            : [
                 "Поддержки и слов",
                 "Нежности",
                 "Подарков и сюрпризов",
                 "Времени вместе",
                 "Помощи и заботы",
+              ]
+            : [
+                "Support and words",
+                "Tenderness",
+                "Gifts and surprises",
+                "Time together",
+                "Help and care",
               ],
         optionsRu: [
           "Поддержки и слов",
@@ -774,30 +901,42 @@ const TESTS: TestDefinition[] = [
           "Time together",
           "Help and care",
         ],
+        optionsFi: ["Tuki ja sanat", "Hellyys", "Lahjat ja yllätykset", "Yhteinen aika", "Apu ja huolenpito"],
       },
       {
         id: "l6",
         text:
-          market !== "ru"
-            ? "What feels more romantic to you?"
-            : "Что для тебя романтичнее?",
+          market === "fi"
+            ? "Kumpi tuntuu sinusta romanttisemmalta?"
+            : market === "ru"
+            ? "Что для тебя романтичнее?"
+            : "What feels more romantic to you?",
         textRu: "Что для тебя романтичнее?",
         textEn: "What feels more romantic to you?",
+        textFi: "Kumpi tuntuu sinusta romanttisemmalta?",
         options:
-          market !== "ru"
+          market === "fi"
             ? [
-                "A sincere confession",
-                "Long hugs",
-                "An unexpected gift",
-                "An evening for two",
-                "Being cared for through actions",
+                "Vilpitön tunnustus",
+                "Pitkät halaukset",
+                "Odottamaton lahja",
+                "Ilta kahdestaan",
+                "Se, että sinusta huolehditaan teoin",
               ]
-            : [
+            : market === "ru"
+            ? [
                 "Искреннее признание",
                 "Долгие объятия",
                 "Неожиданный подарок",
                 "Вечер вдвоём",
                 "Когда о тебе заботятся делом",
+              ]
+            : [
+                "A sincere confession",
+                "Long hugs",
+                "An unexpected gift",
+                "An evening for two",
+                "Being cared for through actions",
               ],
         optionsRu: [
           "Искреннее признание",
@@ -813,6 +952,13 @@ const TESTS: TestDefinition[] = [
           "An evening for two",
           "Being cared for through actions",
         ],
+        optionsFi: [
+          "Vilpitön tunnustus",
+          "Pitkät halaukset",
+          "Odottamaton lahja",
+          "Ilta kahdestaan",
+          "Se, että sinusta huolehditaan teoin",
+        ],
       },
     ],
   },
@@ -821,45 +967,63 @@ const TESTS: TestDefinition[] = [
     id: "personality-strengths",
       image: TEST_IMAGES["personality-strengths"],
     title:
-      market !== "ru"
-        ? "Personal Strengths"
-        : "Сильные стороны личности",
+      market === "fi"
+        ? "Persoonallisuuden vahvuudet"
+        : market === "ru"
+        ? "Сильные стороны личности"
+        : "Personal Strengths",
     titleRu: "Сильные стороны личности",
     titleEn: "Personal Strengths",
+    titleFi: "Persoonallisuuden vahvuudet",
     description:
-      market !== "ru"
-        ? "Shows which of your inner strengths stands out the most in life and relationships."
-        : "Покажет, какая твоя энергия сильнее всего проявляется в жизни и отношениях.",
+      market === "fi"
+        ? "Näyttää, mikä sisäinen vahvuutesi näkyy vahvimmin elämässä ja ihmissuhteissa."
+        : market === "ru"
+        ? "Покажет, какая твоя энергия сильнее всего проявляется в жизни и отношениях."
+        : "Shows which of your inner strengths stands out the most in life and relationships.",
     descriptionRu:
       "Покажет, какая твоя энергия сильнее всего проявляется в жизни и отношениях.",
     descriptionEn:
       "Shows which of your inner strengths stands out the most in life and relationships.",
+    descriptionFi:
+      "Näyttää, mikä sisäinen vahvuutesi näkyy vahvimmin elämässä ja ihmissuhteissa.",
     reward: TEST_REWARD,
     kind: "personality",
     questions: [
       {
         id: "p1",
         text:
-          market !== "ru"
-            ? "In a difficult situation, you are more likely to..."
-            : "В сложной ситуации ты чаще...",
+          market === "fi"
+            ? "Vaikeassa tilanteessa sinä yleensä..."
+            : market === "ru"
+            ? "В сложной ситуации ты чаще..."
+            : "In a difficult situation, you are more likely to...",
         textRu: "В сложной ситуации ты чаще...",
         textEn: "In a difficult situation, you are more likely to...",
+        textFi: "Vaikeassa tilanteessa sinä yleensä...",
         options:
-          market !== "ru"
+          market === "fi"
             ? [
-                "Support others",
-                "Take responsibility",
-                "Try to keep warmth and romance",
-                "Stay calm",
-                "Energize everyone around you",
+                "Tuet muita",
+                "Otat vastuun",
+                "Yrität säilyttää lämmön ja romantiikan",
+                "Pysyt rauhallisena",
+                "Lataat nopeasti kaikki energialla",
               ]
-            : [
+            : market === "ru"
+            ? [
                 "Поддерживаешь других",
                 "Берёшь ответственность на себя",
                 "Стараешься сохранить романтику и тепло",
                 "Сохраняешь спокойствие",
                 "Быстро заряжаешь всех энергией",
+              ]
+            : [
+                "Support others",
+                "Take responsibility",
+                "Try to keep warmth and romance",
+                "Stay calm",
+                "Energize everyone around you",
               ],
         optionsRu: [
           "Поддерживаешь других",
@@ -875,30 +1039,42 @@ const TESTS: TestDefinition[] = [
           "Stay calm",
           "Energize everyone around you",
         ],
+        optionsFi: [
+          "Tuet muita",
+          "Otat vastuun",
+          "Yrität säilyttää lämmön ja romantiikan",
+          "Pysyt rauhallisena",
+          "Lataat nopeasti kaikki energialla",
+        ],
       },
       {
         id: "p2",
         text:
-          market !== "ru"
-            ? "People most often value in you..."
-            : "Люди чаще ценят в тебе...",
+          market === "fi"
+            ? "Ihmiset arvostavat sinussa useimmiten..."
+            : market === "ru"
+            ? "Люди чаще ценят в тебе..."
+            : "People most often value in you...",
         textRu: "Люди чаще ценят в тебе...",
         textEn: "People most often value in you...",
+        textFi: "Ihmiset arvostavat sinussa useimmiten...",
         options:
-          market !== "ru"
+          market === "fi"
+            ? ["Ystävällisyyttä", "Itsevarmuutta", "Herkkyyttä", "Luotettavuutta", "Karismaa"]
+            : market === "ru"
             ? [
-                "Kindness",
-                "Confidence",
-                "Sensitivity",
-                "Reliability",
-                "Charisma",
-              ]
-            : [
                 "Доброту",
                 "Уверенность",
                 "Чувственность",
                 "Надёжность",
                 "Харизму",
+              ]
+            : [
+                "Kindness",
+                "Confidence",
+                "Sensitivity",
+                "Reliability",
+                "Charisma",
               ],
         optionsRu: [
           "Доброту",
@@ -914,30 +1090,36 @@ const TESTS: TestDefinition[] = [
           "Reliability",
           "Charisma",
         ],
+        optionsFi: ["Ystävällisyyttä", "Itsevarmuutta", "Herkkyyttä", "Luotettavuutta", "Karismaa"],
       },
       {
         id: "p3",
         text:
-          market !== "ru"
-            ? "In relationships, you are mostly about..."
-            : "В отношениях ты больше про...",
+          market === "fi"
+            ? "Suhteissa olet enemmän..."
+            : market === "ru"
+            ? "В отношениях ты больше про..."
+            : "In relationships, you are mostly about...",
         textRu: "В отношениях ты больше про...",
         textEn: "In relationships, you are mostly about...",
+        textFi: "Suhteissa olet enemmän...",
         options:
-          market !== "ru"
+          market === "fi"
+            ? ["Huolenpitoa", "Luonteen vahvuutta", "Romantiikkaa", "Vakautta", "Tunteita ja draivia"]
+            : market === "ru"
             ? [
-                "Care",
-                "Strength of character",
-                "Romance",
-                "Stability",
-                "Emotion and drive",
-              ]
-            : [
                 "Заботу",
                 "Силу характера",
                 "Романтику",
                 "Стабильность",
                 "Эмоции и драйв",
+              ]
+            : [
+                "Care",
+                "Strength of character",
+                "Romance",
+                "Stability",
+                "Emotion and drive",
               ],
         optionsRu: [
           "Заботу",
@@ -953,30 +1135,36 @@ const TESTS: TestDefinition[] = [
           "Stability",
           "Emotion and drive",
         ],
+        optionsFi: ["Huolenpitoa", "Luonteen vahvuutta", "Romantiikkaa", "Vakautta", "Tunteita ja draivia"],
       },
       {
         id: "p4",
         text:
-          market !== "ru"
-            ? "What is your biggest strength?"
-            : "Какой твой главный плюс?",
+          market === "fi"
+            ? "Mikä on suurin vahvuutesi?"
+            : market === "ru"
+            ? "Какой твой главный плюс?"
+            : "What is your biggest strength?",
         textRu: "Какой твой главный плюс?",
         textEn: "What is your biggest strength?",
+        textFi: "Mikä on suurin vahvuutesi?",
         options:
-          market !== "ru"
+          market === "fi"
+            ? ["Empatia", "Päättäväisyys", "Hellyys", "Tasapainoisuus", "Energisyys"]
+            : market === "ru"
             ? [
-                "Empathy",
-                "Determination",
-                "Tenderness",
-                "Balance",
-                "Energy",
-              ]
-            : [
                 "Эмпатия",
                 "Решительность",
                 "Нежность",
                 "Уравновешенность",
                 "Энергичность",
+              ]
+            : [
+                "Empathy",
+                "Determination",
+                "Tenderness",
+                "Balance",
+                "Energy",
               ],
         optionsRu: [
           "Эмпатия",
@@ -992,30 +1180,36 @@ const TESTS: TestDefinition[] = [
           "Balance",
           "Energy",
         ],
+        optionsFi: ["Empatia", "Päättäväisyys", "Hellyys", "Tasapainoisuus", "Energisyys"],
       },
       {
         id: "p5",
         text:
-          market !== "ru"
-            ? "When someone close is nearby, you more often..."
-            : "Когда рядом близкий человек, ты чаще...",
+          market === "fi"
+            ? "Kun läheinen ihminen on lähelläsi, sinä useimmiten..."
+            : market === "ru"
+            ? "Когда рядом близкий человек, ты чаще..."
+            : "When someone close is nearby, you more often...",
         textRu: "Когда рядом близкий человек, ты чаще...",
         textEn: "When someone close is nearby, you more often...",
+        textFi: "Kun läheinen ihminen on lähelläsi, sinä useimmiten...",
         options:
-          market !== "ru"
+          market === "fi"
+            ? ["Tuet", "Suojelet", "Inspiroit", "Rauhoitat", "Lataat energiaa"]
+            : market === "ru"
             ? [
-                "Support",
-                "Protect",
-                "Inspire",
-                "Calm",
-                "Charge with energy",
-              ]
-            : [
                 "Поддерживаешь",
                 "Защищаешь",
                 "Вдохновляешь",
                 "Успокаиваешь",
                 "Заряжаешь",
+              ]
+            : [
+                "Support",
+                "Protect",
+                "Inspire",
+                "Calm",
+                "Charge with energy",
               ],
         optionsRu: [
           "Поддерживаешь",
@@ -1031,30 +1225,42 @@ const TESTS: TestDefinition[] = [
           "Calm",
           "Charge with energy",
         ],
+        optionsFi: ["Tuet", "Suojelet", "Inspiroit", "Rauhoitat", "Lataat energiaa"],
       },
       {
         id: "p6",
         text:
-          market !== "ru"
-            ? "Your ideal self-image is..."
-            : "Твой идеальный образ себя — это...",
+          market === "fi"
+            ? "Ihanteellinen kuvasi itsestäsi on..."
+            : market === "ru"
+            ? "Твой идеальный образ себя — это..."
+            : "Your ideal self-image is...",
         textRu: "Твой идеальный образ себя — это...",
         textEn: "Your ideal self-image is...",
+        textFi: "Ihanteellinen kuvasi itsestäsi on...",
         options:
-          market !== "ru"
+          market === "fi"
             ? [
-                "A caring person",
-                "A strong personality",
-                "A romantic soul",
-                "A calm and wise person",
-                "A bright source of energy",
+                "Huolehtivainen ihminen",
+                "Vahva persoonallisuus",
+                "Romanttinen sielu",
+                "Rauhallinen ja viisas ihminen",
+                "Kirkas energianlähde",
               ]
-            : [
+            : market === "ru"
+            ? [
                 "Заботливый человек",
                 "Сильная личность",
                 "Романтичная натура",
                 "Спокойный и мудрый человек",
                 "Яркий источник энергии",
+              ]
+            : [
+                "A caring person",
+                "A strong personality",
+                "A romantic soul",
+                "A calm and wise person",
+                "A bright source of energy",
               ],
         optionsRu: [
           "Заботливый человек",
@@ -1069,6 +1275,13 @@ const TESTS: TestDefinition[] = [
           "A romantic soul",
           "A calm and wise person",
           "A bright source of energy",
+        ],
+        optionsFi: [
+          "Huolehtivainen ihminen",
+          "Vahva persoonallisuus",
+          "Romanttinen sielu",
+          "Rauhallinen ja viisas ihminen",
+          "Kirkas energianlähde",
         ],
       },
     ],
