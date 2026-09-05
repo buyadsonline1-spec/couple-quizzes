@@ -435,7 +435,7 @@ type WeeklyUserLeaderboardRow = {
 
 const DAILY_REWARDS = DAILY_BONUS_REWARDS;
 const STORAGE_KEY = "couple-quizzes-miniapp-v6";
-const WHEEL_SPIN_COST = 2000;
+const WHEEL_SPIN_COST = 1500;
 
 
 const SCALE_OPTIONS_RU = ["Никогда", "Редко", "Иногда", "Часто", "Всегда"];
@@ -9985,31 +9985,16 @@ const [lastAiAnswerIndex, setLastAiAnswerIndex] = useState<number | null>(null);
   value: number;
 } | null>(null);
 const [cardFlipped, setCardFlipped] = useState(false);
-const [page, setPage] = useState(1);
 const gamesPage1 = GAMES;
 
-const gamesPage2: Game[] = [
-  {
-    // id/reward-key намеренно не переименованы (game-ai-psychologist в
-    // reward-catalog.ts) — иначе тем, кто уже прошёл опросник, начислило
-    // бы награду повторно под новым ключом. Экран называется по-новому:
-    // это больше не "AI-психолог" (см. новый универсальный чат ниже),
-    // а короткий детерминированный опросник — "Экспресс-чек отношений".
-    id: "ai-psychologist",
-    title: market !== "ru" ? "Relationship Express-Check" : "Экспресс-чек отношений",
-    description:
-      market !== "ru"
-        ? "12 questions, 2 minutes — find out what's going on in your relationship right now"
-        : "12 вопросов, 2 минуты — узнайте, что сейчас происходит в ваших отношениях",
-    reward: 10,
-    questions: [],
+// "Экспресс-чек отношений" (быстрый детерминированный опросник)
+// убран из списка игр по просьбе — Игры теперь одна страница с
+// исходными тремя играми, без пагинации. Код самого опросника
+// (RELATIONSHIP_CHECK_QUESTIONS и связанные if-блоки ниже) не
+// удалён — просто больше никогда не открывается, раз activeGameId
+// не может стать "ai-psychologist" из списка, в который он не входит.
 
-  },
-];
-
- 
-
-  const allGames = [...gamesPage1, ...gamesPage2];
+  const allGames = gamesPage1;
 const activeGame = allGames.find((game) => game.id === activeGameId) || null;
 
 if (activeGameId === "ai-psychologist") {
@@ -10448,20 +10433,8 @@ function handleLoveQuestionFinish() {
         </div>
       </div>
 
-    {(page === 1 ? gamesPage1 : gamesPage2).map((game) => {
+    {gamesPage1.map((game) => {
         const completed = completedGameIds.includes(game.id);
-
-        if (activeGame?.id === "ai-psychologist") {
-  return (
-    <div style={{ padding: 20 }}>
-      <div style={{ fontSize: 24 }}>РАБОТАЕТ ПСИХОЛОГ 🧠</div>
-
-      <button onClick={() => setActiveGameId(null)}>
-        {t.common.back}
-      </button>
-    </div>
-  );
-}
 
         return (
           <div key={game.id} style={{ ...cardBaseStyle(), padding: 12 }}>
@@ -10548,56 +10521,16 @@ function handleLoveQuestionFinish() {
     marginTop: 12,
   }}
 >
-  {page === 1 ? (
-    <>
-      <button
-        onClick={onBack}
-        style={{
-          ...secondaryButtonStyle,
-          flex: 1,
-          padding: "10px 16px",
-        }}
-      >
-        {t.common.back}
-      </button>
-
-      <button
-        onClick={() => setPage(2)}
-        style={{
-          ...secondaryButtonStyle,
-          flex: 1,
-          padding: "10px 16px",
-        
-        }}
-      >
-        {t.games.nextPage}
-      </button>
-    </>
-  ) : (
-    <>
-      <button
-        onClick={() => setPage(1)}
-        style={{
-          ...secondaryButtonStyle,
-          flex: 1,
-          padding: "10px 16px",
-        }}
-      >
-        {t.games.prevPage}
-      </button>
-
-      <button
-        onClick={onBack}
-        style={{
-          ...secondaryButtonStyle,
-          flex: 1,
-          padding: "10px 16px",
-        }}
-      >
-        {t.common.toMenu}
-      </button>
-    </>
-  )}
+  <button
+    onClick={onBack}
+    style={{
+      ...secondaryButtonStyle,
+      flex: 1,
+      padding: "10px 16px",
+    }}
+  >
+    {t.common.back}
+  </button>
 </div>
 
     </div>
