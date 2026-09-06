@@ -58,6 +58,7 @@ export const TEXT_EN = {
 
     swipeTitle: "Dating",
     swipeHint: "Most compatible profiles come first",
+    editProfileButton: "Edit profile",
     compatibilityBadge: "compatible",
     noCandidatesTitle: "No more profiles",
     noCandidatesText: "Check back later — new people join all the time",

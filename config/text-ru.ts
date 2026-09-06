@@ -58,6 +58,7 @@ export const TEXT_RU = {
 
     swipeTitle: "Знакомства",
     swipeHint: "Сначала — самые совместимые анкеты",
+    editProfileButton: "Редактировать анкету",
     compatibilityBadge: "совместимость",
     noCandidatesTitle: "Анкеты закончились",
     noCandidatesText: "Загляни попозже — новые люди появляются постоянно",

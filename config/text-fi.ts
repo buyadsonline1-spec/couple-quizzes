@@ -62,6 +62,7 @@ export const TEXT_FI = {
 
     swipeTitle: "Treffit",
     swipeHint: "Yhteensopivimmat profiilit näytetään ensin",
+    editProfileButton: "Muokkaa profiilia",
     compatibilityBadge: "yhteensopivuus",
     noCandidatesTitle: "Ei enempää profiileja",
     noCandidatesText: "Käy myöhemmin uudelleen — uusia ihmisiä liittyy jatkuvasti",

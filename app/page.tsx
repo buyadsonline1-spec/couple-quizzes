@@ -5670,6 +5670,7 @@ function DatingSwipeScreen({
   loading,
   onSwipe,
   onOpenMatches,
+  onEditProfile,
   onBack,
   swipesRemaining,
   onUpgrade,
@@ -5679,6 +5680,7 @@ function DatingSwipeScreen({
   loading: boolean;
   onSwipe: (candidate: DatingCandidate, action: "like" | "pass") => void;
   onOpenMatches: () => void;
+  onEditProfile: () => void;
   onBack: () => void;
   // null = Premium (без лимита); число — сколько бесплатных анкет
   // осталось сегодня.
@@ -5716,20 +5718,37 @@ function DatingSwipeScreen({
             </div>
           )}
         </div>
-        <button
-          onClick={onOpenMatches}
-          style={{
-            border: "none",
-            background: "rgba(255,255,255,0.35)",
-            borderRadius: 999,
-            width: 40,
-            height: 40,
-            fontSize: 18,
-            cursor: "pointer",
-          }}
-        >
-          💬
-        </button>
+        <div style={{ display: "flex", gap: 8, flexShrink: 0 }}>
+          <button
+            onClick={onEditProfile}
+            aria-label={t.dating.editProfileButton}
+            style={{
+              border: "none",
+              background: "rgba(255,255,255,0.35)",
+              borderRadius: 999,
+              width: 40,
+              height: 40,
+              fontSize: 18,
+              cursor: "pointer",
+            }}
+          >
+            ✏️
+          </button>
+          <button
+            onClick={onOpenMatches}
+            style={{
+              border: "none",
+              background: "rgba(255,255,255,0.35)",
+              borderRadius: 999,
+              width: 40,
+              height: 40,
+              fontSize: 18,
+              cursor: "pointer",
+            }}
+          >
+            💬
+          </button>
+        </div>
       </div>
 
       <div style={{ position: "relative", height: 480 }}>
@@ -18924,7 +18943,14 @@ showPaywall={() => {
     t={t}
     initialProfile={datingProfile}
     defaultGender={appState.profile.gender}
-    onBack={() => setScreen("dating-intro")}
+    // Экран этот же используется и для первого создания анкеты (тогда
+    // пришли из dating-intro, datingProfile ещё null), и для
+    // редактирования уже существующей (пришли из dating-swipe) —
+    // "назад" в каждом случае должен возвращать туда, откуда пришли,
+    // а не всегда на intro (иначе редактирование анкеты вело бы на
+    // вводный экран "как это работает", что для уже освоившегося
+    // пользователя не имеет смысла).
+    onBack={() => setScreen(datingProfile ? "dating-swipe" : "dating-intro")}
     onSave={handleSaveDatingProfile}
     onUploadPhoto={handleUploadDatingPhoto}
   />
@@ -18945,6 +18971,7 @@ showPaywall={() => {
       loadDatingMatches();
       setScreen("dating-matches");
     }}
+    onEditProfile={() => setScreen("dating-profile")}
     onBack={() => setScreen("menu")}
   />
 )}
