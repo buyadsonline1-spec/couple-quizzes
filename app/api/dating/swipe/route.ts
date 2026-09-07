@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/server/supabase-admin";
 import { validateRequestAuth } from "@/lib/server/telegram-auth";
 import { checkIsPremium } from "@/lib/server/pair-state";
+import { sendTelegramMessage, getDatingAppLink } from "@/lib/server/telegram-notify";
 
 // Раздел открыт всем — Premium снимает только дневной лимит (5 свайпов
 // в день для остальных, см. record_dating_swipe) и требуется отдельно
@@ -55,9 +56,45 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    const matched = Boolean(data.matched);
+
+    if (matched) {
+      // Пользователь, который только что свайпнул, видит алерт о
+      // мэтче прямо в приложении (клиент), а вот вторая сторона могла
+      // лайкнуть намного раньше и сейчас вообще не в приложении — без
+      // этого уведомления она узнала бы о мэтче только случайно
+      // зайдя в раздел заново. Шлём обоим — недорого, и не зависит от
+      // того, кто сейчас реально онлайн.
+      const { data: profiles } = await supabaseAdmin
+        .from("dating_profiles")
+        .select("telegram_id, display_name")
+        .in("telegram_id", [validation.telegramId, toTelegramId]);
+
+      const nameByTelegramId = new Map(
+        (profiles ?? []).map((p) => [p.telegram_id as number, p.display_name as string])
+      );
+
+      const appLink = getDatingAppLink();
+      const fromName = nameByTelegramId.get(validation.telegramId) ?? "";
+      const toName = nameByTelegramId.get(toTelegramId) ?? "";
+
+      await Promise.all([
+        sendTelegramMessage(
+          toTelegramId,
+          `💘 Взаимный лайк с ${fromName || "новым человеком"}! Загляни в Знакомства — можно начать переписку.`,
+          { buttonText: "Открыть Знакомства", buttonUrl: appLink }
+        ),
+        sendTelegramMessage(
+          validation.telegramId,
+          `💘 Взаимный лайк с ${toName || "новым человеком"}! Загляни в Знакомства — можно начать переписку.`,
+          { buttonText: "Открыть Знакомства", buttonUrl: appLink }
+        ),
+      ]);
+    }
+
     return NextResponse.json({
       ok: true,
-      matched: Boolean(data.matched),
+      matched,
       matchId: data.matchId ?? null,
     });
   } catch (error) {

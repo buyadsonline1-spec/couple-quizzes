@@ -69,6 +69,12 @@ export const TEXT_EN = {
     dailyLimitText: "Come back tomorrow for a fresh limit — or get Premium to browse without limits.",
     dailyLimitUnlockButton: "Remove the limit with Premium",
 
+    likesButton: "Likes",
+    likesTitle: "Likes",
+    likesHint: "These profiles already liked you — like back to match",
+    noLikesTitle: "No likes yet",
+    noLikesText: "As soon as someone likes your profile, they'll show up here",
+
     matchesTitle: "Matches",
     matchesSubtitle: "Mutual likes — feel free to message first",
     newMatchLabel: "New match 🎉",

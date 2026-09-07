@@ -73,6 +73,12 @@ export const TEXT_FI = {
     dailyLimitText: "Tule takaisin huomenna, kun raja nollautuu — tai hanki Premium ja selaa rajattomasti.",
     dailyLimitUnlockButton: "Poista raja Premiumilla",
 
+    likesButton: "Tykkäykset",
+    likesTitle: "Tykkäykset",
+    likesHint: "Nämä profiilit ovat jo tykänneet sinusta — tykkää takaisin ja saatte osuman",
+    noLikesTitle: "Ei vielä tykkäyksiä",
+    noLikesText: "Heti kun joku tykkää profiilistasi, hän näkyy täällä",
+
     matchesTitle: "Osumat",
     matchesSubtitle: "Molemminpuoliset tykkäykset — voit viestiä ensin",
     newMatchLabel: "Uusi osuma 🎉",

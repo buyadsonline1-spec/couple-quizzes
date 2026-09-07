@@ -69,6 +69,12 @@ export const TEXT_RU = {
     dailyLimitText: "Возвращайся завтра — лимит обновится. Или оформи Premium и смотри анкеты без ограничений.",
     dailyLimitUnlockButton: "Снять лимит с Premium",
 
+    likesButton: "Лайки мне",
+    likesTitle: "Лайки мне",
+    likesHint: "Эти анкеты уже лайкнули тебя — ответь взаимностью",
+    noLikesTitle: "Пока никто не лайкнул",
+    noLikesText: "Как только кто-то лайкнёт твою анкету, он появится здесь",
+
     matchesTitle: "Мэтчи",
     matchesSubtitle: "Взаимные лайки — можно писать первым",
     newMatchLabel: "Новый мэтч 🎉",

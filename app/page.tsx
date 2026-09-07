@@ -112,6 +112,7 @@ type Screen =
   | "dating-intro"
   | "dating-profile"
   | "dating-swipe"
+  | "dating-likes"
   | "dating-matches"
   | "dating-chat"
   | "polls-tests-menu"
@@ -5671,9 +5672,14 @@ function DatingSwipeScreen({
   onSwipe,
   onOpenMatches,
   onEditProfile,
+  onOpenLikes,
   onBack,
   swipesRemaining,
   onUpgrade,
+  title,
+  hint,
+  emptyTitle,
+  emptyText,
   t,
 }: {
   candidates: DatingCandidate[];
@@ -5681,11 +5687,22 @@ function DatingSwipeScreen({
   onSwipe: (candidate: DatingCandidate, action: "like" | "pass") => void;
   onOpenMatches: () => void;
   onEditProfile: () => void;
+  // Присутствует только на основном экране ленты — на самом экране
+  // "Лайки мне" (тот же компонент, другой источник candidates) кнопка
+  // входа в лайки не нужна, поэтому проп опциональный.
+  onOpenLikes?: () => void;
   onBack: () => void;
   // null = Premium (без лимита); число — сколько бесплатных анкет
   // осталось сегодня.
   swipesRemaining: number | null;
   onUpgrade: () => void;
+  // Переопределения текста — тот же компонент переиспользуется для
+  // "Лайки мне" (см. вызов ниже), где заголовок/подсказки/empty-state
+  // должны отличаться от обычной ленты.
+  title?: string;
+  hint?: string;
+  emptyTitle?: string;
+  emptyText?: string;
   t: any;
 }) {
   const current = candidates[0] ?? null;
@@ -5696,10 +5713,10 @@ function DatingSwipeScreen({
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
         <div>
           <div style={{ fontSize: 20, fontWeight: 900, color: "#1f1d3a" }}>
-            {t.dating.swipeTitle}
+            {title ?? t.dating.swipeTitle}
           </div>
           <div style={{ fontSize: 11.5, color: "#4b446a", marginTop: 2 }}>
-            {t.dating.swipeHint}
+            {hint ?? t.dating.swipeHint}
           </div>
           {swipesRemaining !== null && (
             <div
@@ -5734,6 +5751,23 @@ function DatingSwipeScreen({
           >
             ✏️
           </button>
+          {onOpenLikes && (
+            <button
+              onClick={onOpenLikes}
+              aria-label={t.dating.likesButton}
+              style={{
+                border: "none",
+                background: "rgba(255,255,255,0.35)",
+                borderRadius: 999,
+                width: 40,
+                height: 40,
+                fontSize: 18,
+                cursor: "pointer",
+              }}
+            >
+              ❤️
+            </button>
+          )}
           <button
             onClick={onOpenMatches}
             style={{
@@ -5810,10 +5844,10 @@ function DatingSwipeScreen({
           >
             <div style={{ fontSize: 40, marginBottom: 10 }}>💔</div>
             <div style={{ fontSize: 16, fontWeight: 900, color: "#1f1d3a" }}>
-              {t.dating.noCandidatesTitle}
+              {emptyTitle ?? t.dating.noCandidatesTitle}
             </div>
             <div style={{ marginTop: 6, fontSize: 13, color: "#5a5378", lineHeight: 1.4 }}>
-              {t.dating.noCandidatesText}
+              {emptyText ?? t.dating.noCandidatesText}
             </div>
           </div>
         ) : (
@@ -17130,6 +17164,16 @@ async function loadDatingCandidates() {
   }
 }
 
+async function loadDatingIncomingLikes() {
+  setDatingIncomingLikesLoading(true);
+  const result = await datingFetch("/api/dating/likes");
+  setDatingIncomingLikesLoading(false);
+
+  if (result?.ok) {
+    setDatingIncomingLikes(result.likes ?? []);
+  }
+}
+
 async function handleSaveDatingProfile(profile: {
   displayName: string;
   age: number;
@@ -17191,7 +17235,12 @@ async function handleUploadDatingPhoto(file: File): Promise<string | null> {
 }
 
 async function handleDatingSwipe(candidate: DatingCandidate, action: "like" | "pass") {
+  // Один и тот же обработчик используется и для обычной ленты, и для
+  // "Лайки мне" — фильтруем из обоих списков сразу, не зная заранее,
+  // с какого экрана пришёл вызов (в другом списке просто не найдёт
+  // совпадения и ничего не изменит).
   setDatingCandidates((prev) => prev.filter((c) => c.telegramId !== candidate.telegramId));
+  setDatingIncomingLikes((prev) => prev.filter((c) => c.telegramId !== candidate.telegramId));
 
   const result = await datingFetch("/api/dating/swipe", {
     toTelegramId: candidate.telegramId,
@@ -17441,6 +17490,10 @@ const [datingMatches, setDatingMatches] = useState<DatingMatch[]>([]);
 // декрементируется локально на каждый свайп, чтобы не дёргать сервер
 // лишний раз за одним числом.
 const [datingSwipesRemaining, setDatingSwipesRemaining] = useState<number | null>(null);
+// "Лайки мне" — отдельный список от datingCandidates: люди, которые
+// лайкнули меня первыми, но я ещё не ответил(а) взаимностью.
+const [datingIncomingLikes, setDatingIncomingLikes] = useState<DatingCandidate[]>([]);
+const [datingIncomingLikesLoading, setDatingIncomingLikesLoading] = useState(false);
 const [activeChatMatch, setActiveChatMatch] = useState<DatingMatch | null>(null);
 const [activeChatMessages, setActiveChatMessages] = useState<
   Array<{ id: string; senderTelegramId: number; text: string; createdAt: string }>
@@ -18972,7 +19025,35 @@ showPaywall={() => {
       setScreen("dating-matches");
     }}
     onEditProfile={() => setScreen("dating-profile")}
+    onOpenLikes={() => {
+      loadDatingIncomingLikes();
+      setScreen("dating-likes");
+    }}
     onBack={() => setScreen("menu")}
+  />
+)}
+
+{screen === "dating-likes" && (
+  <DatingSwipeScreen
+    t={t}
+    candidates={datingIncomingLikes}
+    loading={datingIncomingLikesLoading}
+    onSwipe={handleDatingSwipe}
+    swipesRemaining={datingSwipesRemaining}
+    onUpgrade={() => {
+      setPaywallBackScreen("dating-likes");
+      setScreen("paywall");
+    }}
+    onOpenMatches={() => {
+      loadDatingMatches();
+      setScreen("dating-matches");
+    }}
+    onEditProfile={() => setScreen("dating-profile")}
+    title={t.dating.likesTitle}
+    hint={t.dating.likesHint}
+    emptyTitle={t.dating.noLikesTitle}
+    emptyText={t.dating.noLikesText}
+    onBack={() => setScreen("dating-swipe")}
   />
 )}
 
