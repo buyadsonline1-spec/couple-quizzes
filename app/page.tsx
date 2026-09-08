@@ -9471,7 +9471,60 @@ function WelcomeScreen({ onStart }: { onStart: () => void }) {
         justifyContent: "center",
       }}
     >
-      <div style={{ ...cardBaseStyle(), padding: 18, overflow: "hidden" }}>
+      <style>{`
+        @keyframes welcomeCardIn {
+          0% { opacity: 0; transform: translateY(18px) scale(0.98); }
+          100% { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        @keyframes welcomeFloat {
+          0%, 100% { transform: translateY(0); }
+          50% { transform: translateY(-7px); }
+        }
+        @keyframes welcomeGlow {
+          0%, 100% { opacity: 0.55; transform: translate(-50%, -50%) scale(1); }
+          50% { opacity: 0.85; transform: translate(-50%, -50%) scale(1.12); }
+        }
+        @keyframes welcomeSpin {
+          from { transform: translate(-50%, -50%) rotate(0deg); }
+          to { transform: translate(-50%, -50%) rotate(360deg); }
+        }
+        @keyframes welcomeShimmer {
+          0% { transform: translateX(-130%) skewX(-14deg); }
+          55%, 100% { transform: translateX(230%) skewX(-14deg); }
+        }
+        .welcome-card { animation: welcomeCardIn 0.55s cubic-bezier(0.22, 1, 0.36, 1) both; }
+        .welcome-illustration-wrap { animation: welcomeFloat 5s ease-in-out infinite; }
+        .welcome-glow { animation: welcomeGlow 4.5s ease-in-out infinite; }
+        .welcome-spin-ring { animation: welcomeSpin 14s linear infinite; }
+        .welcome-cta { position: relative; overflow: hidden; }
+        .welcome-cta::after {
+          content: "";
+          position: absolute;
+          top: 0;
+          bottom: 0;
+          left: 0;
+          width: 45%;
+          background: linear-gradient(100deg, transparent, rgba(255,255,255,0.55), transparent);
+          animation: welcomeShimmer 3.2s ease-in-out infinite;
+          animation-delay: 1s;
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .welcome-card, .welcome-illustration-wrap, .welcome-glow, .welcome-spin-ring, .welcome-cta::after {
+            animation: none !important;
+          }
+        }
+      `}</style>
+
+      <div
+        className="welcome-card"
+        style={{
+          ...cardBaseStyle(),
+          padding: 18,
+          overflow: "hidden",
+          border: "1px solid rgba(255,255,255,0.4)",
+          boxShadow: "0 24px 60px rgba(60, 30, 90, 0.22), 0 2px 0 rgba(255,255,255,0.5) inset",
+        }}
+      >
         <div
           style={{
             height: 300,
@@ -9485,6 +9538,33 @@ function WelcomeScreen({ onStart }: { onStart: () => void }) {
             overflow: "hidden",
           }}
         >
+          <div
+            className="welcome-spin-ring"
+            style={{
+              position: "absolute",
+              top: "38%",
+              left: "50%",
+              width: 210,
+              height: 210,
+              borderRadius: 999,
+              border: "1.5px dashed rgba(255,255,255,0.55)",
+            }}
+          />
+          <div
+            className="welcome-glow"
+            style={{
+              position: "absolute",
+              top: "42%",
+              left: "50%",
+              width: 190,
+              height: 190,
+              borderRadius: 999,
+              background:
+                "radial-gradient(circle, rgba(255,255,255,0.85) 0%, rgba(255,184,230,0.35) 45%, transparent 72%)",
+              filter: "blur(2px)",
+            }}
+          />
+
           <div
             style={{
               position: "absolute",
@@ -9508,16 +9588,18 @@ function WelcomeScreen({ onStart }: { onStart: () => void }) {
             💫
           </div>
 
-          <img
-            src="/couple.png"
-            alt="Couple"
-            style={{
-              width: 240,
-              marginBottom: 26,
-              opacity: 0.96,
-              filter: "drop-shadow(0 8px 20px rgba(0,0,0,0.08))",
-            }}
-          />
+          <div className="welcome-illustration-wrap" style={{ position: "relative", zIndex: 1 }}>
+            <img
+              src="/couple.png"
+              alt="Couple"
+              style={{
+                width: 240,
+                marginBottom: 26,
+                opacity: 0.98,
+                filter: "drop-shadow(0 14px 26px rgba(60,30,90,0.22))",
+              }}
+            />
+          </div>
 
           <div
             style={{
@@ -9527,14 +9609,26 @@ function WelcomeScreen({ onStart }: { onStart: () => void }) {
               right: 18,
               padding: "14px 16px",
               borderRadius: 18,
-              background: "rgba(255,255,255,0.34)",
-              backdropFilter: "blur(6px)",
-              WebkitBackdropFilter: "blur(6px)",
-              color: "#241b40",
+              background: "rgba(255,255,255,0.4)",
+              backdropFilter: "blur(8px)",
+              WebkitBackdropFilter: "blur(8px)",
+              border: "1px solid rgba(255,255,255,0.55)",
+              boxShadow: "0 8px 20px rgba(60,30,90,0.12)",
               textAlign: "center",
             }}
           >
-            <div style={{ fontWeight: 900, fontSize: 22, lineHeight: 1.15 }}>
+            <div
+              style={{
+                fontWeight: 900,
+                fontSize: 23,
+                lineHeight: 1.15,
+                letterSpacing: "-0.01em",
+                background: "linear-gradient(120deg, #6b46ff, #a855f7 45%, #ff5fa2)",
+                WebkitBackgroundClip: "text",
+                backgroundClip: "text",
+                color: "transparent",
+              }}
+            >
               Couple Quizzes
             </div>
             <div
@@ -9553,7 +9647,15 @@ function WelcomeScreen({ onStart }: { onStart: () => void }) {
 
         <button
           onClick={onStart}
-          style={{ ...primaryButtonStyle, width: "100%", marginTop: 18 }}
+          className="welcome-cta"
+          style={{
+            ...primaryButtonStyle,
+            width: "100%",
+            marginTop: 18,
+            fontSize: 17,
+            padding: "15px 16px",
+            boxShadow: "0 14px 30px rgba(126, 75, 255, 0.38)",
+          }}
         >
           {t.common.start}
         </button>
@@ -9562,29 +9664,38 @@ function WelcomeScreen({ onStart }: { onStart: () => void }) {
           style={{
             marginTop: 16,
             display: "flex",
-            gap: 8,
-            flexWrap: "wrap",
+            alignItems: "center",
             justifyContent: "center",
+            flexWrap: "wrap",
+            rowGap: 8,
           }}
         >
-          {features.map((feature) => (
-            <div
-              key={feature.label}
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 6,
-                padding: "8px 12px",
-                borderRadius: 999,
-                background: "rgba(255,255,255,0.35)",
-                border: "1px solid rgba(255,255,255,0.4)",
-                fontSize: 12.5,
-                fontWeight: 800,
-                color: "#3d3660",
-              }}
-            >
-              <span style={{ fontSize: 14 }}>{feature.emoji}</span>
-              {feature.label}
+          {features.map((feature, index) => (
+            <div key={feature.label} style={{ display: "flex", alignItems: "center" }}>
+              {index > 0 && (
+                <div
+                  style={{
+                    width: 1,
+                    height: 14,
+                    background: "rgba(60,30,90,0.16)",
+                    margin: "0 12px",
+                  }}
+                />
+              )}
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 6,
+                  fontSize: 12.5,
+                  fontWeight: 800,
+                  color: "#3d3660",
+                  whiteSpace: "nowrap",
+                }}
+              >
+                <span style={{ fontSize: 14 }}>{feature.emoji}</span>
+                {feature.label}
+              </div>
             </div>
           ))}
         </div>
@@ -19427,14 +19538,22 @@ if (finishedAllTests && !appState.completionBonusesClaimed.tests) {
   />
 )}
 
-        {showDailyBonus && screen !== "auth" && (
-          <DailyBonusModal
-            currentDay={claimableDay}
-            canClaim={bonusClaimAvailable}
-            onClaim={handleClaimBonus}
-            onClose={() => setShowDailyBonus(false)}
-          />
-        )}
+        {showDailyBonus &&
+          screen !== "auth" &&
+          // Раньше баннер бонуса выскакивал прямо поверх стартового
+          // экрана — человек ещё не успел увидеть само приложение, а
+          // его уже перекрывает модалка. Теперь ждём, пока пользователь
+          // дойдёт до меню (для новых — через выбор пола), и показываем
+          // бонус уже там.
+          screen !== "welcome" &&
+          screen !== "gender-select" && (
+            <DailyBonusModal
+              currentDay={claimableDay}
+              canClaim={bonusClaimAvailable}
+              onClaim={handleClaimBonus}
+              onClose={() => setShowDailyBonus(false)}
+            />
+          )}
 
         {screen === "auth" && <AuthScreen />}
 
