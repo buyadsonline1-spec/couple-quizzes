@@ -5293,6 +5293,7 @@ type DatingProfile = {
   photoUrl: string | null;
   gender: "boy" | "girl";
   seekingGender: "boy" | "girl" | "any";
+  city: string;
   personalitySummary: Record<string, string>;
 };
 
@@ -5450,6 +5451,7 @@ function DatingProfileScreen({
     photoUrl: string | null;
     gender: "boy" | "girl";
     seekingGender: "boy" | "girl" | "any";
+    city: string;
   }) => Promise<boolean>;
   onUploadPhoto: (file: File) => Promise<string | null>;
   t: any;
@@ -5463,6 +5465,7 @@ function DatingProfileScreen({
   const [seekingGender, setSeekingGender] = useState<"boy" | "girl" | "any">(
     initialProfile?.seekingGender ?? "any"
   );
+  const [city, setCity] = useState(initialProfile?.city ?? "");
   const [photoUrl, setPhotoUrl] = useState<string | null>(initialProfile?.photoUrl ?? null);
   const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -5495,7 +5498,12 @@ function DatingProfileScreen({
 
     const ageNumber = Number(age);
 
-    if (!displayName.trim() || !Number.isInteger(ageNumber) || ageNumber < 18) {
+    if (
+      !displayName.trim() ||
+      !Number.isInteger(ageNumber) ||
+      ageNumber < 18 ||
+      !city.trim()
+    ) {
       setError(t.dating.saveError);
       return;
     }
@@ -5509,6 +5517,7 @@ function DatingProfileScreen({
       photoUrl,
       gender,
       seekingGender,
+      city: city.trim(),
     });
 
     setSaving(false);
@@ -5627,6 +5636,31 @@ function DatingProfileScreen({
                 color: "#1f1d3a",
               }}
             />
+          </div>
+
+          <div>
+            <div style={{ fontSize: 12.5, fontWeight: 800, color: "#5a5378", marginBottom: 6 }}>
+              {t.dating.cityLabel}
+            </div>
+            <input
+              value={city}
+              onChange={(e) => setCity(e.target.value)}
+              placeholder={t.dating.cityPlaceholder}
+              maxLength={100}
+              style={{
+                width: "100%",
+                boxSizing: "border-box",
+                border: "1px solid rgba(255,255,255,0.5)",
+                borderRadius: 14,
+                background: "rgba(255,255,255,0.55)",
+                padding: "12px 14px",
+                fontSize: 14,
+                color: "#1f1d3a",
+              }}
+            />
+            <div style={{ marginTop: 6, fontSize: 11, color: "#5a5378", lineHeight: 1.35 }}>
+              {t.dating.cityHint}
+            </div>
           </div>
 
           <div>
@@ -17912,6 +17946,7 @@ async function handleSaveDatingProfile(profile: {
   photoUrl: string | null;
   gender: "boy" | "girl";
   seekingGender: "boy" | "girl" | "any";
+  city: string;
 }): Promise<boolean> {
   const result = await datingFetch("/api/dating/profile", {
     displayName: profile.displayName,
@@ -17920,6 +17955,7 @@ async function handleSaveDatingProfile(profile: {
     photoUrl: profile.photoUrl,
     gender: profile.gender,
     seekingGender: profile.seekingGender,
+    city: profile.city,
   });
 
   if (!result?.ok) return false;
@@ -17935,6 +17971,7 @@ async function handleSaveDatingProfile(profile: {
     photoUrl: profile.photoUrl,
     gender: profile.gender,
     seekingGender: profile.seekingGender,
+    city: profile.city,
     personalitySummary: result.personalitySummary ?? {},
   });
 
