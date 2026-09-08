@@ -41,6 +41,9 @@ export const TEXT_EN = {
     namePlaceholder: "What should we call you",
     ageLabel: "Age",
     agePlaceholder: "18+",
+    cityLabel: "City",
+    cityPlaceholder: "Which city do you live in",
+    cityHint: "Profiles are matched from your city, within ±6 years of your age",
     bioLabel: "About you",
     bioPlaceholder: "A few words about you, your interests, what matters in a relationship...",
     seekingLabel: "Looking for",
@@ -60,6 +63,7 @@ export const TEXT_EN = {
     swipeHint: "Most compatible profiles come first",
     editProfileButton: "Edit profile",
     compatibilityBadge: "compatible",
+    compatibilityUnknownBadge: "take a test to see compatibility",
     noCandidatesTitle: "No more profiles",
     noCandidatesText: "Check back later — new people join all the time",
     matchAlertText: "It's a match! You can chat now 🎉",
@@ -99,7 +103,6 @@ export const TEXT_EN = {
     premiumRequiredTitle: "Premium required",
     premiumRequiredText: "Dating is available with Premium only",
 
-    filtersButton: "Search filters",
     boostButton: "Boost profile",
     superlikeButton: "Super like",
     superlikeBadge: "Super like",
@@ -118,11 +121,6 @@ export const TEXT_EN = {
     boostActivatedAlert: "Boost activated! Your profile is now at the top.",
     boostClaimError: "Couldn't activate the boost. Please try again.",
 
-    filtersTitle: "Search filters",
-    filtersSubtitle: "Who your profile will be shown to",
-    filtersAgeLabel: "Age",
-    filtersInvalidRange: "Check the range — minimum can't be higher than maximum",
-    filtersLocationNote: "Distance filtering isn't available yet — the app doesn't request your location",
 
     pairProposalPromptTitle: "Hit it off?",
     pairProposalPromptText: "Suggest creating a pair right in the app",

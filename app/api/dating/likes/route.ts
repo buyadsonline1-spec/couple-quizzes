@@ -1,8 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/server/supabase-admin";
 import { validateRequestAuth } from "@/lib/server/telegram-auth";
-import { loadPollAnswersForTelegramId } from "@/lib/server/reads";
-import { calculateDatingCompatibility } from "@/lib/server/dating-compatibility";
+import {
+  loadPollAnswersForTelegramId,
+  loadTestSubmissionsForTelegramId,
+  loadTestSubmissionsForTelegramIds,
+} from "@/lib/server/reads";
+import {
+  calculateDatingCompatibility,
+  toTestAnswersMap,
+} from "@/lib/server/dating-compatibility";
 
 type IncomingLike = {
   telegramId: number;
@@ -59,15 +66,20 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ ok: true, likes: [] });
     }
 
-    const selfAnswers = await loadPollAnswersForTelegramId(
-      validation.telegramId
-    );
-
     const likeIds = likes.map((l) => l.telegramId);
-    const { data: answerRows } = await supabaseAdmin
-      .from("poll_submissions")
-      .select("telegram_id, poll_id, answers")
-      .in("telegram_id", likeIds);
+
+    const [selfAnswers, selfTestSubmissions, { data: answerRows }, testSubmissionsByTelegramId] =
+      await Promise.all([
+        loadPollAnswersForTelegramId(validation.telegramId),
+        loadTestSubmissionsForTelegramId(validation.telegramId),
+        supabaseAdmin
+          .from("poll_submissions")
+          .select("telegram_id, poll_id, answers")
+          .in("telegram_id", likeIds),
+        loadTestSubmissionsForTelegramIds(likeIds),
+      ]);
+
+    const selfTestAnswers = toTestAnswersMap(selfTestSubmissions);
 
     const answersByTelegramId = new Map<number, Record<string, number[]>>();
     for (const row of answerRows ?? []) {
@@ -79,12 +91,17 @@ export async function POST(request: NextRequest) {
 
     const scored = likes.map((like) => {
       const likeAnswers = answersByTelegramId.get(like.telegramId) ?? {};
+      const likeTestAnswers = toTestAnswersMap(
+        testSubmissionsByTelegramId.get(like.telegramId) ?? []
+      );
 
       const compatibility = calculateDatingCompatibility(
         selfAnswers,
         selfProfile.gender as "boy" | "girl",
         likeAnswers,
-        like.gender
+        like.gender,
+        selfTestAnswers,
+        likeTestAnswers
       );
 
       return { ...like, compatibility };

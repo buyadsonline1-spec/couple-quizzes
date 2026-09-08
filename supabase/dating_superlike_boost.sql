@@ -170,6 +170,11 @@ begin
             'personalitySummary', dp.personality_summary,
             'isBoosted', (dp.boosted_until is not null and dp.boosted_until > now())
           )
+          -- ORDER BY должен быть ВНУТРИ jsonb_agg(), не снаружи — без
+          -- GROUP BY внешний ORDER BY по колонке из dp невалиден
+          -- (ловится только в рантайме: "column must appear in the
+          -- GROUP BY clause"). См. fix_dating_candidates_order_by.sql.
+          order by (dp.boosted_until is not null and dp.boosted_until > now()) desc
         )
         from public.dating_profiles dp
         where dp.telegram_id <> p_telegram_id
@@ -188,7 +193,6 @@ begin
             where (b.blocker_telegram_id = p_telegram_id and b.blocked_telegram_id = dp.telegram_id)
                or (b.blocker_telegram_id = dp.telegram_id and b.blocked_telegram_id = p_telegram_id)
           )
-        order by (dp.boosted_until is not null and dp.boosted_until > now()) desc
         limit greatest(1, least(p_limit, 50))
       ),
       '[]'::jsonb

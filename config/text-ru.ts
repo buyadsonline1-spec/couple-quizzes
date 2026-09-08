@@ -41,6 +41,9 @@ export const TEXT_RU = {
     namePlaceholder: "Как к тебе обращаться",
     ageLabel: "Возраст",
     agePlaceholder: "18+",
+    cityLabel: "Город",
+    cityPlaceholder: "В каком городе ты живёшь",
+    cityHint: "Анкеты подбираются из твоего города и в пределах ±6 лет",
     bioLabel: "О себе",
     bioPlaceholder: "Пара слов о тебе, увлечениях, что важно в отношениях...",
     seekingLabel: "Кого ищешь",
@@ -60,6 +63,7 @@ export const TEXT_RU = {
     swipeHint: "Сначала — самые совместимые анкеты",
     editProfileButton: "Редактировать анкету",
     compatibilityBadge: "совместимость",
+    compatibilityUnknownBadge: "пройди тест, чтобы узнать совместимость",
     noCandidatesTitle: "Анкеты закончились",
     noCandidatesText: "Загляни попозже — новые люди появляются постоянно",
     matchAlertText: "Взаимный лайк! Можно писать 🎉",
@@ -99,7 +103,6 @@ export const TEXT_RU = {
     premiumRequiredTitle: "Нужна подписка",
     premiumRequiredText: "Знакомства доступны только с Premium",
 
-    filtersButton: "Фильтры поиска",
     boostButton: "Буст анкеты",
     superlikeButton: "Суперлайк",
     superlikeBadge: "Суперлайк",
@@ -118,11 +121,6 @@ export const TEXT_RU = {
     boostActivatedAlert: "Буст активирован! Анкета теперь в топе выдачи.",
     boostClaimError: "Не удалось активировать буст. Попробуй ещё раз.",
 
-    filtersTitle: "Фильтры поиска",
-    filtersSubtitle: "Кому будет показываться твоя анкета",
-    filtersAgeLabel: "Возраст",
-    filtersInvalidRange: "Проверь диапазон — минимум не может быть больше максимума",
-    filtersLocationNote: "Фильтр по расстоянию пока недоступен — приложение не запрашивает геолокацию",
 
     pairProposalPromptTitle: "Понравились друг другу?",
     pairProposalPromptText: "Предложи создать пару прямо в приложении",

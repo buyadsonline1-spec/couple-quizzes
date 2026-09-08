@@ -116,7 +116,6 @@ type Screen =
   | "dating-matches"
   | "dating-chat"
   | "dating-boost"
-  | "dating-filters"
   | "polls-tests-menu"
   | "pair-profile-menu";
 
@@ -5756,7 +5755,6 @@ function DatingSwipeScreen({
   onEditProfile,
   onOpenLikes,
   onOpenBoost,
-  onOpenFilters,
   onBack,
   swipesRemaining,
   onUpgrade,
@@ -5779,7 +5777,6 @@ function DatingSwipeScreen({
   // входа в лайки не нужна, поэтому проп опциональный.
   onOpenLikes?: () => void;
   onOpenBoost?: () => void;
-  onOpenFilters?: () => void;
   onBack: () => void;
   // null = Premium (без лимита); число — сколько бесплатных анкет
   // осталось сегодня.
@@ -5825,23 +5822,6 @@ function DatingSwipeScreen({
           )}
         </div>
         <div style={{ display: "flex", gap: 8, flexShrink: 0, flexWrap: "wrap", justifyContent: "flex-end" }}>
-          {onOpenFilters && (
-            <button
-              onClick={onOpenFilters}
-              aria-label={t.dating.filtersButton}
-              style={{
-                border: "none",
-                background: "rgba(255,255,255,0.35)",
-                borderRadius: 999,
-                width: 40,
-                height: 40,
-                fontSize: 18,
-                cursor: "pointer",
-              }}
-            >
-              🎚️
-            </button>
-          )}
           {onOpenBoost && (
             <button
               onClick={onOpenBoost}
@@ -6051,7 +6031,9 @@ function DatingSwipeScreen({
                     boxShadow: "0 6px 16px rgba(37,34,78,0.16)",
                   }}
                 >
-                  💜 {current.compatibility.overallPercent}% {t.dating.compatibilityBadge}
+                  {current.compatibility.completedThemes > 0
+                    ? `💜 ${current.compatibility.overallPercent}% ${t.dating.compatibilityBadge}`
+                    : `💜 ${t.dating.compatibilityUnknownBadge}`}
                 </div>
                 {current.isSuperlike && (
                   <div
@@ -6322,129 +6304,6 @@ function DatingBoostScreen({
   );
 }
 
-function DatingFiltersScreen({
-  initialMinAge,
-  initialMaxAge,
-  saving,
-  onSave,
-  onBack,
-  t,
-}: {
-  initialMinAge: number;
-  initialMaxAge: number;
-  saving: boolean;
-  onSave: (minAge: number, maxAge: number) => void;
-  onBack: () => void;
-  t: any;
-}) {
-  const [minAge, setMinAge] = useState(initialMinAge);
-  const [maxAge, setMaxAge] = useState(initialMaxAge);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    setMinAge(initialMinAge);
-    setMaxAge(initialMaxAge);
-  }, [initialMinAge, initialMaxAge]);
-
-  function handleSave() {
-    if (minAge < 18 || maxAge > 100 || minAge > maxAge) {
-      setError(t.dating.filtersInvalidRange);
-      return;
-    }
-    setError(null);
-    onSave(minAge, maxAge);
-  }
-
-  const ageOptions = Array.from({ length: 100 - 18 + 1 }, (_, i) => 18 + i);
-
-  return (
-    <div style={{ padding: 16, display: "grid", gap: 14 }}>
-      <div>
-        <div style={{ fontSize: 22, fontWeight: 900, color: "#1f1d3a" }}>
-          {t.dating.filtersTitle}
-        </div>
-        <div style={{ fontSize: 13, color: "#4b446a", marginTop: 4 }}>
-          {t.dating.filtersSubtitle}
-        </div>
-      </div>
-
-      <div style={{ ...cardBaseStyle(), padding: 18 }}>
-        <div style={{ fontSize: 13, fontWeight: 800, color: "#1f1d3a", marginBottom: 10 }}>
-          {t.dating.filtersAgeLabel}
-        </div>
-        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          <select
-            value={minAge}
-            onChange={(e) => setMinAge(Number(e.target.value))}
-            style={{
-              flex: 1,
-              padding: "10px 8px",
-              borderRadius: 12,
-              border: "1px solid rgba(0,0,0,0.12)",
-              background: "rgba(255,255,255,0.6)",
-              fontSize: 14,
-              fontWeight: 700,
-              color: "#1f1d3a",
-            }}
-          >
-            {ageOptions.map((age) => (
-              <option key={age} value={age}>
-                {age}
-              </option>
-            ))}
-          </select>
-          <span style={{ color: "#5a5378", fontWeight: 700 }}>—</span>
-          <select
-            value={maxAge}
-            onChange={(e) => setMaxAge(Number(e.target.value))}
-            style={{
-              flex: 1,
-              padding: "10px 8px",
-              borderRadius: 12,
-              border: "1px solid rgba(0,0,0,0.12)",
-              background: "rgba(255,255,255,0.6)",
-              fontSize: 14,
-              fontWeight: 700,
-              color: "#1f1d3a",
-            }}
-          >
-            {ageOptions.map((age) => (
-              <option key={age} value={age}>
-                {age}
-              </option>
-            ))}
-          </select>
-        </div>
-        {error && (
-          <div style={{ marginTop: 10, fontSize: 12, color: "#c1352f", fontWeight: 700 }}>
-            {error}
-          </div>
-        )}
-      </div>
-
-      <div
-        style={{
-          padding: "10px 14px",
-          borderRadius: 14,
-          background: "rgba(255,255,255,0.3)",
-          fontSize: 11.5,
-          color: "#5a5378",
-          lineHeight: 1.4,
-        }}
-      >
-        {t.dating.filtersLocationNote}
-      </div>
-
-      <button onClick={handleSave} disabled={saving} style={{ ...primaryButtonStyle, width: "100%" }}>
-        {saving ? t.common.loading : t.common.save}
-      </button>
-
-      <button onClick={onBack} style={secondaryButtonStyle}>
-        {t.common.back}
-      </button>
-    </div>
-  );
-}
 
 function DatingMatchesScreen({
   matches,
@@ -9588,7 +9447,7 @@ function WelcomeScreen({ onStart }: { onStart: () => void }) {
             💫
           </div>
 
-          <div className="welcome-illustration-wrap" style={{ position: "relative", zIndex: 1 }}>
+          <div className="welcome-illustration-wrap" style={{ position: "relative", zIndex: 1, marginTop: -16 }}>
             <img
               src="/couple.png"
               alt="Couple"
@@ -15644,19 +15503,20 @@ const t = market === "fi" ? TEXT_FI : market === "en" ? TEXT_EN : TEXT_RU;
         </div>
       </div>
 
-      <div style={{ ...cardBaseStyle(), padding: 18 }}>
-        <div style={{ fontSize: 22, fontWeight: 900, color: "#1f1d3a" }}>
-          {t.profile.stats}
+      {/* Временно скрыто по просьбе Артёма — решим завтра, возвращать
+          просто убрав false. */}
+      {false && (
+        <div style={{ ...cardBaseStyle(), padding: 18 }}>
+          <div style={{ fontSize: 22, fontWeight: 900, color: "#1f1d3a" }}>
+            {t.profile.stats}
+          </div>
+          <div style={{ display: "grid", gap: 10, marginTop: 14 }}>
+            <StatRow label={t.profile.pollsCompleted} value={stats.pollsCompleted} />
+            <StatRow label={t.profile.recentPrizes} value={stats.rewardsRedeemed} />
+            <StatRow label={t.profile.totalPoints} value={points} />
+          </div>
         </div>
-        <div style={{ display: "grid", gap: 10, marginTop: 14 }}>
-          <StatRow label={t.profile.pollsCompleted} value={stats.pollsCompleted} />
-
-         <StatRow label={t.profile.recentPrizes} value={stats.rewardsRedeemed} />
-<StatRow label={t.profile.totalPoints} value={points} />
-         
-      
-        </div>
-      </div>
+      )}
 
       <div style={{ ...cardBaseStyle(), padding: 18 }}>
   <div style={{ fontSize: 22, fontWeight: 900, color: "#1f1d3a" }}>
@@ -17896,34 +17756,6 @@ async function handleClaimFreeBoost() {
   alert(t.dating.boostClaimError);
 }
 
-async function loadDatingFilters() {
-  setDatingFiltersLoading(true);
-  const result = await datingFetch("/api/dating/profile/state");
-  setDatingFiltersLoading(false);
-
-  if (result?.ok && result.profile) {
-    setDatingFilterMinAge(result.profile.filterMinAge ?? 18);
-    setDatingFilterMaxAge(result.profile.filterMaxAge ?? 60);
-  }
-}
-
-async function handleSaveDatingFilters(
-  minAge: number,
-  maxAge: number
-): Promise<boolean> {
-  setDatingFiltersSaving(true);
-  const result = await datingFetch("/api/dating/filters", { minAge, maxAge });
-  setDatingFiltersSaving(false);
-
-  if (!result?.ok) return false;
-
-  setDatingFilterMinAge(minAge);
-  setDatingFilterMaxAge(maxAge);
-  setScreen("dating-swipe");
-  loadDatingCandidates();
-  return true;
-}
-
 async function handleSaveDatingProfile(profile: {
   displayName: string;
   age: number;
@@ -18317,12 +18149,6 @@ const [datingBoostedUntil, setDatingBoostedUntil] = useState<string | null>(null
 const [datingFreeBoostAvailable, setDatingFreeBoostAvailable] = useState(false);
 const [datingBoostLoading, setDatingBoostLoading] = useState(false);
 const [datingBoostPurchasing, setDatingBoostPurchasing] = useState<string | null>(null);
-// Фильтры поиска (диапазон возраста) — читаются заново при открытии
-// экрана фильтров, дефолт 18–60 совпадает с get_own_dating_profile.
-const [datingFilterMinAge, setDatingFilterMinAge] = useState(18);
-const [datingFilterMaxAge, setDatingFilterMaxAge] = useState(60);
-const [datingFiltersLoading, setDatingFiltersLoading] = useState(false);
-const [datingFiltersSaving, setDatingFiltersSaving] = useState(false);
 const [activeChatMatch, setActiveChatMatch] = useState<DatingMatch | null>(null);
 const [activeChatMessages, setActiveChatMessages] = useState<
   Array<{ id: string; senderTelegramId: number; text: string; createdAt: string }>
@@ -19921,10 +19747,6 @@ showPaywall={() => {
       loadDatingBoostStatus();
       setScreen("dating-boost");
     }}
-    onOpenFilters={() => {
-      loadDatingFilters();
-      setScreen("dating-filters");
-    }}
     onSuperlike={handleSuperlike}
     onBack={() => setScreen("menu")}
   />
@@ -19940,17 +19762,6 @@ showPaywall={() => {
     purchasing={datingBoostPurchasing}
     onBuy={handleBuyBoost}
     onClaimFree={handleClaimFreeBoost}
-    onBack={() => setScreen("dating-swipe")}
-  />
-)}
-
-{screen === "dating-filters" && (
-  <DatingFiltersScreen
-    t={t}
-    initialMinAge={datingFilterMinAge}
-    initialMaxAge={datingFilterMaxAge}
-    saving={datingFiltersSaving}
-    onSave={handleSaveDatingFilters}
     onBack={() => setScreen("dating-swipe")}
   />
 )}

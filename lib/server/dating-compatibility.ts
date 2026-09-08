@@ -33,6 +33,16 @@ const COMPATIBILITY_THEME_GROUPS = [
   "quality-time",
 ];
 
+// Психологические тесты (не парные опросы) тоже считаются точками
+// сравнения — тот же результат, где оба ответили ближе, даёт более
+// высокую совместимость по этому "тесту", ровно как и с темами
+// опросов ниже. ID совпадают с TESTS в app/page.tsx.
+const COMPATIBILITY_TEST_IDS = [
+  "trust-level",
+  "love-language",
+  "personality-strengths",
+];
+
 function calculatePollMatchPercent(
   answersA: number[] | undefined,
   answersB: number[] | undefined
@@ -66,6 +76,21 @@ function calculatePollMatchPercent(
   return Math.round(total / length);
 }
 
+// test_submissions.answers приходит как unknown (jsonb) — приводим к
+// { test_id -> number[] } тем же способом, что и для ответов опросов,
+// чтобы calculateDatingCompatibility могла сравнить тесты той же
+// формулой. Общий helper — используется и в candidates, и в likes.
+export function toTestAnswersMap(
+  submissions: Array<{ test_id: string; answers: unknown }>
+): Record<string, number[]> {
+  const map: Record<string, number[]> = {};
+  for (const row of submissions) {
+    if (!row?.test_id || !Array.isArray(row.answers)) continue;
+    map[row.test_id] = row.answers.map((v) => Number(v));
+  }
+  return map;
+}
+
 export type DatingCompatibilityResult = {
   overallPercent: number;
   completedThemes: number;
@@ -76,7 +101,12 @@ export function calculateDatingCompatibility(
   answersA: Record<string, number[]>,
   genderA: "boy" | "girl",
   answersB: Record<string, number[]>,
-  genderB: "boy" | "girl"
+  genderB: "boy" | "girl",
+  // Ответы психологических тестов (test_id -> answers), опциональны —
+  // старые вызовы без них продолжают работать, просто без вклада
+  // тестов в скор (только опросы).
+  testAnswersA?: Record<string, number[]>,
+  testAnswersB?: Record<string, number[]>
 ): DatingCompatibilityResult {
   const themeScores: number[] = [];
 
@@ -91,6 +121,19 @@ export function calculateDatingCompatibility(
     }
   }
 
+  if (testAnswersA && testAnswersB) {
+    for (const testId of COMPATIBILITY_TEST_IDS) {
+      const percent = calculatePollMatchPercent(
+        testAnswersA[testId],
+        testAnswersB[testId]
+      );
+
+      if (percent !== null) {
+        themeScores.push(percent);
+      }
+    }
+  }
+
   const overallPercent = themeScores.length
     ? Math.round(
         themeScores.reduce((sum, value) => sum + value, 0) / themeScores.length
@@ -100,6 +143,6 @@ export function calculateDatingCompatibility(
   return {
     overallPercent,
     completedThemes: themeScores.length,
-    totalThemes: COMPATIBILITY_THEME_GROUPS.length,
+    totalThemes: COMPATIBILITY_THEME_GROUPS.length + COMPATIBILITY_TEST_IDS.length,
   };
 }

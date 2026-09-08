@@ -45,6 +45,9 @@ export const TEXT_FI = {
     namePlaceholder: "Miten sinua kutsutaan",
     ageLabel: "Ikä",
     agePlaceholder: "18+",
+    cityLabel: "Kaupunki",
+    cityPlaceholder: "Missä kaupungissa asut",
+    cityHint: "Profiileja ehdotetaan omasta kaupungistasi, iän ollessa ±6 vuoden sisällä",
     bioLabel: "Sinusta",
     bioPlaceholder: "Muutama sana sinusta, kiinnostuksen kohteistasi, mikä on tärkeää suhteessa...",
     seekingLabel: "Etsit",
@@ -64,6 +67,7 @@ export const TEXT_FI = {
     swipeHint: "Yhteensopivimmat profiilit näytetään ensin",
     editProfileButton: "Muokkaa profiilia",
     compatibilityBadge: "yhteensopivuus",
+    compatibilityUnknownBadge: "tee testi nähdäksesi yhteensopivuuden",
     noCandidatesTitle: "Ei enempää profiileja",
     noCandidatesText: "Käy myöhemmin uudelleen — uusia ihmisiä liittyy jatkuvasti",
     matchAlertText: "Se on osuma! Voitte jutella nyt 🎉",
@@ -103,7 +107,6 @@ export const TEXT_FI = {
     premiumRequiredTitle: "Premium vaaditaan",
     premiumRequiredText: "Treffit ovat käytettävissä vain Premiumilla",
 
-    filtersButton: "Hakusuodattimet",
     boostButton: "Profiilin boosti",
     superlikeButton: "Supertykkäys",
     superlikeBadge: "Supertykkäys",
@@ -122,11 +125,6 @@ export const TEXT_FI = {
     boostActivatedAlert: "Boosti aktivoitu! Profiilisi on nyt hakutulosten kärjessä.",
     boostClaimError: "Boostin aktivointi epäonnistui. Yritä uudelleen.",
 
-    filtersTitle: "Hakusuodattimet",
-    filtersSubtitle: "Kenelle profiilisi näytetään",
-    filtersAgeLabel: "Ikä",
-    filtersInvalidRange: "Tarkista väli — minimi ei voi olla maksimia suurempi",
-    filtersLocationNote: "Etäisyyssuodatin ei ole vielä käytettävissä — sovellus ei pyydä sijaintiasi",
 
     pairProposalPromptTitle: "Napsiko kemiat?",
     pairProposalPromptText: "Ehdota parin luomista suoraan sovelluksessa",

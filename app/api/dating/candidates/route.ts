@@ -2,8 +2,15 @@ import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/server/supabase-admin";
 import { validateRequestAuth } from "@/lib/server/telegram-auth";
 import { checkIsPremium } from "@/lib/server/pair-state";
-import { loadPollAnswersForTelegramId } from "@/lib/server/reads";
-import { calculateDatingCompatibility } from "@/lib/server/dating-compatibility";
+import {
+  loadPollAnswersForTelegramId,
+  loadTestSubmissionsForTelegramId,
+  loadTestSubmissionsForTelegramIds,
+} from "@/lib/server/reads";
+import {
+  calculateDatingCompatibility,
+  toTestAnswersMap,
+} from "@/lib/server/dating-compatibility";
 
 type Candidate = {
   telegramId: number;
@@ -73,17 +80,22 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ ok: true, candidates: [], dailyLimit });
     }
 
-    const selfAnswers = await loadPollAnswersForTelegramId(
-      validation.telegramId
-    );
-
-    // Ответы всех кандидатов одним запросом, не по одному — иначе
-    // N+1 на каждый показ ленты.
     const candidateIds = candidates.map((c) => c.telegramId);
-    const { data: answerRows } = await supabaseAdmin
-      .from("poll_submissions")
-      .select("telegram_id, poll_id, answers")
-      .in("telegram_id", candidateIds);
+
+    const [selfAnswers, selfTestSubmissions, { data: answerRows }, testSubmissionsByTelegramId] =
+      await Promise.all([
+        loadPollAnswersForTelegramId(validation.telegramId),
+        loadTestSubmissionsForTelegramId(validation.telegramId),
+        // Ответы всех кандидатов одним запросом, не по одному — иначе
+        // N+1 на каждый показ ленты.
+        supabaseAdmin
+          .from("poll_submissions")
+          .select("telegram_id, poll_id, answers")
+          .in("telegram_id", candidateIds),
+        loadTestSubmissionsForTelegramIds(candidateIds),
+      ]);
+
+    const selfTestAnswers = toTestAnswersMap(selfTestSubmissions);
 
     const answersByTelegramId = new Map<number, Record<string, number[]>>();
     for (const row of answerRows ?? []) {
@@ -96,12 +108,17 @@ export async function POST(request: NextRequest) {
     const scored = candidates.map((candidate) => {
       const candidateAnswers =
         answersByTelegramId.get(candidate.telegramId) ?? {};
+      const candidateTestAnswers = toTestAnswersMap(
+        testSubmissionsByTelegramId.get(candidate.telegramId) ?? []
+      );
 
       const compatibility = calculateDatingCompatibility(
         selfAnswers,
         selfProfile.gender as "boy" | "girl",
         candidateAnswers,
-        candidate.gender
+        candidate.gender,
+        selfTestAnswers,
+        candidateTestAnswers
       );
 
       return { ...candidate, compatibility };
