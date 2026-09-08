@@ -2,6 +2,47 @@ import { NextRequest, NextResponse } from "next/server";
 
 const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
 
+// Единый справочник платных планов Stars-инвойсов. plan — единственный
+// источник истины и для цены (тут), и для того, что именно начислить
+// после оплаты (bot/bot.ts, successful_payment) — клиент не может
+// подменить цену/длительность, присылая что-то своё в теле запроса.
+const PLANS: Record<
+  string,
+  { title: string; description: string; label: string; amount: number; requiresTarget?: boolean }
+> = {
+  premium_month: {
+    title: "Couple Quizzes Premium",
+    description: "Полный доступ ко всем тестам, опросам и функциям Couple Quizzes",
+    label: "Premium на 30 дней",
+    amount: 149,
+  },
+  dating_superlike: {
+    title: "Суперлайк",
+    description: "Анкета сразу окажется в топе списка «Лайки мне» у получателя, с отдельным уведомлением",
+    label: "Суперлайк",
+    amount: 50,
+    requiresTarget: true,
+  },
+  dating_boost_30m: {
+    title: "Буст анкеты · 30 минут",
+    description: "Анкета показывается первой в ленте у всех подходящих пользователей 30 минут",
+    label: "Буст на 30 минут",
+    amount: 150,
+  },
+  dating_boost_3h: {
+    title: "Буст анкеты · 3 часа",
+    description: "Анкета показывается первой в ленте у всех подходящих пользователей 3 часа",
+    label: "Буст на 3 часа",
+    amount: 250,
+  },
+  dating_boost_24h: {
+    title: "Буст анкеты · 24 часа",
+    description: "Анкета показывается первой в ленте у всех подходящих пользователей 24 часа",
+    label: "Буст на 24 часа",
+    amount: 500,
+  },
+};
+
 export async function POST(req: NextRequest) {
   try {
     if (!BOT_TOKEN) {
@@ -17,6 +58,7 @@ export async function POST(req: NextRequest) {
 
     const telegramId = body?.telegramId;
     const plan = body?.plan;
+    const planConfig = typeof plan === "string" ? PLANS[plan] : undefined;
 
     if (!telegramId) {
       return NextResponse.json(
@@ -25,9 +67,18 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    if (plan !== "premium_month") {
+    if (!planConfig) {
       return NextResponse.json(
         { error: "Unknown plan" },
+        { status: 400 }
+      );
+    }
+
+    const toTelegramId = Number(body?.toTelegramId);
+
+    if (planConfig.requiresTarget && !Number.isFinite(toTelegramId)) {
+      return NextResponse.json(
+        { error: "toTelegramId is required for this plan" },
         { status: 400 }
       );
     }
@@ -35,6 +86,7 @@ export async function POST(req: NextRequest) {
     const payload = JSON.stringify({
       telegramId,
       plan,
+      ...(planConfig.requiresTarget ? { toTelegramId } : {}),
     });
 
     const tgRes = await fetch(
@@ -45,15 +97,14 @@ export async function POST(req: NextRequest) {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          title: "Couple Quizzes Premium",
-          description:
-            "Полный доступ ко всем тестам, опросам и функциям Couple Quizzes",
+          title: planConfig.title,
+          description: planConfig.description,
           payload,
           currency: "XTR",
           prices: [
             {
-              label: "Premium на 30 дней",
-              amount: 149,
+              label: planConfig.label,
+              amount: planConfig.amount,
             },
           ],
         }),

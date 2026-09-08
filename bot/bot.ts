@@ -1243,57 +1243,17 @@ bot.on(
           "premium_month"
       );
 
-      const expiresAt =
-        new Date();
-
-      expiresAt.setDate(
-        expiresAt.getDate() + 30
-      );
-
-      const { error } =
-        await supabaseAdmin
-          .from("subscriptions")
-          .upsert(
-            {
-              telegram_id:
-                telegramId,
-              plan,
-              status: "active",
-              expires_at:
-                expiresAt.toISOString(),
-              updated_at:
-                new Date().toISOString(),
-            },
-            {
-              onConflict:
-                "telegram_id",
-            }
-          );
-
-      if (error) {
-        console.error(
-          "❌ SUPABASE PAYMENT ERROR:",
-          error
-        );
-
-        await bot.sendMessage(
-          msg.chat.id,
-          "❗ Оплата прошла, но при активации Premium произошла ошибка."
-        );
-
-        return;
+      // payload.plan решает, что именно начислить — раньше тут не было
+      // ветвления вообще, и ЛЮБАЯ успешная оплата (в том числе будущие
+      // планы вроде суперлайка/буста) писалась бы как 30-дневный
+      // Premium. Теперь у каждого плана своя логика начисления.
+      if (plan === "dating_superlike") {
+        await handleDatingSuperlikePayment(telegramId, msg.chat.id, payload);
+      } else if (plan.startsWith("dating_boost_")) {
+        await handleDatingBoostPayment(telegramId, msg.chat.id, plan);
+      } else {
+        await handlePremiumPayment(telegramId, msg.chat.id, plan);
       }
-
-      await bot.sendMessage(
-        msg.chat.id,
-        "🎉 Оплата прошла успешно! Premium активирован на 30 дней."
-      );
-
-      console.log(
-        "✅ PAYMENT SUCCESS:",
-        telegramId,
-        plan
-      );
     } catch (error) {
       console.error(
         "❌ PAYMENT HANDLER ERROR:",
@@ -1302,6 +1262,182 @@ bot.on(
     }
   }
 );
+
+async function handlePremiumPayment(
+  telegramId: number,
+  chatId: number,
+  plan: string
+) {
+  const expiresAt = new Date();
+  expiresAt.setDate(expiresAt.getDate() + 30);
+
+  const { error } = await supabaseAdmin
+    .from("subscriptions")
+    .upsert(
+      {
+        telegram_id: telegramId,
+        plan,
+        status: "active",
+        expires_at: expiresAt.toISOString(),
+        updated_at: new Date().toISOString(),
+      },
+      { onConflict: "telegram_id" }
+    );
+
+  if (error) {
+    console.error("❌ SUPABASE PAYMENT ERROR:", error);
+    await bot.sendMessage(
+      chatId,
+      "❗ Оплата прошла, но при активации Premium произошла ошибка."
+    );
+    return;
+  }
+
+  await bot.sendMessage(
+    chatId,
+    "🎉 Оплата прошла успешно! Premium активирован на 30 дней."
+  );
+
+  console.log("✅ PAYMENT SUCCESS:", telegramId, plan);
+}
+
+// Суперлайк — платно, поэтому не завязан на дневной лимит свайпов
+// (см. record_dating_swipe: p_is_superlike пропускает лимит) и не
+// требует Premium сам по себе. Получателя уведомляем отдельно и
+// заметно — это и есть весь смысл платить за суперлайк.
+async function handleDatingSuperlikePayment(
+  telegramId: number,
+  chatId: number,
+  payload: Record<string, unknown>
+) {
+  const toTelegramId = normalizeTelegramId(payload.toTelegramId);
+
+  if (!toTelegramId) {
+    console.error(
+      "❌ DATING SUPERLIKE: invalid toTelegramId in payload",
+      payload
+    );
+    await bot.sendMessage(
+      chatId,
+      "❗ Оплата прошла, но не удалось определить анкету для суперлайка."
+    );
+    return;
+  }
+
+  const { data, error } = await supabaseAdmin.rpc(
+    "record_dating_swipe",
+    {
+      p_from_telegram_id: telegramId,
+      p_to_telegram_id: toTelegramId,
+      p_action: "like",
+      p_is_premium: false,
+      p_is_superlike: true,
+    }
+  );
+
+  if (error || !data?.ok) {
+    console.error("❌ DATING SUPERLIKE RPC ERROR:", error || data);
+    await bot.sendMessage(
+      chatId,
+      "❗ Оплата прошла, но при отправке суперлайка произошла ошибка. Напиши в поддержку."
+    );
+    return;
+  }
+
+  const appLink = `https://t.me/${botUsername}?startapp=dating`;
+
+  const { data: profiles } = await supabaseAdmin
+    .from("dating_profiles")
+    .select("telegram_id, display_name")
+    .in("telegram_id", [telegramId, toTelegramId]);
+
+  const nameByTelegramId = new Map(
+    (profiles ?? []).map((p) => [p.telegram_id as number, p.display_name as string])
+  );
+
+  const fromName = nameByTelegramId.get(telegramId) ?? "";
+  const toName = nameByTelegramId.get(toTelegramId) ?? "";
+
+  if (data.matched) {
+    // Уже был встречный лайк — суперлайк тут же превратился в мэтч,
+    // это отдельная, более радостная новость, чем просто "тебя
+    // суперлайкнули".
+    await Promise.all([
+      bot.sendMessage(
+        chatId,
+        `🎉 Взаимный лайк с ${toName || "этим человеком"}! Ваш суперлайк сразу дал мэтч — загляни в Знакомства.`,
+        { reply_markup: { inline_keyboard: [[{ text: "Открыть Знакомства", url: appLink }]] } }
+      ),
+      bot.sendMessage(
+        toTelegramId,
+        `💘 Взаимный лайк с ${fromName || "новым человеком"}! Загляни в Знакомства — можно начать переписку.`,
+        { reply_markup: { inline_keyboard: [[{ text: "Открыть Знакомства", url: appLink }]] } }
+      ),
+    ]);
+    return;
+  }
+
+  await Promise.all([
+    bot.sendMessage(
+      chatId,
+      "✅ Суперлайк отправлен ⭐ Как только человек ответит взаимностью — вы сразу увидите мэтч."
+    ),
+    bot.sendMessage(
+      toTelegramId,
+      `🌟 Тебя суперлайкнул(а) ${fromName || "кое-кто"}! Анкета уже наверху в разделе «Лайки мне».`,
+      { reply_markup: { inline_keyboard: [[{ text: "Открыть Знакомства", url: appLink }]] } }
+    ),
+  ]);
+}
+
+const DATING_BOOST_MINUTES_BY_PLAN: Record<string, number> = {
+  dating_boost_30m: 30,
+  dating_boost_3h: 180,
+  dating_boost_24h: 1440,
+};
+
+async function handleDatingBoostPayment(
+  telegramId: number,
+  chatId: number,
+  plan: string
+) {
+  const minutes = DATING_BOOST_MINUTES_BY_PLAN[plan];
+
+  if (!minutes) {
+    console.error("❌ DATING BOOST: unknown plan", plan);
+    await bot.sendMessage(
+      chatId,
+      "❗ Оплата прошла, но план буста не распознан. Напиши в поддержку."
+    );
+    return;
+  }
+
+  const { data, error } = await supabaseAdmin.rpc(
+    "activate_dating_boost",
+    { p_telegram_id: telegramId, p_minutes: minutes }
+  );
+
+  if (error || !data?.ok) {
+    console.error("❌ DATING BOOST RPC ERROR:", error || data);
+    await bot.sendMessage(
+      chatId,
+      "❗ Оплата прошла, но при активации буста произошла ошибка. Напиши в поддержку."
+    );
+    return;
+  }
+
+  const label =
+    plan === "dating_boost_30m"
+      ? "30 минут"
+      : plan === "dating_boost_3h"
+        ? "3 часа"
+        : "24 часа";
+
+  await bot.sendMessage(
+    chatId,
+    `🚀 Буст анкеты активирован на ${label}! Сейчас твоя анкета показывается первой всем подходящим пользователям.`
+  );
+}
 
 // ======================================================
 // ЛОГ ВХОДЯЩИХ СООБЩЕНИЙ

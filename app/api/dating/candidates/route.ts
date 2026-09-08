@@ -13,6 +13,7 @@ type Candidate = {
   photoUrl: string | null;
   gender: "boy" | "girl";
   personalitySummary: Record<string, unknown>;
+  isBoosted: boolean;
 };
 
 // Раздел открыт всем — этот лимит только про то, сколько анкет можно
@@ -108,12 +109,18 @@ export async function POST(request: NextRequest) {
 
     // Выше совместимость — выше в списке; у кого 0 общих тем (никто
     // ещё не прошёл опросы) — в конец, а не вперемешку со случайным
-    // порядком.
-    scored.sort(
-      (a, b) => b.compatibility.overallPercent - a.compatibility.overallPercent
-    );
+    // порядком. Бустнутые анкеты — сначала, независимо от совместимости
+    // (это и есть весь смысл платного буста), но между собой тоже
+    // сортируются по совместимости, а не как попало.
+    scored.sort((a, b) => {
+      if (a.isBoosted !== b.isBoosted) return a.isBoosted ? -1 : 1;
+      return b.compatibility.overallPercent - a.compatibility.overallPercent;
+    });
 
-    return NextResponse.json({ ok: true, candidates: scored });
+    // dailyLimit раньше терялся именно в этом, самом частом пути ответа
+    // (только early-return с пустым списком выше его включал) — счётчик
+    // "осталось 5/5" из-за этого не показывался почти никогда.
+    return NextResponse.json({ ok: true, candidates: scored, dailyLimit });
   } catch (error) {
     console.error("DATING CANDIDATES ERROR:", error);
     return NextResponse.json(

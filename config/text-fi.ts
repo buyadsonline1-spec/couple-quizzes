@@ -102,6 +102,39 @@ export const TEXT_FI = {
 
     premiumRequiredTitle: "Premium vaaditaan",
     premiumRequiredText: "Treffit ovat käytettävissä vain Premiumilla",
+
+    filtersButton: "Hakusuodattimet",
+    boostButton: "Profiilin boosti",
+    superlikeButton: "Supertykkäys",
+    superlikeBadge: "Supertykkäys",
+    superlikeSentAlert: "Supertykkäys lähetetty ⭐ Näet osuman heti, jos hän tykkää sinusta takaisin.",
+
+    boostTitle: "Boostaa profiiliasi",
+    boostSubtitle: "Boostin ollessa aktiivinen profiilisi näkyy ensimmäisenä kaikille, jotka sopivat toiveisiisi",
+    boostActiveTitle: "Boosti aktiivinen",
+    boostActiveUntil: "Voimassa klo {time} asti",
+    boost30mLabel: "30 minuutin boosti",
+    boost3hLabel: "3 tunnin boosti",
+    boost24hLabel: "24 tunnin boosti",
+    boostTierHint: "Profiili hakutulosten kärkeen",
+    freeBoostTitle: "Ilmainen 30 minuutin boosti",
+    freeBoostHint: "Kerran viikossa — Premiumille",
+    boostActivatedAlert: "Boosti aktivoitu! Profiilisi on nyt hakutulosten kärjessä.",
+    boostClaimError: "Boostin aktivointi epäonnistui. Yritä uudelleen.",
+
+    filtersTitle: "Hakusuodattimet",
+    filtersSubtitle: "Kenelle profiilisi näytetään",
+    filtersAgeLabel: "Ikä",
+    filtersInvalidRange: "Tarkista väli — minimi ei voi olla maksimia suurempi",
+    filtersLocationNote: "Etäisyyssuodatin ei ole vielä käytettävissä — sovellus ei pyydä sijaintiasi",
+
+    pairProposalPromptTitle: "Napsiko kemiat?",
+    pairProposalPromptText: "Ehdota parin luomista suoraan sovelluksessa",
+    pairProposalButton: "Ehdota",
+    pairProposalPendingSentTitle: "Ehdotus lähetetty — odotetaan vastausta",
+    pairProposalPendingReceivedTitle: "Sinulle on ehdotettu paria — vastaa Pari-osiossa",
+    pairProposalAlreadyPaired: "Ei onnistunut: toisella teistä on jo pari",
+    pairProposalError: "Jokin meni pieleen. Yritä uudelleen.",
   },
 
   appName: "Couple Quizzes",
@@ -294,6 +327,11 @@ export const TEXT_FI = {
     noPairText:
       "Kutsu kumppanisi tekemään kyselyitä, testejä ja pelejä yhdessä.",
     invitePartner: "Kutsu kumppani",
+
+    // Parin ehdotus Treffien osumasta (ks. handleProposePair).
+    incomingProposalTitle: "{name} ehdottaa parin luomista",
+    acceptProposalButton: "Hyväksy",
+    declineProposalButton: "Hylkää",
 
     inPair: "Olette pari",
     you: "Sinä",

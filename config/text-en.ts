@@ -98,6 +98,39 @@ export const TEXT_EN = {
 
     premiumRequiredTitle: "Premium required",
     premiumRequiredText: "Dating is available with Premium only",
+
+    filtersButton: "Search filters",
+    boostButton: "Boost profile",
+    superlikeButton: "Super like",
+    superlikeBadge: "Super like",
+    superlikeSentAlert: "Super like sent ⭐ You'll see a match right away if they like you back.",
+
+    boostTitle: "Boost your profile",
+    boostSubtitle: "While the boost is active, your profile shows up first for everyone who matches your preferences",
+    boostActiveTitle: "Boost active",
+    boostActiveUntil: "Until {time}",
+    boost30mLabel: "30-minute boost",
+    boost3hLabel: "3-hour boost",
+    boost24hLabel: "24-hour boost",
+    boostTierHint: "Your profile goes to the top",
+    freeBoostTitle: "Free 30-minute boost",
+    freeBoostHint: "Once a week — for Premium",
+    boostActivatedAlert: "Boost activated! Your profile is now at the top.",
+    boostClaimError: "Couldn't activate the boost. Please try again.",
+
+    filtersTitle: "Search filters",
+    filtersSubtitle: "Who your profile will be shown to",
+    filtersAgeLabel: "Age",
+    filtersInvalidRange: "Check the range — minimum can't be higher than maximum",
+    filtersLocationNote: "Distance filtering isn't available yet — the app doesn't request your location",
+
+    pairProposalPromptTitle: "Hit it off?",
+    pairProposalPromptText: "Suggest creating a pair right in the app",
+    pairProposalButton: "Suggest",
+    pairProposalPendingSentTitle: "Proposal sent — waiting for a reply",
+    pairProposalPendingReceivedTitle: "You've been asked to pair up — reply in the Pair section",
+    pairProposalAlreadyPaired: "Couldn't do it: one of you is already in a pair",
+    pairProposalError: "Something went wrong. Please try again.",
   },
 
   appName: "Couple Quizzes",
@@ -292,6 +325,11 @@ export const TEXT_EN = {
   noPairText:
     "Invite your partner to take polls, tests and games together.",
   invitePartner: "Invite partner",
+
+  // Pair proposal from a Dating match (see handleProposePair).
+  incomingProposalTitle: "{name} wants to create a pair with you",
+  acceptProposalButton: "Accept",
+  declineProposalButton: "Decline",
 
   inPair: "You are in a pair",
   you: "You",

@@ -115,6 +115,8 @@ type Screen =
   | "dating-likes"
   | "dating-matches"
   | "dating-chat"
+  | "dating-boost"
+  | "dating-filters"
   | "polls-tests-menu"
   | "pair-profile-menu";
 
@@ -3586,6 +3588,9 @@ function PairScreen({
   onOpenLevelInfo,
   onOpenPolls,
   onLeavePair,
+  incomingPairProposals,
+  pairProposalResponding,
+  onRespondPairProposal,
   t,
 }: {
   user: TgUser | null;
@@ -3604,6 +3609,17 @@ function PairScreen({
   onOpenLevelInfo: () => void;
   onOpenPolls: () => void;
   onLeavePair: () => void;
+  // Входящие предложения "создать пару" из Знакомств — см. handleProposePair
+  // в app/page.tsx. Опционально: экран переиспользуется без них там, где
+  // это не имеет смысла (сейчас — только на самом экране "Пара").
+  incomingPairProposals?: Array<{
+    matchId: string;
+    fromTelegramId: number;
+    fromDisplayName: string;
+    fromPhotoUrl: string | null;
+  }>;
+  pairProposalResponding?: string | null;
+  onRespondPairProposal?: (matchId: string, accept: boolean) => void;
   t: any;
 }) {
   const hasPairCreated = !!pair.pairId;
@@ -3704,6 +3720,82 @@ function PairScreen({
 >
   🔥 {t.pair.streakDaysLabel}: {dailyPairStreak?.current || 0} {t.pair.streakDaysWord}
 </div>
+
+      {!hasPairCreated && incomingPairProposals && incomingPairProposals.length > 0 && (
+        <div style={{ marginTop: 10, display: "grid", gap: 10 }}>
+          {incomingPairProposals.map((proposal) => (
+            <div key={proposal.matchId} style={{ ...cardBaseStyle(), padding: 16 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                <div
+                  style={{
+                    width: 40,
+                    height: 40,
+                    borderRadius: 999,
+                    overflow: "hidden",
+                    flexShrink: 0,
+                    background: "linear-gradient(135deg, #cbb6ee, #f0c3e6)",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    fontSize: 16,
+                  }}
+                >
+                  {proposal.fromPhotoUrl ? (
+                    <img
+                      src={proposal.fromPhotoUrl}
+                      alt=""
+                      style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                    />
+                  ) : (
+                    "🙂"
+                  )}
+                </div>
+                <div style={{ fontSize: 13.5, fontWeight: 800, color: "#1f1d3a", lineHeight: 1.35 }}>
+                  {t.pair.incomingProposalTitle.replace("{name}", proposal.fromDisplayName)}
+                </div>
+              </div>
+              <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
+                <button
+                  onClick={() => onRespondPairProposal?.(proposal.matchId, true)}
+                  disabled={pairProposalResponding === proposal.matchId}
+                  style={{
+                    flex: 1,
+                    border: "none",
+                    borderRadius: 13,
+                    padding: "10px 12px",
+                    background: "linear-gradient(135deg, #8f6bff, #ff76ba)",
+                    color: "#fff",
+                    fontWeight: 800,
+                    fontSize: 13,
+                    cursor: "pointer",
+                    opacity: pairProposalResponding === proposal.matchId ? 0.7 : 1,
+                  }}
+                >
+                  {t.pair.acceptProposalButton}
+                </button>
+                <button
+                  onClick={() => onRespondPairProposal?.(proposal.matchId, false)}
+                  disabled={pairProposalResponding === proposal.matchId}
+                  style={{
+                    flex: 1,
+                    border: "1px solid rgba(0,0,0,0.12)",
+                    borderRadius: 13,
+                    padding: "10px 12px",
+                    background: "rgba(255,255,255,0.4)",
+                    color: "#201b39",
+                    fontWeight: 800,
+                    fontSize: 13,
+                    cursor: "pointer",
+                    opacity: pairProposalResponding === proposal.matchId ? 0.7 : 1,
+                  }}
+                >
+                  {t.pair.declineProposalButton}
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
 
       {!hasPairCreated ? (
         <div style={{ marginTop: 10 }}>
@@ -5218,6 +5310,12 @@ type DatingCandidate = {
     completedThemes: number;
     totalThemes: number;
   };
+  // Только в общей ленте (get_dating_candidates) — анкета с активным
+  // бустом показывается первой.
+  isBoosted?: boolean;
+  // Только в "Лайки мне" (get_dating_incoming_likes) — суперлайк
+  // показывается наверху с отдельной отметкой.
+  isSuperlike?: boolean;
 };
 
 type DatingMatch = {
@@ -5322,23 +5420,6 @@ function DatingIntroScreen({
             </div>
           ))}
         </div>
-      </div>
-
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          gap: 8,
-          padding: "12px 14px",
-          borderRadius: 16,
-          background: "rgba(255,255,255,0.30)",
-          fontSize: 12.5,
-          fontWeight: 700,
-          color: "#5a3d14",
-        }}
-      >
-        <span style={{ fontSize: 16 }}>👑</span>
-        <span>{t.dating.premiumNote}</span>
       </div>
 
       <button onClick={onStart} style={{ ...primaryButtonStyle, width: "100%" }}>
@@ -5670,9 +5751,12 @@ function DatingSwipeScreen({
   candidates,
   loading,
   onSwipe,
+  onSuperlike,
   onOpenMatches,
   onEditProfile,
   onOpenLikes,
+  onOpenBoost,
+  onOpenFilters,
   onBack,
   swipesRemaining,
   onUpgrade,
@@ -5685,12 +5769,17 @@ function DatingSwipeScreen({
   candidates: DatingCandidate[];
   loading: boolean;
   onSwipe: (candidate: DatingCandidate, action: "like" | "pass") => void;
+  // Присутствует только на основной ленте — на "Лайки мне" суперлайк не
+  // предлагаем (можно просто лайкнуть в ответ, это и так создаст мэтч).
+  onSuperlike?: (candidate: DatingCandidate) => void;
   onOpenMatches: () => void;
   onEditProfile: () => void;
   // Присутствует только на основном экране ленты — на самом экране
   // "Лайки мне" (тот же компонент, другой источник candidates) кнопка
   // входа в лайки не нужна, поэтому проп опциональный.
   onOpenLikes?: () => void;
+  onOpenBoost?: () => void;
+  onOpenFilters?: () => void;
   onBack: () => void;
   // null = Premium (без лимита); число — сколько бесплатных анкет
   // осталось сегодня.
@@ -5735,7 +5824,41 @@ function DatingSwipeScreen({
             </div>
           )}
         </div>
-        <div style={{ display: "flex", gap: 8, flexShrink: 0 }}>
+        <div style={{ display: "flex", gap: 8, flexShrink: 0, flexWrap: "wrap", justifyContent: "flex-end" }}>
+          {onOpenFilters && (
+            <button
+              onClick={onOpenFilters}
+              aria-label={t.dating.filtersButton}
+              style={{
+                border: "none",
+                background: "rgba(255,255,255,0.35)",
+                borderRadius: 999,
+                width: 40,
+                height: 40,
+                fontSize: 18,
+                cursor: "pointer",
+              }}
+            >
+              🎚️
+            </button>
+          )}
+          {onOpenBoost && (
+            <button
+              onClick={onOpenBoost}
+              aria-label={t.dating.boostButton}
+              style={{
+                border: "none",
+                background: "rgba(255,255,255,0.35)",
+                borderRadius: 999,
+                width: 40,
+                height: 40,
+                fontSize: 18,
+                cursor: "pointer",
+              }}
+            >
+              ⚡
+            </button>
+          )}
           <button
             onClick={onEditProfile}
             aria-label={t.dating.editProfileButton}
@@ -5911,16 +6034,40 @@ function DatingSwipeScreen({
                   position: "absolute",
                   top: 14,
                   right: 14,
-                  background: "rgba(255,255,255,0.85)",
-                  borderRadius: 999,
-                  padding: "7px 12px",
-                  fontSize: 12.5,
-                  fontWeight: 900,
-                  color: "#6b46ff",
-                  boxShadow: "0 6px 16px rgba(37,34,78,0.16)",
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "flex-end",
+                  gap: 6,
                 }}
               >
-                💜 {current.compatibility.overallPercent}% {t.dating.compatibilityBadge}
+                <div
+                  style={{
+                    background: "rgba(255,255,255,0.85)",
+                    borderRadius: 999,
+                    padding: "7px 12px",
+                    fontSize: 12.5,
+                    fontWeight: 900,
+                    color: "#6b46ff",
+                    boxShadow: "0 6px 16px rgba(37,34,78,0.16)",
+                  }}
+                >
+                  💜 {current.compatibility.overallPercent}% {t.dating.compatibilityBadge}
+                </div>
+                {current.isSuperlike && (
+                  <div
+                    style={{
+                      background: "linear-gradient(135deg, #ffcf5c, #ff9f43)",
+                      borderRadius: 999,
+                      padding: "6px 11px",
+                      fontSize: 11.5,
+                      fontWeight: 900,
+                      color: "#5a3d14",
+                      boxShadow: "0 6px 16px rgba(37,34,78,0.16)",
+                    }}
+                  >
+                    🌟 {t.dating.superlikeBadge}
+                  </div>
+                )}
               </div>
 
               <div
@@ -5998,8 +6145,299 @@ function DatingSwipeScreen({
           >
             ♥
           </button>
+          {onSuperlike && (
+            <button
+              onClick={() => onSuperlike(current)}
+              aria-label={t.dating.superlikeButton}
+              style={{
+                width: 46,
+                height: 46,
+                borderRadius: 999,
+                border: "none",
+                background: "linear-gradient(135deg, #ffcf5c, #ff9f43)",
+                color: "#5a3d14",
+                fontSize: 20,
+                cursor: "pointer",
+                boxShadow: "0 10px 22px rgba(37,34,78,0.18)",
+                alignSelf: "flex-end",
+              }}
+            >
+              ⭐
+            </button>
+          )}
         </div>
       )}
+
+      <button onClick={onBack} style={secondaryButtonStyle}>
+        {t.common.back}
+      </button>
+    </div>
+  );
+}
+
+const DATING_BOOST_TIERS: Array<{
+  plan: "dating_boost_30m" | "dating_boost_3h" | "dating_boost_24h";
+  minutes: number;
+  price: number;
+}> = [
+  { plan: "dating_boost_30m", minutes: 30, price: 150 },
+  { plan: "dating_boost_3h", minutes: 180, price: 250 },
+  { plan: "dating_boost_24h", minutes: 1440, price: 500 },
+];
+
+function DatingBoostScreen({
+  boostedUntil,
+  freeBoostAvailable,
+  isPremium,
+  loading,
+  purchasing,
+  onBuy,
+  onClaimFree,
+  onBack,
+  t,
+}: {
+  boostedUntil: string | null;
+  freeBoostAvailable: boolean;
+  isPremium: boolean;
+  loading: boolean;
+  purchasing: string | null;
+  onBuy: (plan: "dating_boost_30m" | "dating_boost_3h" | "dating_boost_24h") => void;
+  onClaimFree: () => void;
+  onBack: () => void;
+  t: any;
+}) {
+  const isActive = !!boostedUntil && new Date(boostedUntil).getTime() > Date.now();
+  const activeUntilLabel = isActive
+    ? new Date(boostedUntil!).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+    : null;
+
+  const boostLabelByMinutes = (minutes: number) =>
+    minutes === 30
+      ? t.dating.boost30mLabel
+      : minutes === 180
+        ? t.dating.boost3hLabel
+        : t.dating.boost24hLabel;
+
+  return (
+    <div style={{ padding: 16, display: "grid", gap: 14 }}>
+      <div>
+        <div style={{ fontSize: 22, fontWeight: 900, color: "#1f1d3a" }}>
+          {t.dating.boostTitle}
+        </div>
+        <div style={{ fontSize: 13, color: "#4b446a", marginTop: 4 }}>
+          {t.dating.boostSubtitle}
+        </div>
+      </div>
+
+      {isActive && (
+        <div style={{ ...cardBaseStyle(), padding: 16, display: "flex", alignItems: "center", gap: 12 }}>
+          <div style={{ fontSize: 26 }}>⚡</div>
+          <div>
+            <div style={{ fontSize: 13.5, fontWeight: 900, color: "#1f1d3a" }}>
+              {t.dating.boostActiveTitle}
+            </div>
+            <div style={{ fontSize: 12, color: "#5a5378", marginTop: 2 }}>
+              {t.dating.boostActiveUntil.replace("{time}", activeUntilLabel || "")}
+            </div>
+          </div>
+        </div>
+      )}
+
+      <div style={{ display: "grid", gap: 10 }}>
+        {DATING_BOOST_TIERS.map((tier) => (
+          <button
+            key={tier.plan}
+            onClick={() => onBuy(tier.plan)}
+            disabled={loading || purchasing !== null}
+            style={{
+              ...cardBaseStyle(),
+              padding: 16,
+              border: "none",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              cursor: "pointer",
+              textAlign: "left",
+              width: "100%",
+              opacity: purchasing !== null && purchasing !== tier.plan ? 0.6 : 1,
+            }}
+          >
+            <div>
+              <div style={{ fontSize: 14.5, fontWeight: 900, color: "#1f1d3a" }}>
+                {boostLabelByMinutes(tier.minutes)}
+              </div>
+              <div style={{ fontSize: 11.5, color: "#5a5378", marginTop: 2 }}>
+                {t.dating.boostTierHint}
+              </div>
+            </div>
+            <div
+              style={{
+                fontSize: 13,
+                fontWeight: 900,
+                color: "#5a3d14",
+                background: "rgba(255,207,92,0.4)",
+                padding: "7px 12px",
+                borderRadius: 999,
+                whiteSpace: "nowrap",
+              }}
+            >
+              {purchasing === tier.plan ? t.common.loading : `⭐ ${tier.price}`}
+            </div>
+          </button>
+        ))}
+      </div>
+
+      {isPremium && freeBoostAvailable && (
+        <button
+          onClick={onClaimFree}
+          disabled={loading}
+          style={{
+            ...cardBaseStyle(),
+            padding: 16,
+            border: "1px dashed rgba(255,207,92,0.7)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            cursor: "pointer",
+            textAlign: "left",
+            width: "100%",
+          }}
+        >
+          <div>
+            <div style={{ fontSize: 13.5, fontWeight: 900, color: "#1f1d3a" }}>
+              {t.dating.freeBoostTitle}
+            </div>
+            <div style={{ fontSize: 11.5, color: "#5a5378", marginTop: 2 }}>
+              {t.dating.freeBoostHint}
+            </div>
+          </div>
+          <div style={{ fontSize: 20 }}>👑</div>
+        </button>
+      )}
+
+      <button onClick={onBack} style={secondaryButtonStyle}>
+        {t.common.back}
+      </button>
+    </div>
+  );
+}
+
+function DatingFiltersScreen({
+  initialMinAge,
+  initialMaxAge,
+  saving,
+  onSave,
+  onBack,
+  t,
+}: {
+  initialMinAge: number;
+  initialMaxAge: number;
+  saving: boolean;
+  onSave: (minAge: number, maxAge: number) => void;
+  onBack: () => void;
+  t: any;
+}) {
+  const [minAge, setMinAge] = useState(initialMinAge);
+  const [maxAge, setMaxAge] = useState(initialMaxAge);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    setMinAge(initialMinAge);
+    setMaxAge(initialMaxAge);
+  }, [initialMinAge, initialMaxAge]);
+
+  function handleSave() {
+    if (minAge < 18 || maxAge > 100 || minAge > maxAge) {
+      setError(t.dating.filtersInvalidRange);
+      return;
+    }
+    setError(null);
+    onSave(minAge, maxAge);
+  }
+
+  const ageOptions = Array.from({ length: 100 - 18 + 1 }, (_, i) => 18 + i);
+
+  return (
+    <div style={{ padding: 16, display: "grid", gap: 14 }}>
+      <div>
+        <div style={{ fontSize: 22, fontWeight: 900, color: "#1f1d3a" }}>
+          {t.dating.filtersTitle}
+        </div>
+        <div style={{ fontSize: 13, color: "#4b446a", marginTop: 4 }}>
+          {t.dating.filtersSubtitle}
+        </div>
+      </div>
+
+      <div style={{ ...cardBaseStyle(), padding: 18 }}>
+        <div style={{ fontSize: 13, fontWeight: 800, color: "#1f1d3a", marginBottom: 10 }}>
+          {t.dating.filtersAgeLabel}
+        </div>
+        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          <select
+            value={minAge}
+            onChange={(e) => setMinAge(Number(e.target.value))}
+            style={{
+              flex: 1,
+              padding: "10px 8px",
+              borderRadius: 12,
+              border: "1px solid rgba(0,0,0,0.12)",
+              background: "rgba(255,255,255,0.6)",
+              fontSize: 14,
+              fontWeight: 700,
+              color: "#1f1d3a",
+            }}
+          >
+            {ageOptions.map((age) => (
+              <option key={age} value={age}>
+                {age}
+              </option>
+            ))}
+          </select>
+          <span style={{ color: "#5a5378", fontWeight: 700 }}>—</span>
+          <select
+            value={maxAge}
+            onChange={(e) => setMaxAge(Number(e.target.value))}
+            style={{
+              flex: 1,
+              padding: "10px 8px",
+              borderRadius: 12,
+              border: "1px solid rgba(0,0,0,0.12)",
+              background: "rgba(255,255,255,0.6)",
+              fontSize: 14,
+              fontWeight: 700,
+              color: "#1f1d3a",
+            }}
+          >
+            {ageOptions.map((age) => (
+              <option key={age} value={age}>
+                {age}
+              </option>
+            ))}
+          </select>
+        </div>
+        {error && (
+          <div style={{ marginTop: 10, fontSize: 12, color: "#c1352f", fontWeight: 700 }}>
+            {error}
+          </div>
+        )}
+      </div>
+
+      <div
+        style={{
+          padding: "10px 14px",
+          borderRadius: 14,
+          background: "rgba(255,255,255,0.3)",
+          fontSize: 11.5,
+          color: "#5a5378",
+          lineHeight: 1.4,
+        }}
+      >
+        {t.dating.filtersLocationNote}
+      </div>
+
+      <button onClick={handleSave} disabled={saving} style={{ ...primaryButtonStyle, width: "100%" }}>
+        {saving ? t.common.loading : t.common.save}
+      </button>
 
       <button onClick={onBack} style={secondaryButtonStyle}>
         {t.common.back}
@@ -6129,6 +6567,11 @@ function DatingChatScreen({
   locked,
   onUnlock,
   icebreakers,
+  pairProposal,
+  pairProposalDismissed,
+  pairProposalSending,
+  onProposePair,
+  onDismissPairProposal,
   t,
 }: {
   match: DatingMatch;
@@ -6145,6 +6588,13 @@ function DatingChatScreen({
   locked?: boolean;
   onUnlock?: () => void;
   icebreakers?: string[];
+  // Баннер "Предложить пару" — null, пока ничего не запрошено/не
+  // загрузилось; сам объект отсутствует, пока предложения не было.
+  pairProposal?: { status: "pending" | "accepted" | "declined"; isProposer: boolean } | null;
+  pairProposalDismissed?: boolean;
+  pairProposalSending?: boolean;
+  onProposePair?: () => void;
+  onDismissPairProposal?: () => void;
   t: any;
 }) {
   const [text, setText] = useState("");
@@ -6323,6 +6773,71 @@ function DatingChatScreen({
               {t.dating.actionCancelButton}
             </button>
           </div>
+        </div>
+      )}
+
+      {!pairProposalDismissed && pairProposal?.status !== "accepted" && onProposePair && onDismissPairProposal && (
+        <div
+          style={{
+            margin: "14px 16px 0",
+            padding: "12px 14px",
+            borderRadius: 16,
+            background: "rgba(255,255,255,0.34)",
+            display: "flex",
+            alignItems: "center",
+            gap: 10,
+          }}
+        >
+          <div style={{ fontSize: 20, flexShrink: 0 }}>💍</div>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontSize: 12.5, fontWeight: 800, color: "#1f1d3a", lineHeight: 1.3 }}>
+              {!pairProposal
+                ? t.dating.pairProposalPromptTitle
+                : pairProposal.isProposer
+                  ? t.dating.pairProposalPendingSentTitle
+                  : t.dating.pairProposalPendingReceivedTitle}
+            </div>
+            {!pairProposal && (
+              <div style={{ fontSize: 11, color: "#5a5378", marginTop: 2 }}>
+                {t.dating.pairProposalPromptText}
+              </div>
+            )}
+          </div>
+          {!pairProposal && (
+            <button
+              onClick={onProposePair}
+              disabled={pairProposalSending}
+              style={{
+                border: "none",
+                borderRadius: 999,
+                padding: "8px 12px",
+                background: "linear-gradient(135deg, #8f6bff, #ff76ba)",
+                color: "#fff",
+                fontSize: 11.5,
+                fontWeight: 800,
+                cursor: "pointer",
+                flexShrink: 0,
+                opacity: pairProposalSending ? 0.7 : 1,
+              }}
+            >
+              {t.dating.pairProposalButton}
+            </button>
+          )}
+          <button
+            onClick={onDismissPairProposal}
+            aria-label={t.common.close}
+            style={{
+              border: "none",
+              background: "none",
+              fontSize: 14,
+              color: "#8a84a8",
+              cursor: "pointer",
+              padding: 4,
+              flexShrink: 0,
+            }}
+          >
+            ✕
+          </button>
         </div>
       )}
 
@@ -17174,6 +17689,130 @@ async function loadDatingIncomingLikes() {
   }
 }
 
+// Общий helper для платных Stars-покупок в Знакомствах (суперлайк,
+// буст) — сам раздел пока только в Telegram (см. isCapacitorApp() у
+// входа), поэтому, в отличие от handleBuyPremium, отдельная ветка
+// Apple IAP тут не нужна. Возвращает true только если оплата реально
+// прошла (status === "paid").
+async function openDatingStarsInvoice(
+  plan: string,
+  extra?: Record<string, unknown>
+): Promise<boolean> {
+  if (!user?.id) return false;
+
+  try {
+    const res = await fetch("/api/payments/create-stars-invoice", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ telegramId: user.id, plan, ...extra }),
+    });
+
+    const data = await res.json();
+    const invoiceLink = data?.invoiceLink;
+    const openInvoice = window.Telegram?.WebApp?.openInvoice;
+
+    if (!res.ok || !invoiceLink || !openInvoice) {
+      console.error("openDatingStarsInvoice: failed to create invoice", data);
+      return false;
+    }
+
+    return await new Promise<boolean>((resolve) => {
+      openInvoice(invoiceLink, (status) => resolve(status === "paid"));
+    });
+  } catch (error) {
+    console.error("openDatingStarsInvoice error:", error);
+    return false;
+  }
+}
+
+// Суперлайк — платный, сам свайп записывает бот после успешной оплаты
+// (bot/bot.ts, successful_payment), не этот запрос — тут только
+// инвойс. Убираем анкету из списков сразу и оптимистично, как при
+// обычном свайпе, не дожидаясь, пока бот реально обработает платёж.
+async function handleSuperlike(candidate: DatingCandidate) {
+  const paid = await openDatingStarsInvoice("dating_superlike", {
+    toTelegramId: candidate.telegramId,
+  });
+
+  if (!paid) return;
+
+  setDatingCandidates((prev) => prev.filter((c) => c.telegramId !== candidate.telegramId));
+  setDatingIncomingLikes((prev) => prev.filter((c) => c.telegramId !== candidate.telegramId));
+  alert(t.dating.superlikeSentAlert);
+}
+
+async function loadDatingBoostStatus() {
+  setDatingBoostLoading(true);
+  const result = await datingFetch("/api/dating/profile/state");
+  setDatingBoostLoading(false);
+
+  if (result?.ok && result.profile) {
+    setDatingBoostedUntil(result.profile.boostedUntil ?? null);
+    setDatingFreeBoostAvailable(Boolean(result.profile.freeBoostAvailable));
+  }
+}
+
+async function handleBuyBoost(
+  plan: "dating_boost_30m" | "dating_boost_3h" | "dating_boost_24h"
+) {
+  setDatingBoostPurchasing(plan);
+  const paid = await openDatingStarsInvoice(plan);
+  setDatingBoostPurchasing(null);
+
+  if (!paid) return;
+
+  await loadDatingBoostStatus();
+  alert(t.dating.boostActivatedAlert);
+}
+
+async function handleClaimFreeBoost() {
+  setDatingBoostLoading(true);
+  const result = await datingFetch("/api/dating/boost/claim-free");
+  setDatingBoostLoading(false);
+
+  if (result?.ok) {
+    setDatingBoostedUntil(result.boostedUntil ?? null);
+    setDatingFreeBoostAvailable(false);
+    return;
+  }
+
+  if (result?.reason === "premium-required") {
+    setPaywallBackScreen("dating-boost");
+    setScreen("paywall");
+    return;
+  }
+
+  alert(t.dating.boostClaimError);
+}
+
+async function loadDatingFilters() {
+  setDatingFiltersLoading(true);
+  const result = await datingFetch("/api/dating/profile/state");
+  setDatingFiltersLoading(false);
+
+  if (result?.ok && result.profile) {
+    setDatingFilterMinAge(result.profile.filterMinAge ?? 18);
+    setDatingFilterMaxAge(result.profile.filterMaxAge ?? 60);
+  }
+}
+
+async function handleSaveDatingFilters(
+  minAge: number,
+  maxAge: number
+): Promise<boolean> {
+  setDatingFiltersSaving(true);
+  const result = await datingFetch("/api/dating/filters", { minAge, maxAge });
+  setDatingFiltersSaving(false);
+
+  if (!result?.ok) return false;
+
+  setDatingFilterMinAge(minAge);
+  setDatingFilterMaxAge(maxAge);
+  setScreen("dating-swipe");
+  loadDatingCandidates();
+  return true;
+}
+
 async function handleSaveDatingProfile(profile: {
   displayName: string;
   age: number;
@@ -17277,7 +17916,10 @@ async function loadDatingMatches() {
 async function handleOpenDatingChat(match: DatingMatch) {
   setActiveChatMatch(match);
   setActiveChatMessages([]);
+  setActiveChatPairProposal(null);
   setScreen("dating-chat");
+
+  loadPairProposalStatus(match.matchId);
 
   // Свайпы, мэтчи и заготовленные фразы для начала разговора видны
   // всем; сама переписка (загрузка/отправка сообщений) — только
@@ -17292,6 +17934,68 @@ async function handleOpenDatingChat(match: DatingMatch) {
 
   if (result?.ok) {
     setActiveChatMessages(result.messages ?? []);
+  }
+}
+
+async function loadPairProposalStatus(matchId: string) {
+  const result = await datingFetch("/api/dating/pair-proposal/status", { matchId });
+  if (result?.ok) {
+    setActiveChatPairProposal(result.proposal ?? null);
+  }
+}
+
+async function handleProposePair() {
+  if (!activeChatMatch) return;
+
+  setPairProposalSending(true);
+  const result = await datingFetch("/api/dating/pair-proposal/create", {
+    matchId: activeChatMatch.matchId,
+  });
+  setPairProposalSending(false);
+
+  if (result?.ok) {
+    setActiveChatPairProposal({ status: "pending", isProposer: true });
+    return;
+  }
+
+  if (result?.reason === "self-already-paired" || result?.reason === "partner-already-paired") {
+    alert(t.dating.pairProposalAlreadyPaired);
+    return;
+  }
+
+  alert(t.dating.pairProposalError);
+}
+
+// Принять/отклонить входящее предложение — вызывается с экрана "Пара"
+// (см. incomingPairProposals), не из чата: получатель отвечает там,
+// где реально создаётся пара, а не в переписке.
+async function handleRespondPairProposal(matchId: string, accept: boolean) {
+  setPairProposalResponding(matchId);
+  const result = await datingFetch("/api/dating/pair-proposal/respond", {
+    matchId,
+    accept,
+  });
+  setPairProposalResponding(null);
+
+  if (!result?.ok) {
+    alert(t.dating.pairProposalError);
+    return;
+  }
+
+  setIncomingPairProposals((prev) => prev.filter((p) => p.matchId !== matchId));
+
+  if (result.accepted && user) {
+    // Пара только что создана целиком на сервере — синхронизируем
+    // остальное состояние приложения тем же способом, что и везде
+    // после серверных изменений пары (см. refreshPairData).
+    await refreshPairData({ user, setAppState });
+  }
+}
+
+async function loadIncomingPairProposals() {
+  const result = await datingFetch("/api/dating/pair-proposal/incoming");
+  if (result?.ok) {
+    setIncomingPairProposals(result.proposals ?? []);
   }
 }
 
@@ -17494,10 +18198,62 @@ const [datingSwipesRemaining, setDatingSwipesRemaining] = useState<number | null
 // лайкнули меня первыми, но я ещё не ответил(а) взаимностью.
 const [datingIncomingLikes, setDatingIncomingLikes] = useState<DatingCandidate[]>([]);
 const [datingIncomingLikesLoading, setDatingIncomingLikesLoading] = useState(false);
+// Буст анкеты (⚡) — когда активен, boostedUntil хранит ISO-время
+// окончания; freeBoostAvailable — доступен ли бесплатный недельный
+// буст (только Premium, см. claim_free_dating_boost). Оба поля читаем
+// заново при каждом открытии экрана буста, а не кэшируем в datingProfile.
+const [datingBoostedUntil, setDatingBoostedUntil] = useState<string | null>(null);
+const [datingFreeBoostAvailable, setDatingFreeBoostAvailable] = useState(false);
+const [datingBoostLoading, setDatingBoostLoading] = useState(false);
+const [datingBoostPurchasing, setDatingBoostPurchasing] = useState<string | null>(null);
+// Фильтры поиска (диапазон возраста) — читаются заново при открытии
+// экрана фильтров, дефолт 18–60 совпадает с get_own_dating_profile.
+const [datingFilterMinAge, setDatingFilterMinAge] = useState(18);
+const [datingFilterMaxAge, setDatingFilterMaxAge] = useState(60);
+const [datingFiltersLoading, setDatingFiltersLoading] = useState(false);
+const [datingFiltersSaving, setDatingFiltersSaving] = useState(false);
 const [activeChatMatch, setActiveChatMatch] = useState<DatingMatch | null>(null);
 const [activeChatMessages, setActiveChatMessages] = useState<
   Array<{ id: string; senderTelegramId: number; text: string; createdAt: string }>
 >([]);
+// "Предложить пару" из чата мэтча — статус текущего открытого чата;
+// закрытые баннеры запоминаем в localStorage по matchId, чтобы не
+// показывать их снова при каждом открытии чата.
+const [activeChatPairProposal, setActiveChatPairProposal] = useState<{
+  status: "pending" | "accepted" | "declined";
+  isProposer: boolean;
+} | null>(null);
+const [pairProposalDismissed, setPairProposalDismissed] = useState<string[]>([]);
+const [pairProposalSending, setPairProposalSending] = useState(false);
+// Входящие предложения пары — показываются на экране "Пара", пока
+// своей пары ещё нет.
+const [incomingPairProposals, setIncomingPairProposals] = useState<
+  Array<{ matchId: string; fromTelegramId: number; fromDisplayName: string; fromPhotoUrl: string | null }>
+>([]);
+const [pairProposalResponding, setPairProposalResponding] = useState<string | null>(null);
+
+useEffect(() => {
+  if (typeof window === "undefined") return;
+  try {
+    const raw = window.localStorage.getItem("dating-pair-proposal-dismissed");
+    if (raw) setPairProposalDismissed(JSON.parse(raw));
+  } catch (error) {
+    console.error("pair-proposal-dismissed localStorage read error:", error);
+  }
+}, []);
+
+function dismissPairProposalBanner(matchId: string) {
+  setPairProposalDismissed((prev) => {
+    if (prev.includes(matchId)) return prev;
+    const next = [...prev, matchId];
+    try {
+      window.localStorage.setItem("dating-pair-proposal-dismissed", JSON.stringify(next));
+    } catch (error) {
+      console.error("pair-proposal-dismissed localStorage write error:", error);
+    }
+    return next;
+  });
+}
 
 
   
@@ -17991,6 +18747,16 @@ useEffect(() => {
   }
 
   refreshCurrentPair();
+}, [screen, user?.id]);
+
+// Входящие предложения "создать пару" из Знакомств — подгружаем при
+// каждом заходе на экран "Пара" (дёшево, а актуальность важнее
+// экономии одного запроса).
+useEffect(() => {
+  if (screen !== "pair") return;
+  if (!user?.id) return;
+
+  loadIncomingPairProposals();
 }, [screen, user?.id]);
 
 useEffect(() => {
@@ -18927,6 +19693,9 @@ showPaywall={() => {
     }
     setScreen(appState.profile.gender === "boy" ? "polls-boy" : "polls-girl");
   }}
+  incomingPairProposals={incomingPairProposals}
+  pairProposalResponding={pairProposalResponding}
+  onRespondPairProposal={handleRespondPairProposal}
 />
 )}
 
@@ -19029,7 +19798,41 @@ showPaywall={() => {
       loadDatingIncomingLikes();
       setScreen("dating-likes");
     }}
+    onOpenBoost={() => {
+      loadDatingBoostStatus();
+      setScreen("dating-boost");
+    }}
+    onOpenFilters={() => {
+      loadDatingFilters();
+      setScreen("dating-filters");
+    }}
+    onSuperlike={handleSuperlike}
     onBack={() => setScreen("menu")}
+  />
+)}
+
+{screen === "dating-boost" && (
+  <DatingBoostScreen
+    t={t}
+    boostedUntil={datingBoostedUntil}
+    freeBoostAvailable={datingFreeBoostAvailable}
+    isPremium={appState.isPremium}
+    loading={datingBoostLoading}
+    purchasing={datingBoostPurchasing}
+    onBuy={handleBuyBoost}
+    onClaimFree={handleClaimFreeBoost}
+    onBack={() => setScreen("dating-swipe")}
+  />
+)}
+
+{screen === "dating-filters" && (
+  <DatingFiltersScreen
+    t={t}
+    initialMinAge={datingFilterMinAge}
+    initialMaxAge={datingFilterMaxAge}
+    saving={datingFiltersSaving}
+    onSave={handleSaveDatingFilters}
+    onBack={() => setScreen("dating-swipe")}
   />
 )}
 
@@ -19083,6 +19886,11 @@ showPaywall={() => {
       setPaywallBackScreen("dating-chat");
       setScreen("paywall");
     }}
+    pairProposal={activeChatPairProposal}
+    pairProposalDismissed={pairProposalDismissed.includes(activeChatMatch.matchId)}
+    pairProposalSending={pairProposalSending}
+    onProposePair={handleProposePair}
+    onDismissPairProposal={() => dismissPairProposalBanner(activeChatMatch.matchId)}
   />
 )}
 
@@ -19195,9 +20003,15 @@ showPaywall={() => {
         {isCapacitorApp() ? "299 ₽" : "149 ₽"}
       </div>
 
-      <div style={{ marginTop: 2, fontSize: 13, color: "#5f5a7a" }}>
-        {t.paywall.subscriptionLength}
-      </div>
+      {isCapacitorApp() && (
+        // Apple требует явно указывать, что это автопродлеваемая
+        // подписка (App Store Review Guidelines 3.1.2) — в Telegram
+        // такого требования нет, там оплата через Stars/Tribute, и
+        // строка была просто лишним техническим текстом на экране.
+        <div style={{ marginTop: 2, fontSize: 13, color: "#5f5a7a" }}>
+          {t.paywall.subscriptionLength}
+        </div>
+      )}
 
       <button
         onClick={() => setShowPaymentChoice(true)}

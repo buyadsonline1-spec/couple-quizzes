@@ -98,6 +98,39 @@ export const TEXT_RU = {
 
     premiumRequiredTitle: "Нужна подписка",
     premiumRequiredText: "Знакомства доступны только с Premium",
+
+    filtersButton: "Фильтры поиска",
+    boostButton: "Буст анкеты",
+    superlikeButton: "Суперлайк",
+    superlikeBadge: "Суперлайк",
+    superlikeSentAlert: "Суперлайк отправлен ⭐ Если человек ответит взаимностью — сразу увидишь мэтч.",
+
+    boostTitle: "Буст анкеты",
+    boostSubtitle: "Пока буст активен, твоя анкета показывается первой всем подходящим пользователям",
+    boostActiveTitle: "Буст активен",
+    boostActiveUntil: "До {time}",
+    boost30mLabel: "Буст на 30 минут",
+    boost3hLabel: "Буст на 3 часа",
+    boost24hLabel: "Буст на 24 часа",
+    boostTierHint: "Анкета — в топе выдачи",
+    freeBoostTitle: "Бесплатный буст на 30 минут",
+    freeBoostHint: "1 раз в неделю — для Premium",
+    boostActivatedAlert: "Буст активирован! Анкета теперь в топе выдачи.",
+    boostClaimError: "Не удалось активировать буст. Попробуй ещё раз.",
+
+    filtersTitle: "Фильтры поиска",
+    filtersSubtitle: "Кому будет показываться твоя анкета",
+    filtersAgeLabel: "Возраст",
+    filtersInvalidRange: "Проверь диапазон — минимум не может быть больше максимума",
+    filtersLocationNote: "Фильтр по расстоянию пока недоступен — приложение не запрашивает геолокацию",
+
+    pairProposalPromptTitle: "Понравились друг другу?",
+    pairProposalPromptText: "Предложи создать пару прямо в приложении",
+    pairProposalButton: "Предложить",
+    pairProposalPendingSentTitle: "Предложение отправлено — ждём ответа",
+    pairProposalPendingReceivedTitle: "Вам предложили создать пару — ответьте в разделе «Пара»",
+    pairProposalAlreadyPaired: "Не получилось: один из вас уже состоит в паре",
+    pairProposalError: "Что-то пошло не так. Попробуй ещё раз.",
   },
 
   appName: "Couple Quizzes",
@@ -295,6 +328,11 @@ export const TEXT_RU = {
   noPairText:
     "Пригласи партнёра, чтобы вместе проходить опросы, тесты и игры.",
   invitePartner: "Пригласить партнёра",
+
+  // Предложение создать пару из мэтча в Знакомствах (см. handleProposePair).
+  incomingProposalTitle: "{name} предлагает создать пару",
+  acceptProposalButton: "Принять",
+  declineProposalButton: "Отклонить",
 
   inPair: "Вы в паре",
   you: "Ты",
