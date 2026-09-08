@@ -28,7 +28,6 @@ export async function POST(request: NextRequest) {
       typeof body.photoUrl === "string" ? body.photoUrl : null;
     const gender = body.gender;
     const seekingGender = body.seekingGender;
-    const city = typeof body.city === "string" ? body.city.trim().slice(0, 100) : "";
 
     if (!displayName || displayName.length > 60) {
       return NextResponse.json(
@@ -58,13 +57,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (!city) {
-      return NextResponse.json(
-        { ok: false, reason: "invalid-city" },
-        { status: 400 }
-      );
-    }
-
     // personalitySummary больше не берём из тела запроса — раньше
     // клиент всегда слал сюда пустой объект (никакого кода, который бы
     // реально его считал, не было), и анкета навсегда оставалась без
@@ -90,7 +82,6 @@ export async function POST(request: NextRequest) {
       p_gender: gender,
       p_seeking_gender: seekingGender,
       p_personality_summary: personalitySummary,
-      p_city: city,
     });
 
     if (error || !data?.ok) {
