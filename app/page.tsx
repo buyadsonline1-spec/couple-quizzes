@@ -9958,25 +9958,174 @@ function MainMenu({
           </div>
         </div>
       ) : (
-        // Telegram — компактная сетка 3×2: родственные пункты сведены в
-        // одну плитку с мини-выбором (как уже устроен выбор пола перед
-        // опросом), чтобы Знакомства не оставались одни в лишнем ряду.
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
-            gap: 10,
-          }}
-        >
-          <MenuButton label={t.menu.pollsAndTests} emoji="💌🧠" onClick={() => onNavigate("polls-tests-menu")} />
-          <MenuButton label={t.menu.games} emoji="🎮" onClick={() => onNavigate("games")} />
-          <MenuButton label={t.menu.rewards} emoji="🎡" onClick={() => onNavigate("rewards")} />
-          <MenuButton label={t.menu.topPlayers} emoji="🏆" onClick={() => onNavigate("top")} />
-          <MenuButton label={t.menu.pairAndProfile} emoji="💕👤" onClick={() => onNavigate("pair-profile-menu")} />
-          <MenuButton label={t.dating.swipeTitle} emoji="💘" onClick={onOpenDating} />
+        // Telegram — Опросы/Тесты, Игры, Пара/Профиль и Знакомства
+        // теперь во нижнем баре (см. BottomNavBar), сетка ссылок им
+        // больше не нужна. Тут остаются только карточки, для которых
+        // нет отдельной вкладки: вопрос дня, рулетка призов, топ игроков.
+        <div style={{ display: "grid", gap: 10 }}>
+          {hasPair && (
+            <button
+              type="button"
+              onClick={() => onNavigate("daily-pair-question")}
+              style={{
+                ...cardBaseStyle(),
+                padding: 16,
+                border: "none",
+                display: "flex",
+                alignItems: "center",
+                gap: 12,
+                cursor: "pointer",
+                textAlign: "left",
+                width: "100%",
+                background: "rgba(255,255,255,0.24)",
+              }}
+            >
+              <div style={{ fontSize: 24, flexShrink: 0 }}>🔥</div>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontSize: 14, fontWeight: 900, color: "#1f1d3a" }}>
+                  {t.pair.dailyQuestion}
+                </div>
+                <div style={{ marginTop: 2, fontSize: 12, color: "#5a5378" }}>
+                  {t.pair.streakDaysLabel}: {appState.dailyPairStreak?.current || 0} {t.pair.streakDaysWord}
+                </div>
+              </div>
+              <div style={{ fontSize: 18, color: "#7c5cff", flexShrink: 0 }}>→</div>
+            </button>
+          )}
+
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+            <MenuButton label={t.menu.rewards} emoji="🎡" onClick={() => onNavigate("rewards")} />
+            <MenuButton label={t.menu.topPlayers} emoji="🏆" onClick={() => onNavigate("top")} />
+          </div>
         </div>
       )}
     </div>
+  );
+}
+
+// Нижний бар навигации — только для Telegram-сборки (см. isCapacitorApp()
+// у места вызова): iOS-версия ждёт повторного ревью Apple, её экран
+// нарочно не трогаем. Показывается только на "корневых" экранах разделов
+// (см. BOTTOM_NAV_SCREENS) — на вложенных экранах (сам опрос/тест/игра,
+// чат мэтча и т.д.) бар не рисуем, чтобы не спорить за нижнюю часть
+// экрана с их собственными элементами (поле ввода, кнопка "Далее" и т.п.).
+type BottomNavTabId =
+  | "menu"
+  | "polls-tests-menu"
+  | "games"
+  | "dating-swipe"
+  | "pair-profile-menu";
+
+const BOTTOM_NAV_SCREENS: Screen[] = [
+  "menu",
+  "polls-tests-menu",
+  "games",
+  "dating-intro",
+  "dating-swipe",
+  "pair-profile-menu",
+];
+
+function bottomNavActiveTab(screen: Screen): BottomNavTabId | null {
+  if (screen === "menu") return "menu";
+  if (screen === "polls-tests-menu") return "polls-tests-menu";
+  if (screen === "games") return "games";
+  if (screen === "dating-intro" || screen === "dating-swipe") return "dating-swipe";
+  if (screen === "pair-profile-menu") return "pair-profile-menu";
+  return null;
+}
+
+function BottomNavBar({
+  active,
+  onNavigateTab,
+  t,
+}: {
+  active: BottomNavTabId | null;
+  onNavigateTab: (tab: BottomNavTabId) => void;
+  t: any;
+}) {
+  const tabs: Array<{ id: BottomNavTabId; icon: string; label: string }> = [
+    { id: "menu", icon: "🏠", label: t.menu.home },
+    { id: "polls-tests-menu", icon: "💌", label: t.menu.polls },
+    { id: "games", icon: "🎮", label: t.menu.games },
+    { id: "dating-swipe", icon: "💘", label: t.dating.swipeTitle },
+    { id: "pair-profile-menu", icon: "🫂", label: t.menu.pair },
+  ];
+
+  const activeIndex = Math.max(0, tabs.findIndex((tab) => tab.id === active));
+  const tabWidthPercent = 100 / tabs.length;
+
+  return (
+    <nav
+      style={{
+        position: "fixed",
+        left: 0,
+        right: 0,
+        bottom: 0,
+        zIndex: 30,
+        background: "rgba(255,255,255,0.62)",
+        backdropFilter: "blur(14px)",
+        WebkitBackdropFilter: "blur(14px)",
+        borderTop: "1px solid rgba(255,255,255,0.5)",
+        boxShadow: "0 -8px 24px rgba(37,34,78,0.10)",
+        paddingBottom: "env(safe-area-inset-bottom)",
+      }}
+    >
+      <div style={{ position: "relative", display: "flex" }}>
+        <div
+          style={{
+            position: "absolute",
+            top: 0,
+            height: 2.5,
+            width: `${tabWidthPercent}%`,
+            left: `${tabWidthPercent * activeIndex}%`,
+            background: "linear-gradient(90deg, #8f6bff, #ff76ba)",
+            borderRadius: 999,
+            transition: "left 0.3s cubic-bezier(0.4,0,0.2,1)",
+          }}
+        />
+        {tabs.map((tab) => {
+          const isActive = tab.id === active;
+          return (
+            <button
+              key={tab.id}
+              type="button"
+              onClick={() => onNavigateTab(tab.id)}
+              style={{
+                flex: 1,
+                border: "none",
+                background: "none",
+                padding: "10px 4px 8px",
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                gap: 2,
+                cursor: "pointer",
+              }}
+            >
+              <span
+                style={{
+                  fontSize: 19,
+                  lineHeight: 1,
+                  transform: isActive ? "scale(1.12)" : "scale(1)",
+                  transition: "transform 0.2s",
+                }}
+              >
+                {tab.icon}
+              </span>
+              <span
+                style={{
+                  fontSize: 9.5,
+                  fontWeight: 800,
+                  color: isActive ? "#5a3d99" : "#8a84a8",
+                }}
+              >
+                {tab.label}
+              </span>
+            </button>
+          );
+        })}
+      </div>
+    </nav>
   );
 }
 
@@ -19275,6 +19424,11 @@ if (finishedAllTests && !appState.completionBonusesClaimed.tests) {
 
   if (!mounted) return null;
 
+  // Нижний бар — только Telegram (см. комментарий у BottomNavBar) и
+  // только на "корневых" экранах разделов.
+  const bottomNavTab = bottomNavActiveTab(screen);
+  const showBottomNav = !isCapacitorApp() && bottomNavTab !== null;
+
   return (
     <main
   style={{
@@ -19287,7 +19441,11 @@ if (finishedAllTests && !appState.completionBonusesClaimed.tests) {
     // Telegram (там свой chrome, эти отступы там просто равны 0,
     // ничего не портят). Требует viewport-fit=cover в app/layout.tsx.
     paddingTop: "env(safe-area-inset-top)",
-    paddingBottom: "calc(24px + env(safe-area-inset-bottom))",
+    // Больше отступа снизу, когда показан нижний бар навигации — иначе
+    // он перекрывает последнюю карточку экрана.
+    paddingBottom: showBottomNav
+      ? "calc(84px + env(safe-area-inset-bottom))"
+      : "calc(24px + env(safe-area-inset-bottom))",
     paddingLeft: "env(safe-area-inset-left)",
     paddingRight: "env(safe-area-inset-right)",
     boxSizing: "border-box",
@@ -20224,8 +20382,25 @@ showPaywall={() => {
   </div>
 )}
 
+{showBottomNav && (
+  <BottomNavBar
+    t={t}
+    active={bottomNavTab}
+    onNavigateTab={(tab) => {
+      if (tab === "dating-swipe") {
+        // У Знакомств своя логика входа (анкета есть/нет ещё, подгрузка
+        // кандидатов) — тот же путь, что и у остальных точек входа в
+        // раздел, а не голый setScreen.
+        handleOpenDating();
+        return;
+      }
+      setScreen(tab);
+    }}
+  />
+)}
+
     </main>
-  
+
 
 
     

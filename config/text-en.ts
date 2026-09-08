@@ -134,6 +134,7 @@ export const TEXT_EN = {
   appName: "Couple Quizzes",
 
   menu: {
+  home: "Home",
   polls: "Polls",
   games: "Games",
   tests: "Tests",

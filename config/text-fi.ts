@@ -138,6 +138,7 @@ export const TEXT_FI = {
   appName: "Couple Quizzes",
 
   menu: {
+    home: "Etusivu",
     polls: "Kyselyt",
     games: "Pelit",
     tests: "Testit",

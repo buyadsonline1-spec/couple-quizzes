@@ -134,6 +134,7 @@ export const TEXT_RU = {
   appName: "Couple Quizzes",
 
   menu: {
+  home: "Главная",
   polls: "Опросы",
   games: "Игры",
   tests: "Тесты",
