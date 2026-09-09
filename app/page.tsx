@@ -3590,6 +3590,7 @@ function PairScreen({
   incomingPairProposals,
   pairProposalResponding,
   onRespondPairProposal,
+  theme,
   t,
 }: {
   user: TgUser | null;
@@ -3619,11 +3620,17 @@ function PairScreen({
   }>;
   pairProposalResponding?: string | null;
   onRespondPairProposal?: (matchId: string, accept: boolean) => void;
+  // Undefined на iOS (тема там не включена) — читается как "light".
+  theme?: "light" | "dark";
   t: any;
 }) {
   const hasPairCreated = !!pair.pairId;
   const hasPartnerConnected = !!pair.partner;
   const hasFullPair = hasPairCreated && hasPartnerConnected;
+  const isDark = theme === "dark";
+  const ink = isDark ? "#f3e8ff" : "#1f1d3a";
+  const muted = isDark ? "#c9b3e0" : "#5a5378";
+  const accent = isDark ? "#e0b3ff" : "#6b46ff";
 
   const [confirmingLeavePair, setConfirmingLeavePair] = useState(false);
 
@@ -3673,7 +3680,7 @@ function PairScreen({
   return (
     <div style={{ padding: 16 }}>
       <div style={{ ...cardBaseStyle(), padding: 18 }}>
-        <div style={{ fontSize: 28, fontWeight: 900, color: "#1f1d3a" }}>
+        <div style={{ fontSize: 28, fontWeight: 900, color: ink }}>
           {t.pair.title}
         </div>
 
@@ -3704,7 +3711,7 @@ function PairScreen({
   style={{
     marginTop: 6,
     fontSize: 13,
-    color: "#4b446a",
+    color: muted,
   }}
 >
   {t.pair.dailyQuestionHint}
@@ -3749,7 +3756,7 @@ function PairScreen({
                     "🙂"
                   )}
                 </div>
-                <div style={{ fontSize: 13.5, fontWeight: 800, color: "#1f1d3a", lineHeight: 1.35 }}>
+                <div style={{ fontSize: 13.5, fontWeight: 800, color: ink, lineHeight: 1.35 }}>
                   {t.pair.incomingProposalTitle.replace("{name}", proposal.fromDisplayName)}
                 </div>
               </div>
@@ -3820,7 +3827,7 @@ function PairScreen({
                 marginTop: 14,
                 fontSize: 22,
                 fontWeight: 900,
-                color: "#1f1d3a",
+                color: ink,
               }}
             >
               {t.pair.noPairTitle}
@@ -3829,7 +3836,7 @@ function PairScreen({
             <div
               style={{
                 marginTop: 8,
-                color: "#4b446a",
+                color: muted,
                 lineHeight: 1.45,
                 fontSize: 14,
               }}
@@ -3859,7 +3866,7 @@ function PairScreen({
   style={{
     fontSize: 22,
     fontWeight: 900,
-    color: "#1f1d3a",
+    color: ink,
   }}
 >
   {hasFullPair ? t.pair.youAreInPair : t.pair.youCreatedPair}
@@ -3869,7 +3876,7 @@ function PairScreen({
   style={{
     marginTop: 6,
     fontSize: 13,
-    color: "#4b446a",
+    color: muted,
   }}
 >
   {t.pair.keepGettingToKnow}
@@ -3879,7 +3886,7 @@ function PairScreen({
                 <div
                   style={{
                     marginTop: 8,
-                    color: "#4b446a",
+                    color: muted,
                     lineHeight: 1.45,
                     fontSize: 14,
                   }}
@@ -3924,7 +3931,7 @@ function PairScreen({
                     <div
                       style={{
                         marginTop: 4,
-                        color: "#5a5378",
+                        color: muted,
                         fontSize: 13,
                         wordBreak: "break-word",
                       }}
@@ -3996,7 +4003,7 @@ function PairScreen({
                     <div
                       style={{
                         marginTop: 4,
-                        color: "#5a5378",
+                        color: muted,
                         fontSize: 13,
                         wordBreak: "break-word",
                       }}
@@ -4067,7 +4074,7 @@ function PairScreen({
                   gap: 8,
                 }}
               >
-                <div style={{ fontSize: 15, fontWeight: 900, color: "#1f1d3a" }}>
+                <div style={{ fontSize: 15, fontWeight: 900, color: ink }}>
                   {pairLevel.title}
                 </div>
                 <div style={{ fontSize: 11, color: "#7a7396", fontWeight: 700, flexShrink: 0 }}>
@@ -4123,7 +4130,7 @@ function PairScreen({
             <div style={{ fontSize: 26, flexShrink: 0 }}>💜</div>
 
             <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ fontSize: 15, fontWeight: 900, color: "#1f1d3a" }}>
+              <div style={{ fontSize: 15, fontWeight: 900, color: ink }}>
                 {compatibilityProfile.completedThemes > 0
                   ? `${compatibilityProfile.overallPercent}% — ${compatibilityProfile.pairType}`
                   : t.pair.compatibility}
@@ -4215,13 +4222,20 @@ function PairCompatibilityInfoScreen({
   appState,
   onBack,
   onOpenPolls,
+  theme,
 }: {
   appState: AppState;
   onBack: () => void;
   onOpenPolls: () => void;
+  // Undefined на iOS (тема там не включена) — читается как "light".
+  theme?: "light" | "dark";
 }) {
   const market = getMarket();
   const t = market === "fi" ? TEXT_FI : market === "en" ? TEXT_EN : TEXT_RU;
+  const isDark = theme === "dark";
+  const ink = isDark ? "#f3e8ff" : "#1f1d3a";
+  const muted = isDark ? "#c9b3e0" : "#5a5378";
+  const accent = isDark ? "#e0b3ff" : "#6b46ff";
   const profile = buildCompatibilityProfile(appState.pollAnswers || {});
   const hasData = profile.completedThemes > 0;
 
@@ -4244,7 +4258,7 @@ function PairCompatibilityInfoScreen({
               marginTop: 14,
               fontSize: 20,
               fontWeight: 900,
-              color: "#1f1d3a",
+              color: ink,
             }}
           >
             {t.pair.compatibilityInfo.notCalculatedTitle}
@@ -4307,7 +4321,7 @@ function PairCompatibilityInfoScreen({
             marginTop: 10,
             fontSize: 58,
             fontWeight: 900,
-            color: "#1f1d3a",
+            color: ink,
             lineHeight: 0.95,
             letterSpacing: "-0.04em",
           }}
@@ -4324,7 +4338,7 @@ function PairCompatibilityInfoScreen({
             background: "rgba(255,255,255,0.55)",
             fontSize: 16,
             fontWeight: 900,
-            color: "#6b46ff",
+            color: accent,
           }}
         >
           {profile.pairType}
@@ -4335,7 +4349,7 @@ function PairCompatibilityInfoScreen({
             marginTop: 14,
             fontSize: 14.5,
             lineHeight: 1.55,
-            color: "#4d466c",
+            color: muted,
             textAlign: "left",
           }}
         >
@@ -4358,7 +4372,7 @@ function PairCompatibilityInfoScreen({
       </div>
 
       <div style={{ ...cardBaseStyle(), padding: 16 }}>
-        <div style={{ fontSize: 16, fontWeight: 900, color: "#1f1d3a" }}>
+        <div style={{ fontSize: 16, fontWeight: 900, color: ink }}>
           ✨ {t.pair.compatibilityInfo.strongSides}
         </div>
 
@@ -4377,7 +4391,7 @@ function PairCompatibilityInfoScreen({
                 padding: "8px 12px",
                 borderRadius: 999,
                 background: "rgba(255,255,255,0.72)",
-                color: "#6b46ff",
+                color: accent,
                 fontSize: 14,
                 fontWeight: 800,
               }}
@@ -4389,7 +4403,7 @@ function PairCompatibilityInfoScreen({
       </div>
 
       <div style={{ ...cardBaseStyle(), padding: 16 }}>
-        <div style={{ fontSize: 16, fontWeight: 900, color: "#1f1d3a" }}>
+        <div style={{ fontSize: 16, fontWeight: 900, color: ink }}>
           🌱 {t.pair.compatibilityInfo.growthZones}
         </div>
 
@@ -4420,7 +4434,7 @@ function PairCompatibilityInfoScreen({
       </div>
 
       <div style={{ ...cardBaseStyle(), padding: 16 }}>
-        <div style={{ fontSize: 16, fontWeight: 900, color: "#1f1d3a" }}>
+        <div style={{ fontSize: 16, fontWeight: 900, color: ink }}>
           📊 {t.pair.compatibilityInfo.byThemes}
         </div>
 
@@ -4443,10 +4457,10 @@ function PairCompatibilityInfoScreen({
                   alignItems: "center",
                 }}
               >
-                <div style={{ fontSize: 15, fontWeight: 800, color: "#1f1d3a" }}>
+                <div style={{ fontSize: 15, fontWeight: 800, color: ink }}>
                   {theme.title}
                 </div>
-                <div style={{ fontSize: 15, fontWeight: 900, color: "#6b46ff" }}>
+                <div style={{ fontSize: 15, fontWeight: 900, color: accent }}>
                   {theme.percent}%
                 </div>
               </div>
@@ -4486,16 +4500,23 @@ function PairInviteScreen({
   onBack,
   onCreateInvite,
   onJoinByCode,
+  theme,
 }: {
   pair: PairState;
   onBack: () => void;
   onCreateInvite: () => Promise<void>;
   onJoinByCode: (code: string) => Promise<void>;
+  // Undefined на iOS (тема там не включена) — читается как "light".
+  theme?: "light" | "dark";
 }) {
-  
+
 const t = market === "fi" ? TEXT_FI : market === "en" ? TEXT_EN : TEXT_RU;
 const REWARD_CATEGORIES =
   market === "en" ? REWARD_CATEGORIES_EN : REWARD_CATEGORIES_RU;
+  const isDark = theme === "dark";
+  const ink = isDark ? "#f3e8ff" : "#1f1d3a";
+  const muted = isDark ? "#c9b3e0" : "#5a5378";
+  const accent = isDark ? "#e0b3ff" : "#6b46ff";
   const [joinCode, setJoinCode] = useState("");
   const [joining, setJoining] = useState(false);
   const [creating, setCreating] = useState(false);
@@ -4561,7 +4582,7 @@ const REWARD_CATEGORIES =
   return (
     <div style={{ padding: 16, display: "grid", gap: 14 }}>
       <div style={{ ...cardBaseStyle(), padding: 18 }}>
-        <div style={{ fontSize: 28, fontWeight: 900, color: "#1f1d3a" }}>
+        <div style={{ fontSize: 28, fontWeight: 900, color: ink }}>
           {t.pair.invitePartner}
         </div>
         <div
@@ -4578,14 +4599,14 @@ const REWARD_CATEGORIES =
 
       {!pair.inviteCode && (
         <div style={{ ...cardBaseStyle(), padding: 18 }}>
-          <div style={{ fontSize: 18, fontWeight: 900, color: "#1f1d3a" }}>
+          <div style={{ fontSize: 18, fontWeight: 900, color: ink }}>
             {t.pair.invite.createStepTitle}
           </div>
 
           <div
             style={{
               marginTop: 8,
-              color: "#4b446a",
+              color: muted,
               lineHeight: 1.45,
               fontSize: 14,
             }}
@@ -4615,7 +4636,7 @@ const REWARD_CATEGORIES =
             style={{
               fontSize: 18,
               fontWeight: 900,
-              color: "#1f1d3a",
+              color: ink,
             }}
           >
             {t.pair.invite.linkTitle}
@@ -4627,7 +4648,7 @@ const REWARD_CATEGORIES =
               padding: "14px 16px",
               borderRadius: 16,
               background: "rgba(255,255,255,0.24)",
-              color: "#241b40",
+              color: ink,
               textAlign: "left",
               fontSize: 14,
               lineHeight: 1.45,
@@ -4682,14 +4703,14 @@ const REWARD_CATEGORIES =
 
       {showJoinInput && (
         <div style={{ ...cardBaseStyle(), padding: 18 }}>
-          <div style={{ fontSize: 18, fontWeight: 900, color: "#1f1d3a" }}>
+          <div style={{ fontSize: 18, fontWeight: 900, color: ink }}>
             {t.pair.invite.enterCodeTitle}
           </div>
 
           <div
             style={{
               marginTop: 8,
-              color: "#4b446a",
+              color: muted,
               lineHeight: 1.45,
               fontSize: 14,
             }}
@@ -4711,7 +4732,7 @@ const REWARD_CATEGORIES =
               outline: "none",
               fontSize: 16,
               fontWeight: 800,
-              color: "#1f1d3a",
+              color: ink,
               boxSizing: "border-box",
             }}
           />
@@ -4744,12 +4765,19 @@ const REWARD_CATEGORIES =
 function PairStreakInfoScreen({
   appState,
   onBack,
+  theme,
 }: {
   appState: AppState;
   onBack: () => void;
+  // Undefined на iOS (тема там не включена) — читается как "light".
+  theme?: "light" | "dark";
 }) {
   const market = getMarket();
   const t = market === "fi" ? TEXT_FI : market === "en" ? TEXT_EN : TEXT_RU;
+  const isDark = theme === "dark";
+  const ink = isDark ? "#f3e8ff" : "#1f1d3a";
+  const muted = isDark ? "#c9b3e0" : "#5a5378";
+  const accent = isDark ? "#e0b3ff" : "#6b46ff";
 
   const [showStreakInfo, setShowStreakInfo] = useState(false);
   const milestones = [
@@ -4806,7 +4834,7 @@ function PairStreakInfoScreen({
             marginTop: 10,
             fontSize: 46,
             fontWeight: 900,
-            color: "#1f1d3a",
+            color: ink,
             lineHeight: 1,
             letterSpacing: "-0.03em",
           }}
@@ -4899,7 +4927,7 @@ function PairStreakInfoScreen({
           style={{
             fontSize: 18,
             fontWeight: 900,
-            color: "#1f1d3a",
+            color: ink,
           }}
         >
           🏆 {t.pair.streakInfoScreen.milestonesTitle}
@@ -5015,7 +5043,7 @@ function PairStreakInfoScreen({
                     marginTop: 16,
                     fontSize: 34,
                     fontWeight: 900,
-                    color: "#1f1d3a",
+                    color: ink,
                     lineHeight: 1,
                   }}
                 >
@@ -5074,12 +5102,19 @@ function PairStreakInfoScreen({
 function PairLevelInfoScreen({
   pairLevel,
   onBack,
+  theme,
 }: {
   pairLevel: PairLevelInfo;
   onBack: () => void;
+  // Undefined на iOS (тема там не включена) — читается как "light".
+  theme?: "light" | "dark";
 }) {
   const market = getMarket();
   const t = market === "fi" ? TEXT_FI : market === "en" ? TEXT_EN : TEXT_RU;
+  const isDark = theme === "dark";
+  const ink = isDark ? "#f3e8ff" : "#1f1d3a";
+  const muted = isDark ? "#c9b3e0" : "#5a5378";
+  const accent = isDark ? "#e0b3ff" : "#6b46ff";
 
   const currentPoints =
     pairLevel.currentLevelPoints + pairLevel.progressInLevel;
@@ -5104,7 +5139,7 @@ function PairLevelInfoScreen({
             marginTop: 10,
             fontSize: 34,
             fontWeight: 900,
-            color: "#1f1d3a",
+            color: ink,
             lineHeight: 1.1,
           }}
         >
@@ -5116,7 +5151,7 @@ function PairLevelInfoScreen({
             marginTop: 4,
             fontSize: 14,
             fontWeight: 800,
-            color: "#7c5cff",
+            color: accent,
           }}
         >
           lvl {pairLevel.level}
@@ -5156,7 +5191,7 @@ function PairLevelInfoScreen({
               justifyContent: "space-between",
               gap: 10,
               fontSize: 12,
-              color: "#5a5378",
+              color: muted,
               fontWeight: 700,
               flexWrap: "wrap",
             }}
@@ -5179,7 +5214,7 @@ function PairLevelInfoScreen({
       </div>
 
       <div style={{ ...cardBaseStyle(), padding: 18 }}>
-        <div style={{ fontSize: 18, fontWeight: 900, color: "#1f1d3a" }}>
+        <div style={{ fontSize: 18, fontWeight: 900, color: ink }}>
           🏆 {t.pair.levelsMilestonesTitle}
         </div>
 
@@ -5223,7 +5258,7 @@ function PairLevelInfoScreen({
                       background: achieved
                         ? "linear-gradient(135deg,#8f6bff,#ff76ba)"
                         : "rgba(255,255,255,0.6)",
-                      color: achieved ? "#fff" : "#5a5378",
+                      color: achieved ? "#fff" : muted,
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",
@@ -5236,11 +5271,11 @@ function PairLevelInfoScreen({
                   </div>
                   <div>
                     <div
-                      style={{ fontSize: 14, fontWeight: 800, color: "#1f1d3a" }}
+                      style={{ fontSize: 14, fontWeight: 800, color: isCurrent ? "#1f1d3a" : ink }}
                     >
                       {level.title}
                     </div>
-                    <div style={{ fontSize: 12, color: "#7a7396" }}>
+                    <div style={{ fontSize: 12, color: isCurrent ? "#7a7396" : muted }}>
                       {level.points} {t.bonus.pointsWord}
                     </div>
                   </div>
@@ -5251,7 +5286,7 @@ function PairLevelInfoScreen({
                     style={{
                       fontSize: 11,
                       fontWeight: 800,
-                      color: isNext ? "#7c5cff" : "#ff5ea8",
+                      color: isNext ? accent : "#ff5ea8",
                       background: "rgba(255,255,255,0.82)",
                       padding: "5px 8px",
                       borderRadius: 999,
@@ -7428,6 +7463,7 @@ function DailyPairQuestionScreen({
   setAppState,
   onBack,
   onOpenStreakInfo,
+  theme,
 }: {
   user: TgUser | null;
   pair: PairState;
@@ -7435,10 +7471,16 @@ function DailyPairQuestionScreen({
   setAppState: React.Dispatch<React.SetStateAction<AppState>>;
   onBack: () => void;
   onOpenStreakInfo: () => void;
+  // Undefined на iOS (тема там не включена) — читается как "light".
+  theme?: "light" | "dark";
 }) {
 
   const market = getMarket();
 const t = market === "fi" ? TEXT_FI : market === "en" ? TEXT_EN : TEXT_RU;
+  const isDark = theme === "dark";
+  const ink = isDark ? "#f3e8ff" : "#1f1d3a";
+  const muted = isDark ? "#c9b3e0" : "#5a5378";
+  const accent = isDark ? "#e0b3ff" : "#6b46ff";
   const today = getTodayLocalDateString();
   const question = getDailyPairQuestionForToday();
 
@@ -7636,7 +7678,7 @@ const t = market === "fi" ? TEXT_FI : market === "en" ? TEXT_EN : TEXT_RU;
       }}
     >
       <div>
-        <div style={{ fontSize: 24, fontWeight: 900, color: "#1f1d3a" }}>
+        <div style={{ fontSize: 24, fontWeight: 900, color: ink }}>
           {t.dailyPairQuestion.title}
         </div>
         <div
@@ -7687,7 +7729,7 @@ const t = market === "fi" ? TEXT_FI : market === "en" ? TEXT_EN : TEXT_RU;
             padding: "14px 16px",
             borderRadius: 16,
             background: "rgba(255,255,255,0.24)",
-            color: "#241b40",
+            color: ink,
             fontWeight: 800,
             lineHeight: 1.4,
             fontSize: 18,
@@ -7729,7 +7771,7 @@ const t = market === "fi" ? TEXT_FI : market === "en" ? TEXT_EN : TEXT_RU;
                       borderRadius: 16,
                       padding: "12px 14px",
                       background: "rgba(255,255,255,0.20)",
-                      color: "#1f1d3a",
+                      color: ink,
                       textAlign: "left",
                       fontSize: 15,
                       fontWeight: 700,
@@ -7767,7 +7809,7 @@ const t = market === "fi" ? TEXT_FI : market === "en" ? TEXT_EN : TEXT_RU;
     }}
   >
     <div>
-      <div style={{ fontSize: 16, fontWeight: 900, color: "#1f1d3a" }}>
+      <div style={{ fontSize: 16, fontWeight: 900, color: ink }}>
         🔥 Серия пары
       </div>
 
@@ -7776,7 +7818,7 @@ const t = market === "fi" ? TEXT_FI : market === "en" ? TEXT_EN : TEXT_RU;
           marginTop: 6,
           fontSize: 30,
           fontWeight: 900,
-          color: "#241b40",
+          color: ink,
           lineHeight: 1,
         }}
       >
@@ -7829,7 +7871,7 @@ const t = market === "fi" ? TEXT_FI : market === "en" ? TEXT_EN : TEXT_RU;
         padding: 14,
         fontSize: 16,
         fontWeight: 800,
-        color: "#2b2148",
+        color: ink,
       }}
     >
       Партнёр: {partnerAnswer ? "ответил(а)" : "ещё не ответил(а)"}
@@ -7969,7 +8011,7 @@ const t = market === "fi" ? TEXT_FI : market === "en" ? TEXT_EN : TEXT_RU;
         gap: 12,
       }}
     >
-      <div style={{ fontSize: 18, fontWeight: 900, color: "#1f1d3a" }}>
+      <div style={{ fontSize: 18, fontWeight: 900, color: ink }}>
         {t.pair.historyTitle}
       </div>
 
@@ -8011,7 +8053,7 @@ const t = market === "fi" ? TEXT_FI : market === "en" ? TEXT_EN : TEXT_RU;
                     background: "rgba(255,255,255,0.22)",
                   }}
                 >
-                  <div style={{ fontSize: 12, color: "#5a5378", fontWeight: 700 }}>
+                  <div style={{ fontSize: 12, color: muted, fontWeight: 700 }}>
                     {item.date}
                   </div>
 
@@ -8020,14 +8062,14 @@ const t = market === "fi" ? TEXT_FI : market === "en" ? TEXT_EN : TEXT_RU;
                       marginTop: 4,
                       fontSize: 14,
                       fontWeight: 800,
-                      color: "#1f1d3a",
+                      color: ink,
                       lineHeight: 1.35,
                     }}
                   >
                     {historyQuestion?.text || item.questionId}
                   </div>
 
-                  <div style={{ marginTop: 6, fontSize: 13, color: "#4d466c" }}>
+                  <div style={{ marginTop: 6, fontSize: 13, color: muted }}>
                     {same ? "Совпали 💘" : "Разные ответы ✨"}
                   </div>
                 </div>
@@ -9642,6 +9684,7 @@ function MainMenu({
   onNavigate,
   onOpenDating,
   theme,
+  onToggleTheme,
   t,
 }: {
   points: number;
@@ -9651,8 +9694,10 @@ function MainMenu({
   t: any;
   onNavigate: (screen: Screen) => void;
   onOpenDating: () => void;
-  // Undefined на iOS (тема там не включена) — читается как "light".
+  // Оба undefined на iOS (тема там не включена) — кнопка переключения
+  // просто не рисуется рядом с шестерёнкой.
   theme?: "light" | "dark";
+  onToggleTheme?: () => void;
 }) {
 
 
@@ -9690,25 +9735,47 @@ function MainMenu({
   >
     Couple Quizzes
   </div>
-        <button
-          onClick={() => onNavigate("profile")}
-          aria-label={t.account.settingsTitle}
-          style={{
-            flexShrink: 0,
-            width: 34,
-            height: 34,
-            borderRadius: 999,
-            border: "none",
-            background: "rgba(255,255,255,0.32)",
-            fontSize: 17,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            cursor: "pointer",
-          }}
-        >
-          ⚙️
-        </button>
+        <div style={{ display: "flex", gap: 8, flexShrink: 0 }}>
+          {onToggleTheme && (
+            <button
+              onClick={onToggleTheme}
+              aria-label={t.account.themeLabel}
+              style={{
+                width: 34,
+                height: 34,
+                borderRadius: 999,
+                border: "none",
+                background: isDark ? "rgba(255,255,255,0.14)" : "rgba(255,255,255,0.32)",
+                fontSize: 15,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                cursor: "pointer",
+              }}
+            >
+              {isDark ? "☀️" : "🌙"}
+            </button>
+          )}
+          <button
+            onClick={() => onNavigate("profile")}
+            aria-label={t.account.settingsTitle}
+            style={{
+              flexShrink: 0,
+              width: 34,
+              height: 34,
+              borderRadius: 999,
+              border: "none",
+              background: isDark ? "rgba(255,255,255,0.14)" : "rgba(255,255,255,0.32)",
+              fontSize: 17,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              cursor: "pointer",
+            }}
+          >
+            ⚙️
+          </button>
+        </div>
       </div>
 
 
@@ -10174,6 +10241,7 @@ function MenuChooserScreen({
   subtitle,
   onBack,
   options,
+  theme,
   t,
 }: {
   title?: string;
@@ -10183,19 +10251,26 @@ function MenuChooserScreen({
   // не нужна, переключение между разделами идёт через сам бар.
   onBack?: () => void;
   options: Array<{ label: string; description?: string; emoji: string; onClick: () => void }>;
+  // Undefined на iOS (тема там не включена) — читается как "light".
+  theme?: "light" | "dark";
   t: any;
 }) {
+  const isDark = theme === "dark";
+  const ink = isDark ? "#f3e8ff" : "#1f1d3a";
+  const muted = isDark ? "#c9b3e0" : "#6b6690";
+  const accent = isDark ? "#e0b3ff" : "#7c5cff";
+
   return (
     <div style={{ padding: 16, display: "grid", gap: 14 }}>
       {(title || subtitle) && (
         <div style={{ padding: "4px 4px 0" }}>
           {title && (
-            <div style={{ fontSize: 22, fontWeight: 900, color: "#1f1d3a" }}>
+            <div style={{ fontSize: 22, fontWeight: 900, color: ink }}>
               {title}
             </div>
           )}
           {subtitle && (
-            <div style={{ fontSize: 14, color: "#6b6690", marginTop: 4, lineHeight: 1.4 }}>
+            <div style={{ fontSize: 14, color: muted, marginTop: 4, lineHeight: 1.4 }}>
               {subtitle}
             </div>
           )}
@@ -10235,16 +10310,16 @@ function MenuChooserScreen({
               {option.emoji}
             </div>
             <div style={{ display: "grid", gap: 3 }}>
-              <div style={{ fontSize: 17, fontWeight: 900, color: "#1f1d3a" }}>
+              <div style={{ fontSize: 17, fontWeight: 900, color: ink }}>
                 {option.label}
               </div>
               {option.description && (
-                <div style={{ fontSize: 13, color: "#6b6690", lineHeight: 1.35 }}>
+                <div style={{ fontSize: 13, color: muted, lineHeight: 1.35 }}>
                   {option.description}
                 </div>
               )}
             </div>
-            <div style={{ marginLeft: "auto", fontSize: 20, color: "#7c5cff", flexShrink: 0 }}>→</div>
+            <div style={{ marginLeft: "auto", fontSize: 20, color: accent, flexShrink: 0 }}>→</div>
           </button>
         ))}
       </div>
@@ -10266,6 +10341,7 @@ function PollsScreen({
   pair,
   isPremium,
   showPaywall,
+  theme,
 }: {
   genderFilter: "boy" | "girl";
   completedPollIds: string[];
@@ -10283,6 +10359,8 @@ function PollsScreen({
   isPremium: boolean;
 
   showPaywall: () => void;
+  // Undefined на iOS (тема там не включена) — читается как "light".
+  theme?: "light" | "dark";
 }) {
   const filteredPolls = POLLS.filter((p) => p.gender === genderFilter);
 
@@ -10293,6 +10371,10 @@ function PollsScreen({
   const [finished, setFinished] = useState(false);
   const market = getMarket();
 const t = market === "fi" ? TEXT_FI : market === "en" ? TEXT_EN : TEXT_RU;
+  const isDark = theme === "dark";
+  const ink = isDark ? "#f3e8ff" : "#1f1d3a";
+  const muted = isDark ? "#c9b3e0" : "#5a5378";
+  const accent = isDark ? "#e0b3ff" : "#6b46ff";
 
 
 const POLLS_PER_PAGE = 3;
@@ -10388,7 +10470,7 @@ async function handleFinish() {
     return (
       <div style={{ padding: 12, display: "grid", gap: 10 }}>
         <div style={{ ...cardBaseStyle(), padding: 14 }}>
-          <div style={{ fontSize: 24, fontWeight: 900, color: "#1f1d3a" }}>
+          <div style={{ fontSize: 24, fontWeight: 900, color: ink }}>
   {t.polls.title}
 </div>
 <div style={{ marginTop: 6, color: "#3a345c", fontSize: 14 }}>
@@ -10416,7 +10498,7 @@ async function handleFinish() {
     ? `Page ${page} of ${totalPages}`
     : `Страница ${page} из ${totalPages}`}
 </div>
-<div style={{ fontSize: 13, color: "#5a5378" }}>
+<div style={{ fontSize: 13, color: muted }}>
   {market !== "ru"
     ? `${visiblePolls.length} polls`
     : `${visiblePolls.length} опросов`}
@@ -10442,7 +10524,7 @@ async function handleFinish() {
               style={{
                 fontSize: 17,
                 fontWeight: 900,
-                color: "#111111",
+                color: ink,
                 lineHeight: 1.2,
               }}
             >
@@ -10455,7 +10537,7 @@ async function handleFinish() {
               style={{
                 marginTop: 6,
                 fontSize: 13,
-                color: "#5a5378",
+                color: muted,
                 lineHeight: 1.35,
               }}
             >
@@ -10474,7 +10556,7 @@ async function handleFinish() {
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              color: "#6b46ff",
+              color: accent,
               fontWeight: 900,
               fontSize: 13,
               flexShrink: 0,
@@ -10553,7 +10635,7 @@ async function handleFinish() {
   return (
     <div style={{ padding: 14 }}>
       <div style={{ ...cardBaseStyle(), padding: 16 }}>
-        <div style={{ fontSize: 28, fontWeight: 900, color: "#1f1d3a" }}>
+        <div style={{ fontSize: 28, fontWeight: 900, color: ink }}>
           {market !== "ru" ? "Done 🎉" : "Готово 🎉"}
         </div>
         <div style={{ marginTop: 10, color: "#3a345c", lineHeight: 1.5 }}>
@@ -10589,10 +10671,10 @@ async function handleFinish() {
   return (
     <div style={{ padding: 12, display: "grid", gap: 10 }}>
       <div style={{ ...cardBaseStyle(), padding: 14 }}>
-        <div style={{ fontSize: 22, fontWeight: 900, color: "#1f1d3a" }}>
+        <div style={{ fontSize: 22, fontWeight: 900, color: ink }}>
           {activePoll.title}
         </div>
-        <div style={{ marginTop: 6, color: "#4b446a", fontSize: 14 }}>
+        <div style={{ marginTop: 6, color: muted, fontSize: 14 }}>
           {market !== "ru"
             ? `Question ${currentQuestionIndex + 1} of ${activePoll.questions.length}`
             : `Вопрос ${currentQuestionIndex + 1} из ${activePoll.questions.length}`}
@@ -10654,7 +10736,7 @@ async function handleFinish() {
                   background: isSelected
                     ? "rgba(255,255,255,0.38)"
                     : "rgba(255,255,255,0.20)",
-                  color: "#1f1d3a",
+                  color: ink,
                   textAlign: "left",
                   fontSize: 15,
                   fontWeight: isSelected ? 900 : 700,
@@ -10688,6 +10770,7 @@ function GamesScreen({
   setAppState,
   onCompleteGame,
   onClaimStepReward,
+  theme,
 }: {
   completedGameIds: string[];
   playedGameRewardKeys: string[];
@@ -10695,10 +10778,16 @@ function GamesScreen({
   setAppState: React.Dispatch<React.SetStateAction<AppState>>;
   onCompleteGame: (game: Game, score: number) => void;
   onClaimStepReward: (key: string) => Promise<boolean>;
+  // Undefined на iOS (тема там не включена) — читается как "light".
+  theme?: "light" | "dark";
 }) {
 
   const market = getMarket();
 const t = market === "fi" ? TEXT_FI : market === "en" ? TEXT_EN : TEXT_RU;
+  const isDark = theme === "dark";
+  const ink = isDark ? "#f3e8ff" : "#1f1d3a";
+  const muted = isDark ? "#c9b3e0" : "#5a5378";
+  const accent = isDark ? "#e0b3ff" : "#6b46ff";
   const [activeGameId, setActiveGameId] = useState<string | null>(null);
   const [aiStep, setAiStep] = useState(0);
   const [showAiAnswers, setShowAiAnswers] = useState(true);
@@ -10778,14 +10867,14 @@ const psychologistAvatar =
       }}
     >
       <div style={{ ...cardBaseStyle(), padding: 14 }}>
-        <div style={{ fontSize: 22, fontWeight: 900, color: "#1f1d3a" }}>
+        <div style={{ fontSize: 22, fontWeight: 900, color: ink }}>
           {market !== "ru" ? "Relationship Express-Check 🩺" : "Экспресс-чек отношений 🩺"}
         </div>
 
         <div
           style={{
             marginTop: 8,
-            color: "#4b446a",
+            color: muted,
             lineHeight: 1.45,
             fontSize: 13,
           }}
@@ -10848,7 +10937,7 @@ const psychologistAvatar =
                   marginTop: 8,
                   fontSize: 20,
                   fontWeight: 900,
-                  color: "#1f1d3a",
+                  color: ink,
                   lineHeight: 1.35,
                 }}
               >
@@ -10872,7 +10961,7 @@ const psychologistAvatar =
             <div
               style={{
                 fontSize: 13,
-                color: "#5a5378",
+                color: muted,
                 fontWeight: 700,
                 marginBottom: 10,
               }}
@@ -10968,7 +11057,7 @@ const psychologistAvatar =
                     marginTop: 4,
                     fontSize: 22,
                     fontWeight: 900,
-                    color: "#1f1d3a",
+                    color: ink,
                     lineHeight: 1.3,
                   }}
                 >
@@ -10981,7 +11070,7 @@ const psychologistAvatar =
               style={{
                 marginTop: 12,
                 fontSize: 14,
-                color: "#5a5378",
+                color: muted,
                 fontWeight: 700,
                 lineHeight: 1.4,
               }}
@@ -10992,7 +11081,7 @@ const psychologistAvatar =
             <div
               style={{
                 marginTop: 14,
-                color: "#4b446a",
+                color: muted,
                 fontSize: 14,
                 lineHeight: 1.55,
               }}
@@ -11002,7 +11091,7 @@ const psychologistAvatar =
           </div>
 
           <div style={{ ...cardBaseStyle(), padding: 18 }}>
-            <div style={{ fontSize: 18, fontWeight: 900, color: "#1f1d3a" }}>
+            <div style={{ fontSize: 18, fontWeight: 900, color: ink }}>
               {market !== "ru" ? "What you can do right now 💞" : "Что можно сделать уже сейчас 💞"}
             </div>
 
@@ -11155,7 +11244,7 @@ function handleLoveQuestionFinish() {
   return (
     <div style={{ padding: 10, display: "grid", gap: 8 }}>
       <div style={{ ...cardBaseStyle(), padding: 12 }}>
-        <div style={{ fontSize: 24, fontWeight: 900, color: "#1f1d3a" }}>
+        <div style={{ fontSize: 24, fontWeight: 900, color: ink }}>
           {t.games.title}
         </div>
         <div style={{ marginTop: 4, color: "#3a345c", fontSize: 13 }}>
@@ -11180,7 +11269,7 @@ function handleLoveQuestionFinish() {
   style={{
     fontWeight: 900,
     fontSize: 16,
-    color: "#111111",
+    color: ink,
   }}
 >
   {game.title}
@@ -11191,7 +11280,7 @@ function handleLoveQuestionFinish() {
       padding: "6px 10px",
       borderRadius: 999,
       background: "rgba(107,70,255,0.10)",
-      color: "#6b46ff",
+      color: accent,
       fontWeight: 800,
       boxShadow: "0 6px 16px rgba(107,70,255,0.15)",
       fontSize: 12,
@@ -11282,14 +11371,14 @@ function handleLoveQuestionFinish() {
   return (
     <div style={{ padding: 16, display: "grid", gap: 14 }}>
       <div style={{ ...cardBaseStyle(), padding: 18 }}>
-        <div style={{ fontSize: 28, fontWeight: 900, color: "#1f1d3a" }}>
+        <div style={{ fontSize: 28, fontWeight: 900, color: ink }}>
           {t.aiPsychologist.checkTitle}
         </div>
 
         <div
           style={{
             marginTop: 8,
-            color: "#4b446a",
+            color: muted,
             lineHeight: 1.45,
             fontSize: 14,
           }}
@@ -11317,7 +11406,7 @@ function handleLoveQuestionFinish() {
               marginTop: 10,
               fontSize: 22,
               fontWeight: 900,
-              color: "#1f1d3a",
+              color: ink,
               lineHeight: 1.35,
             }}
           >
@@ -11360,7 +11449,7 @@ function handleLoveQuestionFinish() {
                 marginTop: 10,
                 fontSize: 24,
                 fontWeight: 900,
-                color: "#1f1d3a",
+                color: ink,
                 lineHeight: 1.3,
               }}
             >
@@ -11371,7 +11460,7 @@ function handleLoveQuestionFinish() {
               style={{
                 marginTop: 8,
                 fontSize: 14,
-                color: "#5a5378",
+                color: muted,
                 fontWeight: 700,
                 lineHeight: 1.4,
               }}
@@ -11382,7 +11471,7 @@ function handleLoveQuestionFinish() {
             <div
               style={{
                 marginTop: 14,
-                color: "#4b446a",
+                color: muted,
                 fontSize: 14,
                 lineHeight: 1.55,
               }}
@@ -11392,7 +11481,7 @@ function handleLoveQuestionFinish() {
           </div>
 
           <div style={{ ...cardBaseStyle(), padding: 18 }}>
-            <div style={{ fontSize: 18, fontWeight: 900, color: "#1f1d3a" }}>
+            <div style={{ fontSize: 18, fontWeight: 900, color: ink }}>
               {t.aiPsychologist.whatToDoNow}
             </div>
 
@@ -11417,7 +11506,7 @@ function handleLoveQuestionFinish() {
           </div>
 
           <div style={{ ...cardBaseStyle(), padding: 18 }}>
-  <div style={{ fontSize: 18, fontWeight: 900, color: "#1f1d3a" }}>
+  <div style={{ fontSize: 18, fontWeight: 900, color: ink }}>
     {t.aiPsychologist.breakdownByTopics}
   </div>
 
@@ -11435,7 +11524,7 @@ function handleLoveQuestionFinish() {
           style={{
             fontSize: 15,
             fontWeight: 800,
-            color: "#1f1d3a",
+            color: ink,
             textTransform: "capitalize",
           }}
         >
@@ -11446,7 +11535,7 @@ function handleLoveQuestionFinish() {
           style={{
             marginTop: 4,
             fontSize: 13,
-            color: "#5a5378",
+            color: muted,
             fontWeight: 700,
           }}
         >
@@ -11524,7 +11613,7 @@ if (activeGame?.id === "never-have-i-ever") {
     return (
       <div style={{ padding: 16 }}>
         <div style={{ ...cardBaseStyle(), padding: 20 }}>
-          <div style={{ fontSize: 30, fontWeight: 900, color: "#1f1d3a" }}>
+          <div style={{ fontSize: 30, fontWeight: 900, color: ink }}>
             {t.games.finishedTitle}
           </div>
           <div style={{ marginTop: 10, color: "#3a345c", lineHeight: 1.5 }}>
@@ -11561,10 +11650,10 @@ if (activeGame?.id === "never-have-i-ever") {
    return (
   <div style={{ padding: 16, display: "grid", gap: 14 }}>
     <div style={{ ...cardBaseStyle(), padding: 18 }}>
-      <div style={{ fontSize: 24, fontWeight: 900, color: "#1f1d3a" }}>
+      <div style={{ fontSize: 24, fontWeight: 900, color: ink }}>
         {activeGame.title}
       </div>
-      <div style={{ marginTop: 8, color: "#4b446a" }}>
+      <div style={{ marginTop: 8, color: muted }}>
         {t.games.questionProgress
           .replace("{current}", String(currentQuestionIndex + 1))
           .replace("{total}", String(activeGame.questions.length))}
@@ -11600,7 +11689,7 @@ if (activeGame?.id === "never-have-i-ever") {
                 background: isSelected
                   ? "rgba(255,255,255,0.38)"
                   : "rgba(255,255,255,0.20)",
-                color: "#1f1d3a",
+                color: ink,
                 textAlign: "left",
                 fontSize: 16,
                 fontWeight: isSelected ? 900 : 700,
@@ -11647,7 +11736,7 @@ if (activeGame?.id === "never-have-i-ever") {
           padding: "10px 16px",
           borderRadius: 999,
           background: "rgba(107,70,255,0.14)",
-          color: "#6b46ff",
+          color: accent,
           fontSize: 24,
           fontWeight: 900,
           boxShadow: "0 12px 30px rgba(107,70,255,0.18)",
@@ -13037,6 +13126,7 @@ function TestsScreen({
   isPremium,
   showPaywall,
   onCheckDailyTestAccess,
+  theme,
 }: {
   completedTestIds: string[];
   onBack: () => void;
@@ -13053,6 +13143,8 @@ function TestsScreen({
     allowed: boolean;
     isPremium: boolean;
   } | null>;
+  // Undefined на iOS (тема там не включена) — читается как "light".
+  theme?: "light" | "dark";
 }) {
   const [activeTestId, setActiveTestId] = useState<string | null>(null);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
@@ -13061,6 +13153,10 @@ function TestsScreen({
 
   const market = getMarket();
 const t = market === "fi" ? TEXT_FI : market === "en" ? TEXT_EN : TEXT_RU;
+  const isDark = theme === "dark";
+  const ink = isDark ? "#f3e8ff" : "#1f1d3a";
+  const muted = isDark ? "#c9b3e0" : "#5a5378";
+  const accent = isDark ? "#e0b3ff" : "#6b46ff";
   const activeTest = TESTS.find((item) => item.id === activeTestId) || null;
   const currentQuestion = activeTest?.questions[currentQuestionIndex] || null;
 
@@ -13216,7 +13312,7 @@ if (!activeTestId) {
   return (
     <div style={{ padding: 10, display: "grid", gap: 8 }}>
       <div style={{ ...cardBaseStyle(), padding: 12 }}>
-        <div style={{ fontSize: 24, fontWeight: 900, color: "#1f1d3a" }}>
+        <div style={{ fontSize: 24, fontWeight: 900, color: ink }}>
           {t.tests.title}
         </div>
         <div style={{ marginTop: 4, color: "#3a345c", fontSize: 13 }}>
@@ -13245,7 +13341,7 @@ if (!activeTestId) {
         style={{
           fontSize: 18,
           fontWeight: 900,
-          color: "#111111",
+          color: ink,
           lineHeight: 1.2,
         }}
       >
@@ -13262,7 +13358,7 @@ if (!activeTestId) {
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
-    color: "#6b46ff",
+    color: accent,
     fontWeight: 900,
     fontSize: 13,
     flexShrink: 0,
@@ -13341,11 +13437,11 @@ if (!activeTestId) {
     return (
       <div style={{ padding: 16 }}>
         <div style={{ ...cardBaseStyle(), padding: 20 }}>
-          <div style={{ fontSize: 30, fontWeight: 900, color: "#1f1d3a" }}>
+          <div style={{ fontSize: 30, fontWeight: 900, color: ink }}>
             {market !== "ru" ? "Test Result ✨" : "Результат теста ✨"}
           </div>
 
-          <div style={{ marginTop: 16, fontSize: 26, fontWeight: 900, color: "#241b40" }}>
+          <div style={{ marginTop: 16, fontSize: 26, fontWeight: 900, color: ink }}>
             {result.title}
           </div>
 
@@ -13388,10 +13484,10 @@ if (!activeTestId) {
   return (
     <div style={{ padding: 16, display: "grid", gap: 14 }}>
       <div style={{ ...cardBaseStyle(), padding: 18 }}>
-        <div style={{ fontSize: 24, fontWeight: 900, color: "#1f1d3a" }}>
+        <div style={{ fontSize: 24, fontWeight: 900, color: ink }}>
           {activeTest.title}
         </div>
-        <div style={{ marginTop: 8, color: "#4b446a" }}>
+        <div style={{ marginTop: 8, color: muted }}>
           {market !== "ru"
             ? `Question ${currentQuestionIndex + 1} of ${activeTest.questions.length}`
             : `Вопрос ${currentQuestionIndex + 1} из ${activeTest.questions.length}`}
@@ -13443,7 +13539,7 @@ if (!activeTestId) {
                   background: isSelected
                     ? "rgba(255,255,255,0.38)"
                     : "rgba(255,255,255,0.20)",
-                  color: "#1f1d3a",
+                  color: ink,
                   textAlign: "left",
                   fontSize: 16,
                   fontWeight: isSelected ? 900 : 700,
@@ -13509,16 +13605,23 @@ function RewardsScreen({
   onBack,
   onSpin,
   onRewardsStateLoaded,
+  theme,
 }: {
   points: number;
   wonRewards: WonReward[];
   onBack: () => void;
   onSpin: () => Promise<WonReward | null>;
   onRewardsStateLoaded: (wonRewards: WonReward[]) => void;
+  // Undefined на iOS (тема там не включена) — читается как "light".
+  theme?: "light" | "dark";
 }) {
 
   const market = getMarket();
 const t = market === "fi" ? TEXT_FI : market === "en" ? TEXT_EN : TEXT_RU;
+  const isDark = theme === "dark";
+  const ink = isDark ? "#f3e8ff" : "#1f1d3a";
+  const muted = isDark ? "#c9b3e0" : "#5a5378";
+  const accent = isDark ? "#e0b3ff" : "#6b46ff";
   const [rotation, setRotation] = useState(0);
   const [isSpinning, setIsSpinning] = useState(false);
   const [message, setMessage] = useState("");
@@ -13687,7 +13790,7 @@ const visibleRewards = rewardsExpanded
   return (
     <div style={{ padding: 12, display: "grid", gap: 10 }}>
      <div style={{ ...cardBaseStyle(), padding: 14 }}>
-  <div style={{ fontSize: 24, fontWeight: 900, color: "#1f1d3a" }}>
+  <div style={{ fontSize: 24, fontWeight: 900, color: ink }}>
     {isCapacitorApp() ? t.rewards.wheelScreen.iosTitle : t.rewards.wheel}
   </div>
   <div style={{ marginTop: 4, color: "#3a345c", fontSize: 13, lineHeight: 1.4 }}>
@@ -13705,7 +13808,7 @@ const visibleRewards = rewardsExpanded
       background: "rgba(255,255,255,0.26)",
       fontSize: 17,
       fontWeight: 900,
-      color: "#241b40",
+      color: ink,
     }}
   >
     {t.rewards.wheelScreen.pointsLabel} {points}
@@ -13923,7 +14026,7 @@ const visibleRewards = rewardsExpanded
                       x="0"
                       y="-8"
                       textAnchor="middle"
-                      fill="#241b40"
+                      fill={ink}
                       fontSize={emojiFontSize}
                       fontWeight="700"
                     >
@@ -13933,7 +14036,7 @@ const visibleRewards = rewardsExpanded
                       x="0"
                       y="14"
                       textAnchor="middle"
-                      fill="#241b40"
+                      fill={ink}
                       fontSize={titleFontSize}
                       fontWeight="800"
                       textLength={titleTextLength}
@@ -14054,7 +14157,7 @@ const visibleRewards = rewardsExpanded
         style={{
           marginTop: 8,
           fontSize: 14,
-          color: "#4b446a",
+          color: muted,
           lineHeight: 1.4,
         }}
       >
@@ -14111,7 +14214,7 @@ const visibleRewards = rewardsExpanded
 )}
 
       <div style={{ ...cardBaseStyle(), padding: 18 }}>
-        <div style={{ fontSize: 22, fontWeight: 900, color: "#1f1d3a" }}>
+        <div style={{ fontSize: 22, fontWeight: 900, color: ink }}>
           {t.rewards.wheelScreen.wonRewardsTitle}
         </div>
 
@@ -14137,7 +14240,7 @@ const visibleRewards = rewardsExpanded
                       : "1px solid transparent",
                 }}
               >
-                <div style={{ fontWeight: 900, color: "#241b40" }}>
+                <div style={{ fontWeight: 900, color: ink }}>
                   {reward.title}
                 </div>
                 <div style={{ marginTop: 4, fontSize: 14, color: "#4d466c" }}>
@@ -14176,11 +14279,17 @@ const visibleRewards = rewardsExpanded
 
  function GenderSelectScreen({
   onSelect,
+  theme,
 }: {
   onSelect: (gender: "boy" | "girl") => void;
+  // Undefined на iOS (тема там не включена) — читается как "light".
+  theme?: "light" | "dark";
 }) {
   const market = getMarket();
   const t = market === "fi" ? TEXT_FI : market === "en" ? TEXT_EN : TEXT_RU;
+  const isDark = theme === "dark";
+  const ink = isDark ? "#f3e8ff" : "#1f1d3a";
+  const muted = isDark ? "#c9b3e0" : "#5a5378";
   return (
     <div style={{ padding: 16 }}>
       <div style={{ ...cardBaseStyle(), padding: 20 }}>
@@ -14188,7 +14297,7 @@ const visibleRewards = rewardsExpanded
           style={{
             fontSize: 24,
             fontWeight: 900,
-            color: "#1f1d3a",
+            color: ink,
             textAlign: "center",
           }}
         >
@@ -14198,7 +14307,7 @@ const visibleRewards = rewardsExpanded
        <div
   style={{
     marginTop: 8,
-    color: "#5a5378",
+    color: muted,
     fontSize: 14,
     lineHeight: 1.45,
     textAlign: "center",
@@ -14242,6 +14351,7 @@ function TopPlayersScreen({
   onRefresh,
   refreshing,
 
+  theme,
   t,
 }: {
   user: TgUser | null;
@@ -14260,8 +14370,14 @@ function TopPlayersScreen({
   onRefresh: () => Promise<void>;
 
   refreshing: boolean;
+  // Undefined на iOS (тема там не включена) — читается как "light".
+  theme?: "light" | "dark";
   t: any;
 }) {
+  const isDark = theme === "dark";
+  const ink = isDark ? "#f3e8ff" : "#1f1d3a";
+  const muted = isDark ? "#c9b3e0" : "#5a5378";
+  const accent = isDark ? "#e0b3ff" : "#6b46ff";
   const previousWeekKey = getPreviousWeekKey();
 
   const [topMode, setTopMode] = useState<"solo" | "pair">("solo");
@@ -14412,7 +14528,7 @@ function TopPlayersScreen({
               style={{
                 fontSize: 24,
                 fontWeight: 900,
-                color: "#1f1d3a",
+                color: ink,
               }}
             >
               🏆 {t.top.title}
@@ -14571,7 +14687,7 @@ function TopPlayersScreen({
             style={{
               fontSize: 18,
               fontWeight: 900,
-              color: "#1f1d3a",
+              color: ink,
             }}
           >
             {topMode === "solo"
@@ -14662,7 +14778,7 @@ function TopPlayersScreen({
                             fontWeight: 900,
                             fontSize:
                               userRow.place <= 3 ? 18 : 14,
-                            color: "#1f1d3a",
+                            color: ink,
                             background: getPlaceBackground(
                               userRow.place
                             ),
@@ -14718,7 +14834,7 @@ function TopPlayersScreen({
                           <div
                             style={{
                               fontWeight: 900,
-                              color: "#241b40",
+                              color: ink,
                               whiteSpace: "nowrap",
                               overflow: "hidden",
                               textOverflow: "ellipsis",
@@ -14759,7 +14875,7 @@ function TopPlayersScreen({
                           style={{
                             flexShrink: 0,
                             textAlign: "right",
-                            color: "#241b40",
+                            color: ink,
                             fontWeight: 900,
                             fontSize: 15,
                             whiteSpace: "nowrap",
@@ -14811,7 +14927,7 @@ function TopPlayersScreen({
                             fontWeight: 900,
                             fontSize:
                               pairRow.place <= 3 ? 18 : 14,
-                            color: "#1f1d3a",
+                            color: ink,
                             background: getPlaceBackground(
                               pairRow.place
                             ),
@@ -14924,7 +15040,7 @@ function TopPlayersScreen({
                           <div
                             style={{
                               fontWeight: 900,
-                              color: "#241b40",
+                              color: ink,
                               whiteSpace: "nowrap",
                               overflow: "hidden",
                               textOverflow: "ellipsis",
@@ -14957,7 +15073,7 @@ function TopPlayersScreen({
                           style={{
                             flexShrink: 0,
                             textAlign: "right",
-                            color: "#241b40",
+                            color: ink,
                             fontWeight: 900,
                             fontSize: 15,
                             whiteSpace: "nowrap",
@@ -15008,7 +15124,7 @@ function TopPlayersScreen({
             style={{
               fontSize: 17,
               fontWeight: 900,
-              color: "#1f1d3a",
+              color: ink,
             }}
           >
             {t.top.screen.yourPlaceTitle}
@@ -15050,7 +15166,7 @@ function TopPlayersScreen({
             style={{
               fontSize: 17,
               fontWeight: 900,
-              color: "#1f1d3a",
+              color: ink,
             }}
           >
             {t.top.screen.yourPairPlaceTitle}
@@ -15094,7 +15210,7 @@ function TopPlayersScreen({
           style={{
             fontSize: 18,
             fontWeight: 900,
-            color: "#1f1d3a",
+            color: ink,
           }}
         >
           {t.top.screen.weeklyRewardTitle}
@@ -15135,7 +15251,7 @@ function TopPlayersScreen({
                 padding: "12px 14px",
                 borderRadius: 16,
                 background: "rgba(255,255,255,0.24)",
-                color: "#241b40",
+                color: ink,
                 fontWeight: 800,
                 fontSize: 14,
                 lineHeight: 1.45,
@@ -19731,6 +19847,7 @@ if (finishedAllTests && !appState.completionBonusesClaimed.tests) {
       }));
       setScreen("menu");
     }}
+    theme={isCapacitorApp() ? undefined : theme}
   />
 )}
 
@@ -19743,6 +19860,7 @@ if (finishedAllTests && !appState.completionBonusesClaimed.tests) {
     appState={appState}
     onOpenDating={handleOpenDating}
     theme={isCapacitorApp() ? undefined : theme}
+    onToggleTheme={isCapacitorApp() ? undefined : toggleTheme}
    onNavigate={(next) => {
   // Раздел открывается всегда — сам paywall (если нужен) показывает
   // конкретный экран (PollsScreen/TestsScreen), а не общий счётчик.
@@ -19767,6 +19885,7 @@ showPaywall={() => {
   setPaywallBackScreen(screen);
   setScreen("paywall");
 }}
+    theme={isCapacitorApp() ? undefined : theme}
   />
 )}
 
@@ -19782,6 +19901,7 @@ showPaywall={() => {
       setPaywallBackScreen("menu");
       setScreen("paywall");
     }}
+    theme={isCapacitorApp() ? undefined : theme}
   />
 )}
 
@@ -19793,6 +19913,7 @@ showPaywall={() => {
   setAppState={setAppState}
  onCompleteGame={handleCompleteGame}
   onClaimStepReward={claimGameStepReward}
+  theme={isCapacitorApp() ? undefined : theme}
 />
 )}
 
@@ -19808,6 +19929,7 @@ showPaywall={() => {
       setScreen("paywall");
     }}
     onCheckDailyTestAccess={consumeDailyTestAccess}
+    theme={isCapacitorApp() ? undefined : theme}
   />
 )}
 
@@ -19820,6 +19942,7 @@ showPaywall={() => {
             onRewardsStateLoaded={(wonRewards) =>
               setAppState((prev) => ({ ...prev, wonRewards }))
             }
+            theme={isCapacitorApp() ? undefined : theme}
           />
         )}
 
@@ -19847,6 +19970,7 @@ showPaywall={() => {
   refreshing={topRefreshing}
 
     onBack={() => setScreen("menu")}
+    theme={isCapacitorApp() ? undefined : theme}
     t={t}
   />
 )}
@@ -19916,6 +20040,7 @@ showPaywall={() => {
   incomingPairProposals={incomingPairProposals}
   pairProposalResponding={pairProposalResponding}
   onRespondPairProposal={handleRespondPairProposal}
+  theme={isCapacitorApp() ? undefined : theme}
 />
 )}
 
@@ -19925,6 +20050,7 @@ showPaywall={() => {
     onBack={() => setScreen("pair")}
     onCreateInvite={handleCreateInvite}
     onJoinByCode={handleJoinByCode}
+    theme={isCapacitorApp() ? undefined : theme}
   />
 )}
 
@@ -19937,6 +20063,7 @@ showPaywall={() => {
     setAppState={setAppState}
     onBack={() => setScreen("pair")}
     onOpenStreakInfo={() => setScreen("pair-streak-info")}
+    theme={isCapacitorApp() ? undefined : theme}
   />
 )}
 
@@ -19944,6 +20071,7 @@ showPaywall={() => {
   <PairStreakInfoScreen
     appState={appState}
     onBack={() => setScreen("daily-pair-question")}
+    theme={isCapacitorApp() ? undefined : theme}
   />
 )}
 
@@ -19962,6 +20090,7 @@ showPaywall={() => {
       }
       setScreen(appState.profile.gender === "boy" ? "polls-boy" : "polls-girl");
     }}
+    theme={isCapacitorApp() ? undefined : theme}
   />
 )}
 
@@ -19969,6 +20098,7 @@ showPaywall={() => {
   <PairLevelInfoScreen
     pairLevel={getPairLevelInfo(animatedPairPoints)}
     onBack={() => setScreen("pair")}
+    theme={isCapacitorApp() ? undefined : theme}
   />
 )}
 
@@ -20100,6 +20230,7 @@ showPaywall={() => {
 {screen === "polls-tests-menu" && (
   <MenuChooserScreen
     t={t}
+    theme={isCapacitorApp() ? undefined : theme}
     title={t.menu.pollsAndTests}
     subtitle={t.menu.pollsAndTestsSubtitle}
     options={[
@@ -20128,6 +20259,7 @@ showPaywall={() => {
 {screen === "pair-profile-menu" && (
   <MenuChooserScreen
     t={t}
+    theme={isCapacitorApp() ? undefined : theme}
     title={t.menu.pairAndProfile}
     subtitle={t.menu.pairAndProfileSubtitle}
     options={[
@@ -20511,35 +20643,6 @@ showPaywall={() => {
       setScreen(tab);
     }}
   />
-)}
-
-{!isCapacitorApp() && (
-  <button
-    type="button"
-    onClick={toggleTheme}
-    aria-label={t.account.themeLabel}
-    style={{
-      position: "fixed",
-      top: "calc(14px + env(safe-area-inset-top))",
-      left: "calc(14px + env(safe-area-inset-left))",
-      zIndex: 30,
-      width: 34,
-      height: 34,
-      borderRadius: 999,
-      border: "none",
-      background: isDarkTheme ? "rgba(255,255,255,0.14)" : "rgba(255,255,255,0.35)",
-      backdropFilter: "blur(10px)",
-      WebkitBackdropFilter: "blur(10px)",
-      fontSize: 15,
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
-      cursor: "pointer",
-      boxShadow: "0 6px 16px rgba(37,34,78,0.14)",
-    }}
-  >
-    {isDarkTheme ? "☀️" : "🌙"}
-  </button>
 )}
 
     </main>
