@@ -5336,11 +5336,9 @@ type DatingMatch = {
 };
 
 function DatingIntroScreen({
-  onBack,
   onStart,
   t,
 }: {
-  onBack: () => void;
   onStart: () => void;
   t: any;
 }) {
@@ -5424,10 +5422,6 @@ function DatingIntroScreen({
 
       <button onClick={onStart} style={{ ...primaryButtonStyle, width: "100%" }}>
         {t.dating.startButton}
-      </button>
-
-      <button onClick={onBack} style={secondaryButtonStyle}>
-        {t.common.back}
       </button>
     </div>
   );
@@ -5811,7 +5805,10 @@ function DatingSwipeScreen({
   // входа в лайки не нужна, поэтому проп опциональный.
   onOpenLikes?: () => void;
   onOpenBoost?: () => void;
-  onBack: () => void;
+  // Опционально — на основной ленте (корневой экран раздела в нижнем
+  // баре) кнопка "назад" не нужна; на "Лайки мне" (вложенный экран)
+  // она есть и ведёт обратно в ленту.
+  onBack?: () => void;
   // null = Premium (без лимита); число — сколько бесплатных анкет
   // осталось сегодня.
   swipesRemaining: number | null;
@@ -6184,9 +6181,11 @@ function DatingSwipeScreen({
         </div>
       )}
 
-      <button onClick={onBack} style={secondaryButtonStyle}>
-        {t.common.back}
-      </button>
+      {onBack && (
+        <button onClick={onBack} style={secondaryButtonStyle}>
+          {t.common.back}
+        </button>
+      )}
     </div>
   );
 }
@@ -7820,19 +7819,11 @@ const t = market === "fi" ? TEXT_FI : market === "en" ? TEXT_EN : TEXT_RU;
     </button>
   </div>
 ) : (
+  // "Ты: ещё не ответил(а)" убрано — этот блок и так показывается
+  // только пока сам ещё не ответил (см. options выше), сообщать об
+  // этом ещё раз тут же было лишним. Статус партнёра остаётся — это
+  // единственная реально новая информация на этом экране.
   <div style={{ display: "grid", gap: 8, marginTop: 12 }}>
-    <div
-      style={{
-        ...cardBaseStyle(),
-        padding: 14,
-        fontSize: 16,
-        fontWeight: 800,
-        color: "#2b2148",
-      }}
-    >
-      Ты: {myAnswer ? "ответил(а)" : "ещё не ответил(а)"}
-    </div>
-
     <div
       style={{
         ...cardBaseStyle(),
@@ -10172,7 +10163,10 @@ function MenuChooserScreen({
 }: {
   title?: string;
   subtitle?: string;
-  onBack: () => void;
+  // Опционально: этот экран теперь используется и как корневой раздел
+  // нижнего бара (Опросы/Тесты, Пара/Профиль) — там своя кнопка "назад"
+  // не нужна, переключение между разделами идёт через сам бар.
+  onBack?: () => void;
   options: Array<{ label: string; description?: string; emoji: string; onClick: () => void }>;
   t: any;
 }) {
@@ -10240,9 +10234,11 @@ function MenuChooserScreen({
         ))}
       </div>
 
-      <button onClick={onBack} style={secondaryButtonStyle}>
-        {t.common.back}
-      </button>
+      {onBack && (
+        <button onClick={onBack} style={secondaryButtonStyle}>
+          {t.common.back}
+        </button>
+      )}
     </div>
   );
 }
@@ -10675,7 +10671,6 @@ function GamesScreen({
   playedGameRewardKeys,
   appState,
   setAppState,
-  onBack,
   onCompleteGame,
   onClaimStepReward,
 }: {
@@ -10683,7 +10678,6 @@ function GamesScreen({
   playedGameRewardKeys: string[];
   appState: AppState;
   setAppState: React.Dispatch<React.SetStateAction<AppState>>;
-  onBack: () => void;
   onCompleteGame: (game: Game, score: number) => void;
   onClaimStepReward: (key: string) => Promise<boolean>;
 }) {
@@ -11233,26 +11227,6 @@ function handleLoveQuestionFinish() {
           </div>
         );
       })}
-
-<div
-  style={{
-    display: "flex",
-
-    gap: 8,
-    marginTop: 12,
-  }}
->
-  <button
-    onClick={onBack}
-    style={{
-      ...secondaryButtonStyle,
-      flex: 1,
-      padding: "10px 16px",
-    }}
-  >
-    {t.common.back}
-  </button>
-</div>
 
     </div>
   );
@@ -19244,6 +19218,7 @@ if (finishedAllPolls && !appState.completionBonusesClaimed.polls) {
         initData: initDataForTest,
         testId: test.id,
         answers: testAnswers,
+        market: getMarket(),
       }),
     }).catch((error) => {
       console.error("test submit error:", error);
@@ -19679,7 +19654,7 @@ if (finishedAllTests && !appState.completionBonusesClaimed.tests) {
   <PollsScreen
     genderFilter="boy"
     completedPollIds={appState.completedPollIds}
-     onBack={() => setScreen("menu")}
+     onBack={() => setScreen("polls-tests-menu")}
     onCompletePoll={handleCompletePoll}
     pair={appState.pair}
     isPremium={appState.isPremium}
@@ -19694,7 +19669,7 @@ showPaywall={() => {
   <PollsScreen
     genderFilter="girl"
     completedPollIds={appState.completedPollIds}
-    onBack={() => setScreen("menu")}
+    onBack={() => setScreen("polls-tests-menu")}
     onCompletePoll={handleCompletePoll}
     pair={appState.pair}
     isPremium={appState.isPremium}
@@ -19711,7 +19686,6 @@ showPaywall={() => {
   playedGameRewardKeys={appState.playedGameRewardKeys}
   appState={appState}
   setAppState={setAppState}
-  onBack={() => setScreen("menu")}
  onCompleteGame={handleCompleteGame}
   onClaimStepReward={claimGameStepReward}
 />
@@ -19720,7 +19694,7 @@ showPaywall={() => {
              {screen === "tests" && (
   <TestsScreen
     completedTestIds={appState.completedTestIds}
-    onBack={() => setScreen("menu")}
+    onBack={() => setScreen("polls-tests-menu")}
     onCompleteTest={handleCompleteTest}
     pair={appState.pair}
     isPremium={appState.isPremium}
@@ -19785,7 +19759,7 @@ showPaywall={() => {
   isPremium={appState.isPremium}
   currentGender={appState.profile.gender}
   onNavigate={setScreen}
-  onBack={() => setScreen("menu")}
+  onBack={() => setScreen("pair-profile-menu")}
   onDisplayNameSaved={(name) =>
     setUser((prev) => (prev ? { ...prev, first_name: name, last_name: "" } : prev))
   }
@@ -19804,8 +19778,7 @@ showPaywall={() => {
   <ReferralsScreen
     user={user}
     appState={appState}
-
-    onBack={() => setScreen("menu")}
+    onBack={() => setScreen("profile")}
   />
 )}
 
@@ -19818,7 +19791,7 @@ showPaywall={() => {
   pairLevel={getPairLevelInfo(animatedPairPoints)}
   pairPollAnswers={appState.pairPollAnswers}
   dailyPairStreak={appState.dailyPairStreak}
-  onBack={() => setScreen("menu")}
+  onBack={() => setScreen("pair-profile-menu")}
   onOpenInvite={() => setScreen("pair-invite")}
   onOpenDailyQuestion={() => setScreen("daily-pair-question")}
   onOpenCompatibilityInfo={() => setScreen("pair-compatibility-info")}
@@ -19895,7 +19868,6 @@ showPaywall={() => {
 {screen === "dating-intro" && (
   <DatingIntroScreen
     t={t}
-    onBack={() => setScreen("menu")}
     onStart={() => setScreen("dating-profile")}
   />
 )}
@@ -19943,7 +19915,6 @@ showPaywall={() => {
       setScreen("dating-boost");
     }}
     onSuperlike={handleSuperlike}
-    onBack={() => setScreen("menu")}
   />
 )}
 
@@ -20024,7 +19995,6 @@ showPaywall={() => {
     t={t}
     title={t.menu.pollsAndTests}
     subtitle={t.menu.pollsAndTestsSubtitle}
-    onBack={() => setScreen("menu")}
     options={[
       {
         label: t.menu.polls,
@@ -20053,7 +20023,6 @@ showPaywall={() => {
     t={t}
     title={t.menu.pairAndProfile}
     subtitle={t.menu.pairAndProfileSubtitle}
-    onBack={() => setScreen("menu")}
     options={[
       {
         label: t.menu.pair,

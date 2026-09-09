@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/server/supabase-admin";
 import { validateRequestAuth } from "@/lib/server/telegram-auth";
+import { loadTestSubmissionsForTelegramId } from "@/lib/server/reads";
+import { buildPersonalitySummary, type Market } from "@/lib/server/test-results";
 
 // Test IDs live inline in app/page.tsx (const TESTS), not in a shared
 // config file like polls' POLL_IDS — so this intentionally doesn't
@@ -68,6 +70,50 @@ export async function POST(request: NextRequest) {
         { error: "Internal server error" },
         { status: 500 }
       );
+    }
+
+    // Психологический профиль анкеты Знакомств раньше считался только
+    // один раз, при сохранении/редактировании самой анкеты — если
+    // человек проходил тест ПОСЛЕ того, как анкета уже была создана,
+    // теги так и оставались устаревшими (обычно пустыми) навсегда,
+    // пока он не зайдёт пересохранить анкету вручную. Пересчитываем и
+    // перезаписываем сразу здесь, если анкета уже существует — тогда
+    // и сам владелец, и кандидаты в чужой ленте видят актуальные теги
+    // сразу после прохождения любого теста.
+    const { data: existingDatingProfile } = await supabaseAdmin
+      .from("dating_profiles")
+      .select("telegram_id")
+      .eq("telegram_id", validation.telegramId)
+      .maybeSingle();
+
+    if (existingDatingProfile) {
+      const market: Market =
+        body.market === "ru" || body.market === "en" || body.market === "fi"
+          ? body.market
+          : "en";
+
+      const allSubmissions = await loadTestSubmissionsForTelegramId(
+        validation.telegramId
+      );
+      const personalitySummary = buildPersonalitySummary(
+        allSubmissions,
+        market
+      );
+
+      const { error: personalityUpdateError } = await supabaseAdmin
+        .from("dating_profiles")
+        .update({ personality_summary: personalitySummary, updated_at: new Date().toISOString() })
+        .eq("telegram_id", validation.telegramId);
+
+      if (personalityUpdateError) {
+        // Не критично — сама попытка теста уже сохранена выше, тег в
+        // анкете просто обновится в следующий раз (например, при
+        // следующем тесте или пересохранении анкеты).
+        console.error(
+          "TEST SUBMIT personality_summary refresh error:",
+          personalityUpdateError
+        );
+      }
     }
 
     return NextResponse.json({ ok: true });
