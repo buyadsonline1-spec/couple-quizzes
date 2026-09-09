@@ -6163,16 +6163,15 @@ function DatingSwipeScreen({
               onClick={() => onSuperlike(current)}
               aria-label={t.dating.superlikeButton}
               style={{
-                width: 46,
-                height: 46,
+                width: 62,
+                height: 62,
                 borderRadius: 999,
                 border: "none",
                 background: "linear-gradient(135deg, #ffcf5c, #ff9f43)",
                 color: "#5a3d14",
-                fontSize: 20,
+                fontSize: 26,
                 cursor: "pointer",
                 boxShadow: "0 10px 22px rgba(37,34,78,0.18)",
-                alignSelf: "flex-end",
               }}
             >
               ⭐
@@ -15675,33 +15674,6 @@ const t = market === "fi" ? TEXT_FI : market === "en" ? TEXT_EN : TEXT_RU;
         </div>
       )}
 
-      <div style={{ ...cardBaseStyle(), padding: 18 }}>
-  <div style={{ fontSize: 22, fontWeight: 900, color: "#1f1d3a" }}>
-    {market !== "ru" ? "Invite friends 👥" : "Пригласи друзей 👥"}
-  </div>
-
-  <div
-    style={{
-      marginTop: 8,
-      color: "#4b446a",
-      fontSize: 14,
-      lineHeight: 1.45,
-    }}
-  >
-    {t.referrals.cardText}
-  </div>
-
-
-
-  <button
-  onClick={() => onNavigate("referrals")}
-  style={{ ...primaryButtonStyle, width: "100%", marginTop: 12 }}
->
-  {t.referrals.inviteButton}
-</button>
-
-</div>
-
 <div style={{ ...cardBaseStyle(), padding: 18 }}>
   <div style={{ fontSize: 18, fontWeight: 900, color: "#1f1d3a", marginBottom: 14 }}>
     {t.account.settingsTitle}
@@ -15805,6 +15777,33 @@ const t = market === "fi" ? TEXT_FI : market === "en" ? TEXT_EN : TEXT_RU;
       </div>
     </div>
   </div>
+</div>
+
+      <div style={{ ...cardBaseStyle(), padding: 18 }}>
+  <div style={{ fontSize: 22, fontWeight: 900, color: "#1f1d3a" }}>
+    {market !== "ru" ? "Invite friends 👥" : "Пригласи друзей 👥"}
+  </div>
+
+  <div
+    style={{
+      marginTop: 8,
+      color: "#4b446a",
+      fontSize: 14,
+      lineHeight: 1.45,
+    }}
+  >
+    {t.referrals.cardText}
+  </div>
+
+
+
+  <button
+  onClick={() => onNavigate("referrals")}
+  style={{ ...primaryButtonStyle, width: "100%", marginTop: 12 }}
+>
+  {t.referrals.inviteButton}
+</button>
+
 </div>
 
 {isCapacitorApp() && (
