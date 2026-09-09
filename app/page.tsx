@@ -9591,10 +9591,13 @@ function MenuButton({
   label,
   emoji,
   onClick,
+  theme,
 }: {
   label: string;
   emoji: string;
   onClick: () => void;
+  // Undefined на iOS (тема там не включена) — читается как "light".
+  theme?: "light" | "dark";
 }) {
   return (
     <button
@@ -9619,7 +9622,7 @@ function MenuButton({
           marginTop: 8,
           fontSize: 17,
           fontWeight: 900,
-          color: "#1e1a36",
+          color: theme === "dark" ? "#f3e8ff" : "#1e1a36",
           lineHeight: 1.15,
         }}
       >
@@ -9638,6 +9641,7 @@ function MainMenu({
   appState,
   onNavigate,
   onOpenDating,
+  theme,
   t,
 }: {
   points: number;
@@ -9647,15 +9651,21 @@ function MainMenu({
   t: any;
   onNavigate: (screen: Screen) => void;
   onOpenDating: () => void;
+  // Undefined на iOS (тема там не включена) — читается как "light".
+  theme?: "light" | "dark";
 }) {
 
-  
+
   const firstName = user?.first_name || "Друг";
   // pairId появляется уже после того, как ОДИН человек создал
   // приглашение — партнёр мог ещё не подключиться. Плашку с уровнем
   // пары показываем только когда пара реально укомплектована (оба
   // участника), иначе до этого момента остаётся призыв создать пару.
   const hasPair = !!appState.pair?.pairId && !!appState.pair?.partner;
+  const isDark = theme === "dark";
+  const ink = isDark ? "#f3e8ff" : "#1f1d3a";
+  const muted = isDark ? "#c9b3e0" : "#5a5378";
+  const accent = isDark ? "#e0b3ff" : "#6b46ff";
 
   return (
     <div style={{ padding: 10, paddingTop: 8 }}>
@@ -9674,7 +9684,7 @@ function MainMenu({
     style={{
       fontSize: 18,
       fontWeight: 900,
-      color: "#1f1d3a",
+      color: ink,
       lineHeight: 1.1,
     }}
   >
@@ -9723,7 +9733,7 @@ function MainMenu({
           }}
         >
           <div>
-            <div style={{ fontSize: 11, color: "#5a5378", fontWeight: 700 }}>
+            <div style={{ fontSize: 11, color: muted, fontWeight: 700 }}>
   {t.home.pairLevel}
 </div>
             <div
@@ -9731,7 +9741,7 @@ function MainMenu({
     marginTop: 1,
     fontSize: 15,
     fontWeight: 900,
-    color: "#1f1d3a",
+    color: ink,
     lineHeight: 1.15,
   }}
 >
@@ -9746,7 +9756,7 @@ function MainMenu({
     background: "rgba(255,255,255,0.34)",
     fontSize: 12,
     fontWeight: 900,
-    color: "#6b46ff",
+    color: accent,
     whiteSpace: "nowrap",
   }}
 >
@@ -9778,7 +9788,7 @@ function MainMenu({
   style={{
     marginTop: 5,
     fontSize: 10,
-    color: "#5a5378",
+    color: muted,
     fontWeight: 700,
     lineHeight: 1.2,
   }}
@@ -9817,7 +9827,7 @@ function MainMenu({
           style={{
             fontSize: 14,
             fontWeight: 900,
-            color: "#1f1d3a",
+            color: ink,
             lineHeight: 1.25,
           }}
         >
@@ -9827,7 +9837,7 @@ function MainMenu({
           style={{
             marginTop: 4,
             fontSize: 12,
-            color: "#4b446a",
+            color: muted,
             lineHeight: 1.35,
           }}
         >
@@ -9886,7 +9896,7 @@ function MainMenu({
     style={{
       fontSize: 14,
       fontWeight: 800,
-      color: "#5a5378",
+      color: muted,
     }}
   >
     {t.home.yourPoints}:
@@ -9896,7 +9906,7 @@ function MainMenu({
     style={{
       fontSize: 15,
       fontWeight: 900,
-      color: "#241b40",
+      color: ink,
       whiteSpace: "nowrap",
     }}
   >
@@ -9928,14 +9938,14 @@ function MainMenu({
         <div style={{ fontSize: 30, flexShrink: 0 }}>🧠</div>
 
         <div style={{ flex: 1 }}>
-          <div style={{ fontSize: 15, fontWeight: 900, color: "#1f1d3a" }}>
+          <div style={{ fontSize: 15, fontWeight: 900, color: ink }}>
             {t.aiPsychologist.menuTitle}
           </div>
           <div
             style={{
               marginTop: 2,
               fontSize: 12.5,
-              color: "#5a5378",
+              color: muted,
               lineHeight: 1.35,
             }}
           >
@@ -9943,7 +9953,7 @@ function MainMenu({
           </div>
         </div>
 
-        <div style={{ fontSize: 20, color: "#7c5cff", flexShrink: 0 }}>→</div>
+        <div style={{ fontSize: 20, color: accent, flexShrink: 0 }}>→</div>
       </button>
 
       {isCapacitorApp() ? (
@@ -10006,20 +10016,20 @@ function MainMenu({
             >
               <div style={{ fontSize: 24, flexShrink: 0 }}>🔥</div>
               <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontSize: 14, fontWeight: 900, color: "#1f1d3a" }}>
+                <div style={{ fontSize: 14, fontWeight: 900, color: ink }}>
                   {t.pair.dailyQuestion}
                 </div>
-                <div style={{ marginTop: 2, fontSize: 12, color: "#5a5378" }}>
+                <div style={{ marginTop: 2, fontSize: 12, color: muted }}>
                   {t.pair.streakDaysLabel}: {appState.dailyPairStreak?.current || 0} {t.pair.streakDaysWord}
                 </div>
               </div>
-              <div style={{ fontSize: 18, color: "#7c5cff", flexShrink: 0 }}>→</div>
+              <div style={{ fontSize: 18, color: accent, flexShrink: 0 }}>→</div>
             </button>
           )}
 
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
-            <MenuButton label={t.menu.rewards} emoji="🎡" onClick={() => onNavigate("rewards")} />
-            <MenuButton label={t.menu.topPlayers} emoji="🏆" onClick={() => onNavigate("top")} />
+            <MenuButton label={t.menu.rewards} emoji="🎡" onClick={() => onNavigate("rewards")} theme={theme} />
+            <MenuButton label={t.menu.topPlayers} emoji="🏆" onClick={() => onNavigate("top")} theme={theme} />
           </div>
         </div>
       )}
@@ -10061,10 +10071,13 @@ function bottomNavActiveTab(screen: Screen): BottomNavTabId | null {
 function BottomNavBar({
   active,
   onNavigateTab,
+  theme,
   t,
 }: {
   active: BottomNavTabId | null;
   onNavigateTab: (tab: BottomNavTabId) => void;
+  // Undefined на iOS (тема там не включена) — читается как "light".
+  theme?: "light" | "dark";
   t: any;
 }) {
   const tabs: Array<{ id: BottomNavTabId; icon: string; label: string }> = [
@@ -10077,6 +10090,7 @@ function BottomNavBar({
 
   const activeIndex = Math.max(0, tabs.findIndex((tab) => tab.id === active));
   const tabWidthPercent = 100 / tabs.length;
+  const isDark = theme === "dark";
 
   return (
     <nav
@@ -10086,10 +10100,10 @@ function BottomNavBar({
         right: 0,
         bottom: 0,
         zIndex: 30,
-        background: "rgba(255,255,255,0.62)",
+        background: isDark ? "rgba(30,18,48,0.75)" : "rgba(255,255,255,0.62)",
         backdropFilter: "blur(14px)",
         WebkitBackdropFilter: "blur(14px)",
-        borderTop: "1px solid rgba(255,255,255,0.5)",
+        borderTop: isDark ? "1px solid rgba(255,255,255,0.12)" : "1px solid rgba(255,255,255,0.5)",
         boxShadow: "0 -8px 24px rgba(37,34,78,0.10)",
         paddingBottom: "env(safe-area-inset-bottom)",
       }}
@@ -10140,7 +10154,9 @@ function BottomNavBar({
                 style={{
                   fontSize: 9.5,
                   fontWeight: 800,
-                  color: isActive ? "#5a3d99" : "#8a84a8",
+                  color: isActive
+                    ? isDark ? "#f0d9ff" : "#5a3d99"
+                    : isDark ? "#a98fc4" : "#8a84a8",
                 }}
               >
                 {tab.label}
@@ -15436,6 +15452,8 @@ function ProfileAndStatsScreen({
   onBack,
   onNavigate,
   onDisplayNameSaved,
+  theme,
+  onToggleTheme,
 }: {
 
 
@@ -15456,11 +15474,20 @@ function ProfileAndStatsScreen({
   currentGender: "boy" | "girl" | null;
   onBack: () => void;
   onDisplayNameSaved?: (name: string) => void;
+  // Тёмная тема — Telegram-only (см. toggleTheme в Page()), поэтому
+  // опционально: на iOS эти пропы просто не передаются и строка ниже
+  // не рисуется.
+  theme?: "light" | "dark";
+  onToggleTheme?: () => void;
 }) {
 
 
   const market = getMarket();
 const t = market === "fi" ? TEXT_FI : market === "en" ? TEXT_EN : TEXT_RU;
+  const isDark = theme === "dark";
+  const ink = isDark ? "#f3e8ff" : "#1f1d3a";
+  const muted = isDark ? "#c9b3e0" : "#5a5378";
+  const accent = isDark ? "#e0b3ff" : "#6b46ff";
   const fullName =
     [user?.first_name, user?.last_name].filter(Boolean).join(" ") ||
     "Пользователь";
@@ -15583,7 +15610,7 @@ const t = market === "fi" ? TEXT_FI : market === "en" ? TEXT_EN : TEXT_RU;
           )}
 
           <div style={{ minWidth: 0 }}>
-            <div style={{ fontSize: 24, fontWeight: 900, color: "#1f1d3a" }}>
+            <div style={{ fontSize: 24, fontWeight: 900, color: ink }}>
               {fullName}
             </div>
             {isPremium ? (
@@ -15634,7 +15661,7 @@ const t = market === "fi" ? TEXT_FI : market === "en" ? TEXT_EN : TEXT_RU;
           borderRadius: 999,
           border: "1px solid rgba(143,107,255,0.3)",
           background: "rgba(255,255,255,0.4)",
-          color: "#241b40",
+          color: ink,
           fontWeight: 700,
           cursor: "pointer",
         }}
@@ -15650,7 +15677,7 @@ const t = market === "fi" ? TEXT_FI : market === "en" ? TEXT_EN : TEXT_RU;
                 marginTop: 10,
                 fontWeight: 900,
                 fontSize: 18,
-                color: "#241b40",
+                color: ink,
               }}
             >
               ⭐ {points} очков
@@ -15663,7 +15690,7 @@ const t = market === "fi" ? TEXT_FI : market === "en" ? TEXT_EN : TEXT_RU;
           просто убрав false. */}
       {false && (
         <div style={{ ...cardBaseStyle(), padding: 18 }}>
-          <div style={{ fontSize: 22, fontWeight: 900, color: "#1f1d3a" }}>
+          <div style={{ fontSize: 22, fontWeight: 900, color: ink }}>
             {t.profile.stats}
           </div>
           <div style={{ display: "grid", gap: 10, marginTop: 14 }}>
@@ -15675,13 +15702,13 @@ const t = market === "fi" ? TEXT_FI : market === "en" ? TEXT_EN : TEXT_RU;
       )}
 
 <div style={{ ...cardBaseStyle(), padding: 18 }}>
-  <div style={{ fontSize: 18, fontWeight: 900, color: "#1f1d3a", marginBottom: 14 }}>
+  <div style={{ fontSize: 18, fontWeight: 900, color: ink, marginBottom: 14 }}>
     {t.account.settingsTitle}
   </div>
 
   <div style={{ display: "grid", gap: 16 }}>
     <div>
-      <div style={{ fontSize: 12.5, fontWeight: 800, color: "#5a5378", marginBottom: 6 }}>
+      <div style={{ fontSize: 12.5, fontWeight: 800, color: muted, marginBottom: 6 }}>
         {t.account.nicknameLabel}
       </div>
       <div style={{ display: "flex", gap: 8 }}>
@@ -15697,7 +15724,7 @@ const t = market === "fi" ? TEXT_FI : market === "en" ? TEXT_EN : TEXT_RU;
             background: "rgba(255,255,255,0.55)",
             padding: "12px 14px",
             fontSize: 14,
-            color: "#1f1d3a",
+            color: ink,
           }}
         />
         <button
@@ -15713,12 +15740,12 @@ const t = market === "fi" ? TEXT_FI : market === "en" ? TEXT_EN : TEXT_RU;
         </button>
       </div>
       {nicknameMessage && (
-        <div style={{ marginTop: 6, fontSize: 12, color: "#5a5378" }}>{nicknameMessage}</div>
+        <div style={{ marginTop: 6, fontSize: 12, color: muted }}>{nicknameMessage}</div>
       )}
     </div>
 
     <div>
-      <div style={{ fontSize: 12.5, fontWeight: 800, color: "#5a5378", marginBottom: 6 }}>
+      <div style={{ fontSize: 12.5, fontWeight: 800, color: muted, marginBottom: 6 }}>
         {t.account.languageLabel}
       </div>
       <div style={{ display: "flex", gap: 8 }}>
@@ -15738,7 +15765,7 @@ const t = market === "fi" ? TEXT_FI : market === "en" ? TEXT_EN : TEXT_RU;
                 market === lang
                   ? "linear-gradient(135deg, #8f6bff, #ff76ba)"
                   : "rgba(255,255,255,0.4)",
-              color: market === lang ? "#fff" : "#393253",
+              color: market === lang ? "#fff" : isDark ? "#e5d6f5" : "#393253",
             }}
           >
             {lang === "ru" ? "Русский" : lang === "en" ? "English" : "Suomi"}
@@ -15748,11 +15775,11 @@ const t = market === "fi" ? TEXT_FI : market === "en" ? TEXT_EN : TEXT_RU;
     </div>
 
     <div>
-      <div style={{ fontSize: 12.5, fontWeight: 800, color: "#5a5378", marginBottom: 6 }}>
+      <div style={{ fontSize: 12.5, fontWeight: 800, color: muted, marginBottom: 6 }}>
         {t.account.genderLabel}
       </div>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-        <div style={{ fontSize: 14, fontWeight: 800, color: "#1f1d3a" }}>
+        <div style={{ fontSize: 14, fontWeight: 800, color: ink }}>
           {currentGender === "boy"
             ? t.genderSelect.boy
             : currentGender === "girl"
@@ -15766,7 +15793,7 @@ const t = market === "fi" ? TEXT_FI : market === "en" ? TEXT_EN : TEXT_RU;
             borderRadius: 12,
             padding: "8px 14px",
             background: "rgba(255,255,255,0.4)",
-            color: "#6b46ff",
+            color: accent,
             fontWeight: 800,
             fontSize: 12.5,
             cursor: "pointer",
@@ -15776,18 +15803,66 @@ const t = market === "fi" ? TEXT_FI : market === "en" ? TEXT_EN : TEXT_RU;
         </button>
       </div>
     </div>
+
+    {onToggleTheme && (
+      <div>
+        <div style={{ fontSize: 12.5, fontWeight: 800, color: muted, marginBottom: 6 }}>
+          {t.account.themeLabel}
+        </div>
+        <div style={{ display: "flex", gap: 8 }}>
+          <button
+            onClick={() => theme === "dark" && onToggleTheme()}
+            style={{
+              flex: 1,
+              padding: "10px 8px",
+              borderRadius: 13,
+              border: "none",
+              fontSize: 13,
+              fontWeight: 800,
+              cursor: "pointer",
+              background:
+                theme !== "dark"
+                  ? "linear-gradient(135deg, #8f6bff, #ff76ba)"
+                  : "rgba(255,255,255,0.4)",
+              color: theme !== "dark" ? "#fff" : "#e5d6f5",
+            }}
+          >
+            ☀️ {t.account.themeLight}
+          </button>
+          <button
+            onClick={() => theme !== "dark" && onToggleTheme()}
+            style={{
+              flex: 1,
+              padding: "10px 8px",
+              borderRadius: 13,
+              border: "none",
+              fontSize: 13,
+              fontWeight: 800,
+              cursor: "pointer",
+              background:
+                theme === "dark"
+                  ? "linear-gradient(135deg, #8f6bff, #ff76ba)"
+                  : "rgba(255,255,255,0.4)",
+              color: theme === "dark" ? "#fff" : "#393253",
+            }}
+          >
+            🌙 {t.account.themeDark}
+          </button>
+        </div>
+      </div>
+    )}
   </div>
 </div>
 
       <div style={{ ...cardBaseStyle(), padding: 18 }}>
-  <div style={{ fontSize: 22, fontWeight: 900, color: "#1f1d3a" }}>
+  <div style={{ fontSize: 22, fontWeight: 900, color: ink }}>
     {market !== "ru" ? "Invite friends 👥" : "Пригласи друзей 👥"}
   </div>
 
   <div
     style={{
       marginTop: 8,
-      color: "#4b446a",
+      color: muted,
       fontSize: 14,
       lineHeight: 1.45,
     }}
@@ -15814,7 +15889,7 @@ const t = market === "fi" ? TEXT_FI : market === "en" ? TEXT_EN : TEXT_RU;
     <div
       style={{
         marginTop: 6,
-        color: "#4b446a",
+        color: muted,
         fontSize: 13,
         lineHeight: 1.45,
       }}
@@ -16777,6 +16852,11 @@ export default function Page() {
 
   const [appState, setAppState] = useState<AppState>(DEFAULT_STATE);
   const [selectedLang, setSelectedLang] = useState<Market>("ru");
+  // Тёмная тема ("Полуночная ягода") — Telegram-only, тот же паттерн
+  // хранения, что и язык (отдельный localStorage-ключ, не часть
+  // AppState). По умолчанию светлая; iOS-сборку не трогаем вообще —
+  // она сейчас на повторном ревью Apple.
+  const [theme, setTheme] = useState<"light" | "dark">("light");
 
 const market = selectedLang;
 const t = market === "fi" ? TEXT_FI : market === "en" ? TEXT_EN : TEXT_RU;
@@ -16792,7 +16872,26 @@ const REWARD_CATEGORIES =
   // новый пользователь без сохранённого выбора всегда получал русский,
   // даже если его Telegram/устройство было на другом языке).
   setSelectedLang(getMarket());
+
+  try {
+    const savedTheme = window.localStorage.getItem("couple-quizzes-theme");
+    if (savedTheme === "dark") setTheme("dark");
+  } catch (error) {
+    console.error("theme localStorage read error:", error);
+  }
 }, []);
+
+function toggleTheme() {
+  setTheme((prev) => {
+    const next = prev === "dark" ? "light" : "dark";
+    try {
+      window.localStorage.setItem("couple-quizzes-theme", next);
+    } catch (error) {
+      console.error("theme localStorage write error:", error);
+    }
+    return next;
+  });
+}
 
   
 
@@ -19440,11 +19539,17 @@ if (finishedAllTests && !appState.completionBonusesClaimed.tests) {
   const bottomNavTab = bottomNavActiveTab(screen);
   const showBottomNav = !isCapacitorApp() && bottomNavTab !== null;
 
+  // Тёмная тема — тоже только Telegram, та же причина, что и у бара
+  // (iOS-сборка сейчас на повторном ревью Apple, её экран не трогаем).
+  const isDarkTheme = !isCapacitorApp() && theme === "dark";
+
   return (
     <main
   style={{
     minHeight: "100vh",
-   background: appState.isPremium
+   background: isDarkTheme
+  ? "radial-gradient(circle, #6a3b6e 0%, #2c1a42 100%)"
+  : appState.isPremium
   ? "linear-gradient(135deg, #a18cd1 0%, #fbc2eb 100%)"
   : "radial-gradient(circle, rgba(238,174,202,1) 0%, rgba(148,187,233,1) 100%)",
     // env(safe-area-inset-*) — держит контент подальше от выреза/
@@ -19637,6 +19742,7 @@ if (finishedAllTests && !appState.completionBonusesClaimed.tests) {
     pairLevel={getPairLevelInfo(animatedPairPoints)}
     appState={appState}
     onOpenDating={handleOpenDating}
+    theme={isCapacitorApp() ? undefined : theme}
    onNavigate={(next) => {
   // Раздел открывается всегда — сам paywall (если нужен) показывает
   // конкретный экран (PollsScreen/TestsScreen), а не общий счётчик.
@@ -19762,6 +19868,8 @@ showPaywall={() => {
   onDisplayNameSaved={(name) =>
     setUser((prev) => (prev ? { ...prev, first_name: name, last_name: "" } : prev))
   }
+  theme={isCapacitorApp() ? undefined : theme}
+  onToggleTheme={isCapacitorApp() ? undefined : toggleTheme}
 />
 
 )}
@@ -20391,6 +20499,7 @@ showPaywall={() => {
   <BottomNavBar
     t={t}
     active={bottomNavTab}
+    theme={theme}
     onNavigateTab={(tab) => {
       if (tab === "dating-swipe") {
         // У Знакомств своя логика входа (анкета есть/нет ещё, подгрузка
@@ -20402,6 +20511,35 @@ showPaywall={() => {
       setScreen(tab);
     }}
   />
+)}
+
+{!isCapacitorApp() && (
+  <button
+    type="button"
+    onClick={toggleTheme}
+    aria-label={t.account.themeLabel}
+    style={{
+      position: "fixed",
+      top: "calc(14px + env(safe-area-inset-top))",
+      left: "calc(14px + env(safe-area-inset-left))",
+      zIndex: 30,
+      width: 34,
+      height: 34,
+      borderRadius: 999,
+      border: "none",
+      background: isDarkTheme ? "rgba(255,255,255,0.14)" : "rgba(255,255,255,0.35)",
+      backdropFilter: "blur(10px)",
+      WebkitBackdropFilter: "blur(10px)",
+      fontSize: 15,
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      cursor: "pointer",
+      boxShadow: "0 6px 16px rgba(37,34,78,0.14)",
+    }}
+  >
+    {isDarkTheme ? "☀️" : "🌙"}
+  </button>
 )}
 
     </main>

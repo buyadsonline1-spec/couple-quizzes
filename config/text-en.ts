@@ -9,6 +9,9 @@ export const TEXT_EN = {
     nicknameError: "Couldn't save the name",
     languageLabel: "App language",
     genderLabel: "Gender",
+    themeLabel: "Dark theme",
+    themeLight: "Light",
+    themeDark: "Dark",
     changeGenderButton: "Change",
     deleteAccountTitle: "Delete account",
     deleteAccountText:

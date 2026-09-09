@@ -13,6 +13,9 @@ export const TEXT_FI = {
     nicknameError: "Nimen tallennus epäonnistui",
     languageLabel: "Sovelluksen kieli",
     genderLabel: "Sukupuoli",
+    themeLabel: "Tumma teema",
+    themeLight: "Vaalea",
+    themeDark: "Tumma",
     changeGenderButton: "Muuta",
     deleteAccountTitle: "Poista tili",
     deleteAccountText:

@@ -9,6 +9,9 @@ export const TEXT_RU = {
     nicknameError: "Не удалось сохранить имя",
     languageLabel: "Язык приложения",
     genderLabel: "Пол",
+    themeLabel: "Тёмная тема",
+    themeLight: "Светлая",
+    themeDark: "Тёмная",
     changeGenderButton: "Изменить",
     deleteAccountTitle: "Удалить аккаунт",
     deleteAccountText:
