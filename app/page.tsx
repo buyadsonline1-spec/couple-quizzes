@@ -9395,7 +9395,15 @@ function AuthScreen() {
   );
 }
 
-function WelcomeScreen({ onStart }: { onStart: () => void }) {
+function WelcomeScreen({
+  onStart,
+  theme,
+}: {
+  onStart: () => void;
+  // Undefined на iOS (тема там не включена) — читается как "light".
+  theme?: "light" | "dark";
+}) {
+  const isDark = theme === "dark";
   const market = getMarket();
   const t = market === "fi" ? TEXT_FI : market === "en" ? TEXT_EN : TEXT_RU;
   const features: { emoji: string; label: string }[] = [
@@ -9595,7 +9603,7 @@ function WelcomeScreen({ onStart }: { onStart: () => void }) {
           onClick={onStart}
           className="welcome-cta"
           style={{
-            ...primaryButtonStyle,
+            ...getPrimaryButtonStyle(isDark),
             width: "100%",
             marginTop: 18,
             fontSize: 17,
@@ -9623,7 +9631,7 @@ function WelcomeScreen({ onStart }: { onStart: () => void }) {
                   style={{
                     width: 1,
                     height: 14,
-                    background: "rgba(60,30,90,0.16)",
+                    background: isDark ? "rgba(255,255,255,0.16)" : "rgba(60,30,90,0.16)",
                     margin: "0 12px",
                   }}
                 />
@@ -9635,7 +9643,7 @@ function WelcomeScreen({ onStart }: { onStart: () => void }) {
                   gap: 6,
                   fontSize: 12.5,
                   fontWeight: 800,
-                  color: "#3d3660",
+                  color: isDark ? "#c9b3e0" : "#3d3660",
                   whiteSpace: "nowrap",
                 }}
               >
@@ -19862,13 +19870,14 @@ if (finishedAllTests && !appState.completionBonusesClaimed.tests) {
       : "gender-select"
   )
 }
+  theme={isCapacitorApp() ? undefined : theme}
   />
 )}
 
 {screen === "language-select" && (
   <div style={{ padding: 16, display: "grid", gap: 14 }}>
     <div style={{ ...cardBaseStyle(), padding: 18, textAlign: "center" }}>
-      <div style={{ fontSize: 28, fontWeight: 900 }}>
+      <div style={{ fontSize: 28, fontWeight: 900, color: isDarkTheme ? "#e6d4f0" : "#1f1d3a" }}>
         Choose language
       </div>
     </div>
@@ -19879,7 +19888,7 @@ if (finishedAllTests && !appState.completionBonusesClaimed.tests) {
         localStorage.setItem("couple-quizzes-lang", "ru");
         setScreen("gender-select");
       }}
-      style={{ ...primaryButtonStyle }}
+      style={{ ...getPrimaryButtonStyle(isDarkTheme) }}
     >
       🇷🇺 Русский
     </button>
@@ -19890,7 +19899,7 @@ if (finishedAllTests && !appState.completionBonusesClaimed.tests) {
         localStorage.setItem("couple-quizzes-lang", "en");
         setScreen("gender-select");
       }}
-      style={{ ...primaryButtonStyle }}
+      style={{ ...getPrimaryButtonStyle(isDarkTheme) }}
     >
       🇬🇧 English
     </button>
@@ -19901,14 +19910,14 @@ if (finishedAllTests && !appState.completionBonusesClaimed.tests) {
         localStorage.setItem("couple-quizzes-lang", "fi");
         setScreen("gender-select");
       }}
-      style={{ ...primaryButtonStyle }}
+      style={{ ...getPrimaryButtonStyle(isDarkTheme) }}
     >
       🇫🇮 Suomi
     </button>
 
     <button
       onClick={() => setScreen("gender-select")}
-      style={{ ...primaryButtonStyle }}
+      style={{ ...getPrimaryButtonStyle(isDarkTheme) }}
     >
       Continue
     </button>
