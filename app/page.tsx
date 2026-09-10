@@ -3628,7 +3628,7 @@ function PairScreen({
   const hasPartnerConnected = !!pair.partner;
   const hasFullPair = hasPairCreated && hasPartnerConnected;
   const isDark = theme === "dark";
-  const ink = isDark ? "#f3e8ff" : "#1f1d3a";
+  const ink = isDark ? "#e6d4f0" : "#1f1d3a";
   const muted = isDark ? "#c9b3e0" : "#5a5378";
   const accent = isDark ? "#e0b3ff" : "#6b46ff";
 
@@ -3699,7 +3699,7 @@ function PairScreen({
       <button
         onClick={onOpenDailyQuestion}
         style={{
-          ...primaryButtonStyle,
+          ...getPrimaryButtonStyle(isDark),
           width: "100%",
           marginTop: 10,
           marginBottom: 0,
@@ -3847,7 +3847,7 @@ function PairScreen({
             <button
               onClick={onOpenInvite}
               style={{
-                ...primaryButtonStyle,
+                ...getPrimaryButtonStyle(isDark),
                 width: "100%",
                 marginTop: 14,
               }}
@@ -4020,7 +4020,7 @@ function PairScreen({
                 <button
                   onClick={onOpenInvite}
                   style={{
-                    ...primaryButtonStyle,
+                    ...getPrimaryButtonStyle(isDark),
                     width: "100%",
                     marginTop: 14,
                   }}
@@ -4233,7 +4233,7 @@ function PairCompatibilityInfoScreen({
   const market = getMarket();
   const t = market === "fi" ? TEXT_FI : market === "en" ? TEXT_EN : TEXT_RU;
   const isDark = theme === "dark";
-  const ink = isDark ? "#f3e8ff" : "#1f1d3a";
+  const ink = isDark ? "#e6d4f0" : "#1f1d3a";
   const muted = isDark ? "#c9b3e0" : "#5a5378";
   const accent = isDark ? "#e0b3ff" : "#6b46ff";
   const profile = buildCompatibilityProfile(appState.pollAnswers || {});
@@ -4278,7 +4278,7 @@ function PairCompatibilityInfoScreen({
           <button
             type="button"
             onClick={onOpenPolls}
-            style={{ ...primaryButtonStyle, width: "100%", marginTop: 20 }}
+            style={{ ...getPrimaryButtonStyle(isDark), width: "100%", marginTop: 20 }}
           >
             {t.pair.takePollsButton}
           </button>
@@ -4514,7 +4514,7 @@ const t = market === "fi" ? TEXT_FI : market === "en" ? TEXT_EN : TEXT_RU;
 const REWARD_CATEGORIES =
   market === "en" ? REWARD_CATEGORIES_EN : REWARD_CATEGORIES_RU;
   const isDark = theme === "dark";
-  const ink = isDark ? "#f3e8ff" : "#1f1d3a";
+  const ink = isDark ? "#e6d4f0" : "#1f1d3a";
   const muted = isDark ? "#c9b3e0" : "#5a5378";
   const accent = isDark ? "#e0b3ff" : "#6b46ff";
   const [joinCode, setJoinCode] = useState("");
@@ -4618,7 +4618,7 @@ const REWARD_CATEGORIES =
             onClick={handleCreateInviteClick}
             disabled={creating}
             style={{
-              ...primaryButtonStyle,
+              ...getPrimaryButtonStyle(isDark),
               width: "100%",
               marginTop: 12,
               opacity: creating ? 0.6 : 1,
@@ -4669,7 +4669,7 @@ const REWARD_CATEGORIES =
             <button
               onClick={handleCopyLink}
               style={{
-                ...primaryButtonStyle,
+                ...getPrimaryButtonStyle(isDark),
                 width: "100%",
                 marginTop: 0,
                 padding: "14px 16px",
@@ -4696,7 +4696,7 @@ const REWARD_CATEGORIES =
 
       <button
         onClick={() => setShowJoinInput((prev) => !prev)}
-        style={{ ...primaryButtonStyle, width: "100%", marginTop: 0 }}
+        style={{ ...getPrimaryButtonStyle(isDark), width: "100%", marginTop: 0 }}
       >
         {t.pair.invite.joinByCode}
       </button>
@@ -4741,7 +4741,7 @@ const REWARD_CATEGORIES =
             onClick={handleJoin}
             disabled={joining}
             style={{
-              ...primaryButtonStyle,
+              ...getPrimaryButtonStyle(isDark),
               width: "100%",
               marginTop: 12,
               opacity: joining ? 0.6 : 1,
@@ -4775,7 +4775,7 @@ function PairStreakInfoScreen({
   const market = getMarket();
   const t = market === "fi" ? TEXT_FI : market === "en" ? TEXT_EN : TEXT_RU;
   const isDark = theme === "dark";
-  const ink = isDark ? "#f3e8ff" : "#1f1d3a";
+  const ink = isDark ? "#e6d4f0" : "#1f1d3a";
   const muted = isDark ? "#c9b3e0" : "#5a5378";
   const accent = isDark ? "#e0b3ff" : "#6b46ff";
 
@@ -5112,7 +5112,7 @@ function PairLevelInfoScreen({
   const market = getMarket();
   const t = market === "fi" ? TEXT_FI : market === "en" ? TEXT_EN : TEXT_RU;
   const isDark = theme === "dark";
-  const ink = isDark ? "#f3e8ff" : "#1f1d3a";
+  const ink = isDark ? "#e6d4f0" : "#1f1d3a";
   const muted = isDark ? "#c9b3e0" : "#5a5378";
   const accent = isDark ? "#e0b3ff" : "#6b46ff";
 
@@ -7478,7 +7478,7 @@ function DailyPairQuestionScreen({
   const market = getMarket();
 const t = market === "fi" ? TEXT_FI : market === "en" ? TEXT_EN : TEXT_RU;
   const isDark = theme === "dark";
-  const ink = isDark ? "#f3e8ff" : "#1f1d3a";
+  const ink = isDark ? "#e6d4f0" : "#1f1d3a";
   const muted = isDark ? "#c9b3e0" : "#5a5378";
   const accent = isDark ? "#e0b3ff" : "#6b46ff";
   const today = getTodayLocalDateString();
@@ -9708,7 +9708,7 @@ function MainMenu({
   // участника), иначе до этого момента остаётся призыв создать пару.
   const hasPair = !!appState.pair?.pairId && !!appState.pair?.partner;
   const isDark = theme === "dark";
-  const ink = isDark ? "#f3e8ff" : "#1f1d3a";
+  const ink = isDark ? "#e6d4f0" : "#1f1d3a";
   const muted = isDark ? "#c9b3e0" : "#5a5378";
   const accent = isDark ? "#e0b3ff" : "#6b46ff";
 
@@ -10256,7 +10256,7 @@ function MenuChooserScreen({
   t: any;
 }) {
   const isDark = theme === "dark";
-  const ink = isDark ? "#f3e8ff" : "#1f1d3a";
+  const ink = isDark ? "#e6d4f0" : "#1f1d3a";
   const muted = isDark ? "#c9b3e0" : "#6b6690";
   const accent = isDark ? "#e0b3ff" : "#7c5cff";
 
@@ -10372,7 +10372,7 @@ function PollsScreen({
   const market = getMarket();
 const t = market === "fi" ? TEXT_FI : market === "en" ? TEXT_EN : TEXT_RU;
   const isDark = theme === "dark";
-  const ink = isDark ? "#f3e8ff" : "#1f1d3a";
+  const ink = isDark ? "#e6d4f0" : "#1f1d3a";
   const muted = isDark ? "#c9b3e0" : "#5a5378";
   const accent = isDark ? "#e0b3ff" : "#6b46ff";
 
@@ -10569,7 +10569,7 @@ async function handleFinish() {
         <button
           onClick={() => startPoll(poll.id)}
           style={{
-            ...primaryButtonStyle,
+            ...getPrimaryButtonStyle(isDark),
             width: "100%",
             marginTop: 8,
             padding: "11px 14px",
@@ -10655,7 +10655,7 @@ async function handleFinish() {
 
         <button
           onClick={handleFinish}
-          style={{ ...primaryButtonStyle, width: "100%", marginTop: 14 }}
+          style={{ ...getPrimaryButtonStyle(isDark), width: "100%", marginTop: 14 }}
         >
           {market !== "ru" ? "Claim points" : "Забрать очки"}
         </button>
@@ -10785,7 +10785,7 @@ function GamesScreen({
   const market = getMarket();
 const t = market === "fi" ? TEXT_FI : market === "en" ? TEXT_EN : TEXT_RU;
   const isDark = theme === "dark";
-  const ink = isDark ? "#f3e8ff" : "#1f1d3a";
+  const ink = isDark ? "#e6d4f0" : "#1f1d3a";
   const muted = isDark ? "#c9b3e0" : "#5a5378";
   const accent = isDark ? "#e0b3ff" : "#6b46ff";
   const [activeGameId, setActiveGameId] = useState<string | null>(null);
@@ -11117,7 +11117,7 @@ const psychologistAvatar =
 
           <button
             onClick={() => startGame("ai-psychologist")}
-            style={{ ...primaryButtonStyle, width: "100%" }}
+            style={{ ...getPrimaryButtonStyle(isDark), width: "100%" }}
           >
             {market !== "ru" ? "Take it again" : "Пройти ещё раз"}
           </button>
@@ -11318,7 +11318,7 @@ function handleLoveQuestionFinish() {
             <button
               onClick={() => startGame(game.id)}
               style={{
-  ...primaryButtonStyle,
+  ...getPrimaryButtonStyle(isDark),
   width: "100%",
   marginTop: 8,
   padding: "11px 14px",
@@ -11548,7 +11548,7 @@ function handleLoveQuestionFinish() {
 
           <button
             onClick={() => startGame("ai-psychologist")}
-            style={{ ...primaryButtonStyle, width: "100%" }}
+            style={{ ...getPrimaryButtonStyle(isDark), width: "100%" }}
           >
             {t.games.playAgain}
           </button>
@@ -11634,7 +11634,7 @@ if (activeGame?.id === "never-have-i-ever") {
 
           <button
             onClick={handleFinish}
-            style={{ ...primaryButtonStyle, width: "100%", marginTop: 16 }}
+            style={{ ...getPrimaryButtonStyle(isDark), width: "100%", marginTop: 16 }}
           >
             {t.games.claimPoints}
           </button>
@@ -11706,7 +11706,7 @@ if (activeGame?.id === "never-have-i-ever") {
         onClick={handleNext}
         disabled={selectedOptionIndex === null}
         style={{
-          ...primaryButtonStyle,
+          ...getPrimaryButtonStyle(isDark),
           width: "100%",
           marginTop: 16,
           opacity: selectedOptionIndex !== null ? 1 : 0.55,
@@ -13154,7 +13154,7 @@ function TestsScreen({
   const market = getMarket();
 const t = market === "fi" ? TEXT_FI : market === "en" ? TEXT_EN : TEXT_RU;
   const isDark = theme === "dark";
-  const ink = isDark ? "#f3e8ff" : "#1f1d3a";
+  const ink = isDark ? "#e6d4f0" : "#1f1d3a";
   const muted = isDark ? "#c9b3e0" : "#5a5378";
   const accent = isDark ? "#e0b3ff" : "#6b46ff";
   const activeTest = TESTS.find((item) => item.id === activeTestId) || null;
@@ -13398,7 +13398,7 @@ if (!activeTestId) {
             <button
   onClick={() => startTest(test.id)}
   style={{
-    ...primaryButtonStyle,
+    ...getPrimaryButtonStyle(isDark),
     width: "100%",
     marginTop: 8,
     padding: "11px 14px",
@@ -13470,7 +13470,7 @@ if (!activeTestId) {
 
           <button
             onClick={handleFinish}
-            style={{ ...primaryButtonStyle, width: "100%", marginTop: 16 }}
+            style={{ ...getPrimaryButtonStyle(isDark), width: "100%", marginTop: 16 }}
           >
             {market !== "ru" ? "Claim points" : "Забрать очки"}
           </button>
@@ -13619,7 +13619,7 @@ function RewardsScreen({
   const market = getMarket();
 const t = market === "fi" ? TEXT_FI : market === "en" ? TEXT_EN : TEXT_RU;
   const isDark = theme === "dark";
-  const ink = isDark ? "#f3e8ff" : "#1f1d3a";
+  const ink = isDark ? "#e6d4f0" : "#1f1d3a";
   const muted = isDark ? "#c9b3e0" : "#5a5378";
   const accent = isDark ? "#e0b3ff" : "#6b46ff";
   const [rotation, setRotation] = useState(0);
@@ -13918,7 +13918,7 @@ const visibleRewards = rewardsExpanded
             onClick={handleSpin}
             disabled={isSpinning || points < WHEEL_SPIN_COST}
             style={{
-              ...primaryButtonStyle,
+              ...getPrimaryButtonStyle(isDark),
               width: "100%",
               marginTop: 18,
               padding: "14px",
@@ -14074,7 +14074,7 @@ const visibleRewards = rewardsExpanded
           onClick={handleSpin}
           disabled={isSpinning || points < WHEEL_SPIN_COST}
           style={{
-  ...primaryButtonStyle,
+  ...getPrimaryButtonStyle(isDark),
   width: "100%",
   marginTop: 12,
   padding: "12px 14px",
@@ -14135,8 +14135,18 @@ const visibleRewards = rewardsExpanded
         animation: "popIn 0.4s ease",
       }}
     >
-      {/* 🎉 Заголовок */}
-      <div style={{ fontSize: 26, fontWeight: 900 }}>
+      {/* 🎉 Заголовок — эта карточка всегда светлая (не зависит от темы
+          приложения), поэтому цвет всегда фиксированный тёмный, а не
+          унаследованный (иначе в системной тёмной теме телефона текст
+          наследовал светлый цвет body и был еле виден на белом фоне) */}
+      <div
+        style={{
+          fontSize: 28,
+          fontWeight: 900,
+          color: "#3a1f7a",
+          textShadow: "0 2px 10px rgba(126,75,255,0.25)",
+        }}
+      >
         {t.rewards.wheelScreen.congratsTitle}
       </div>
 
@@ -14185,7 +14195,7 @@ const visibleRewards = rewardsExpanded
 }
         }}
         style={{
-          ...primaryButtonStyle,
+          ...getPrimaryButtonStyle(isDark),
           width: "100%",
           marginTop: 16,
           padding: "14px",
@@ -14288,7 +14298,7 @@ const visibleRewards = rewardsExpanded
   const market = getMarket();
   const t = market === "fi" ? TEXT_FI : market === "en" ? TEXT_EN : TEXT_RU;
   const isDark = theme === "dark";
-  const ink = isDark ? "#f3e8ff" : "#1f1d3a";
+  const ink = isDark ? "#e6d4f0" : "#1f1d3a";
   const muted = isDark ? "#c9b3e0" : "#5a5378";
   return (
     <div style={{ padding: 16 }}>
@@ -14317,7 +14327,7 @@ const visibleRewards = rewardsExpanded
 </div>
 
         <button
-          style={{ ...primaryButtonStyle, width: "100%", marginTop: 18 }}
+          style={{ ...getPrimaryButtonStyle(isDark), width: "100%", marginTop: 18 }}
           onClick={() => onSelect("boy")}
         >
           {t.genderSelect.boy}
@@ -14375,7 +14385,7 @@ function TopPlayersScreen({
   t: any;
 }) {
   const isDark = theme === "dark";
-  const ink = isDark ? "#f3e8ff" : "#1f1d3a";
+  const ink = isDark ? "#e6d4f0" : "#1f1d3a";
   const muted = isDark ? "#c9b3e0" : "#5a5378";
   const accent = isDark ? "#e0b3ff" : "#6b46ff";
   const previousWeekKey = getPreviousWeekKey();
@@ -15271,7 +15281,7 @@ function TopPlayersScreen({
                 type="button"
                 onClick={onClaimWeeklyReward}
                 style={{
-                  ...primaryButtonStyle,
+                  ...getPrimaryButtonStyle(isDark),
                   width: "100%",
                   marginTop: 12,
                 }}
@@ -15601,7 +15611,7 @@ function ProfileAndStatsScreen({
   const market = getMarket();
 const t = market === "fi" ? TEXT_FI : market === "en" ? TEXT_EN : TEXT_RU;
   const isDark = theme === "dark";
-  const ink = isDark ? "#f3e8ff" : "#1f1d3a";
+  const ink = isDark ? "#e6d4f0" : "#1f1d3a";
   const muted = isDark ? "#c9b3e0" : "#5a5378";
   const accent = isDark ? "#e0b3ff" : "#6b46ff";
   const fullName =
@@ -15847,7 +15857,7 @@ const t = market === "fi" ? TEXT_FI : market === "en" ? TEXT_EN : TEXT_RU;
           onClick={handleSaveNickname}
           disabled={savingNickname}
           style={{
-            ...primaryButtonStyle,
+            ...getPrimaryButtonStyle(isDark),
             padding: "12px 18px",
             opacity: savingNickname ? 0.7 : 1,
           }}
@@ -15990,7 +16000,7 @@ const t = market === "fi" ? TEXT_FI : market === "en" ? TEXT_EN : TEXT_RU;
 
   <button
   onClick={() => onNavigate("referrals")}
-  style={{ ...primaryButtonStyle, width: "100%", marginTop: 12 }}
+  style={{ ...getPrimaryButtonStyle(isDark), width: "100%", marginTop: 12 }}
 >
   {t.referrals.inviteButton}
 </button>
@@ -16112,6 +16122,19 @@ const primaryButtonStyle: CSSProperties = {
   background: "linear-gradient(135deg, #8f6bff, #ff76ba)",
   boxShadow: "0 10px 24px rgba(126, 75, 255, 0.24)",
 };
+
+// Тёмная тема ("Полуночная ягода") — тот же стиль кнопки, но более
+// глубокий/приглушённый градиент вместо ярко-сиреневого/розового,
+// который на тёмном фоне выглядел слишком ярко/режущим глаз.
+const primaryButtonStyleDark: CSSProperties = {
+  ...primaryButtonStyle,
+  background: "linear-gradient(135deg, #5f3dc4, #a3407e)",
+  boxShadow: "0 10px 24px rgba(50, 25, 80, 0.4)",
+};
+
+function getPrimaryButtonStyle(isDark?: boolean): CSSProperties {
+  return isDark ? primaryButtonStyleDark : primaryButtonStyle;
+}
 
 const secondaryButtonStyle: CSSProperties = {
   border: "1px solid rgba(255,255,255,0.34)",

@@ -12,12 +12,14 @@
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
+/* Раньше здесь был @media (prefers-color-scheme: dark), который менял
+   --foreground/--background по системной теме ТЕЛЕФОНА — независимо от
+   переключателя темы самого приложения. Из-за этого у элементов без
+   явного цвета (например заголовка модалки приза) текст на светлом
+   фоне становился почти белым и нечитаемым, если у пользователя в ОС
+   была включена тёмная тема. Тема приложения теперь полностью своя
+   (see `theme` state в app/page.tsx), поэтому системную тут больше не
+   учитываем — --foreground/--background всегда фиксированные. */
 
 body {
   background: var(--background);
