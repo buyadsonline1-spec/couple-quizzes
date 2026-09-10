@@ -5373,10 +5373,17 @@ type DatingMatch = {
 function DatingIntroScreen({
   onStart,
   t,
+  theme,
 }: {
   onStart: () => void;
   t: any;
+  // Undefined на iOS (тема там не включена) — читается как "light".
+  theme?: "light" | "dark";
 }) {
+  const isDark = theme === "dark";
+  const ink = isDark ? "#e6d4f0" : "#1f1d3a";
+  const muted = isDark ? "#c9b3e0" : "#5a5378";
+
   const steps = [
     [t.dating.step1Title, t.dating.step1Text],
     [t.dating.step2Title, t.dating.step2Text],
@@ -5403,14 +5410,14 @@ function DatingIntroScreen({
         >
           💘
         </div>
-        <div style={{ fontSize: 26, fontWeight: 900, color: "#1f1d3a" }}>
+        <div style={{ fontSize: 26, fontWeight: 900, color: ink }}>
           {t.dating.introTitle}
         </div>
         <div
           style={{
             marginTop: 8,
             fontSize: 14,
-            color: "#4b446a",
+            color: muted,
             lineHeight: 1.5,
           }}
         >
@@ -5419,7 +5426,7 @@ function DatingIntroScreen({
       </div>
 
       <div style={{ ...cardBaseStyle(), padding: 20 }}>
-        <div style={{ fontSize: 15, fontWeight: 900, color: "#1f1d3a", marginBottom: 14 }}>
+        <div style={{ fontSize: 15, fontWeight: 900, color: ink, marginBottom: 14 }}>
           {t.dating.howItWorksTitle}
         </div>
         <div style={{ display: "grid", gap: 14 }}>
@@ -5431,7 +5438,9 @@ function DatingIntroScreen({
                   width: 30,
                   height: 30,
                   borderRadius: 999,
-                  background: "linear-gradient(135deg, #8f6bff, #ff76ba)",
+                  background: isDark
+                    ? "linear-gradient(135deg, #5f3dc4, #a3407e)"
+                    : "linear-gradient(135deg, #8f6bff, #ff76ba)",
                   color: "#fff",
                   fontWeight: 900,
                   fontSize: 13,
@@ -5443,10 +5452,10 @@ function DatingIntroScreen({
                 {index + 1}
               </div>
               <div>
-                <div style={{ fontSize: 14, fontWeight: 800, color: "#1f1d3a" }}>
+                <div style={{ fontSize: 14, fontWeight: 800, color: ink }}>
                   {title}
                 </div>
-                <div style={{ fontSize: 12.5, color: "#5a5378", lineHeight: 1.4 }}>
+                <div style={{ fontSize: 12.5, color: muted, lineHeight: 1.4 }}>
                   {text}
                 </div>
               </div>
@@ -5455,7 +5464,7 @@ function DatingIntroScreen({
         </div>
       </div>
 
-      <button onClick={onStart} style={{ ...primaryButtonStyle, width: "100%" }}>
+      <button onClick={onStart} style={{ ...getPrimaryButtonStyle(isDark), width: "100%" }}>
         {t.dating.startButton}
       </button>
     </div>
@@ -5469,6 +5478,7 @@ function DatingProfileScreen({
   onSave,
   onUploadPhoto,
   t,
+  theme,
 }: {
   initialProfile: DatingProfile | null;
   defaultGender: "boy" | "girl" | null;
@@ -5484,7 +5494,23 @@ function DatingProfileScreen({
   }) => Promise<boolean>;
   onUploadPhoto: (file: File) => Promise<string | null>;
   t: any;
+  // Undefined на iOS (тема там не включена) — читается как "light".
+  theme?: "light" | "dark";
 }) {
+  const isDark = theme === "dark";
+  const ink = isDark ? "#e6d4f0" : "#1f1d3a";
+  const muted = isDark ? "#c9b3e0" : "#5a5378";
+  const accent = isDark ? "#e0b3ff" : "#6b46ff";
+  const inputStyle: CSSProperties = {
+    width: "100%",
+    boxSizing: "border-box",
+    border: isDark ? "1px solid rgba(255,255,255,0.18)" : "1px solid rgba(255,255,255,0.5)",
+    borderRadius: 14,
+    background: isDark ? "rgba(255,255,255,0.12)" : "rgba(255,255,255,0.55)",
+    padding: "12px 14px",
+    fontSize: 14,
+    color: ink,
+  };
   const [displayName, setDisplayName] = useState(initialProfile?.displayName ?? "");
   const [age, setAge] = useState(initialProfile?.age ? String(initialProfile.age) : "");
   const [bio, setBio] = useState(initialProfile?.bio ?? "");
@@ -5564,13 +5590,19 @@ function DatingProfileScreen({
     fontSize: 13,
     fontWeight: 800,
     cursor: "pointer",
-    background: active ? "linear-gradient(135deg, #8f6bff, #ff76ba)" : "rgba(255,255,255,0.4)",
-    color: active ? "#fff" : "#393253",
+    background: active
+      ? isDark
+        ? "linear-gradient(135deg, #5f3dc4, #a3407e)"
+        : "linear-gradient(135deg, #8f6bff, #ff76ba)"
+      : isDark
+        ? "rgba(255,255,255,0.14)"
+        : "rgba(255,255,255,0.4)",
+    color: active ? "#fff" : isDark ? "#c9b3e0" : "#393253",
   });
 
   return (
     <div style={{ padding: 16, display: "grid", gap: 14 }}>
-      <div style={{ fontSize: 22, fontWeight: 900, color: "#1f1d3a" }}>
+      <div style={{ fontSize: 22, fontWeight: 900, color: ink }}>
         {t.dating.profileTitle}
       </div>
 
@@ -5581,7 +5613,7 @@ function DatingProfileScreen({
             width: 96,
             height: 96,
             borderRadius: 999,
-            background: photoUrl ? "transparent" : "rgba(255,255,255,0.35)",
+            background: photoUrl ? "transparent" : isDark ? "rgba(255,255,255,0.14)" : "rgba(255,255,255,0.35)",
             border: photoUrl ? "none" : "2px dashed rgba(143,107,255,0.45)",
             display: "flex",
             alignItems: "center",
@@ -5601,8 +5633,8 @@ function DatingProfileScreen({
             />
           ) : (
             <>
-              <div style={{ fontSize: 26, color: "#7c5cff", lineHeight: 1 }}>+</div>
-              <div style={{ fontSize: 10.5, fontWeight: 800, color: "#6b46ff" }}>
+              <div style={{ fontSize: 26, color: accent, lineHeight: 1 }}>+</div>
+              <div style={{ fontSize: 10.5, fontWeight: 800, color: accent }}>
                 {uploading ? "..." : "Фото"}
               </div>
             </>
@@ -5615,7 +5647,7 @@ function DatingProfileScreen({
           style={{ display: "none" }}
           onChange={handlePickPhoto}
         />
-        <div style={{ fontSize: 12, color: "#5a5378" }}>
+        <div style={{ fontSize: 12, color: muted }}>
           {uploading ? t.dating.photoUploading : t.dating.photoHint}
         </div>
       </div>
@@ -5623,7 +5655,7 @@ function DatingProfileScreen({
       <div style={{ ...cardBaseStyle(), padding: 20 }}>
         <div style={{ display: "grid", gap: 14 }}>
           <div>
-            <div style={{ fontSize: 12.5, fontWeight: 800, color: "#5a5378", marginBottom: 6 }}>
+            <div style={{ fontSize: 12.5, fontWeight: 800, color: muted, marginBottom: 6 }}>
               {t.dating.nameLabel}
             </div>
             <input
@@ -5631,21 +5663,12 @@ function DatingProfileScreen({
               onChange={(e) => setDisplayName(e.target.value)}
               placeholder={t.dating.namePlaceholder}
               maxLength={60}
-              style={{
-                width: "100%",
-                boxSizing: "border-box",
-                border: "1px solid rgba(255,255,255,0.5)",
-                borderRadius: 14,
-                background: "rgba(255,255,255,0.55)",
-                padding: "12px 14px",
-                fontSize: 14,
-                color: "#1f1d3a",
-              }}
+              style={inputStyle}
             />
           </div>
 
           <div>
-            <div style={{ fontSize: 12.5, fontWeight: 800, color: "#5a5378", marginBottom: 6 }}>
+            <div style={{ fontSize: 12.5, fontWeight: 800, color: muted, marginBottom: 6 }}>
               {t.dating.ageLabel}
             </div>
             <input
@@ -5654,21 +5677,12 @@ function DatingProfileScreen({
               placeholder={t.dating.agePlaceholder}
               inputMode="numeric"
               maxLength={3}
-              style={{
-                width: 96,
-                boxSizing: "border-box",
-                border: "1px solid rgba(255,255,255,0.5)",
-                borderRadius: 14,
-                background: "rgba(255,255,255,0.55)",
-                padding: "12px 14px",
-                fontSize: 14,
-                color: "#1f1d3a",
-              }}
+              style={{ ...inputStyle, width: 96 }}
             />
           </div>
 
           <div>
-            <div style={{ fontSize: 12.5, fontWeight: 800, color: "#5a5378", marginBottom: 6 }}>
+            <div style={{ fontSize: 12.5, fontWeight: 800, color: muted, marginBottom: 6 }}>
               {t.dating.cityLabel}
             </div>
             <input
@@ -5676,24 +5690,15 @@ function DatingProfileScreen({
               onChange={(e) => setCity(e.target.value)}
               placeholder={t.dating.cityPlaceholder}
               maxLength={100}
-              style={{
-                width: "100%",
-                boxSizing: "border-box",
-                border: "1px solid rgba(255,255,255,0.5)",
-                borderRadius: 14,
-                background: "rgba(255,255,255,0.55)",
-                padding: "12px 14px",
-                fontSize: 14,
-                color: "#1f1d3a",
-              }}
+              style={inputStyle}
             />
-            <div style={{ marginTop: 6, fontSize: 11, color: "#5a5378", lineHeight: 1.35 }}>
+            <div style={{ marginTop: 6, fontSize: 11, color: muted, lineHeight: 1.35 }}>
               {t.dating.cityHint}
             </div>
           </div>
 
           <div>
-            <div style={{ fontSize: 12.5, fontWeight: 800, color: "#5a5378", marginBottom: 6 }}>
+            <div style={{ fontSize: 12.5, fontWeight: 800, color: muted, marginBottom: 6 }}>
               {t.dating.bioLabel}
             </div>
             <textarea
@@ -5702,14 +5707,7 @@ function DatingProfileScreen({
               placeholder={t.dating.bioPlaceholder}
               maxLength={500}
               style={{
-                width: "100%",
-                boxSizing: "border-box",
-                border: "1px solid rgba(255,255,255,0.5)",
-                borderRadius: 14,
-                background: "rgba(255,255,255,0.55)",
-                padding: "12px 14px",
-                fontSize: 14,
-                color: "#1f1d3a",
+                ...inputStyle,
                 minHeight: 80,
                 lineHeight: 1.4,
                 resize: "none",
@@ -5719,7 +5717,7 @@ function DatingProfileScreen({
           </div>
 
           <div>
-            <div style={{ fontSize: 12.5, fontWeight: 800, color: "#5a5378", marginBottom: 6 }}>
+            <div style={{ fontSize: 12.5, fontWeight: 800, color: muted, marginBottom: 6 }}>
               {t.dating.seekingLabel}
             </div>
             <div style={{ display: "flex", gap: 8 }}>
@@ -5752,11 +5750,11 @@ function DatingProfileScreen({
       <div style={{ ...cardBaseStyle(), padding: 20 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
           <span style={{ fontSize: 16 }}>🧠</span>
-          <div style={{ fontSize: 14, fontWeight: 900, color: "#1f1d3a" }}>
+          <div style={{ fontSize: 14, fontWeight: 900, color: ink }}>
             {t.dating.personalityTitle}
           </div>
         </div>
-        <div style={{ fontSize: 12, color: "#5a5378", marginBottom: 12, lineHeight: 1.4 }}>
+        <div style={{ fontSize: 12, color: muted, marginBottom: 12, lineHeight: 1.4 }}>
           {t.dating.personalityHint}
         </div>
         {personalityTags.length > 0 ? (
@@ -5770,11 +5768,11 @@ function DatingProfileScreen({
                   gap: 5,
                   padding: "7px 11px",
                   borderRadius: 999,
-                  background: "rgba(255,255,255,0.42)",
-                  border: "1px solid rgba(255,255,255,0.5)",
+                  background: isDark ? "rgba(255,255,255,0.14)" : "rgba(255,255,255,0.42)",
+                  border: isDark ? "1px solid rgba(255,255,255,0.18)" : "1px solid rgba(255,255,255,0.5)",
                   fontSize: 12,
                   fontWeight: 700,
-                  color: "#2f2b52",
+                  color: ink,
                 }}
               >
                 {value}
@@ -5782,7 +5780,7 @@ function DatingProfileScreen({
             ))}
           </div>
         ) : (
-          <div style={{ fontSize: 12.5, color: "#8a84a6", fontStyle: "italic" }}>
+          <div style={{ fontSize: 12.5, color: muted, fontStyle: "italic" }}>
             {t.dating.personalityEmpty}
           </div>
         )}
@@ -5797,7 +5795,7 @@ function DatingProfileScreen({
       <button
         onClick={handleSave}
         disabled={saving}
-        style={{ ...primaryButtonStyle, width: "100%", opacity: saving ? 0.7 : 1 }}
+        style={{ ...getPrimaryButtonStyle(isDark), width: "100%", opacity: saving ? 0.7 : 1 }}
       >
         {saving ? t.dating.savingButton : t.dating.saveButton}
       </button>
@@ -5826,6 +5824,7 @@ function DatingSwipeScreen({
   emptyTitle,
   emptyText,
   t,
+  theme,
 }: {
   candidates: DatingCandidate[];
   loading: boolean;
@@ -5856,7 +5855,21 @@ function DatingSwipeScreen({
   emptyTitle?: string;
   emptyText?: string;
   t: any;
+  // Undefined на iOS (тема там не включена) — читается как "light".
+  theme?: "light" | "dark";
 }) {
+  const isDark = theme === "dark";
+  const ink = isDark ? "#e6d4f0" : "#1f1d3a";
+  const muted = isDark ? "#c9b3e0" : "#5a5378";
+  const iconButtonStyle: CSSProperties = {
+    border: "none",
+    background: isDark ? "rgba(255,255,255,0.14)" : "rgba(255,255,255,0.35)",
+    borderRadius: 999,
+    width: 40,
+    height: 40,
+    fontSize: 18,
+    cursor: "pointer",
+  };
   const current = candidates[0] ?? null;
   const next = candidates[1] ?? null;
 
@@ -5864,10 +5877,10 @@ function DatingSwipeScreen({
     <div style={{ padding: 16, display: "grid", gap: 14 }}>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
         <div>
-          <div style={{ fontSize: 20, fontWeight: 900, color: "#1f1d3a" }}>
+          <div style={{ fontSize: 20, fontWeight: 900, color: ink }}>
             {title ?? t.dating.swipeTitle}
           </div>
-          <div style={{ fontSize: 11.5, color: "#4b446a", marginTop: 2 }}>
+          <div style={{ fontSize: 11.5, color: muted, marginTop: 2 }}>
             {hint ?? t.dating.swipeHint}
           </div>
           {swipesRemaining !== null && (
@@ -5892,15 +5905,7 @@ function DatingSwipeScreen({
             <button
               onClick={onOpenBoost}
               aria-label={t.dating.boostButton}
-              style={{
-                border: "none",
-                background: "rgba(255,255,255,0.35)",
-                borderRadius: 999,
-                width: 40,
-                height: 40,
-                fontSize: 18,
-                cursor: "pointer",
-              }}
+              style={iconButtonStyle}
             >
               ⚡
             </button>
@@ -5908,15 +5913,7 @@ function DatingSwipeScreen({
           <button
             onClick={onEditProfile}
             aria-label={t.dating.editProfileButton}
-            style={{
-              border: "none",
-              background: "rgba(255,255,255,0.35)",
-              borderRadius: 999,
-              width: 40,
-              height: 40,
-              fontSize: 18,
-              cursor: "pointer",
-            }}
+            style={iconButtonStyle}
           >
             ✏️
           </button>
@@ -5924,31 +5921,12 @@ function DatingSwipeScreen({
             <button
               onClick={onOpenLikes}
               aria-label={t.dating.likesButton}
-              style={{
-                border: "none",
-                background: "rgba(255,255,255,0.35)",
-                borderRadius: 999,
-                width: 40,
-                height: 40,
-                fontSize: 18,
-                cursor: "pointer",
-              }}
+              style={iconButtonStyle}
             >
               ❤️
             </button>
           )}
-          <button
-            onClick={onOpenMatches}
-            style={{
-              border: "none",
-              background: "rgba(255,255,255,0.35)",
-              borderRadius: 999,
-              width: 40,
-              height: 40,
-              fontSize: 18,
-              cursor: "pointer",
-            }}
-          >
+          <button onClick={onOpenMatches} style={iconButtonStyle}>
             💬
           </button>
         </div>
@@ -5965,7 +5943,7 @@ function DatingSwipeScreen({
               alignItems: "center",
               justifyContent: "center",
               fontSize: 14,
-              color: "#4b446a",
+              color: muted,
               fontWeight: 700,
             }}
           >
@@ -5987,13 +5965,13 @@ function DatingSwipeScreen({
             }}
           >
             <div style={{ fontSize: 40 }}>👑</div>
-            <div style={{ fontSize: 16, fontWeight: 900, color: "#1f1d3a" }}>
+            <div style={{ fontSize: 16, fontWeight: 900, color: ink }}>
               {t.dating.dailyLimitTitle}
             </div>
-            <div style={{ fontSize: 13, color: "#5a5378", lineHeight: 1.4 }}>
+            <div style={{ fontSize: 13, color: muted, lineHeight: 1.4 }}>
               {t.dating.dailyLimitText}
             </div>
-            <button onClick={onUpgrade} style={{ ...primaryButtonStyle, width: "100%" }}>
+            <button onClick={onUpgrade} style={{ ...getPrimaryButtonStyle(isDark), width: "100%" }}>
               {t.dating.dailyLimitUnlockButton}
             </button>
           </div>
@@ -6012,10 +5990,10 @@ function DatingSwipeScreen({
             }}
           >
             <div style={{ fontSize: 40, marginBottom: 10 }}>💔</div>
-            <div style={{ fontSize: 16, fontWeight: 900, color: "#1f1d3a" }}>
+            <div style={{ fontSize: 16, fontWeight: 900, color: ink }}>
               {emptyTitle ?? t.dating.noCandidatesTitle}
             </div>
-            <div style={{ marginTop: 6, fontSize: 13, color: "#5a5378", lineHeight: 1.4 }}>
+            <div style={{ marginTop: 6, fontSize: 13, color: muted, lineHeight: 1.4 }}>
               {emptyText ?? t.dating.noCandidatesText}
             </div>
           </div>
@@ -6184,7 +6162,9 @@ function DatingSwipeScreen({
               height: 62,
               borderRadius: 999,
               border: "none",
-              background: "linear-gradient(135deg, #8f6bff, #ff76ba)",
+              background: isDark
+                ? "linear-gradient(135deg, #5f3dc4, #a3407e)"
+                : "linear-gradient(135deg, #8f6bff, #ff76ba)",
               color: "#fff",
               fontSize: 26,
               cursor: "pointer",
@@ -6244,6 +6224,7 @@ function DatingBoostScreen({
   onClaimFree,
   onBack,
   t,
+  theme,
 }: {
   boostedUntil: string | null;
   freeBoostAvailable: boolean;
@@ -6254,7 +6235,12 @@ function DatingBoostScreen({
   onClaimFree: () => void;
   onBack: () => void;
   t: any;
+  // Undefined на iOS (тема там не включена) — читается как "light".
+  theme?: "light" | "dark";
 }) {
+  const isDark = theme === "dark";
+  const ink = isDark ? "#e6d4f0" : "#1f1d3a";
+  const muted = isDark ? "#c9b3e0" : "#5a5378";
   const isActive = !!boostedUntil && new Date(boostedUntil).getTime() > Date.now();
   const activeUntilLabel = isActive
     ? new Date(boostedUntil!).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
@@ -6270,10 +6256,10 @@ function DatingBoostScreen({
   return (
     <div style={{ padding: 16, display: "grid", gap: 14 }}>
       <div>
-        <div style={{ fontSize: 22, fontWeight: 900, color: "#1f1d3a" }}>
+        <div style={{ fontSize: 22, fontWeight: 900, color: ink }}>
           {t.dating.boostTitle}
         </div>
-        <div style={{ fontSize: 13, color: "#4b446a", marginTop: 4 }}>
+        <div style={{ fontSize: 13, color: muted, marginTop: 4 }}>
           {t.dating.boostSubtitle}
         </div>
       </div>
@@ -6282,10 +6268,10 @@ function DatingBoostScreen({
         <div style={{ ...cardBaseStyle(), padding: 16, display: "flex", alignItems: "center", gap: 12 }}>
           <div style={{ fontSize: 26 }}>⚡</div>
           <div>
-            <div style={{ fontSize: 13.5, fontWeight: 900, color: "#1f1d3a" }}>
+            <div style={{ fontSize: 13.5, fontWeight: 900, color: ink }}>
               {t.dating.boostActiveTitle}
             </div>
-            <div style={{ fontSize: 12, color: "#5a5378", marginTop: 2 }}>
+            <div style={{ fontSize: 12, color: muted, marginTop: 2 }}>
               {t.dating.boostActiveUntil.replace("{time}", activeUntilLabel || "")}
             </div>
           </div>
@@ -6312,10 +6298,10 @@ function DatingBoostScreen({
             }}
           >
             <div>
-              <div style={{ fontSize: 14.5, fontWeight: 900, color: "#1f1d3a" }}>
+              <div style={{ fontSize: 14.5, fontWeight: 900, color: ink }}>
                 {boostLabelByMinutes(tier.minutes)}
               </div>
-              <div style={{ fontSize: 11.5, color: "#5a5378", marginTop: 2 }}>
+              <div style={{ fontSize: 11.5, color: muted, marginTop: 2 }}>
                 {t.dating.boostTierHint}
               </div>
             </div>
@@ -6353,10 +6339,10 @@ function DatingBoostScreen({
           }}
         >
           <div>
-            <div style={{ fontSize: 13.5, fontWeight: 900, color: "#1f1d3a" }}>
+            <div style={{ fontSize: 13.5, fontWeight: 900, color: ink }}>
               {t.dating.freeBoostTitle}
             </div>
-            <div style={{ fontSize: 11.5, color: "#5a5378", marginTop: 2 }}>
+            <div style={{ fontSize: 11.5, color: muted, marginTop: 2 }}>
               {t.dating.freeBoostHint}
             </div>
           </div>
@@ -6378,35 +6364,42 @@ function DatingMatchesScreen({
   onOpenSwipe,
   onBack,
   t,
+  theme,
 }: {
   matches: DatingMatch[];
   onOpenChat: (match: DatingMatch) => void;
   onOpenSwipe: () => void;
   onBack: () => void;
   t: any;
+  // Undefined на iOS (тема там не включена) — читается как "light".
+  theme?: "light" | "dark";
 }) {
+  const isDark = theme === "dark";
+  const ink = isDark ? "#e6d4f0" : "#1f1d3a";
+  const muted = isDark ? "#c9b3e0" : "#5a5378";
+
   return (
     <div style={{ padding: 16, display: "grid", gap: 14 }}>
       <div>
-        <div style={{ fontSize: 22, fontWeight: 900, color: "#1f1d3a" }}>
+        <div style={{ fontSize: 22, fontWeight: 900, color: ink }}>
           {t.dating.matchesTitle}
         </div>
-        <div style={{ fontSize: 13, color: "#4b446a", marginTop: 4 }}>
+        <div style={{ fontSize: 13, color: muted, marginTop: 4 }}>
           {t.dating.matchesSubtitle}
         </div>
       </div>
 
       {matches.length === 0 ? (
         <div style={{ ...cardBaseStyle(), padding: 24, textAlign: "center" }}>
-          <div style={{ fontSize: 15, fontWeight: 900, color: "#1f1d3a" }}>
+          <div style={{ fontSize: 15, fontWeight: 900, color: ink }}>
             {t.dating.emptyMatchesTitle}
           </div>
-          <div style={{ marginTop: 6, fontSize: 13, color: "#5a5378", lineHeight: 1.4 }}>
+          <div style={{ marginTop: 6, fontSize: 13, color: muted, lineHeight: 1.4 }}>
             {t.dating.emptyMatchesText}
           </div>
           <button
             onClick={onOpenSwipe}
-            style={{ ...primaryButtonStyle, width: "100%", marginTop: 16 }}
+            style={{ ...getPrimaryButtonStyle(isDark), width: "100%", marginTop: 16 }}
           >
             {t.dating.goToSwipeButton}
           </button>
@@ -6454,13 +6447,13 @@ function DatingMatchesScreen({
                 )}
               </div>
               <div style={{ minWidth: 0, flex: 1 }}>
-                <div style={{ fontSize: 15, fontWeight: 900, color: "#1f1d3a", marginBottom: 2 }}>
+                <div style={{ fontSize: 15, fontWeight: 900, color: ink, marginBottom: 2 }}>
                   {match.partnerDisplayName}
                 </div>
                 <div
                   style={{
                     fontSize: 12.5,
-                    color: match.lastMessage ? "#5a5378" : "#ff5ea8",
+                    color: match.lastMessage ? muted : isDark ? "#ff8fc4" : "#ff5ea8",
                     fontWeight: match.lastMessage ? 400 : 800,
                     whiteSpace: "nowrap",
                     overflow: "hidden",
@@ -6499,6 +6492,7 @@ function DatingChatScreen({
   onProposePair,
   onDismissPairProposal,
   t,
+  theme,
 }: {
   match: DatingMatch;
   messages: Array<{ id: string; senderTelegramId: number; text: string; createdAt: string }>;
@@ -6522,7 +6516,15 @@ function DatingChatScreen({
   onProposePair?: () => void;
   onDismissPairProposal?: () => void;
   t: any;
+  // Undefined на iOS (тема там не включена) — читается как "light".
+  theme?: "light" | "dark";
 }) {
+  const isDark = theme === "dark";
+  const ink = isDark ? "#e6d4f0" : "#1f1d3a";
+  const muted = isDark ? "#c9b3e0" : "#5a5378";
+  const primaryGradient = isDark
+    ? "linear-gradient(135deg, #5f3dc4, #a3407e)"
+    : "linear-gradient(135deg, #8f6bff, #ff76ba)";
   const [text, setText] = useState("");
   const [showMenu, setShowMenu] = useState(false);
   const [confirmAction, setConfirmAction] = useState<"block" | "report" | null>(null);
@@ -6542,14 +6544,14 @@ function DatingChatScreen({
           alignItems: "center",
           gap: 10,
           padding: 16,
-          background: "rgba(255,255,255,0.22)",
-          borderBottom: "1px solid rgba(255,255,255,0.28)",
+          background: isDark ? "rgba(255,255,255,0.08)" : "rgba(255,255,255,0.22)",
+          borderBottom: isDark ? "1px solid rgba(255,255,255,0.14)" : "1px solid rgba(255,255,255,0.28)",
           position: "relative",
         }}
       >
         <button
           onClick={onBack}
-          style={{ border: "none", background: "none", fontSize: 18, color: "#1f1d3a", cursor: "pointer" }}
+          style={{ border: "none", background: "none", fontSize: 18, color: ink, cursor: "pointer" }}
         >
           ←
         </button>
@@ -6578,7 +6580,7 @@ function DatingChatScreen({
             "🙂"
           )}
         </div>
-        <div style={{ fontSize: 15, fontWeight: 900, color: "#1f1d3a" }}>
+        <div style={{ fontSize: 15, fontWeight: 900, color: ink }}>
           {match.partnerDisplayName}
         </div>
         <button
@@ -6589,7 +6591,7 @@ function DatingChatScreen({
             background: "none",
             fontSize: 20,
             fontWeight: 900,
-            color: "#4b446a",
+            color: muted,
             cursor: "pointer",
             padding: "4px 8px",
           }}
@@ -6603,7 +6605,7 @@ function DatingChatScreen({
               position: "absolute",
               top: 54,
               right: 16,
-              background: "#fff",
+              background: isDark ? "#2b1f45" : "#fff",
               borderRadius: 16,
               boxShadow: "0 10px 30px rgba(37,34,78,0.22)",
               overflow: "hidden",
@@ -6625,7 +6627,7 @@ function DatingChatScreen({
                 background: "none",
                 fontSize: 13,
                 fontWeight: 700,
-                color: "#201b39",
+                color: ink,
                 cursor: "pointer",
               }}
             >
@@ -6645,9 +6647,9 @@ function DatingChatScreen({
                 background: "none",
                 fontSize: 13,
                 fontWeight: 700,
-                color: "#c1352f",
+                color: isDark ? "#ff8a80" : "#c1352f",
                 cursor: "pointer",
-                borderTop: "1px solid rgba(0,0,0,0.06)",
+                borderTop: isDark ? "1px solid rgba(255,255,255,0.12)" : "1px solid rgba(0,0,0,0.06)",
               }}
             >
               {t.dating.blockButton}
@@ -6658,7 +6660,7 @@ function DatingChatScreen({
 
       {confirmAction && (
         <div style={{ padding: 16, background: "rgba(193,53,47,0.08)" }}>
-          <div style={{ fontSize: 13, fontWeight: 700, color: "#8a2f2f", marginBottom: 10 }}>
+          <div style={{ fontSize: 13, fontWeight: 700, color: isDark ? "#ffb4ae" : "#8a2f2f", marginBottom: 10 }}>
             {confirmAction === "block" ? t.dating.blockConfirmText : t.dating.reportConfirmText}
           </div>
           <div style={{ display: "flex", gap: 8 }}>
@@ -6686,11 +6688,11 @@ function DatingChatScreen({
               onClick={() => setConfirmAction(null)}
               style={{
                 flex: 1,
-                border: "1px solid rgba(0,0,0,0.12)",
+                border: isDark ? "1px solid rgba(255,255,255,0.2)" : "1px solid rgba(0,0,0,0.12)",
                 borderRadius: 14,
                 padding: "10px 12px",
-                background: "#fff",
-                color: "#201b39",
+                background: isDark ? "rgba(255,255,255,0.12)" : "#fff",
+                color: ink,
                 fontWeight: 800,
                 fontSize: 13,
                 cursor: "pointer",
@@ -6708,7 +6710,7 @@ function DatingChatScreen({
             margin: "14px 16px 0",
             padding: "12px 14px",
             borderRadius: 16,
-            background: "rgba(255,255,255,0.34)",
+            background: isDark ? "rgba(255,255,255,0.1)" : "rgba(255,255,255,0.34)",
             display: "flex",
             alignItems: "center",
             gap: 10,
@@ -6716,7 +6718,7 @@ function DatingChatScreen({
         >
           <div style={{ fontSize: 20, flexShrink: 0 }}>💍</div>
           <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ fontSize: 12.5, fontWeight: 800, color: "#1f1d3a", lineHeight: 1.3 }}>
+            <div style={{ fontSize: 12.5, fontWeight: 800, color: ink, lineHeight: 1.3 }}>
               {!pairProposal
                 ? t.dating.pairProposalPromptTitle
                 : pairProposal.isProposer
@@ -6724,7 +6726,7 @@ function DatingChatScreen({
                   : t.dating.pairProposalPendingReceivedTitle}
             </div>
             {!pairProposal && (
-              <div style={{ fontSize: 11, color: "#5a5378", marginTop: 2 }}>
+              <div style={{ fontSize: 11, color: muted, marginTop: 2 }}>
                 {t.dating.pairProposalPromptText}
               </div>
             )}
@@ -6737,7 +6739,7 @@ function DatingChatScreen({
                 border: "none",
                 borderRadius: 999,
                 padding: "8px 12px",
-                background: "linear-gradient(135deg, #8f6bff, #ff76ba)",
+                background: primaryGradient,
                 color: "#fff",
                 fontSize: 11.5,
                 fontWeight: 800,
@@ -6756,7 +6758,7 @@ function DatingChatScreen({
               border: "none",
               background: "none",
               fontSize: 14,
-              color: "#8a84a8",
+              color: muted,
               cursor: "pointer",
               padding: 4,
               flexShrink: 0,
@@ -6771,17 +6773,17 @@ function DatingChatScreen({
         <div style={{ flex: 1, padding: 16, display: "grid", gap: 12, alignContent: "start" }}>
           <div style={{ ...cardBaseStyle(), padding: 18, textAlign: "center" }}>
             <div style={{ fontSize: 30, marginBottom: 6 }}>🔒</div>
-            <div style={{ fontSize: 16, fontWeight: 900, color: "#1f1d3a" }}>
+            <div style={{ fontSize: 16, fontWeight: 900, color: ink }}>
               {t.dating.chatLockedTitle}
             </div>
-            <div style={{ marginTop: 6, fontSize: 13, color: "#5a5378", lineHeight: 1.4 }}>
+            <div style={{ marginTop: 6, fontSize: 13, color: muted, lineHeight: 1.4 }}>
               {t.dating.chatLockedText}
             </div>
           </div>
 
           {icebreakers && icebreakers.length > 0 && (
             <div style={{ ...cardBaseStyle(), padding: 16 }}>
-              <div style={{ fontSize: 13, fontWeight: 900, color: "#1f1d3a", marginBottom: 10 }}>
+              <div style={{ fontSize: 13, fontWeight: 900, color: ink, marginBottom: 10 }}>
                 {t.dating.icebreakersTitle}
               </div>
               <div style={{ display: "grid", gap: 8 }}>
@@ -6791,10 +6793,10 @@ function DatingChatScreen({
                     style={{
                       padding: "10px 12px",
                       borderRadius: 14,
-                      background: "rgba(255,255,255,0.55)",
+                      background: isDark ? "rgba(255,255,255,0.12)" : "rgba(255,255,255,0.55)",
                       fontSize: 13,
                       lineHeight: 1.4,
-                      color: "#2f2850",
+                      color: ink,
                     }}
                   >
                     💬 {line}
@@ -6804,7 +6806,7 @@ function DatingChatScreen({
             </div>
           )}
 
-          <button onClick={onUnlock} style={{ ...primaryButtonStyle, width: "100%" }}>
+          <button onClick={onUnlock} style={{ ...getPrimaryButtonStyle(isDark), width: "100%" }}>
             {t.dating.unlockChatButton}
           </button>
         </div>
@@ -6816,7 +6818,7 @@ function DatingChatScreen({
                 style={{
                   alignSelf: "center",
                   fontSize: 12.5,
-                  color: "#4b446a",
+                  color: muted,
                   marginTop: 20,
                 }}
               >
@@ -6836,9 +6838,11 @@ function DatingChatScreen({
                       fontSize: 14,
                       lineHeight: 1.4,
                       background: isMine
-                        ? "linear-gradient(135deg, #8f6bff, #ff76ba)"
-                        : "rgba(255,255,255,0.65)",
-                      color: isMine ? "#fff" : "#1f1d3a",
+                        ? primaryGradient
+                        : isDark
+                          ? "rgba(255,255,255,0.14)"
+                          : "rgba(255,255,255,0.65)",
+                      color: isMine ? "#fff" : ink,
                       borderBottomRightRadius: isMine ? 6 : 18,
                       borderBottomLeftRadius: isMine ? 18 : 6,
                     }}
@@ -6856,8 +6860,8 @@ function DatingChatScreen({
               alignItems: "center",
               gap: 10,
               padding: "12px 16px",
-              background: "rgba(255,255,255,0.22)",
-              borderTop: "1px solid rgba(255,255,255,0.28)",
+              background: isDark ? "rgba(255,255,255,0.08)" : "rgba(255,255,255,0.22)",
+              borderTop: isDark ? "1px solid rgba(255,255,255,0.14)" : "1px solid rgba(255,255,255,0.28)",
             }}
           >
             <input
@@ -6869,12 +6873,12 @@ function DatingChatScreen({
               placeholder={t.dating.chatPlaceholder}
               style={{
                 flex: 1,
-                border: "1px solid rgba(255,255,255,0.5)",
+                border: isDark ? "1px solid rgba(255,255,255,0.18)" : "1px solid rgba(255,255,255,0.5)",
                 borderRadius: 999,
-                background: "rgba(255,255,255,0.55)",
+                background: isDark ? "rgba(255,255,255,0.12)" : "rgba(255,255,255,0.55)",
                 padding: "11px 16px",
                 fontSize: 14,
-                color: "#1f1d3a",
+                color: ink,
               }}
             />
             <button
@@ -6884,7 +6888,7 @@ function DatingChatScreen({
                 height: 42,
                 borderRadius: 999,
                 border: "none",
-                background: "linear-gradient(135deg, #8f6bff, #ff76ba)",
+                background: primaryGradient,
                 color: "#fff",
                 fontSize: 17,
                 display: "flex",
@@ -20129,6 +20133,7 @@ showPaywall={() => {
   <DatingIntroScreen
     t={t}
     onStart={() => setScreen("dating-profile")}
+    theme={isCapacitorApp() ? undefined : theme}
   />
 )}
 
@@ -20147,6 +20152,7 @@ showPaywall={() => {
     onBack={() => setScreen(datingProfile ? "dating-swipe" : "dating-intro")}
     onSave={handleSaveDatingProfile}
     onUploadPhoto={handleUploadDatingPhoto}
+    theme={isCapacitorApp() ? undefined : theme}
   />
 )}
 
@@ -20175,6 +20181,7 @@ showPaywall={() => {
       setScreen("dating-boost");
     }}
     onSuperlike={handleSuperlike}
+    theme={isCapacitorApp() ? undefined : theme}
   />
 )}
 
@@ -20189,6 +20196,7 @@ showPaywall={() => {
     onBuy={handleBuyBoost}
     onClaimFree={handleClaimFreeBoost}
     onBack={() => setScreen("dating-swipe")}
+    theme={isCapacitorApp() ? undefined : theme}
   />
 )}
 
@@ -20213,6 +20221,7 @@ showPaywall={() => {
     emptyTitle={t.dating.noLikesTitle}
     emptyText={t.dating.noLikesText}
     onBack={() => setScreen("dating-swipe")}
+    theme={isCapacitorApp() ? undefined : theme}
   />
 )}
 
@@ -20223,6 +20232,7 @@ showPaywall={() => {
     onOpenChat={handleOpenDatingChat}
     onOpenSwipe={() => setScreen("dating-swipe")}
     onBack={() => setScreen("dating-swipe")}
+    theme={isCapacitorApp() ? undefined : theme}
   />
 )}
 
@@ -20247,6 +20257,7 @@ showPaywall={() => {
     pairProposalSending={pairProposalSending}
     onProposePair={handleProposePair}
     onDismissPairProposal={() => dismissPairProposalBanner(activeChatMatch.matchId)}
+    theme={isCapacitorApp() ? undefined : theme}
   />
 )}
 
