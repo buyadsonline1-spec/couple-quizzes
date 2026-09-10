@@ -6940,9 +6940,19 @@ const AI_PSYCHOLOGIST_STARTERS_EN = [
 // — переустановка/смена устройства её не теряет.
 function AiPsychologistChatScreen({
   onBack,
+  theme,
 }: {
   onBack: () => void;
+  // Undefined на iOS (тема там не включена) — читается как "light".
+  theme?: "light" | "dark";
 }) {
+  const isDark = theme === "dark";
+  const ink = isDark ? "#e6d4f0" : "#1f1d3a";
+  const muted = isDark ? "#c9b3e0" : "#5a5378";
+  const accent = isDark ? "#e0b3ff" : "#6b46ff";
+  const primaryGradient = isDark
+    ? "linear-gradient(135deg, #5f3dc4, #a3407e)"
+    : "linear-gradient(135deg, #8f6bff, #ff76ba)";
   const market = getMarket();
   // AI-психолог поддерживает только ru/en (см. relationship-psychologist-prompt.ts),
   // поэтому для fi-рынка используем английский промпт — понятнее, чем
@@ -7190,14 +7200,14 @@ function AiPsychologistChatScreen({
         }}
       >
         <div>
-          <div style={{ fontSize: 20, fontWeight: 900, color: "#1f1d3a" }}>
+          <div style={{ fontSize: 20, fontWeight: 900, color: ink }}>
             🧠 {language === "en" ? "AI Psychologist" : "AI-психолог для пары"}
           </div>
           <div
             style={{
               marginTop: 4,
               fontSize: 12.5,
-              color: "#5a5378",
+              color: muted,
               lineHeight: 1.4,
             }}
           >
@@ -7228,13 +7238,13 @@ function AiPsychologistChatScreen({
         }}
       >
         <div style={{ flex: 1 }}>
-          <div style={{ fontSize: 13, fontWeight: 800, color: "#3d3660" }}>
+          <div style={{ fontSize: 13, fontWeight: 800, color: ink }}>
             ✨{" "}
             {language === "en"
               ? "Use our pair's data"
               : "Учитывать данные нашей пары"}
           </div>
-          <div style={{ marginTop: 2, fontSize: 11.5, color: "#7a7396" }}>
+          <div style={{ marginTop: 2, fontSize: 11.5, color: muted }}>
             {language === "en"
               ? "Compatibility & strong/weak topics — never the partner's raw answers."
               : "Совместимость и сильные/слабые темы — без сырых ответов партнёра."}
@@ -7247,8 +7257,10 @@ function AiPsychologistChatScreen({
             height: 22,
             borderRadius: 999,
             background: pairContextEnabled
-              ? "linear-gradient(90deg,#8f6bff,#ff76ba)"
-              : "rgba(255,255,255,0.4)",
+              ? primaryGradient
+              : isDark
+                ? "rgba(255,255,255,0.16)"
+                : "rgba(255,255,255,0.4)",
             position: "relative",
             flexShrink: 0,
             transition: "background 0.2s ease",
@@ -7283,12 +7295,12 @@ function AiPsychologistChatScreen({
         }}
       >
         {loadingHistory ? (
-          <div style={{ color: "#5a5378", fontSize: 14 }}>
+          <div style={{ color: muted, fontSize: 14 }}>
             {language === "en" ? "Loading…" : "Загрузка…"}
           </div>
         ) : messages.length === 0 ? (
           <div style={{ display: "grid", gap: 10 }}>
-            <div style={{ color: "#5a5378", fontSize: 14, lineHeight: 1.5 }}>
+            <div style={{ color: muted, fontSize: 14, lineHeight: 1.5 }}>
               {language === "en"
                 ? "Tell me what's going on. You can talk about a fight, jealousy, trust, intimacy, boundaries — anything."
                 : "Расскажи, что происходит. Можно обсудить ссору, ревность, доверие, близость, границы — что угодно."}
@@ -7301,11 +7313,11 @@ function AiPsychologistChatScreen({
                   type="button"
                   onClick={() => sendMessage(starter)}
                   style={{
-                    border: "1px solid rgba(255,255,255,0.4)",
+                    border: isDark ? "1px solid rgba(255,255,255,0.2)" : "1px solid rgba(255,255,255,0.4)",
                     borderRadius: 999,
                     padding: "8px 12px",
-                    background: "rgba(255,255,255,0.3)",
-                    color: "#3d3660",
+                    background: isDark ? "rgba(255,255,255,0.12)" : "rgba(255,255,255,0.3)",
+                    color: ink,
                     fontSize: 13,
                     fontWeight: 700,
                     cursor: "pointer",
@@ -7334,9 +7346,11 @@ function AiPsychologistChatScreen({
                   whiteSpace: "pre-wrap",
                   background:
                     msg.role === "user"
-                      ? "linear-gradient(135deg, #8f6bff, #ff76ba)"
-                      : "rgba(255,255,255,0.4)",
-                  color: msg.role === "user" ? "#fff" : "#241b40",
+                      ? primaryGradient
+                      : isDark
+                        ? "rgba(255,255,255,0.14)"
+                        : "rgba(255,255,255,0.4)",
+                  color: msg.role === "user" ? "#fff" : ink,
                 }}
               >
                 {msg.content}
@@ -7347,7 +7361,7 @@ function AiPsychologistChatScreen({
                   style={{
                     marginTop: 4,
                     fontSize: 10.5,
-                    color: "#8f6bff",
+                    color: accent,
                     fontWeight: 700,
                   }}
                 >
@@ -7366,8 +7380,8 @@ function AiPsychologistChatScreen({
               alignSelf: "flex-start",
               padding: "10px 14px",
               borderRadius: 16,
-              background: "rgba(255,255,255,0.4)",
-              color: "#5a5378",
+              background: isDark ? "rgba(255,255,255,0.14)" : "rgba(255,255,255,0.4)",
+              color: muted,
               fontSize: 14,
             }}
           >
@@ -7384,8 +7398,8 @@ function AiPsychologistChatScreen({
             ...cardBaseStyle(),
             padding: 12,
             fontSize: 13,
-            color: "#a8305a",
-            background: "rgba(255,220,230,0.5)",
+            color: isDark ? "#ffb0c8" : "#a8305a",
+            background: isDark ? "rgba(120,30,60,0.35)" : "rgba(255,220,230,0.5)",
           }}
         >
           {errorText}
@@ -7396,7 +7410,7 @@ function AiPsychologistChatScreen({
         <div
           style={{
             fontSize: 12,
-            color: "#7a7396",
+            color: muted,
             textAlign: "center",
           }}
         >
@@ -7432,12 +7446,12 @@ function AiPsychologistChatScreen({
           disabled={sending}
           style={{
             flex: 1,
-            border: "1px solid rgba(255,255,255,0.4)",
+            border: isDark ? "1px solid rgba(255,255,255,0.18)" : "1px solid rgba(255,255,255,0.4)",
             borderRadius: 14,
             padding: "12px 14px",
             fontSize: 14.5,
-            background: "rgba(255,255,255,0.5)",
-            color: "#241b40",
+            background: isDark ? "rgba(255,255,255,0.12)" : "rgba(255,255,255,0.5)",
+            color: ink,
             outline: "none",
           }}
         />
@@ -7447,7 +7461,7 @@ function AiPsychologistChatScreen({
           onClick={() => sendMessage(inputText)}
           disabled={sending || !inputText.trim()}
           style={{
-            ...primaryButtonStyle,
+            ...getPrimaryButtonStyle(isDark),
             padding: "12px 18px",
             opacity: sending || !inputText.trim() ? 0.6 : 1,
             cursor: sending || !inputText.trim() ? "not-allowed" : "pointer",
@@ -15315,9 +15329,16 @@ function TopPlayersScreen({
 
 function FreePremiumScreen({
   onBack,
+  theme,
 }: {
   onBack: () => void;
+  // Undefined на iOS (тема там не включена) — читается как "light".
+  theme?: "light" | "dark";
 }) {
+  const isDark = theme === "dark";
+  const ink = isDark ? "#e6d4f0" : "#241b40";
+  const muted = isDark ? "#c9b3e0" : "#4b446a";
+
   return (
     <div style={{ padding: 16, display: "grid", gap: 14 }}>
       <div style={{ ...cardBaseStyle(), padding: 20 }}>
@@ -15325,7 +15346,7 @@ function FreePremiumScreen({
           style={{
             fontSize: 26,
             fontWeight: 900,
-            color: "#241b40",
+            color: ink,
           }}
         >
           🎁 Premium бесплатно
@@ -15335,7 +15356,7 @@ function FreePremiumScreen({
           style={{
             marginTop: 12,
             lineHeight: 1.6,
-            color: "#4b446a",
+            color: muted,
           }}
         >
           Подпишитесь на два наших канала и получите Premium бесплатно.
@@ -15349,7 +15370,7 @@ function FreePremiumScreen({
     )
   }
   style={{
-    ...primaryButtonStyle,
+    ...getPrimaryButtonStyle(isDark),
     width: "100%",
     marginTop: 18,
   }}
@@ -15365,7 +15386,7 @@ function FreePremiumScreen({
     )
   }
   style={{
-    ...primaryButtonStyle,
+    ...getPrimaryButtonStyle(isDark),
     width: "100%",
     marginTop: 10,
   }}
@@ -15426,8 +15447,8 @@ if (result.success) {
     marginTop: 14,
     padding: 14,
     borderRadius: 18,
-    border: "none",
-    background: "#241b40",
+    border: isDark ? "1px solid rgba(255,255,255,0.16)" : "none",
+    background: isDark ? "#170f2b" : "#241b40",
     color: "#fff",
     fontWeight: 800,
     cursor: "pointer",
@@ -15451,11 +15472,19 @@ function ReferralsScreen({
   user,
   appState,
   onBack,
+  theme,
 }: {
   user: TgUser | null;
   appState: AppState;
   onBack: () => void;
+  // Undefined на iOS (тема там не включена) — читается как "light".
+  theme?: "light" | "dark";
 }) {
+  const isDark = theme === "dark";
+  const ink = isDark ? "#e6d4f0" : "#1f1d3a";
+  const muted = isDark ? "#c9b3e0" : "#5f5a7a";
+  const label = isDark ? "#b8a3d0" : "#7b7698";
+  const accent = isDark ? "#e0b3ff" : "#6b46ff";
   const inviteLink = user?.id
     ? `https://t.me/${window.Telegram?.WebApp ? "couple_quizzes_bot" : "couple_quizzes_bot"}?startapp=ref_${user.id}`
     : "";
@@ -15488,7 +15517,7 @@ return (
         style={{
           fontSize: 22,
           fontWeight: 900,
-          color: "#1f1d3a",
+          color: ink,
           textAlign: "center",
         }}
       >
@@ -15498,47 +15527,47 @@ return (
 
     {/* Основная карточка */}
     <div style={{ ...cardBaseStyle(), padding: 18 }}>
-        <div style={{ fontSize: 18, fontWeight: 900, color: "#1f1d3a" }}>
+        <div style={{ fontSize: 18, fontWeight: 900, color: ink }}>
           {t.referrals.programTitle}
         </div>
 
-        <div style={{ marginTop: 10, fontSize: 14, lineHeight: 1.5, color: "#5f5a7a" }}>
+        <div style={{ marginTop: 10, fontSize: 14, lineHeight: 1.5, color: muted }}>
           {t.referrals.subtitle}
         </div>
 
         <div style={{ display: "grid", gap: 10, marginTop: 16 }}>
           <div style={{ ...cardBaseStyle(), padding: 14 }}>
-            <div style={{ fontSize: 13, color: "#7b7698", fontWeight: 700 }}>
+            <div style={{ fontSize: 13, color: label, fontWeight: 700 }}>
               {t.referrals.invitedFriends}
             </div>
-            <div style={{ marginTop: 6, fontSize: 28, fontWeight: 900, color: "#1f1d3a" }}>
+            <div style={{ marginTop: 6, fontSize: 28, fontWeight: 900, color: ink }}>
               {appState.referrals.invitedUsers.length}
             </div>
           </div>
 
           <div style={{ ...cardBaseStyle(), padding: 14 }}>
-            <div style={{ fontSize: 13, color: "#7b7698", fontWeight: 700 }}>
+            <div style={{ fontSize: 13, color: label, fontWeight: 700 }}>
               {t.referrals.earnedPoints}
             </div>
-            <div style={{ marginTop: 6, fontSize: 28, fontWeight: 900, color: "#6b46ff" }}>
+            <div style={{ marginTop: 6, fontSize: 28, fontWeight: 900, color: accent }}>
               +{appState.referrals.totalReward}
             </div>
           </div>
         </div>
 
         <div style={{ marginTop: 16 }}>
-          <div style={{ fontSize: 13, color: "#7b7698", fontWeight: 700, marginBottom: 8 }}>
+          <div style={{ fontSize: 13, color: label, fontWeight: 700, marginBottom: 8 }}>
             {t.referrals.yourLink}
           </div>
 
           <div
             style={{
-              background: "#f6f3ff",
+              background: isDark ? "rgba(255,255,255,0.12)" : "#f6f3ff",
               borderRadius: 16,
               padding: 12,
               fontSize: 13,
               lineHeight: 1.45,
-              color: "#1f1d3a",
+              color: ink,
               wordBreak: "break-word",
             }}
           >
@@ -15547,7 +15576,7 @@ return (
         </div>
 
         <button
-          style={{ ...primaryButtonStyle, width: "100%", marginTop: 16 }}
+          style={{ ...getPrimaryButtonStyle(isDark), width: "100%", marginTop: 16 }}
           onClick={handleInvite}
         >
           {t.referrals.inviteButton}
@@ -20028,6 +20057,7 @@ showPaywall={() => {
 {screen === "freePremium" && (
   <FreePremiumScreen
     onBack={() => setScreen("profile")}
+    theme={isCapacitorApp() ? undefined : theme}
   />
 )}
 
@@ -20037,6 +20067,7 @@ showPaywall={() => {
     user={user}
     appState={appState}
     onBack={() => setScreen("profile")}
+    theme={isCapacitorApp() ? undefined : theme}
   />
 )}
 
@@ -20103,7 +20134,10 @@ showPaywall={() => {
 )}
 
 {screen === "ai-psychologist-chat" && (
-  <AiPsychologistChatScreen onBack={() => setScreen("menu")} />
+  <AiPsychologistChatScreen
+    onBack={() => setScreen("menu")}
+    theme={isCapacitorApp() ? undefined : theme}
+  />
 )}
 
 {screen === "pair-compatibility-info" && (
@@ -20325,14 +20359,14 @@ showPaywall={() => {
     }}
   >
     <div style={{ ...cardBaseStyle(), padding: 20 }}>
-      <div style={{ fontSize: 28, fontWeight: 900, color: "#1f1d3a" }}>
+      <div style={{ fontSize: 28, fontWeight: 900, color: isDarkTheme ? "#e6d4f0" : "#1f1d3a" }}>
         {t.paywall.title}
       </div>
 
       <div
         style={{
           marginTop: 10,
-          color: "#3a345c",
+          color: isDarkTheme ? "#c9b3e0" : "#3a345c",
           lineHeight: 1.5,
           fontSize: 15,
         }}
@@ -20345,8 +20379,8 @@ showPaywall={() => {
           marginTop: 16,
           padding: "14px 16px",
           borderRadius: 18,
-          background: "rgba(255,255,255,0.24)",
-          color: "#241b40",
+          background: isDarkTheme ? "rgba(255,255,255,0.1)" : "rgba(255,255,255,0.24)",
+          color: isDarkTheme ? "#e6d4f0" : "#241b40",
           lineHeight: 1.7,
           fontWeight: 700,
         }}
@@ -20364,7 +20398,7 @@ showPaywall={() => {
           marginTop: 16,
           fontSize: 24,
           fontWeight: 900,
-          color: "#6b46ff",
+          color: isDarkTheme ? "#e0b3ff" : "#6b46ff",
         }}
       >
         {isCapacitorApp() ? "299 ₽" : "149 ₽"}
@@ -20383,7 +20417,7 @@ showPaywall={() => {
       <button
         onClick={() => setShowPaymentChoice(true)}
         style={{
-          ...primaryButtonStyle,
+          ...getPrimaryButtonStyle(isDarkTheme),
           width: "100%",
           marginTop: 16,
         }}
@@ -20481,7 +20515,7 @@ showPaywall={() => {
         width: "100%",
         maxWidth: 420,
         borderRadius: 24,
-        background: "#fff",
+        background: isDarkTheme ? "#241a3d" : "#fff",
         padding: 22,
         boxShadow: "0 24px 80px rgba(0,0,0,0.28)",
       }}
@@ -20490,7 +20524,7 @@ showPaywall={() => {
         style={{
           fontSize: 26,
           fontWeight: 900,
-          color: "#1f1d3a",
+          color: isDarkTheme ? "#e6d4f0" : "#1f1d3a",
           textAlign: "center",
         }}
       >
@@ -20502,7 +20536,7 @@ showPaywall={() => {
           marginTop: 10,
           fontSize: 15,
           lineHeight: 1.5,
-          color: "#5f5a7a",
+          color: isDarkTheme ? "#c9b3e0" : "#5f5a7a",
           textAlign: "center",
         }}
       >
@@ -20559,7 +20593,7 @@ showPaywall={() => {
         <>
       <button
         style={{
-          ...primaryButtonStyle,
+          ...getPrimaryButtonStyle(isDarkTheme),
           width: "100%",
           marginTop: 18,
           opacity: premiumLoading ? 0.7 : 1,
@@ -20577,9 +20611,9 @@ showPaywall={() => {
         style={{
           width: "100%",
           marginTop: 10,
-          border: "1px solid rgba(31,29,58,0.12)",
-          background: "#fff",
-          color: "#1f1d3a",
+          border: isDarkTheme ? "1px solid rgba(255,255,255,0.18)" : "1px solid rgba(31,29,58,0.12)",
+          background: isDarkTheme ? "rgba(255,255,255,0.1)" : "#fff",
+          color: isDarkTheme ? "#e6d4f0" : "#1f1d3a",
           borderRadius: 16,
           padding: "14px 16px",
           fontSize: 16,
@@ -20614,7 +20648,7 @@ showPaywall={() => {
           style={{
             background: "none",
             border: "none",
-            color: "#6b46ff",
+            color: isDarkTheme ? "#e0b3ff" : "#6b46ff",
             fontSize: 12,
             fontWeight: 700,
             cursor: "pointer",
@@ -20628,7 +20662,7 @@ showPaywall={() => {
           style={{
             background: "none",
             border: "none",
-            color: "#6b46ff",
+            color: isDarkTheme ? "#e0b3ff" : "#6b46ff",
             fontSize: 12,
             fontWeight: 700,
             cursor: "pointer",
@@ -20646,7 +20680,7 @@ showPaywall={() => {
           marginTop: 10,
           border: "none",
           background: "transparent",
-          color: "#6b46ff",
+          color: isDarkTheme ? "#e0b3ff" : "#6b46ff",
           borderRadius: 16,
           padding: "12px 16px",
           fontSize: 15,
