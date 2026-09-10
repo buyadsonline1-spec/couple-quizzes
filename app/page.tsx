@@ -3665,7 +3665,7 @@ function PairScreen({
           alignItems: "center",
           justifyContent: "center",
           background: "rgba(255,255,255,0.34)",
-          color: "#201a39",
+          color: ink,
           fontWeight: 900,
           fontSize: 20,
           border: "2px solid rgba(255,255,255,0.42)",
@@ -3687,7 +3687,7 @@ function PairScreen({
         <div
           style={{
             marginTop: 8,
-            color: "#3a345c",
+            color: muted,
             fontSize: 15,
             lineHeight: 1.45,
           }}
@@ -3720,7 +3720,7 @@ function PairScreen({
   style={{
     marginTop: 6,
     fontSize: 12,
-    color: "#6b5cff",
+    color: accent,
     fontWeight: 700,
   }}
 >
@@ -3788,7 +3788,7 @@ function PairScreen({
                     borderRadius: 13,
                     padding: "10px 12px",
                     background: "rgba(255,255,255,0.4)",
-                    color: "#201b39",
+                    color: ink,
                     fontWeight: 800,
                     fontSize: 13,
                     cursor: "pointer",
@@ -3814,7 +3814,7 @@ function PairScreen({
                 padding: "8px 12px",
                 borderRadius: 999,
                 background: "rgba(255,255,255,0.30)",
-                color: "#3b3158",
+                color: muted,
                 fontSize: 13,
                 fontWeight: 800,
               }}
@@ -3913,10 +3913,10 @@ function PairScreen({
                   )}
 
                   <div style={{ minWidth: 0 }}>
-                    <div style={{ color: "#2c2647", fontWeight: 700 }}>{t.pair.you}</div>
+                    <div style={{ color: muted, fontWeight: 700 }}>{t.pair.you}</div>
                     <div
                       style={{
-                        color: "#1c1733",
+                        color: ink,
                         fontWeight: 900,
                         marginTop: 4,
                         fontSize: 16,
@@ -3967,7 +3967,7 @@ function PairScreen({
                         alignItems: "center",
                         justifyContent: "center",
                         background: "rgba(255,255,255,0.34)",
-                        color: "#201a39",
+                        color: ink,
                         fontWeight: 900,
                         fontSize: 24,
                         border: "2px solid rgba(255,255,255,0.42)",
@@ -3979,12 +3979,12 @@ function PairScreen({
                   )}
 
                   <div style={{ minWidth: 0 }}>
-                    <div style={{ color: "#2c2647", fontWeight: 700 }}>
+                    <div style={{ color: muted, fontWeight: 700 }}>
                       {t.pair.partner}
                     </div>
                     <div
                       style={{
-                        color: "#1c1733",
+                        color: ink,
                         fontWeight: 900,
                         marginTop: 4,
                         fontSize: 16,
@@ -4077,7 +4077,7 @@ function PairScreen({
                 <div style={{ fontSize: 15, fontWeight: 900, color: ink }}>
                   {pairLevel.title}
                 </div>
-                <div style={{ fontSize: 11, color: "#7a7396", fontWeight: 700, flexShrink: 0 }}>
+                <div style={{ fontSize: 11, color: muted, fontWeight: 700, flexShrink: 0 }}>
                   {pairLevel.nextLevelPoints
                     ? `${
                         pairLevel.currentLevelPoints + pairLevel.progressInLevel
@@ -4106,7 +4106,7 @@ function PairScreen({
               </div>
             </div>
 
-            <div style={{ fontSize: 20, color: "#8f6bff", flexShrink: 0 }}>
+            <div style={{ fontSize: 20, color: accent, flexShrink: 0 }}>
               ›
             </div>
           </button>
@@ -4139,7 +4139,7 @@ function PairScreen({
                 style={{
                   marginTop: 2,
                   fontSize: 12,
-                  color: "#7a7396",
+                  color: muted,
                   overflow: "hidden",
                   textOverflow: "ellipsis",
                   whiteSpace: "nowrap",
@@ -4151,7 +4151,7 @@ function PairScreen({
               </div>
             </div>
 
-            <div style={{ fontSize: 20, color: "#8f6bff", flexShrink: 0 }}>
+            <div style={{ fontSize: 20, color: accent, flexShrink: 0 }}>
               ›
             </div>
           </button>
@@ -4162,7 +4162,7 @@ function PairScreen({
         <div style={{ ...cardBaseStyle(), padding: 16, marginTop: 10 }}>
           {confirmingLeavePair ? (
             <div style={{ display: "grid", gap: 8 }}>
-              <div style={{ fontSize: 13, fontWeight: 800, color: "#8a2f2f" }}>
+              <div style={{ fontSize: 13, fontWeight: 800, color: isDark ? "#ffb4ae" : "#8a2f2f" }}>
                 {t.pair.leavePairConfirmText}
               </div>
               <button
@@ -4195,7 +4195,7 @@ function PairScreen({
                 borderRadius: 16,
                 padding: "12px 16px",
                 background: "rgba(193,53,47,0.08)",
-                color: "#8a2f2f",
+                color: isDark ? "#ffb4ae" : "#8a2f2f",
                 fontWeight: 800,
                 fontSize: 14,
                 cursor: "pointer",
@@ -4269,7 +4269,7 @@ function PairCompatibilityInfoScreen({
               marginTop: 10,
               fontSize: 14.5,
               lineHeight: 1.55,
-              color: "#5b547d",
+              color: muted,
             }}
           >
             {t.pair.compatibilityInfo.notCalculatedText}
@@ -4287,7 +4287,7 @@ function PairCompatibilityInfoScreen({
             style={{
               marginTop: 14,
               fontSize: 13,
-              color: "#7a7396",
+              color: muted,
             }}
           >
             {t.pair.compatibilityCalculatedPrefix}0{t.pair.compatibilityCalculatedMid}{profile.totalThemes}{t.pair.compatibilityCalculatedSuffix}
@@ -4312,7 +4312,7 @@ function PairCompatibilityInfoScreen({
             "linear-gradient(160deg, rgba(143,107,255,0.18), rgba(255,118,186,0.16))",
         }}
       >
-        <div style={{ fontSize: 15, fontWeight: 800, color: "#5b547d" }}>
+        <div style={{ fontSize: 15, fontWeight: 800, color: muted }}>
           💞 {t.pair.compatibilityInfo.headerLabel}
         </div>
 
@@ -4364,7 +4364,7 @@ function PairCompatibilityInfoScreen({
             background: "rgba(255,255,255,0.4)",
             border: "1px solid rgba(255,255,255,0.4)",
             fontSize: 13.5,
-            color: "#615a86",
+            color: muted,
           }}
         >
           {t.pair.compatibilityCalculatedPrefix}{profile.completedThemes}{t.pair.compatibilityCalculatedMid}{profile.totalThemes}{t.pair.compatibilityCalculatedSuffix}
@@ -4588,7 +4588,7 @@ const REWARD_CATEGORIES =
         <div
           style={{
             marginTop: 8,
-            color: "#3a345c",
+            color: muted,
             fontSize: 15,
             lineHeight: 1.45,
           }}
@@ -4823,7 +4823,7 @@ function PairStreakInfoScreen({
           style={{
             fontSize: 15,
             fontWeight: 800,
-            color: "#6c6487",
+            color: muted,
           }}
         >
           🔥 {t.pair.streakInfoScreen.title}
@@ -4875,7 +4875,7 @@ function PairStreakInfoScreen({
               style={{
                 fontSize: 13,
                 fontWeight: 700,
-                color: "#6c6487",
+                color: muted,
               }}
             >
               {t.pair.streakInfoScreen.nextBonus}
@@ -4885,7 +4885,7 @@ function PairStreakInfoScreen({
               style={{
                 fontSize: 15,
                 fontWeight: 900,
-                color: "#6f54ff",
+                color: accent,
               }}
             >
               {nextMilestone
@@ -5055,7 +5055,7 @@ function PairStreakInfoScreen({
                     marginTop: 6,
                     fontSize: 15,
                     fontWeight: 700,
-                    color: "#6c6487",
+                    color: muted,
                   }}
                 >
                   {t.pair.streakInfoScreen.daysInARow}
@@ -5066,7 +5066,7 @@ function PairStreakInfoScreen({
                     marginTop: 12,
                     fontSize: 22,
                     fontWeight: 900,
-                    color: "#6f54ff",
+                    color: accent,
                   }}
                 >
                   +{reward}
@@ -5130,7 +5130,7 @@ function PairLevelInfoScreen({
             "linear-gradient(160deg, rgba(255,145,190,0.20), rgba(143,107,255,0.18))",
         }}
       >
-        <div style={{ fontSize: 15, fontWeight: 800, color: "#6c6487" }}>
+        <div style={{ fontSize: 15, fontWeight: 800, color: muted }}>
           🏅 {t.pair.level}
         </div>
 
@@ -5787,7 +5787,7 @@ function DatingProfileScreen({
       </div>
 
       {error && (
-        <div style={{ fontSize: 13, color: "#c1352f", fontWeight: 700, textAlign: "center" }}>
+        <div style={{ fontSize: 13, color: isDark ? "#ff8a80" : "#c1352f", fontWeight: 700, textAlign: "center" }}>
           {error}
         </div>
       )}
@@ -7702,7 +7702,7 @@ const t = market === "fi" ? TEXT_FI : market === "en" ? TEXT_EN : TEXT_RU;
         <div
           style={{
             marginTop: 4,
-            color: "#3a345c",
+            color: muted,
             fontSize: 13,
             lineHeight: 1.4,
           }}
@@ -7908,8 +7908,11 @@ const t = market === "fi" ? TEXT_FI : market === "en" ? TEXT_EN : TEXT_RU;
               background:
                 myAnswer.answer_index === partnerAnswer.answer_index
                   ? "linear-gradient(135deg, rgba(255,220,240,0.9), rgba(255,255,255,0.8))"
-                  : "rgba(255,255,255,0.28)",
-              color: "#241b40",
+                  : isDark
+                    ? "rgba(255,255,255,0.12)"
+                    : "rgba(255,255,255,0.28)",
+              color:
+                myAnswer.answer_index === partnerAnswer.answer_index ? "#241b40" : ink,
               animation: "matchPop 0.35s ease",
               textAlign: "center",
             }}
@@ -9956,7 +9959,7 @@ function MainMenu({
         gap: 10,
       }}
     >
-      <div style={{ fontSize: 13, fontWeight: 800, color: "#5a3d99" }}>
+      <div style={{ fontSize: 13, fontWeight: 800, color: accent }}>
         {t.dating.introTitle}
       </div>
       <div style={{ fontSize: 18, flexShrink: 0 }}>💘</div>
@@ -10491,7 +10494,7 @@ async function handleFinish() {
           <div style={{ fontSize: 24, fontWeight: 900, color: ink }}>
   {t.polls.title}
 </div>
-<div style={{ marginTop: 6, color: "#3a345c", fontSize: 14 }}>
+<div style={{ marginTop: 6, color: muted, fontSize: 14 }}>
   {market !== "ru"
     ? genderFilter === "girl"
       ? "Your polls 👧"
@@ -10511,7 +10514,7 @@ async function handleFinish() {
             padding: "0 2px",
           }}
         >
-          <div style={{ fontSize: 14, fontWeight: 800, color: "#2c2647" }}>
+          <div style={{ fontSize: 14, fontWeight: 800, color: ink }}>
   {market !== "ru"
     ? `Page ${page} of ${totalPages}`
     : `Страница ${page} из ${totalPages}`}
@@ -10656,7 +10659,7 @@ async function handleFinish() {
         <div style={{ fontSize: 28, fontWeight: 900, color: ink }}>
           {market !== "ru" ? "Done 🎉" : "Готово 🎉"}
         </div>
-        <div style={{ marginTop: 10, color: "#3a345c", lineHeight: 1.5 }}>
+        <div style={{ marginTop: 10, color: muted, lineHeight: 1.5 }}>
           {market !== "ru" ? (
             <>
               You completed the poll{" "}
@@ -10728,7 +10731,7 @@ async function handleFinish() {
     style={{
       fontSize: 20,
       fontWeight: 800,
-      color: "#211b3b",
+      color: ink,
       lineHeight: 1.35,
     }}
   >
@@ -10941,7 +10944,7 @@ const psychologistAvatar =
               <div
                 style={{
                   fontSize: 12,
-                  color: "#6b5cff",
+                  color: accent,
                   fontWeight: 800,
                 }}
               >
@@ -10993,7 +10996,7 @@ const psychologistAvatar =
       display: "flex",
       alignItems: "center",
       gap: 8,
-      color: "#6b5cff",
+      color: accent,
       fontSize: 14,
       fontWeight: 700,
       padding: "10px 4px 4px",
@@ -11063,7 +11066,7 @@ const psychologistAvatar =
                 <div
                   style={{
                     fontSize: 12,
-                    color: "#6b5cff",
+                    color: accent,
                     fontWeight: 800,
                   }}
                 >
@@ -11121,7 +11124,7 @@ const psychologistAvatar =
                     padding: "12px 14px",
                     borderRadius: 16,
                     background: "rgba(255,255,255,0.26)",
-                    color: "#40395f",
+                    color: muted,
                     lineHeight: 1.45,
                     fontSize: 14,
                     fontWeight: 700,
@@ -11168,6 +11171,7 @@ if (activeGame?.id === "90-questions") {
   setFinished(false);
 }}
       onClaimStepReward={onClaimStepReward}
+      theme={theme}
     />
   );
 }
@@ -11265,7 +11269,7 @@ function handleLoveQuestionFinish() {
         <div style={{ fontSize: 24, fontWeight: 900, color: ink }}>
           {t.games.title}
         </div>
-        <div style={{ marginTop: 4, color: "#3a345c", fontSize: 13 }}>
+        <div style={{ marginTop: 4, color: muted, fontSize: 13 }}>
           {t.games.subtitle}
         </div>
       </div>
@@ -11312,7 +11316,7 @@ function handleLoveQuestionFinish() {
             <div
   style={{
     marginTop: 4,
-    color: "#40395f",
+    color: muted,
     lineHeight: 1.3,
     fontSize: 13,
   }}
@@ -11325,7 +11329,7 @@ function handleLoveQuestionFinish() {
     style={{
       marginTop: 6,
       fontSize: 12,
-      color: "#6b5cff",
+      color: accent,
       fontWeight: 700,
     }}
   >
@@ -11410,7 +11414,7 @@ function handleLoveQuestionFinish() {
           <div
             style={{
               fontSize: 13,
-              color: "#6b5cff",
+              color: accent,
               fontWeight: 800,
             }}
           >
@@ -11455,7 +11459,7 @@ function handleLoveQuestionFinish() {
             <div
               style={{
                 fontSize: 13,
-                color: "#6b5cff",
+                color: accent,
                 fontWeight: 800,
               }}
             >
@@ -11511,7 +11515,7 @@ function handleLoveQuestionFinish() {
                     padding: "12px 14px",
                     borderRadius: 16,
                     background: "rgba(255,255,255,0.26)",
-                    color: "#40395f",
+                    color: muted,
                     lineHeight: 1.45,
                     fontSize: 14,
                     fontWeight: 700,
@@ -11590,7 +11594,7 @@ function handleLoveQuestionFinish() {
         onBack={() => setActiveGameId(null)}
         onClaimStepReward={onClaimStepReward}
         onFinish={handleBottleFinish}
-        
+        theme={theme}
       />
     );
   }
@@ -11599,13 +11603,13 @@ function handleLoveQuestionFinish() {
   return (
     <LoveQuestionsGameScreen
       reward={activeGame.reward}
-    
+
       appState={appState}
       setAppState={setAppState}
       onBack={() => setActiveGameId(null)}
       onFinish={handleLoveQuestionFinish}
       onClaimStepReward={onClaimStepReward}
-      
+      theme={theme}
     />
   );
 }
@@ -11619,6 +11623,7 @@ if (activeGame?.id === "never-have-i-ever") {
       onBack={() => setActiveGameId(null)}
       onFinish={handleLoveQuestionFinish}
       onClaimReward={onClaimStepReward}
+      theme={theme}
     />
   );
 }
@@ -11634,7 +11639,7 @@ if (activeGame?.id === "never-have-i-ever") {
           <div style={{ fontSize: 30, fontWeight: 900, color: ink }}>
             {t.games.finishedTitle}
           </div>
-          <div style={{ marginTop: 10, color: "#3a345c", lineHeight: 1.5 }}>
+          <div style={{ marginTop: 10, color: muted, lineHeight: 1.5 }}>
             <b>{activeGame.title}</b> {t.games.completedSuffix}
             <br />
             {t.games.correctAnswersLabel}{" "}
@@ -11683,7 +11688,7 @@ if (activeGame?.id === "never-have-i-ever") {
         style={{
           fontSize: 22,
           fontWeight: 800,
-          color: "#211b3b",
+          color: ink,
           lineHeight: 1.35,
         }}
       >
@@ -11773,12 +11778,18 @@ function BottleGameScreen({
   onBack,
   onFinish,
   onClaimStepReward,
+  theme,
 }: {
   reward: number;
   onBack: () => void;
   onFinish: () => void;
   onClaimStepReward: (key: string) => Promise<boolean>;
+  // Undefined на iOS (тема там не включена) — читается как "light".
+  theme?: "light" | "dark";
 }) {
+  const isDark = theme === "dark";
+  const ink = isDark ? "#e6d4f0" : "#1f1d3a";
+  const muted = isDark ? "#c9b3e0" : "#5a5378";
   const [rotation, setRotation] = useState(0);
   const [isSpinning, setIsSpinning] = useState(false);
   const [activeTask, setActiveTask] = useState<BottleTask | null>(null);
@@ -11854,14 +11865,14 @@ function BottleGameScreen({
   return (
     <div style={{ padding: 16, display: "grid", gap: 14 }}>
       <div style={{ ...cardBaseStyle(), padding: 18 }}>
-        <div style={{ fontSize: 26, fontWeight: 900, color: "#1f1d3a" }}>
+        <div style={{ fontSize: 26, fontWeight: 900, color: ink }}>
           {market !== "ru" ? "Spin the Bottle" : "Бутылочка"}
         </div>
 
         <div
           style={{
             marginTop: 8,
-            color: "#4b446a",
+            color: muted,
             fontSize: 15,
             lineHeight: 1.45,
           }}
@@ -11887,7 +11898,7 @@ function BottleGameScreen({
             justifyContent: "space-between",
             marginBottom: 16,
             fontWeight: 800,
-            color: "#5a5378",
+            color: muted,
           }}
         >
           <span>{market !== "ru" ? "👧 Girl" : "👧 Девушка"}</span>
@@ -11948,7 +11959,7 @@ function BottleGameScreen({
           onClick={handleSpin}
           disabled={isSpinning}
           style={{
-            ...primaryButtonStyle,
+            ...getPrimaryButtonStyle(isDark),
             width: "100%",
             opacity: isSpinning ? 0.7 : 1,
             cursor: isSpinning ? "not-allowed" : "pointer",
@@ -12034,7 +12045,7 @@ function BottleGameScreen({
             <div style={{ display: "grid", gap: 10, marginTop: 18 }}>
               <button
                 onClick={handleCompleteBottleTask}
-                style={{ ...primaryButtonStyle, width: "100%" }}
+                style={{ ...getPrimaryButtonStyle(isDark), width: "100%" }}
               >
                 {market !== "ru" ? "Task done" : "Задание выполнено"}
               </button>
@@ -12074,6 +12085,7 @@ function LoveQuestionsGameScreen({
   onBack,
   onFinish,
   onClaimStepReward,
+  theme,
 }: {
   reward: number;
   appState: AppState;
@@ -12081,7 +12093,13 @@ function LoveQuestionsGameScreen({
   onBack: () => void;
   onFinish: () => void;
   onClaimStepReward: (key: string) => Promise<boolean>;
+  // Undefined на iOS (тема там не включена) — читается как "light".
+  theme?: "light" | "dark";
 }) {
+const isDark = theme === "dark";
+const ink = isDark ? "#e6d4f0" : "#1f1d3a";
+const muted = isDark ? "#c9b3e0" : "#5a5378";
+const accent = isDark ? "#e0b3ff" : "#6b46ff";
 const [animating, setAnimating] = useState(false);
 
 const questionIndex = appState.loveQuestionsProgress.currentIndex ?? 0;
@@ -12141,14 +12159,14 @@ setAppState((prev) => ({
   return (
     <div style={{ padding: 16, display: "grid", gap: 14 }}>
       <div style={{ ...cardBaseStyle(), padding: 18 }}>
-        <div style={{ fontSize: 26, fontWeight: 900, color: "#1f1d3a" }}>
+        <div style={{ fontSize: 26, fontWeight: 900, color: ink }}>
           {market !== "ru" ? "90 Questions" : "90 вопросов"}
         </div>
 
         <div
           style={{
             marginTop: 8,
-            color: "#4b446a",
+            color: muted,
             fontSize: 15,
             lineHeight: 1.45,
           }}
@@ -12192,7 +12210,7 @@ setAppState((prev) => ({
                     padding: "8px 12px",
                     borderRadius: 999,
                     background: "rgba(107,70,255,0.10)",
-                    color: "#6b46ff",
+                    color: accent,
                     fontWeight: 800,
                     fontSize: 13,
                   }}
@@ -12206,7 +12224,7 @@ setAppState((prev) => ({
                     padding: "8px 12px",
                     borderRadius: 999,
                     background: "rgba(255,255,255,0.24)",
-                    color: "#4b446a",
+                    color: muted,
                     fontWeight: 800,
                     fontSize: 13,
                   }}
@@ -12220,7 +12238,7 @@ setAppState((prev) => ({
                   marginTop: 18,
                   fontSize: 26,
                   fontWeight: 900,
-                  color: "#211b3b",
+                  color: ink,
                   lineHeight: 1.35,
                 }}
               >
@@ -12233,7 +12251,7 @@ setAppState((prev) => ({
       marginTop: 10,
       fontSize: 13,
       fontWeight: 700,
-      color: "#6f54ff",
+      color: accent,
     }}
   >
     {market !== "ru" ? "✔ You already answered this one" : "✔ Вы уже отвечали на этот вопрос"}
@@ -12245,7 +12263,7 @@ setAppState((prev) => ({
               onClick={handleAnswered}
               disabled={animating}
               style={{
-                ...primaryButtonStyle,
+                ...getPrimaryButtonStyle(isDark),
                 width: "100%",
                 marginTop: 20,
                 opacity: animating ? 0.75 : 1,
@@ -12261,14 +12279,14 @@ setAppState((prev) => ({
               style={{
                 fontSize: 24,
                 fontWeight: 900,
-                color: "#211b3b",
+                color: ink,
                 lineHeight: 1.35,
               }}
             >
               {market !== "ru" ? "You've run out of questions 🎉" : "Вопросы закончились 🎉"}
             </div>
 
-            <div style={{ marginTop: 12, color: "#4b446a", lineHeight: 1.45 }}>
+            <div style={{ marginTop: 12, color: muted, lineHeight: 1.45 }}>
               {market !== "ru"
                 ? "You went through the whole current set of questions."
                 : "Ты прошёл(а) весь текущий набор вопросов."}
@@ -12290,13 +12308,19 @@ function NeverHaveIEverGameScreen({
   onBack,
   onFinish,
   onClaimReward,
+  theme,
 }: {
   reward: number;
   playedGameRewardKeys: string[];
   onBack: () => void;
   onFinish: () => void;
   onClaimReward: (rewardKey: string) => Promise<boolean>;
+  // Undefined на iOS (тема там не включена) — читается как "light".
+  theme?: "light" | "dark";
 }) {
+  const isDark = theme === "dark";
+  const ink = isDark ? "#e6d4f0" : "#1f1d3a";
+  const muted = isDark ? "#c9b3e0" : "#5a5378";
   const nhCard = (
     id: string,
     type: "spicy" | "funny" | "romantic",
@@ -12899,11 +12923,11 @@ function handleNext() {
   return (
     <div style={{ padding: 16, display: "grid", gap: 14 }}>
       <div style={{ ...cardBaseStyle(), padding: 18 }}>
-        <div style={{ fontSize: 28, fontWeight: 900, color: "#1f1d3a" }}>
+        <div style={{ fontSize: 28, fontWeight: 900, color: ink }}>
           {market !== "ru" ? "Never Have I Ever..." : "Я никогда не..."}
         </div>
 
-        <div style={{ marginTop: 8, color: "#3a345c", fontSize: 15 }}>
+        <div style={{ marginTop: 8, color: muted, fontSize: 15 }}>
           {market !== "ru" ? "Loading cards..." : "Загружаем карточки..."}
         </div>
       </div>
@@ -12934,14 +12958,14 @@ const categoryLabel =
 return (
   <div style={{ padding: 16, display: "grid", gap: 14 }}>
     <div style={{ ...cardBaseStyle(), padding: 18 }}>
-      <div style={{ fontSize: 28, fontWeight: 900, color: "#1f1d3a" }}>
+      <div style={{ fontSize: 28, fontWeight: 900, color: ink }}>
         {market !== "ru" ? "Never Have I Ever..." : "Я никогда не..."}
       </div>
 
       <div
         style={{
           marginTop: 8,
-          color: "#3a345c",
+          color: muted,
           fontSize: 15,
           lineHeight: 1.45,
         }}
@@ -12954,7 +12978,7 @@ return (
       <div
         style={{
           marginTop: 10,
-          color: "#4d466c",
+          color: muted,
           fontSize: 14,
           lineHeight: 1.45,
         }}
@@ -12970,7 +12994,7 @@ return (
           padding: "12px 14px",
           borderRadius: 16,
           background: "rgba(255,255,255,0.24)",
-          color: "#2c2647",
+          color: ink,
           fontWeight: 800,
         }}
       >
@@ -13091,7 +13115,7 @@ return (
 
       <button
         onClick={() => setFlipped((prev) => !prev)}
-        style={{ ...primaryButtonStyle, width: "100%", marginTop: 16 }}
+        style={{ ...getPrimaryButtonStyle(isDark), width: "100%", marginTop: 16 }}
       >
         {market !== "ru"
           ? flipped
@@ -13108,7 +13132,7 @@ return (
     onClick={handleComplete}
     disabled={rewardClaimed || alreadyPlayed}
     style={{
-      ...primaryButtonStyle,
+      ...getPrimaryButtonStyle(isDark),
       width: "100%",
       marginTop: 12,
       opacity: rewardClaimed || alreadyPlayed ? 0.6 : 1,
@@ -13333,7 +13357,7 @@ if (!activeTestId) {
         <div style={{ fontSize: 24, fontWeight: 900, color: ink }}>
           {t.tests.title}
         </div>
-        <div style={{ marginTop: 4, color: "#3a345c", fontSize: 13 }}>
+        <div style={{ marginTop: 4, color: muted, fontSize: 13 }}>
           {t.tests.subtitle}
         </div>
       </div>
@@ -13390,7 +13414,7 @@ if (!activeTestId) {
   <div
     style={{
       marginTop: 4,
-      color: "#40395f",
+      color: muted,
       lineHeight: 1.3,
       fontSize: 13,
     }}
@@ -13402,7 +13426,7 @@ if (!activeTestId) {
   <div
     style={{
       marginTop: 6,
-      color: "#4d466c",
+      color: muted,
       fontSize: 12,
     }}
   >
@@ -13463,11 +13487,11 @@ if (!activeTestId) {
             {result.title}
           </div>
 
-          <div style={{ marginTop: 8, fontSize: 16, fontWeight: 800, color: "#4d466c" }}>
+          <div style={{ marginTop: 8, fontSize: 16, fontWeight: 800, color: muted }}>
             {result.subtitle}
           </div>
 
-          <div style={{ marginTop: 14, color: "#3a345c", lineHeight: 1.55 }}>
+          <div style={{ marginTop: 14, color: muted, lineHeight: 1.55 }}>
             {result.description}
           </div>
 
@@ -13477,7 +13501,7 @@ if (!activeTestId) {
               padding: "12px 14px",
               borderRadius: 16,
               background: "rgba(255,255,255,0.24)",
-              color: "#2c2647",
+              color: ink,
               fontWeight: 800,
             }}
           >
@@ -13533,7 +13557,7 @@ if (!activeTestId) {
           style={{
             fontSize: 22,
             fontWeight: 800,
-            color: "#211b3b",
+            color: ink,
             lineHeight: 1.35,
           }}
         >
@@ -13811,7 +13835,7 @@ const visibleRewards = rewardsExpanded
   <div style={{ fontSize: 24, fontWeight: 900, color: ink }}>
     {isCapacitorApp() ? t.rewards.wheelScreen.iosTitle : t.rewards.wheel}
   </div>
-  <div style={{ marginTop: 4, color: "#3a345c", fontSize: 13, lineHeight: 1.4 }}>
+  <div style={{ marginTop: 4, color: muted, fontSize: 13, lineHeight: 1.4 }}>
     {isCapacitorApp()
       ? t.rewards.wheelScreen.iosCostPrefix
       : t.rewards.wheelScreen.spinCostPrefix}{" "}
@@ -13833,7 +13857,7 @@ const visibleRewards = rewardsExpanded
   </div>
 
   {spinsInfo && (
-    <div style={{ marginTop: 6, color: "#3a345c", fontSize: 13 }}>
+    <div style={{ marginTop: 6, color: muted, fontSize: 13 }}>
       {t.rewards.wheelScreen.todayLabel} {spinsInfo.used} / 3
       {spinsInfo.bonusCredits > 0
         ? ` ${
@@ -13958,7 +13982,7 @@ const visibleRewards = rewardsExpanded
                 padding: "12px 14px",
                 borderRadius: 16,
                 background: "rgba(255,255,255,0.22)",
-                color: "#2f2850",
+                color: muted,
                 fontWeight: 700,
                 lineHeight: 1.45,
               }}
@@ -14114,7 +14138,7 @@ const visibleRewards = rewardsExpanded
               padding: "12px 14px",
               borderRadius: 16,
               background: "rgba(255,255,255,0.22)",
-              color: "#2f2850",
+              color: muted,
               fontWeight: 700,
               lineHeight: 1.45,
             }}
@@ -14185,7 +14209,7 @@ const visibleRewards = rewardsExpanded
         style={{
           marginTop: 8,
           fontSize: 14,
-          color: muted,
+          color: "#5a5378", // модалка всегда светлая, не завязано на тему
           lineHeight: 1.4,
         }}
       >
@@ -14247,7 +14271,7 @@ const visibleRewards = rewardsExpanded
         </div>
 
         {wonRewards.length === 0 ? (
-          <div style={{ marginTop: 10, color: "#4a4468", lineHeight: 1.5 }}>
+          <div style={{ marginTop: 10, color: muted, lineHeight: 1.5 }}>
             {t.rewards.wheelScreen.emptyPrizesText}
           </div>
         ) : (
@@ -14271,10 +14295,10 @@ const visibleRewards = rewardsExpanded
                 <div style={{ fontWeight: 900, color: ink }}>
                   {reward.title}
                 </div>
-                <div style={{ marginTop: 4, fontSize: 14, color: "#4d466c" }}>
+                <div style={{ marginTop: 4, fontSize: 14, color: muted }}>
                   {t.rewards.wheelScreen.categoryLabel} {reward.categoryTitle}
                 </div>
-                <div style={{ marginTop: 2, fontSize: 13, color: "#5b5578" }}>
+                <div style={{ marginTop: 2, fontSize: 13, color: muted }}>
                   {reward.wonAt}
                 </div>
               </div>
@@ -14565,7 +14589,7 @@ function TopPlayersScreen({
             <div
               style={{
                 marginTop: 4,
-                color: "#3a345c",
+                color: muted,
                 fontSize: 13,
                 lineHeight: 1.4,
               }}
@@ -14593,7 +14617,7 @@ function TopPlayersScreen({
               border: "1px solid rgba(108,58,255,0.18)",
               borderRadius: 14,
               background: "rgba(255,255,255,0.35)",
-              color: "#332b55",
+              color: ink,
               fontSize: 12,
               fontWeight: 900,
               cursor: refreshing ? "default" : "pointer",
@@ -14651,7 +14675,7 @@ function TopPlayersScreen({
               color:
                 topMode === "solo"
                   ? "#ffffff"
-                  : "#393253",
+                  : isDark ? "#c9b3e0" : "#393253",
               boxShadow:
                 topMode === "solo"
                   ? "0 8px 18px rgba(108,58,255,0.22)"
@@ -14682,7 +14706,7 @@ function TopPlayersScreen({
               color:
                 topMode === "pair"
                   ? "#ffffff"
-                  : "#393253",
+                  : isDark ? "#c9b3e0" : "#393253",
               boxShadow:
                 topMode === "pair"
                   ? "0 8px 18px rgba(255,98,169,0.22)"
@@ -14728,7 +14752,7 @@ function TopPlayersScreen({
               padding: "6px 9px",
               borderRadius: 999,
               background: "rgba(255,255,255,0.32)",
-              color: "#5d547b",
+              color: muted,
               fontSize: 11,
               fontWeight: 900,
               whiteSpace: "nowrap",
@@ -14745,7 +14769,7 @@ function TopPlayersScreen({
               padding: 14,
               borderRadius: 16,
               background: "rgba(255,255,255,0.22)",
-              color: "#4a4468",
+              color: muted,
               lineHeight: 1.45,
               fontSize: 14,
               textAlign: "center",
@@ -14879,7 +14903,7 @@ function TopPlayersScreen({
                             style={{
                               marginTop: 3,
                               fontSize: 12,
-                              color: "#4d466c",
+                              color: muted,
                               whiteSpace: "nowrap",
                               overflow: "hidden",
                               textOverflow: "ellipsis",
@@ -15085,7 +15109,7 @@ function TopPlayersScreen({
                             style={{
                               marginTop: 3,
                               fontSize: 12,
-                              color: "#4d466c",
+                              color: muted,
                             }}
                           >
                             {isTop1
@@ -15164,7 +15188,7 @@ function TopPlayersScreen({
               padding: "12px 14px",
               borderRadius: 16,
               background: "rgba(255,255,255,0.25)",
-              color: "#30294d",
+              color: ink,
               fontSize: 14,
               fontWeight: 800,
               lineHeight: 1.45,
@@ -15206,7 +15230,7 @@ function TopPlayersScreen({
               padding: "12px 14px",
               borderRadius: 16,
               background: "rgba(255,255,255,0.25)",
-              color: "#30294d",
+              color: ink,
               fontSize: 14,
               fontWeight: 800,
               lineHeight: 1.45,
@@ -15251,7 +15275,7 @@ function TopPlayersScreen({
               padding: "12px 14px",
               borderRadius: 16,
               background: "rgba(255,255,255,0.24)",
-              color: "#4a4468",
+              color: muted,
               lineHeight: 1.45,
               fontSize: 14,
               fontWeight: 700,
@@ -15264,7 +15288,7 @@ function TopPlayersScreen({
             <div
               style={{
                 marginTop: 8,
-                color: "#4a4468",
+                color: muted,
                 lineHeight: 1.45,
                 fontSize: 13,
               }}
@@ -15758,7 +15782,7 @@ const t = market === "fi" ? TEXT_FI : market === "en" ? TEXT_EN : TEXT_RU;
                 alignItems: "center",
                 justifyContent: "center",
                 background: "rgba(255,255,255,0.35)",
-                color: "#201a39",
+                color: ink,
                 fontWeight: 900,
                 fontSize: 26,
                 border: "2px solid rgba(255,255,255,0.42)",
@@ -15782,7 +15806,7 @@ const t = market === "fi" ? TEXT_FI : market === "en" ? TEXT_EN : TEXT_RU;
       padding: "6px 10px",
       borderRadius: 999,
       background: "rgba(255,255,255,0.30)",
-      color: "#3b3158",
+      color: ink,
       fontSize: 12,
       fontWeight: 800,
     }}
