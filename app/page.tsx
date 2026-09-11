@@ -15675,7 +15675,7 @@ return (
 }
 
 
-type PetSpecies = "dog" | "cat" | "rabbit" | "cow" | "hippo";
+type PetSpecies = "dog" | "cat" | "rabbit" | "cow" | "hippo" | "owl";
 type PetGender = "boy" | "girl";
 
 type PetState = {
@@ -15698,6 +15698,7 @@ const PET_SPECIES_OPTIONS: Array<{
   { id: "rabbit", emoji: "🐰", labelRu: "Кролик", labelEn: "Rabbit" },
   { id: "cow", emoji: "🐮", labelRu: "Корова", labelEn: "Cow" },
   { id: "hippo", emoji: "🦛", labelRu: "Бегемот", labelEn: "Hippo" },
+  { id: "owl", emoji: "🦉", labelRu: "Сова", labelEn: "Owl" },
 ];
 
 // ВРЕМЕННО: чисто визуальный прототип для показа Артёму, прежде чем
