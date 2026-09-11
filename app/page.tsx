@@ -117,7 +117,8 @@ type Screen =
   | "dating-chat"
   | "dating-boost"
   | "polls-tests-menu"
-  | "pair-profile-menu";
+  | "pair-profile-menu"
+  | "pet";
 
 
 
@@ -10052,6 +10053,50 @@ function MainMenu({
         <div style={{ fontSize: 20, color: accent, flexShrink: 0 }}>→</div>
       </button>
 
+      {hasPair && !isCapacitorApp() && (
+        <button
+          type="button"
+          onClick={() => onNavigate("pet")}
+          style={{
+            ...cardBaseStyle(),
+            width: "100%",
+            padding: 16,
+            marginBottom: 12,
+            textAlign: "left",
+            cursor: "pointer",
+            border: "1px solid rgba(255,255,255,0.4)",
+            background: isDark
+              ? "linear-gradient(135deg, rgba(255,180,120,0.18), rgba(143,107,255,0.16))"
+              : "linear-gradient(135deg, rgba(255,180,120,0.24), rgba(143,107,255,0.16))",
+            display: "flex",
+            alignItems: "center",
+            gap: 12,
+          }}
+        >
+          <div style={{ fontSize: 30, flexShrink: 0 }}>🐾</div>
+
+          <div style={{ flex: 1 }}>
+            <div style={{ fontSize: 15, fontWeight: 900, color: ink }}>
+              {getMarket() !== "ru" ? "Your pet" : "Ваш питомец"}
+            </div>
+            <div
+              style={{
+                marginTop: 2,
+                fontSize: 12.5,
+                color: muted,
+                lineHeight: 1.35,
+              }}
+            >
+              {getMarket() !== "ru"
+                ? "Grows together with your progress"
+                : "Растёт вместе с вашим прогрессом"}
+            </div>
+          </div>
+
+          <div style={{ fontSize: 20, color: accent, flexShrink: 0 }}>→</div>
+        </button>
+      )}
+
       {isCapacitorApp() ? (
         // iOS-сборка — сетка ровно как была на момент отправки на
         // проверку Apple, без изменений (Знакомства ей не видны и так,
@@ -15630,6 +15675,350 @@ return (
 }
 
 
+type PetSpecies = "dog" | "cat" | "rabbit" | "cow" | "hippo";
+type PetGender = "boy" | "girl";
+
+type PetState = {
+  species: PetSpecies;
+  gender: PetGender;
+  name: string;
+  level: number;
+  xp: number;
+  xpToNext: number;
+};
+
+const PET_SPECIES_OPTIONS: Array<{
+  id: PetSpecies;
+  emoji: string;
+  labelRu: string;
+  labelEn: string;
+}> = [
+  { id: "dog", emoji: "🐶", labelRu: "Собака", labelEn: "Dog" },
+  { id: "cat", emoji: "🐱", labelRu: "Кошка", labelEn: "Cat" },
+  { id: "rabbit", emoji: "🐰", labelRu: "Кролик", labelEn: "Rabbit" },
+  { id: "cow", emoji: "🐮", labelRu: "Корова", labelEn: "Cow" },
+  { id: "hippo", emoji: "🦛", labelRu: "Бегемот", labelEn: "Hippo" },
+];
+
+// ВРЕМЕННО: чисто визуальный прототип для показа Артёму, прежде чем
+// заводить бэкенд (таблицу pair_pets, RPC начисления опыта и т.д.) —
+// см. обсуждение в сессии. Питомец живёт только в локальном useState
+// (pet/setPet в Page()), при перезагрузке приложения сбрасывается.
+// Ничего не пишет и не читает из Supabase.
+function PetScreen({
+  pet,
+  onCreate,
+  onBack,
+  t,
+  theme,
+}: {
+  pet: PetState | null;
+  onCreate: (species: PetSpecies, gender: PetGender, name: string) => void;
+  onBack: () => void;
+  t: any;
+  // Undefined на iOS (тема там не включена) — читается как "light".
+  theme?: "light" | "dark";
+}) {
+  const isDark = theme === "dark";
+  const ink = isDark ? "#e6d4f0" : "#1f1d3a";
+  const muted = isDark ? "#c9b3e0" : "#5a5378";
+  const accent = isDark ? "#e0b3ff" : "#6b46ff";
+  const market = getMarket();
+
+  const [step, setStep] = useState<"species" | "details">("species");
+  const [selectedSpecies, setSelectedSpecies] = useState<PetSpecies | null>(null);
+  const [selectedGender, setSelectedGender] = useState<PetGender | null>(null);
+  const [name, setName] = useState("");
+
+  const speciesOption = pet
+    ? PET_SPECIES_OPTIONS.find((option) => option.id === pet.species)
+    : null;
+
+  const genderChoiceStyle = (active: boolean): CSSProperties => ({
+    flex: 1,
+    padding: "12px 8px",
+    borderRadius: 14,
+    border: "none",
+    fontSize: 14,
+    fontWeight: 800,
+    cursor: "pointer",
+    background: active
+      ? isDark
+        ? "linear-gradient(135deg, #5f3dc4, #a3407e)"
+        : "linear-gradient(135deg, #8f6bff, #ff76ba)"
+      : isDark
+        ? "rgba(255,255,255,0.12)"
+        : "rgba(255,255,255,0.4)",
+    color: active ? "#fff" : isDark ? "#c9b3e0" : "#393253",
+  });
+
+  if (!pet) {
+    return (
+      <div style={{ padding: 16, display: "grid", gap: 14 }}>
+        <div style={{ ...cardBaseStyle(), padding: 20, textAlign: "center" }}>
+          <div style={{ fontSize: 40 }}>🐾</div>
+          <div style={{ fontSize: 22, fontWeight: 900, color: ink, marginTop: 6 }}>
+            {market !== "ru" ? "Get a pet together" : "Заведите питомца"}
+          </div>
+          <div style={{ marginTop: 6, fontSize: 13, color: muted, lineHeight: 1.4 }}>
+            {market !== "ru"
+              ? "Your pet grows as you and your partner complete tests and polls together."
+              : "Питомец растёт вместе с вами — от тестов и опросов, которые вы проходите с партнёром."}
+          </div>
+        </div>
+
+        {step === "species" ? (
+          <div style={{ ...cardBaseStyle(), padding: 20 }}>
+            <div style={{ fontSize: 14, fontWeight: 800, color: muted, marginBottom: 12 }}>
+              {market !== "ru" ? "Choose a species" : "Выберите питомца"}
+            </div>
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(3, 1fr)",
+                gap: 10,
+              }}
+            >
+              {PET_SPECIES_OPTIONS.map((option) => {
+                const active = selectedSpecies === option.id;
+                return (
+                  <button
+                    key={option.id}
+                    type="button"
+                    onClick={() => setSelectedSpecies(option.id)}
+                    style={{
+                      border: active
+                        ? "2px solid rgba(143,107,255,0.55)"
+                        : isDark
+                          ? "2px solid rgba(255,255,255,0.12)"
+                          : "2px solid transparent",
+                      borderRadius: 18,
+                      padding: "16px 8px",
+                      background: active
+                        ? isDark
+                          ? "rgba(255,255,255,0.16)"
+                          : "rgba(255,255,255,0.55)"
+                        : isDark
+                          ? "rgba(255,255,255,0.08)"
+                          : "rgba(255,255,255,0.28)",
+                      display: "flex",
+                      flexDirection: "column",
+                      alignItems: "center",
+                      gap: 6,
+                      cursor: "pointer",
+                    }}
+                  >
+                    <div style={{ fontSize: 34 }}>{option.emoji}</div>
+                    <div style={{ fontSize: 11.5, fontWeight: 800, color: ink }}>
+                      {market !== "ru" ? option.labelEn : option.labelRu}
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+
+            <button
+              type="button"
+              disabled={!selectedSpecies}
+              onClick={() => setStep("details")}
+              style={{
+                ...getPrimaryButtonStyle(isDark),
+                width: "100%",
+                marginTop: 18,
+                opacity: selectedSpecies ? 1 : 0.5,
+                cursor: selectedSpecies ? "pointer" : "not-allowed",
+              }}
+            >
+              {market !== "ru" ? "Next" : "Далее"}
+            </button>
+          </div>
+        ) : (
+          <div style={{ ...cardBaseStyle(), padding: 20 }}>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 10,
+                marginBottom: 16,
+              }}
+            >
+              <div style={{ fontSize: 34 }}>
+                {PET_SPECIES_OPTIONS.find((o) => o.id === selectedSpecies)?.emoji}
+              </div>
+              <button
+                type="button"
+                onClick={() => setStep("species")}
+                style={{
+                  border: "none",
+                  background: "none",
+                  color: accent,
+                  fontSize: 12.5,
+                  fontWeight: 800,
+                  cursor: "pointer",
+                }}
+              >
+                {market !== "ru" ? "Change" : "Изменить"}
+              </button>
+            </div>
+
+            <div style={{ fontSize: 12.5, fontWeight: 800, color: muted, marginBottom: 8 }}>
+              {market !== "ru" ? "Pet's gender" : "Пол питомца"}
+            </div>
+            <div style={{ display: "flex", gap: 8, marginBottom: 16 }}>
+              <button
+                type="button"
+                onClick={() => setSelectedGender("boy")}
+                style={genderChoiceStyle(selectedGender === "boy")}
+              >
+                {market !== "ru" ? "Male ♂" : "Мальчик ♂"}
+              </button>
+              <button
+                type="button"
+                onClick={() => setSelectedGender("girl")}
+                style={genderChoiceStyle(selectedGender === "girl")}
+              >
+                {market !== "ru" ? "Female ♀" : "Девочка ♀"}
+              </button>
+            </div>
+
+            <div style={{ fontSize: 12.5, fontWeight: 800, color: muted, marginBottom: 8 }}>
+              {market !== "ru" ? "Name" : "Имя"}
+            </div>
+            <input
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              maxLength={20}
+              placeholder={market !== "ru" ? "e.g. Fluffy" : "Например, Пушок"}
+              style={{
+                width: "100%",
+                boxSizing: "border-box",
+                border: isDark ? "1px solid rgba(255,255,255,0.18)" : "1px solid rgba(255,255,255,0.5)",
+                borderRadius: 14,
+                background: isDark ? "rgba(255,255,255,0.12)" : "rgba(255,255,255,0.55)",
+                padding: "12px 14px",
+                fontSize: 14,
+                color: ink,
+              }}
+            />
+
+            <button
+              type="button"
+              disabled={!selectedSpecies || !selectedGender || !name.trim()}
+              onClick={() => {
+                if (!selectedSpecies || !selectedGender || !name.trim()) return;
+                onCreate(selectedSpecies, selectedGender, name.trim());
+              }}
+              style={{
+                ...getPrimaryButtonStyle(isDark),
+                width: "100%",
+                marginTop: 18,
+                opacity: selectedSpecies && selectedGender && name.trim() ? 1 : 0.5,
+                cursor: selectedSpecies && selectedGender && name.trim() ? "pointer" : "not-allowed",
+              }}
+            >
+              {market !== "ru" ? "Get the pet" : "Завести питомца"}
+            </button>
+          </div>
+        )}
+
+        <button onClick={onBack} style={secondaryButtonStyle}>
+          {t.common.back}
+        </button>
+      </div>
+    );
+  }
+
+  const xpPercent = Math.min(100, Math.round((pet.xp / Math.max(1, pet.xpToNext)) * 100));
+
+  return (
+    <div style={{ padding: 16, display: "grid", gap: 14 }}>
+      <div style={{ ...cardBaseStyle(), padding: 24, textAlign: "center" }}>
+        <div
+          style={{
+            width: 120,
+            height: 120,
+            borderRadius: 999,
+            margin: "0 auto",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            fontSize: 64,
+            background: isDark
+              ? "linear-gradient(135deg, rgba(143,107,255,0.28), rgba(255,118,186,0.22))"
+              : "linear-gradient(135deg, rgba(143,107,255,0.30), rgba(255,118,186,0.28))",
+          }}
+        >
+          {speciesOption?.emoji}
+        </div>
+
+        <div style={{ marginTop: 12, fontSize: 22, fontWeight: 900, color: ink }}>
+          {pet.name} {pet.gender === "boy" ? "♂" : "♀"}
+        </div>
+        <div style={{ marginTop: 2, fontSize: 13, color: muted }}>
+          {market !== "ru" ? `Level ${pet.level}` : `Уровень ${pet.level}`}
+        </div>
+
+        <div
+          style={{
+            marginTop: 14,
+            height: 12,
+            borderRadius: 999,
+            background: isDark ? "rgba(255,255,255,0.12)" : "rgba(255,255,255,0.35)",
+            overflow: "hidden",
+          }}
+        >
+          <div
+            style={{
+              width: `${xpPercent}%`,
+              height: "100%",
+              borderRadius: 999,
+              background: isDark
+                ? "linear-gradient(90deg, #5f3dc4, #a3407e)"
+                : "linear-gradient(90deg, #8f6bff, #ff76ba)",
+              transition: "width 0.4s ease",
+            }}
+          />
+        </div>
+        <div style={{ marginTop: 6, fontSize: 11.5, color: muted }}>
+          {pet.xp} / {pet.xpToNext} XP
+        </div>
+      </div>
+
+      <div style={{ ...cardBaseStyle(), padding: 18, opacity: 0.6 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          <div style={{ fontSize: 24 }}>🎨</div>
+          <div style={{ flex: 1 }}>
+            <div style={{ fontSize: 14, fontWeight: 900, color: ink }}>
+              {market !== "ru" ? "Skins" : "Скины"}
+            </div>
+            <div style={{ marginTop: 2, fontSize: 12, color: muted }}>
+              {market !== "ru" ? "Coming soon" : "Скоро"}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div style={{ ...cardBaseStyle(), padding: 18, opacity: 0.6 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          <div style={{ fontSize: 24 }}>🏠</div>
+          <div style={{ flex: 1 }}>
+            <div style={{ fontSize: 14, fontWeight: 900, color: ink }}>
+              {market !== "ru" ? "Room" : "Комната"}
+            </div>
+            <div style={{ marginTop: 2, fontSize: 12, color: muted }}>
+              {market !== "ru" ? "Coming soon" : "Скоро"}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <button onClick={onBack} style={secondaryButtonStyle}>
+        {t.common.back}
+      </button>
+    </div>
+  );
+}
+
 function ProfileAndStatsScreen({
   user,
   points,
@@ -18588,6 +18977,12 @@ const [showPaymentChoice, setShowPaymentChoice] =
 const TRIBUTE_LINK =
   "https://t.me/tribute/app?startapp=sMuC";
 
+// Питомец — ВРЕМЕННО чисто визуальный прототип (см. комментарий у
+// PetScreen): живёт только тут, в localStorage/Supabase не пишется,
+// сбрасывается при перезагрузке приложения. Только Telegram, только
+// для пар (см. hasPair у точки входа в MainMenu).
+const [pet, setPet] = useState<PetState | null>(null);
+
 // Знакомства — только Telegram (см. isCapacitorApp() у точек входа).
 const [datingProfile, setDatingProfile] = useState<DatingProfile | null>(null);
 const [datingCandidates, setDatingCandidates] = useState<DatingCandidate[]>([]);
@@ -20192,6 +20587,25 @@ showPaywall={() => {
   <PairLevelInfoScreen
     pairLevel={getPairLevelInfo(animatedPairPoints)}
     onBack={() => setScreen("pair")}
+    theme={isCapacitorApp() ? undefined : theme}
+  />
+)}
+
+{screen === "pet" && (
+  <PetScreen
+    t={t}
+    pet={pet}
+    onCreate={(species, gender, name) => {
+      setPet({
+        species,
+        gender,
+        name,
+        level: 1,
+        xp: 0,
+        xpToNext: 100,
+      });
+    }}
+    onBack={() => setScreen("menu")}
     theme={isCapacitorApp() ? undefined : theme}
   />
 )}
