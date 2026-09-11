@@ -9747,6 +9747,7 @@ function MainMenu({
   appState,
   onNavigate,
   onOpenDating,
+  onOpenPet,
   theme,
   onToggleTheme,
   t,
@@ -9758,6 +9759,7 @@ function MainMenu({
   t: any;
   onNavigate: (screen: Screen) => void;
   onOpenDating: () => void;
+  onOpenPet: () => void;
   // Оба undefined на iOS (тема там не включена) — кнопка переключения
   // просто не рисуется рядом с шестерёнкой.
   theme?: "light" | "dark";
@@ -10090,7 +10092,7 @@ function MainMenu({
       {hasPair && !isCapacitorApp() && (
         <button
           type="button"
-          onClick={() => onNavigate("pet")}
+          onClick={onOpenPet}
           style={{
             ...cardBaseStyle(),
             width: "100%",
@@ -15903,28 +15905,89 @@ const PET_SPECIES_OPTIONS: Array<{
   emoji: string;
   labelRu: string;
   labelEn: string;
+  labelFi: string;
+  // Акцентный градиент этого вида — используется на аватарке, кольце
+  // прогресса и свечении, чтобы каждый питомец ощущался немного
+  // по-своему, а не одной и той же лиловой темой на всех.
+  gradient: string;
+  glow: string;
 }> = [
-  { id: "dog", emoji: "🐶", labelRu: "Собака", labelEn: "Dog" },
-  { id: "cat", emoji: "🐱", labelRu: "Кошка", labelEn: "Cat" },
-  { id: "rabbit", emoji: "🐰", labelRu: "Кролик", labelEn: "Rabbit" },
-  { id: "cow", emoji: "🐮", labelRu: "Корова", labelEn: "Cow" },
-  { id: "hippo", emoji: "🦛", labelRu: "Бегемот", labelEn: "Hippo" },
-  { id: "owl", emoji: "🦉", labelRu: "Сова", labelEn: "Owl" },
+  {
+    id: "dog",
+    emoji: "🐶",
+    labelRu: "Собака",
+    labelEn: "Dog",
+    labelFi: "Koira",
+    gradient: "linear-gradient(135deg, #f6a94d, #ffcf5c)",
+    glow: "rgba(246,169,77,0.35)",
+  },
+  {
+    id: "cat",
+    emoji: "🐱",
+    labelRu: "Кошка",
+    labelEn: "Cat",
+    labelFi: "Kissa",
+    gradient: "linear-gradient(135deg, #8f6bff, #c084fc)",
+    glow: "rgba(143,107,255,0.35)",
+  },
+  {
+    id: "rabbit",
+    emoji: "🐰",
+    labelRu: "Кролик",
+    labelEn: "Rabbit",
+    labelFi: "Kani",
+    gradient: "linear-gradient(135deg, #ff8fc4, #ffb3d9)",
+    glow: "rgba(255,143,196,0.35)",
+  },
+  {
+    id: "cow",
+    emoji: "🐮",
+    labelRu: "Корова",
+    labelEn: "Cow",
+    labelFi: "Lehmä",
+    gradient: "linear-gradient(135deg, #c9a06a, #f0d9b5)",
+    glow: "rgba(201,160,106,0.35)",
+  },
+  {
+    id: "hippo",
+    emoji: "🦛",
+    labelRu: "Бегемот",
+    labelEn: "Hippo",
+    labelFi: "Virtahepo",
+    gradient: "linear-gradient(135deg, #4dd0c4, #7fe0d6)",
+    glow: "rgba(77,208,196,0.35)",
+  },
+  {
+    id: "owl",
+    emoji: "🦉",
+    labelRu: "Сова",
+    labelEn: "Owl",
+    labelFi: "Pöllö",
+    gradient: "linear-gradient(135deg, #6366f1, #a78bfa)",
+    glow: "rgba(99,102,241,0.35)",
+  },
 ];
 
-// ВРЕМЕННО: чисто визуальный прототип для показа Артёму, прежде чем
-// заводить бэкенд (таблицу pair_pets, RPC начисления опыта и т.д.) —
-// см. обсуждение в сессии. Питомец живёт только в локальном useState
-// (pet/setPet в Page()), при перезагрузке приложения сбрасывается.
-// Ничего не пишет и не читает из Supabase.
+function speciesLabel(option: (typeof PET_SPECIES_OPTIONS)[number], market: Market): string {
+  return market === "fi" ? option.labelFi : market === "en" ? option.labelEn : option.labelRu;
+}
+
 function PetScreen({
   pet,
+  loading,
+  creating,
+  justLeveledUp,
+  onDismissLevelUp,
   onCreate,
   onBack,
   t,
   theme,
 }: {
   pet: PetState | null;
+  loading: boolean;
+  creating: boolean;
+  justLeveledUp: boolean;
+  onDismissLevelUp: () => void;
   onCreate: (species: PetSpecies, gender: PetGender, name: string) => void;
   onBack: () => void;
   t: any;
@@ -15964,25 +16027,83 @@ function PetScreen({
     color: active ? "#fff" : isDark ? "#c9b3e0" : "#393253",
   });
 
+  const petAnimStyle = `
+    @keyframes petBounce {
+      0%, 100% { transform: translateY(0) scale(1); }
+      50% { transform: translateY(-8px) scale(1.03); }
+    }
+    @keyframes petGlowPulse {
+      0%, 100% { opacity: 0.55; transform: scale(1); }
+      50% { opacity: 0.9; transform: scale(1.08); }
+    }
+    @keyframes petSparkleFloat {
+      0%, 100% { transform: translateY(0) rotate(0deg); opacity: 0.5; }
+      50% { transform: translateY(-6px) rotate(12deg); opacity: 1; }
+    }
+    @keyframes petLevelUpIn {
+      0% { opacity: 0; transform: translateY(-12px) scale(0.96); }
+      100% { opacity: 1; transform: translateY(0) scale(1); }
+    }
+    @keyframes petCardSpeciesPop {
+      0% { transform: scale(1); }
+      40% { transform: scale(1.08); }
+      100% { transform: scale(1); }
+    }
+    .pet-avatar-bounce { animation: petBounce 3.2s ease-in-out infinite; }
+    .pet-glow-pulse { animation: petGlowPulse 3.2s ease-in-out infinite; }
+    .pet-sparkle-1 { animation: petSparkleFloat 4s ease-in-out infinite; }
+    .pet-sparkle-2 { animation: petSparkleFloat 4.6s ease-in-out infinite 0.6s; }
+    .pet-level-up-banner { animation: petLevelUpIn 0.4s cubic-bezier(0.22, 1, 0.36, 1) both; }
+    .pet-species-active { animation: petCardSpeciesPop 0.3s ease; }
+    @media (prefers-reduced-motion: reduce) {
+      .pet-avatar-bounce, .pet-glow-pulse, .pet-sparkle-1, .pet-sparkle-2 { animation: none !important; }
+    }
+  `;
+
+  if (loading) {
+    return (
+      <div style={{ padding: 16, display: "grid", gap: 14 }}>
+        <style>{petAnimStyle}</style>
+        <div style={{ ...cardBaseStyle(), padding: 40, textAlign: "center" }}>
+          <div className="pet-avatar-bounce" style={{ fontSize: 40 }}>
+            🐾
+          </div>
+          <div style={{ marginTop: 10, fontSize: 13, color: muted, fontWeight: 700 }}>
+            {market === "fi" ? "Ladataan..." : market === "en" ? "Loading..." : "Загрузка..."}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   if (!pet) {
     return (
       <div style={{ padding: 16, display: "grid", gap: 14 }}>
+        <style>{petAnimStyle}</style>
         <div style={{ ...cardBaseStyle(), padding: 20, textAlign: "center" }}>
-          <div style={{ fontSize: 40 }}>🐾</div>
+          <div className="pet-avatar-bounce" style={{ fontSize: 40 }}>
+            🐾
+          </div>
           <div style={{ fontSize: 22, fontWeight: 900, color: ink, marginTop: 6 }}>
-            {market !== "ru" ? "Get a pet together" : "Заведите питомца"}
+            {market === "fi"
+              ? "Hankkikaa lemmikki yhdessä"
+              : market === "en"
+                ? "Get a pet together"
+                : "Заведите питомца"}
           </div>
           <div style={{ marginTop: 6, fontSize: 13, color: muted, lineHeight: 1.4 }}>
-            {market !== "ru"
-              ? "Your pet grows as you and your partner complete tests and polls together."
-              : "Питомец растёт вместе с вами — от тестов и опросов, которые вы проходите с партнёром."}
+            {market === "fi"
+              ? "Lemmikkinne kasvaa, kun teette yhdessä testejä ja kyselyitä."
+              : market === "en"
+                ? "Your pet grows as you and your partner complete tests and polls together."
+                : "Питомец растёт вместе с вами — от тестов и опросов, которые вы проходите с партнёром."}
           </div>
         </div>
 
         {step === "species" ? (
           <div style={{ ...cardBaseStyle(), padding: 20 }}>
             <div style={{ fontSize: 14, fontWeight: 800, color: muted, marginBottom: 12 }}>
-              {market !== "ru" ? "Choose a species" : "Выберите питомца"}
+              {market === "fi" ? "Valitse laji" : market === "en" ? "Choose a species" : "Выберите питомца"}
             </div>
             <div
               style={{
@@ -15998,6 +16119,7 @@ function PetScreen({
                     key={option.id}
                     type="button"
                     onClick={() => setSelectedSpecies(option.id)}
+                    className={active ? "pet-species-active" : undefined}
                     style={{
                       border: active
                         ? "2px solid rgba(143,107,255,0.55)"
@@ -16007,12 +16129,11 @@ function PetScreen({
                       borderRadius: 18,
                       padding: "16px 8px",
                       background: active
-                        ? isDark
-                          ? "rgba(255,255,255,0.16)"
-                          : "rgba(255,255,255,0.55)"
+                        ? option.gradient
                         : isDark
                           ? "rgba(255,255,255,0.08)"
                           : "rgba(255,255,255,0.28)",
+                      boxShadow: active ? `0 10px 24px ${option.glow}` : "none",
                       display: "flex",
                       flexDirection: "column",
                       alignItems: "center",
@@ -16021,8 +16142,8 @@ function PetScreen({
                     }}
                   >
                     <div style={{ fontSize: 34 }}>{option.emoji}</div>
-                    <div style={{ fontSize: 11.5, fontWeight: 800, color: ink }}>
-                      {market !== "ru" ? option.labelEn : option.labelRu}
+                    <div style={{ fontSize: 11.5, fontWeight: 800, color: active ? "#fff" : ink }}>
+                      {speciesLabel(option, market)}
                     </div>
                   </button>
                 );
@@ -16041,7 +16162,7 @@ function PetScreen({
                 cursor: selectedSpecies ? "pointer" : "not-allowed",
               }}
             >
-              {market !== "ru" ? "Next" : "Далее"}
+              {market === "fi" ? "Seuraava" : market === "en" ? "Next" : "Далее"}
             </button>
           </div>
         ) : (
@@ -16054,7 +16175,18 @@ function PetScreen({
                 marginBottom: 16,
               }}
             >
-              <div style={{ fontSize: 34 }}>
+              <div
+                style={{
+                  width: 56,
+                  height: 56,
+                  borderRadius: 999,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  fontSize: 30,
+                  background: PET_SPECIES_OPTIONS.find((o) => o.id === selectedSpecies)?.gradient,
+                }}
+              >
                 {PET_SPECIES_OPTIONS.find((o) => o.id === selectedSpecies)?.emoji}
               </div>
               <button
@@ -16069,12 +16201,12 @@ function PetScreen({
                   cursor: "pointer",
                 }}
               >
-                {market !== "ru" ? "Change" : "Изменить"}
+                {market === "fi" ? "Vaihda" : market === "en" ? "Change" : "Изменить"}
               </button>
             </div>
 
             <div style={{ fontSize: 12.5, fontWeight: 800, color: muted, marginBottom: 8 }}>
-              {market !== "ru" ? "Pet's gender" : "Пол питомца"}
+              {market === "fi" ? "Lemmikin sukupuoli" : market === "en" ? "Pet's gender" : "Пол питомца"}
             </div>
             <div style={{ display: "flex", gap: 8, marginBottom: 16 }}>
               <button
@@ -16082,25 +16214,25 @@ function PetScreen({
                 onClick={() => setSelectedGender("boy")}
                 style={genderChoiceStyle(selectedGender === "boy")}
               >
-                {market !== "ru" ? "Male ♂" : "Мальчик ♂"}
+                {market === "fi" ? "Poika ♂" : market === "en" ? "Male ♂" : "Мальчик ♂"}
               </button>
               <button
                 type="button"
                 onClick={() => setSelectedGender("girl")}
                 style={genderChoiceStyle(selectedGender === "girl")}
               >
-                {market !== "ru" ? "Female ♀" : "Девочка ♀"}
+                {market === "fi" ? "Tyttö ♀" : market === "en" ? "Female ♀" : "Девочка ♀"}
               </button>
             </div>
 
             <div style={{ fontSize: 12.5, fontWeight: 800, color: muted, marginBottom: 8 }}>
-              {market !== "ru" ? "Name" : "Имя"}
+              {market === "fi" ? "Nimi" : market === "en" ? "Name" : "Имя"}
             </div>
             <input
               value={name}
               onChange={(e) => setName(e.target.value)}
               maxLength={20}
-              placeholder={market !== "ru" ? "e.g. Fluffy" : "Например, Пушок"}
+              placeholder={market === "fi" ? "esim. Nalle" : market === "en" ? "e.g. Fluffy" : "Например, Пушок"}
               style={{
                 width: "100%",
                 boxSizing: "border-box",
@@ -16115,7 +16247,7 @@ function PetScreen({
 
             <button
               type="button"
-              disabled={!selectedSpecies || !selectedGender || !name.trim()}
+              disabled={!selectedSpecies || !selectedGender || !name.trim() || creating}
               onClick={() => {
                 if (!selectedSpecies || !selectedGender || !name.trim()) return;
                 onCreate(selectedSpecies, selectedGender, name.trim());
@@ -16124,11 +16256,21 @@ function PetScreen({
                 ...getPrimaryButtonStyle(isDark),
                 width: "100%",
                 marginTop: 18,
-                opacity: selectedSpecies && selectedGender && name.trim() ? 1 : 0.5,
-                cursor: selectedSpecies && selectedGender && name.trim() ? "pointer" : "not-allowed",
+                opacity: selectedSpecies && selectedGender && name.trim() && !creating ? 1 : 0.5,
+                cursor: selectedSpecies && selectedGender && name.trim() && !creating ? "pointer" : "not-allowed",
               }}
             >
-              {market !== "ru" ? "Get the pet" : "Завести питомца"}
+              {creating
+                ? market === "fi"
+                  ? "Hetki..."
+                  : market === "en"
+                    ? "One moment..."
+                    : "Секунду..."
+                : market === "fi"
+                  ? "Hanki lemmikki"
+                  : market === "en"
+                    ? "Get the pet"
+                    : "Завести питомца"}
             </button>
           </div>
         )}
@@ -16141,86 +16283,202 @@ function PetScreen({
   }
 
   const xpPercent = Math.min(100, Math.round((pet.xp / Math.max(1, pet.xpToNext)) * 100));
+  const ringSize = 156;
+  const ringStroke = 8;
+  const ringRadius = (ringSize - ringStroke) / 2;
+  const ringCircumference = 2 * Math.PI * ringRadius;
+  const ringOffset = ringCircumference * (1 - xpPercent / 100);
+  const accentGradient = speciesOption?.gradient ?? (isDark
+    ? "linear-gradient(135deg, #5f3dc4, #a3407e)"
+    : "linear-gradient(135deg, #8f6bff, #ff76ba)");
+  const accentGlow = speciesOption?.glow ?? "rgba(143,107,255,0.35)";
 
   return (
     <div style={{ padding: 16, display: "grid", gap: 14 }}>
-      <div style={{ ...cardBaseStyle(), padding: 24, textAlign: "center" }}>
+      <style>{petAnimStyle}</style>
+
+      {justLeveledUp && (
         <div
+          className="pet-level-up-banner"
           style={{
-            width: 120,
-            height: 120,
-            borderRadius: 999,
-            margin: "0 auto",
+            ...cardBaseStyle(),
+            padding: "14px 16px",
             display: "flex",
             alignItems: "center",
-            justifyContent: "center",
-            fontSize: 64,
-            background: isDark
-              ? "linear-gradient(135deg, rgba(143,107,255,0.28), rgba(255,118,186,0.22))"
-              : "linear-gradient(135deg, rgba(143,107,255,0.30), rgba(255,118,186,0.28))",
+            gap: 10,
+            background: accentGradient,
+            cursor: "pointer",
           }}
+          onClick={onDismissLevelUp}
         >
-          {speciesOption?.emoji}
+          <div style={{ fontSize: 26 }}>🎉</div>
+          <div style={{ flex: 1, color: "#fff", fontWeight: 900, fontSize: 14 }}>
+            {market === "fi"
+              ? `Uusi taso! ${pet.name} on nyt tasolla ${pet.level}`
+              : market === "en"
+                ? `Level up! ${pet.name} is now level ${pet.level}`
+                : `Новый уровень! ${pet.name} теперь ${pet.level} уровня`}
+          </div>
+          <div style={{ color: "rgba(255,255,255,0.85)", fontSize: 12, fontWeight: 800 }}>✕</div>
+        </div>
+      )}
+
+      <div style={{ ...cardBaseStyle(), padding: 24, textAlign: "center", position: "relative", overflow: "hidden" }}>
+        <div className="pet-sparkle-1" style={{ position: "absolute", top: 14, left: 20, fontSize: 16, opacity: 0.6 }}>
+          ✨
+        </div>
+        <div className="pet-sparkle-2" style={{ position: "absolute", top: 20, right: 24, fontSize: 14, opacity: 0.5 }}>
+          💫
         </div>
 
-        <div style={{ marginTop: 12, fontSize: 22, fontWeight: 900, color: ink }}>
-          {pet.name} {pet.gender === "boy" ? "♂" : "♀"}
-        </div>
-        <div style={{ marginTop: 2, fontSize: 13, color: muted }}>
-          {market !== "ru" ? `Level ${pet.level}` : `Уровень ${pet.level}`}
-        </div>
-
-        <div
-          style={{
-            marginTop: 14,
-            height: 12,
-            borderRadius: 999,
-            background: isDark ? "rgba(255,255,255,0.12)" : "rgba(255,255,255,0.35)",
-            overflow: "hidden",
-          }}
-        >
+        <div style={{ position: "relative", width: ringSize, height: ringSize, margin: "0 auto" }}>
           <div
+            className="pet-glow-pulse"
             style={{
-              width: `${xpPercent}%`,
-              height: "100%",
+              position: "absolute",
+              inset: 8,
               borderRadius: 999,
-              background: isDark
-                ? "linear-gradient(90deg, #5f3dc4, #a3407e)"
-                : "linear-gradient(90deg, #8f6bff, #ff76ba)",
-              transition: "width 0.4s ease",
+              background: accentGlow,
+              filter: "blur(14px)",
             }}
           />
+          <svg width={ringSize} height={ringSize} style={{ position: "relative", transform: "rotate(-90deg)" }}>
+            <circle
+              cx={ringSize / 2}
+              cy={ringSize / 2}
+              r={ringRadius}
+              fill="none"
+              stroke={isDark ? "rgba(255,255,255,0.14)" : "rgba(255,255,255,0.4)"}
+              strokeWidth={ringStroke}
+            />
+            <circle
+              cx={ringSize / 2}
+              cy={ringSize / 2}
+              r={ringRadius}
+              fill="none"
+              stroke={isDark ? "#e0b3ff" : "#8f6bff"}
+              strokeWidth={ringStroke}
+              strokeLinecap="round"
+              strokeDasharray={ringCircumference}
+              strokeDashoffset={ringOffset}
+              style={{ transition: "stroke-dashoffset 0.6s ease" }}
+            />
+          </svg>
+          <div
+            className="pet-avatar-bounce"
+            style={{
+              position: "absolute",
+              inset: ringStroke + 6,
+              borderRadius: 999,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              fontSize: 60,
+              background: accentGradient,
+              boxShadow: `0 10px 28px ${accentGlow}`,
+            }}
+          >
+            {speciesOption?.emoji}
+          </div>
+          <div
+            style={{
+              position: "absolute",
+              bottom: 2,
+              right: 2,
+              minWidth: 30,
+              height: 30,
+              padding: "0 6px",
+              borderRadius: 999,
+              background: isDark ? "#241a3d" : "#fff",
+              border: isDark ? "2px solid rgba(255,255,255,0.18)" : "2px solid rgba(255,255,255,0.9)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              fontSize: 12.5,
+              fontWeight: 900,
+              color: ink,
+              boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
+            }}
+          >
+            {pet.level}
+          </div>
         </div>
-        <div style={{ marginTop: 6, fontSize: 11.5, color: muted }}>
+
+        <div style={{ marginTop: 14, fontSize: 22, fontWeight: 900, color: ink }}>
+          {pet.name} {pet.gender === "boy" ? "♂" : "♀"}
+        </div>
+        <div style={{ marginTop: 2, fontSize: 13, color: muted, fontWeight: 700 }}>
+          {market === "fi" ? `Taso ${pet.level}` : market === "en" ? `Level ${pet.level}` : `Уровень ${pet.level}`}
+        </div>
+        <div style={{ marginTop: 8, fontSize: 11.5, color: muted }}>
           {pet.xp} / {pet.xpToNext} XP
         </div>
       </div>
 
-      <div style={{ ...cardBaseStyle(), padding: 18, opacity: 0.6 }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          <div style={{ fontSize: 24 }}>🎨</div>
+      <div style={{ ...cardBaseStyle(), padding: 18 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
+          <div style={{ fontSize: 22 }}>🎨</div>
           <div style={{ flex: 1 }}>
             <div style={{ fontSize: 14, fontWeight: 900, color: ink }}>
-              {market !== "ru" ? "Skins" : "Скины"}
+              {market === "fi" ? "Ulkoasut" : market === "en" ? "Skins" : "Скины"}
             </div>
-            <div style={{ marginTop: 2, fontSize: 12, color: muted }}>
-              {market !== "ru" ? "Coming soon" : "Скоро"}
+            <div style={{ marginTop: 1, fontSize: 11.5, color: muted }}>
+              {market === "fi" ? "Tulossa pian" : market === "en" ? "Coming soon" : "Скоро"}
             </div>
           </div>
         </div>
+        <div style={{ display: "flex", gap: 8 }}>
+          {["#f6a94d", "#8f6bff", "#4dd0c4"].map((color, index) => (
+            <div
+              key={color}
+              style={{
+                width: 40,
+                height: 40,
+                borderRadius: 12,
+                background: isDark ? "rgba(255,255,255,0.08)" : "rgba(255,255,255,0.35)",
+                border: `2px dashed ${color}55`,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                fontSize: 15,
+                opacity: 0.7,
+              }}
+            >
+              🔒
+            </div>
+          ))}
+        </div>
       </div>
 
-      <div style={{ ...cardBaseStyle(), padding: 18, opacity: 0.6 }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          <div style={{ fontSize: 24 }}>🏠</div>
+      <div style={{ ...cardBaseStyle(), padding: 18 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
+          <div style={{ fontSize: 22 }}>🏠</div>
           <div style={{ flex: 1 }}>
             <div style={{ fontSize: 14, fontWeight: 900, color: ink }}>
-              {market !== "ru" ? "Room" : "Комната"}
+              {market === "fi" ? "Huone" : market === "en" ? "Room" : "Комната"}
             </div>
-            <div style={{ marginTop: 2, fontSize: 12, color: muted }}>
-              {market !== "ru" ? "Coming soon" : "Скоро"}
+            <div style={{ marginTop: 1, fontSize: 11.5, color: muted }}>
+              {market === "fi" ? "Tulossa pian" : market === "en" ? "Coming soon" : "Скоро"}
             </div>
           </div>
+        </div>
+        <div
+          style={{
+            height: 48,
+            borderRadius: 12,
+            background: isDark
+              ? "linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0.04))"
+              : "linear-gradient(135deg, rgba(255,255,255,0.5), rgba(255,255,255,0.2))",
+            border: isDark ? "1px dashed rgba(255,255,255,0.18)" : "1px dashed rgba(143,107,255,0.3)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            fontSize: 12,
+            fontWeight: 700,
+            color: muted,
+          }}
+        >
+          🔒 {market === "fi" ? "Avautuu myöhemmin" : market === "en" ? "Unlocks later" : "Откроется позже"}
         </div>
       </div>
 
@@ -18626,6 +18884,88 @@ const handleLeavePair = async () => {
   }
 };
 
+// ---- Питомец ----
+
+async function petFetch(path: string, body: Record<string, unknown> = {}) {
+  const initData = window.Telegram?.WebApp?.initData;
+  if (!initData) return null;
+
+  try {
+    const response = await fetch(path, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ initData, ...body }),
+    });
+    return await response.json();
+  } catch (error) {
+    console.error(`petFetch ${path} error:`, error);
+    return null;
+  }
+}
+
+// Открытие экрана питомца — всегда перечитываем свежее состояние с
+// сервера (а не доверяем локальному стейту), чтобы уровень/опыт были
+// актуальными на момент входа и чтобы поймать level-up, случившийся
+// между визитами (очки в других разделах начисляются независимо от
+// того, открыт ли сейчас этот экран).
+async function handleOpenPet() {
+  setScreen("pet");
+  setPetLoading(true);
+
+  const result = await petFetch("/api/pet/state");
+
+  setPetLoading(false);
+
+  if (!result?.ok) return;
+
+  const nextPet: PetState | null = result.pet
+    ? {
+        species: result.pet.species,
+        gender: result.pet.gender,
+        name: result.pet.name,
+        level: result.pet.level,
+        xp: result.pet.xp,
+        xpToNext: result.pet.xpToNext,
+      }
+    : null;
+
+  setPet(nextPet);
+
+  if (nextPet) {
+    setPetSeenLevel((prevSeen) => {
+      if (prevSeen !== null && nextPet.level > prevSeen) {
+        setPetJustLeveledUp(true);
+        launchLevelConfetti();
+      }
+      return nextPet.level;
+    });
+  }
+}
+
+async function handleCreatePet(species: PetSpecies, gender: PetGender, name: string) {
+  setPetCreating(true);
+
+  const result = await petFetch("/api/pet/create", { species, gender, name });
+
+  setPetCreating(false);
+
+  if (!result?.ok) {
+    alert(
+      getMarket() === "fi"
+        ? "Jotain meni pieleen, yritä uudelleen."
+        : getMarket() === "en"
+          ? "Something went wrong, try again."
+          : "Что-то пошло не так, попробуй ещё раз."
+    );
+    return;
+  }
+
+  // Сервер вернул только что созданного питомца без уровня/опыта
+  // (свежая пара, XP ещё не считали) — сразу перечитываем полное
+  // состояние, чтобы получить level/xp/xpToNext от get_pair_pet_state.
+  await handleOpenPet();
+}
+
 // ---- Знакомства ----
 
 async function datingFetch(path: string, body: Record<string, unknown> = {}) {
@@ -19171,11 +19511,17 @@ const [showPaymentChoice, setShowPaymentChoice] =
 const TRIBUTE_LINK =
   "https://t.me/tribute/app?startapp=sMuC";
 
-// Питомец — ВРЕМЕННО чисто визуальный прототип (см. комментарий у
-// PetScreen): живёт только тут, в localStorage/Supabase не пишется,
-// сбрасывается при перезагрузке приложения. Только Telegram, только
-// для пар (см. hasPair у точки входа в MainMenu).
+// Питомец — только Telegram, только для пар (см. hasPair у точки
+// входа в MainMenu). Хранится в Supabase (supabase/pair_pets.sql);
+// уровень/опыт считает сама get_pair_pet_state из суммы очков пары —
+// см. petFetch/handleOpenPet ниже.
 const [pet, setPet] = useState<PetState | null>(null);
+const [petLoading, setPetLoading] = useState(false);
+const [petCreating, setPetCreating] = useState(false);
+// Для анимации level-up при возврате на экран питомца — level, который
+// уже видели, чтобы не запускать конфетти на каждый обычный рефреш.
+const [petSeenLevel, setPetSeenLevel] = useState<number | null>(null);
+const [petJustLeveledUp, setPetJustLeveledUp] = useState(false);
 
 // Знакомства — только Telegram (см. isCapacitorApp() у точек входа).
 const [datingProfile, setDatingProfile] = useState<DatingProfile | null>(null);
@@ -20529,6 +20875,7 @@ if (finishedAllTests && !appState.completionBonusesClaimed.tests) {
     pairLevel={getPairLevelInfo(animatedPairPoints)}
     appState={appState}
     onOpenDating={handleOpenDating}
+    onOpenPet={handleOpenPet}
     theme={isCapacitorApp() ? undefined : theme}
     onToggleTheme={isCapacitorApp() ? undefined : toggleTheme}
    onNavigate={(next) => {
@@ -20781,16 +21128,11 @@ showPaywall={() => {
   <PetScreen
     t={t}
     pet={pet}
-    onCreate={(species, gender, name) => {
-      setPet({
-        species,
-        gender,
-        name,
-        level: 1,
-        xp: 0,
-        xpToNext: 100,
-      });
-    }}
+    loading={petLoading}
+    creating={petCreating}
+    justLeveledUp={petJustLeveledUp}
+    onDismissLevelUp={() => setPetJustLeveledUp(false)}
+    onCreate={handleCreatePet}
     onBack={() => setScreen("menu")}
     theme={isCapacitorApp() ? undefined : theme}
   />
