@@ -319,6 +319,7 @@ type LoveQuestion = {
   text: string;
   textRu: string;
   textEn: string;
+  textFi: string;
 };
 
 type TestKind = "scale" | "love-language" | "personality";
@@ -375,6 +376,7 @@ type BottleTask = {
   text: string;
   textRu: string;
   textEn: string;
+  textFi: string;
 };
 
 type PairMember = {
@@ -2598,55 +2600,75 @@ const GAMES: Game[] = [
 
 {
   id: "never-have-i-ever",
-  title: market !== "ru" ? "Never Have I Ever..." : "Я никогда не...",
+  title:
+    market === "fi" ? "En ole koskaan..." : market === "en" ? "Never Have I Ever..." : "Я никогда не...",
   description:
-    market !== "ru"
-      ? "Say something you've never done in your life — if your partner has done it, they complete the task on the card."
-      : "Скажите что-то, чего вы никогда в жизни не делали, и если ваш партнёр делал это, он выполняет задание с карточки.",
+    market === "fi"
+      ? "Sano jotain, mitä et ole koskaan tehnyt elämässäsi — jos kumppanisi on tehnyt sen, hän suorittaa kortin tehtävän."
+      : market === "en"
+        ? "Say something you've never done in your life — if your partner has done it, they complete the task on the card."
+        : "Скажите что-то, чего вы никогда в жизни не делали, и если ваш партнёр делал это, он выполняет задание с карточки.",
   reward: 0,
   questions: [],
 },
 
   {
     id: "bottle",
-    title: market !== "ru" ? "Spin the Bottle" : "Бутылочка",
+    title: market === "fi" ? "Pullonpyöritys" : market === "en" ? "Spin the Bottle" : "Бутылочка",
     description:
-      market !== "ru"
-        ? "Spin the bottle and get romantic or bold tasks for couples."
-        : "Крути бутылку и получай романтичные и дерзкие задания для пары.",
+      market === "fi"
+        ? "Pyöritä pulloa ja saat romanttisia tai rohkeita tehtäviä parille."
+        : market === "en"
+          ? "Spin the bottle and get romantic or bold tasks for couples."
+          : "Крути бутылку и получай романтичные и дерзкие задания для пары.",
     reward: 0,
     questions: [],
   },
 
     {
     id: "90-questions",
-    title: market !== "ru" ? "90 Questions" : "90 вопросов",
+    title: market === "fi" ? "90 kysymystä" : market === "en" ? "90 Questions" : "90 вопросов",
     description:
-      market !== "ru"
-        ? "Random deep questions about love, feelings, and relationships."
-        : "Случайные глубокие вопросы про любовь, чувства и отношения.",
+      market === "fi"
+        ? "Satunnaisia syviä kysymyksiä rakkaudesta, tunteista ja suhteista."
+        : market === "en"
+          ? "Random deep questions about love, feelings, and relationships."
+          : "Случайные глубокие вопросы про любовь, чувства и отношения.",
     reward: 0,
     questions: [],
   },
 ];
 
 const RARELY_SOMETIMES_OFTEN =
-  market !== "ru" ? ["Rarely", "Sometimes", "Often"] : ["Редко", "Иногда", "Часто"];
+  market === "fi"
+    ? ["Harvoin", "Joskus", "Usein"]
+    : market === "en"
+      ? ["Rarely", "Sometimes", "Often"]
+      : ["Редко", "Иногда", "Часто"];
 const NO_SOMETIMES_YES =
-  market !== "ru" ? ["No", "Sometimes", "Yes"] : ["Нет", "Иногда", "Да"];
+  market === "fi"
+    ? ["Ei", "Joskus", "Kyllä"]
+    : market === "en"
+      ? ["No", "Sometimes", "Yes"]
+      : ["Нет", "Иногда", "Да"];
 const YES_SOMETIMES_NO =
-  market !== "ru" ? ["Yes", "Sometimes", "No"] : ["Да", "Иногда", "Нет"];
+  market === "fi"
+    ? ["Kyllä", "Joskus", "Ei"]
+    : market === "en"
+      ? ["Yes", "Sometimes", "No"]
+      : ["Да", "Иногда", "Нет"];
 
 const relationshipCheckQuestion = (
   id: string,
   category: string,
   textRu: string,
   textEn: string,
-  options: string[]
+  options: string[],
+  textFi?: string
 ) => ({
   id,
   category,
-  text: market !== "ru" ? textEn : textRu,
+  text: market === "fi" ? (textFi ?? textEn) : market === "en" ? textEn : textRu,
   options,
 });
 
@@ -2656,14 +2678,16 @@ const RELATIONSHIP_CHECK_QUESTIONS = [
     "communication",
     "Как часто вам трудно спокойно поговорить друг с другом?",
     "How often is it hard for you to calmly talk to each other?",
-    RARELY_SOMETIMES_OFTEN
+    RARELY_SOMETIMES_OFTEN,
+    "Kuinka usein teidän on vaikea puhua rauhallisesti keskenänne?"
   ),
   relationshipCheckQuestion(
     "communication-2",
     "communication",
     "Как часто один из вас чувствует, что его не слышат?",
     "How often does one of you feel unheard?",
-    RARELY_SOMETIMES_OFTEN
+    RARELY_SOMETIMES_OFTEN,
+    "Kuinka usein jompikumpi teistä tuntee, ettei häntä kuunnella?"
   ),
 
   relationshipCheckQuestion(
@@ -2671,14 +2695,16 @@ const RELATIONSHIP_CHECK_QUESTIONS = [
     "trust",
     "Бывает ли в ваших отношениях недоверие?",
     "Does distrust ever show up in your relationship?",
-    NO_SOMETIMES_YES
+    NO_SOMETIMES_YES,
+    "Esiintyykö suhteessanne epäluottamusta?"
   ),
   relationshipCheckQuestion(
     "trust-2",
     "trust",
     "Как часто вам хочется что-то скрыть друг от друга, чтобы избежать конфликта?",
     "How often do you want to hide something from each other to avoid conflict?",
-    RARELY_SOMETIMES_OFTEN
+    RARELY_SOMETIMES_OFTEN,
+    "Kuinka usein haluatte salata jotain toisiltanne välttääksenne riidan?"
   ),
 
   relationshipCheckQuestion(
@@ -2686,14 +2712,16 @@ const RELATIONSHIP_CHECK_QUESTIONS = [
     "conflicts",
     "Как часто мелочи перерастают в ссору?",
     "How often do small things turn into a fight?",
-    RARELY_SOMETIMES_OFTEN
+    RARELY_SOMETIMES_OFTEN,
+    "Kuinka usein pienet asiat kasvavat riidaksi?"
   ),
   relationshipCheckQuestion(
     "conflicts-2",
     "conflicts",
     "После конфликта вам легко восстановить близость?",
     "Is it easy for you to reconnect after a conflict?",
-    YES_SOMETIMES_NO
+    YES_SOMETIMES_NO,
+    "Onko teidän helppo löytää läheisyys uudelleen riidan jälkeen?"
   ),
 
   relationshipCheckQuestion(
@@ -2701,14 +2729,16 @@ const RELATIONSHIP_CHECK_QUESTIONS = [
     "closeness",
     "Чувствуете ли вы эмоциональную близость друг к другу?",
     "Do you feel emotionally close to each other?",
-    YES_SOMETIMES_NO
+    YES_SOMETIMES_NO,
+    "Tunnetteko emotionaalista läheisyyttä toisianne kohtaan?"
   ),
   relationshipCheckQuestion(
     "closeness-2",
     "closeness",
     "Как часто вам не хватает тепла, внимания или нежности в отношениях?",
     "How often do you feel a lack of warmth, attention, or tenderness in the relationship?",
-    RARELY_SOMETIMES_OFTEN
+    RARELY_SOMETIMES_OFTEN,
+    "Kuinka usein kaipaatte lämpöä, huomiota tai hellyyttä suhteessanne?"
   ),
 
   relationshipCheckQuestion(
@@ -2716,14 +2746,16 @@ const RELATIONSHIP_CHECK_QUESTIONS = [
     "support",
     "Чувствуете ли вы поддержку от партнёра?",
     "Do you feel supported by your partner?",
-    YES_SOMETIMES_NO
+    YES_SOMETIMES_NO,
+    "Tunnetko saavasi tukea kumppaniltasi?"
   ),
   relationshipCheckQuestion(
     "support-2",
     "support",
     "Как часто вы чувствуете, что тянете отношения на себе?",
     "How often do you feel like you're carrying the relationship alone?",
-    RARELY_SOMETIMES_OFTEN
+    RARELY_SOMETIMES_OFTEN,
+    "Kuinka usein tunnet kantavasi suhdetta yksin?"
   ),
 
   relationshipCheckQuestion(
@@ -2731,14 +2763,16 @@ const RELATIONSHIP_CHECK_QUESTIONS = [
     "resentment",
     "Как часто вы копите обиды и не проговариваете их?",
     "How often do you bottle up resentment instead of talking it through?",
-    RARELY_SOMETIMES_OFTEN
+    RARELY_SOMETIMES_OFTEN,
+    "Kuinka usein keräätte kaunaa puhumatta siitä?"
   ),
   relationshipCheckQuestion(
     "resentment-2",
     "resentment",
     "Есть ли у вас темы, к которым неприятно возвращаться, но они до сих пор болят?",
     "Are there topics that are unpleasant to revisit but still hurt?",
-    NO_SOMETIMES_YES
+    NO_SOMETIMES_YES,
+    "Onko teillä aiheita, joihin on epämiellyttävä palata, mutta jotka silti koskettavat?"
   ),
 ];
 
@@ -2780,127 +2814,129 @@ const bottleTask = (
   id: string,
   target: "boy" | "girl",
   textRu: string,
-  textEn: string
+  textEn: string,
+  textFi: string
 ): BottleTask => ({
   id,
   target,
-  text: market !== "ru" ? textEn : textRu,
+  text: market === "fi" ? textFi : market === "en" ? textEn : textRu,
   textRu,
   textEn,
+  textFi,
 });
 
 const BOTTLE_TASKS: BottleTask[] = [
-  bottleTask("b1", "girl", "Скажи партнёру самый милый комплимент.", "Give your partner the sweetest compliment."),
-  bottleTask("b2", "girl", "Обними партнёра на 15 секунд.", "Hug your partner for 15 seconds."),
-  bottleTask("b3", "girl", "Поцелуй партнёра в щёку.", "Kiss your partner on the cheek."),
-  bottleTask("b4", "girl", "Расскажи, что тебе в нём нравится больше всего.", "Tell him what you like most about him."),
-  bottleTask("b5", "girl", "Скажи, какое свидание с ним было бы идеальным.", "Describe what your perfect date with him would be like."),
-  bottleTask("b6", "girl", "Проведи рукой по его волосам и улыбнись.", "Run your hand through his hair and smile."),
-  bottleTask("b7", "girl", "Прошепчи ему что-нибудь приятное на ухо.", "Whisper something sweet in his ear."),
-  bottleTask("b8", "girl", "Назови одну его привычку, которая тебя заводит.", "Name one habit of his that turns you on."),
+  bottleTask("b1", "girl", "Скажи партнёру самый милый комплимент.", "Give your partner the sweetest compliment.", "Anna kumppanillesi söpöin mahdollinen kohteliaisuus."),
+  bottleTask("b2", "girl", "Обними партнёра на 15 секунд.", "Hug your partner for 15 seconds.", "Halaa kumppaniasi 15 sekunnin ajan."),
+  bottleTask("b3", "girl", "Поцелуй партнёра в щёку.", "Kiss your partner on the cheek.", "Suutele kumppaniasi poskelle."),
+  bottleTask("b4", "girl", "Расскажи, что тебе в нём нравится больше всего.", "Tell him what you like most about him.", "Kerro, mistä pidät hänessä eniten."),
+  bottleTask("b5", "girl", "Скажи, какое свидание с ним было бы идеальным.", "Describe what your perfect date with him would be like.", "Kerro, millainen olisi täydellinen treffi hänen kanssaan."),
+  bottleTask("b6", "girl", "Проведи рукой по его волосам и улыбнись.", "Run your hand through his hair and smile.", "Silitä hänen hiuksiaan ja hymyile."),
+  bottleTask("b7", "girl", "Прошепчи ему что-нибудь приятное на ухо.", "Whisper something sweet in his ear.", "Kuiskaa jotain suloista hänen korvaansa."),
+  bottleTask("b8", "girl", "Назови одну его привычку, которая тебя заводит.", "Name one habit of his that turns you on.", "Kerro yksi hänen tapansa, joka viehättää sinua."),
 
-  bottleTask("b9", "boy", "Скажи партнёрше самый красивый комплимент.", "Give your partner the most beautiful compliment."),
-  bottleTask("b10", "boy", "Обними её на 15 секунд.", "Hug her for 15 seconds."),
-  bottleTask("b11", "boy", "Поцелуй её в щёку.", "Kiss her on the cheek."),
-  bottleTask("b12", "boy", "Скажи три причины, почему она тебе нравится.", "Name three reasons why you like her."),
-  bottleTask("b13", "boy", "Назови её самую привлекательную черту.", "Name her most attractive trait."),
-  bottleTask("b14", "boy", "Возьми её за руку и не отпускай 20 секунд.", "Hold her hand and don't let go for 20 seconds."),
-  bottleTask("b15", "boy", "Скажи, что бы ты хотел повторить с вашим лучшим свиданием.", "Say what you'd like to repeat from your best date together."),
-  bottleTask("b16", "boy", "Сделай ей короткое романтичное признание.", "Give her a short romantic confession."),
+  bottleTask("b9", "boy", "Скажи партнёрше самый красивый комплимент.", "Give your partner the most beautiful compliment.", "Anna kumppanillesi kaunein kohteliaisuus."),
+  bottleTask("b10", "boy", "Обними её на 15 секунд.", "Hug her for 15 seconds.", "Halaa häntä 15 sekunnin ajan."),
+  bottleTask("b11", "boy", "Поцелуй её в щёку.", "Kiss her on the cheek.", "Suutele häntä poskelle."),
+  bottleTask("b12", "boy", "Скажи три причины, почему она тебе нравится.", "Name three reasons why you like her.", "Kerro kolme syytä, miksi pidät hänestä."),
+  bottleTask("b13", "boy", "Назови её самую привлекательную черту.", "Name her most attractive trait.", "Kerro hänen viehättävin piirteensä."),
+  bottleTask("b14", "boy", "Возьми её за руку и не отпускай 20 секунд.", "Hold her hand and don't let go for 20 seconds.", "Pidä häntä kädestä 20 sekunnin ajan äläkä päästä irti."),
+  bottleTask("b15", "boy", "Скажи, что бы ты хотел повторить с вашим лучшим свиданием.", "Say what you'd like to repeat from your best date together.", "Kerro, mitä haluaisit toistaa parhaasta yhteisestä treffistänne."),
+  bottleTask("b16", "boy", "Сделай ей короткое романтичное признание.", "Give her a short romantic confession.", "Tee hänelle lyhyt romanttinen tunnustus."),
 ];
 
 
 const LOVE_QUESTIONS: LoveQuestion[] = [
-  { id: "lq1", text: market !== "ru" ? "When was the last time you felt truly loved?" : "Когда ты в последний раз чувствовал(а) себя по-настоящему любимым(ой)?", textRu: "Когда ты в последний раз чувствовал(а) себя по-настоящему любимым(ой)?", textEn: "When was the last time you felt truly loved?" },
-  { id: "lq2", text: market !== "ru" ? "What does real closeness in a relationship mean to you?" : "Что для тебя значит настоящая близость в отношениях?", textRu: "Что для тебя значит настоящая близость в отношениях?", textEn: "What does real closeness in a relationship mean to you?" },
-  { id: "lq3", text: market !== "ru" ? "What do you sometimes feel is missing in love?" : "Чего тебе иногда не хватает в любви?", textRu: "Чего тебе иногда не хватает в любви?", textEn: "What do you sometimes feel is missing in love?" },
-  { id: "lq4", text: market !== "ru" ? "What are you most afraid of losing in a relationship?" : "Что ты боишься потерять в отношениях сильнее всего?", textRu: "Что ты боишься потерять в отношениях сильнее всего?", textEn: "What are you most afraid of losing in a relationship?" },
-  { id: "lq5", text: market !== "ru" ? "How do you usually show someone they matter to you?" : "Как ты обычно показываешь, что человек тебе дорог?", textRu: "Как ты обычно показываешь, что человек тебе дорог?", textEn: "How do you usually show someone they matter to you?" },
-  { id: "lq6", text: market !== "ru" ? "What words would you like to hear from your partner more often?" : "Какие слова ты хотел(а) бы чаще слышать от партнёра?", textRu: "Какие слова ты хотел(а) бы чаще слышать от партнёра?", textEn: "What words would you like to hear from your partner more often?" },
-  { id: "lq7", text: market !== "ru" ? "What moment in a relationship do you consider the warmest?" : "Какой момент в отношениях ты считаешь самым тёплым?", textRu: "Какой момент в отношениях ты считаешь самым тёплым?", textEn: "What moment in a relationship do you consider the warmest?" },
-  { id: "lq8", text: market !== "ru" ? "What makes someone truly reliable to you?" : "Что делает человека по-настоящему надёжным для тебя?", textRu: "Что делает человека по-настоящему надёжным для тебя?", textEn: "What makes someone truly reliable to you?" },
-  { id: "lq9", text: market !== "ru" ? "How do you know you can trust someone?" : "Как ты понимаешь, что можешь доверять человеку?", textRu: "Как ты понимаешь, что можешь доверять человеку?", textEn: "How do you know you can trust someone?" },
-  { id: "lq10", text: market !== "ru" ? "What gives you a sense of safety in a relationship?" : "Что в отношениях даёт тебе чувство безопасности?", textRu: "Что в отношениях даёт тебе чувство безопасности?", textEn: "What gives you a sense of safety in a relationship?" },
-  { id: "lq11", text: market !== "ru" ? "What's hard for you to talk about even with someone close?" : "О чём тебе бывает сложно говорить даже с близким человеком?", textRu: "О чём тебе бывает сложно говорить даже с близким человеком?", textEn: "What's hard for you to talk about even with someone close?" },
-  { id: "lq12", text: market !== "ru" ? "How do you act when you're hurt?" : "Как ты ведёшь себя, когда обижаешься?", textRu: "Как ты ведёшь себя, когда обижаешься?", textEn: "How do you act when you're hurt?" },
-  { id: "lq13", text: market !== "ru" ? "What helps you make up after a fight?" : "Что тебе помогает мириться после ссоры?", textRu: "Что тебе помогает мириться после ссоры?", textEn: "What helps you make up after a fight?" },
-  { id: "lq14", text: market !== "ru" ? "What can make you stay angry for a long time?" : "За что ты можешь долго злиться?", textRu: "За что ты можешь долго злиться?", textEn: "What can make you stay angry for a long time?" },
-  { id: "lq15", text: market !== "ru" ? "What would you never want to go through again in a relationship?" : "Что бы ты никогда не хотел(а) пережить в отношениях снова?", textRu: "Что бы ты никогда не хотел(а) пережить в отношениях снова?", textEn: "What would you never want to go through again in a relationship?" },
-  { id: "lq16", text: market !== "ru" ? "What's your strongest need in love?" : "Какая твоя самая сильная потребность в любви?", textRu: "Какая твоя самая сильная потребность в любви?", textEn: "What's your strongest need in love?" },
-  { id: "lq17", text: market !== "ru" ? "What actions hurt you more than words?" : "Какие поступки ранят тебя сильнее слов?", textRu: "Какие поступки ранят тебя сильнее слов?", textEn: "What actions hurt you more than words?" },
-  { id: "lq18", text: market !== "ru" ? "How do you know someone is really listening to you?" : "Как ты понимаешь, что человек тебя слышит?", textRu: "Как ты понимаешь, что человек тебя слышит?", textEn: "How do you know someone is really listening to you?" },
-  { id: "lq19", text: market !== "ru" ? "What do you need from a loved one on a hard day?" : "Что тебе нужно в трудный день от любимого человека?", textRu: "Что тебе нужно в трудный день от любимого человека?", textEn: "What do you need from a loved one on a hard day?" },
-  { id: "lq20", text: market !== "ru" ? "What does ideal emotional support look like to you?" : "Как выглядит идеальная эмоциональная поддержка для тебя?", textRu: "Как выглядит идеальная эмоциональная поддержка для тебя?", textEn: "What does ideal emotional support look like to you?" },
-  { id: "lq21", text: market !== "ru" ? "What matters more to you: passion, friendship, or calm in a relationship?" : "Что для тебя важнее: страсть, дружба или спокойствие в отношениях?", textRu: "Что для тебя важнее: страсть, дружба или спокойствие в отношениях?", textEn: "What matters more to you: passion, friendship, or calm in a relationship?" },
-  { id: "lq22", text: market !== "ru" ? "What do you consider a red flag in a relationship?" : "Что ты считаешь красным флагом в отношениях?", textRu: "Что ты считаешь красным флагом в отношениях?", textEn: "What do you consider a red flag in a relationship?" },
-  { id: "lq23", text: market !== "ru" ? "What helps you open up to someone?" : "Что помогает тебе открываться человеку?", textRu: "Что помогает тебе открываться человеку?", textEn: "What helps you open up to someone?" },
-  { id: "lq24", text: market !== "ru" ? "When do you feel especially vulnerable?" : "В какой момент ты чувствуешь себя особенно уязвимым(ой)?", textRu: "В какой момент ты чувствуешь себя особенно уязвимым(ой)?", textEn: "When do you feel especially vulnerable?" },
-  { id: "lq25", text: market !== "ru" ? "How do you react when you're jealous?" : "Как ты реагируешь, когда ревнуешь?", textRu: "Как ты реагируешь, когда ревнуешь?", textEn: "How do you react when you're jealous?" },
-  { id: "lq26", text: market !== "ru" ? "What already counts as cheating for you?" : "Что для тебя уже считается изменой?", textRu: "Что для тебя уже считается изменой?", textEn: "What already counts as cheating for you?" },
-  { id: "lq27", text: market !== "ru" ? "How do you understand the word \\u2018faithfulness\\u2019?" : "Как ты понимаешь слово «верность»?", textRu: "Как ты понимаешь слово «верность»?", textEn: "How do you understand the word \\u2018faithfulness\\u2019?" },
-  { id: "lq28", text: market !== "ru" ? "What's important for you to keep private even in a relationship?" : "Что тебе важно сохранять личным даже в отношениях?", textRu: "Что тебе важно сохранять личным даже в отношениях?", textEn: "What's important for you to keep private even in a relationship?" },
-  { id: "lq29", text: market !== "ru" ? "What kind of freedom in a couple feels healthy to you?" : "Какой формат свободы в паре тебе кажется здоровым?", textRu: "Какой формат свободы в паре тебе кажется здоровым?", textEn: "What kind of freedom in a couple feels healthy to you?" },
-  { id: "lq30", text: market !== "ru" ? "What calms you down when anxiety shows up in a relationship?" : "Что тебя успокаивает, когда в отношениях появляется тревога?", textRu: "Что тебя успокаивает, когда в отношениях появляется тревога?", textEn: "What calms you down when anxiety shows up in a relationship?" },
-  { id: "lq31", text: market !== "ru" ? "What kind of future do you dream of with someone you love?" : "О каком будущем с любимым человеком ты мечтаешь?", textRu: "О каком будущем с любимым человеком ты мечтаешь?", textEn: "What kind of future do you dream of with someone you love?" },
-  { id: "lq32", text: market !== "ru" ? "Are you more about stability or intense emotions?" : "Ты больше про стабильность или про яркие эмоции?", textRu: "Ты больше про стабильность или про яркие эмоции?", textEn: "Are you more about stability or intense emotions?" },
-  { id: "lq33", text: market !== "ru" ? "What does \\u2018being a team\\u2019 mean to you?" : "Что для тебя значит «быть командой»?", textRu: "Что для тебя значит «быть командой»?", textEn: "What does \\u2018being a team\\u2019 mean to you?" },
-  { id: "lq34", text: market !== "ru" ? "What family values matter most to you?" : "Какие семейные ценности тебе особенно близки?", textRu: "Какие семейные ценности тебе особенно близки?", textEn: "What family values matter most to you?" },
-  { id: "lq35", text: market !== "ru" ? "What does your ideal evening together look like?" : "Как ты представляешь идеальный совместный вечер?", textRu: "Как ты представляешь идеальный совместный вечер?", textEn: "What does your ideal evening together look like?" },
-  { id: "lq36", text: market !== "ru" ? "What kind of vacation with a loved one appeals to you most?" : "Какой отдых с любимым человеком тебе ближе всего?", textRu: "Какой отдых с любимым человеком тебе ближе всего?", textEn: "What kind of vacation with a loved one appeals to you most?" },
-  { id: "lq37", text: market !== "ru" ? "What small thing in a relationship makes you happy?" : "Какая мелочь в отношениях делает тебя счастливым(ой)?", textRu: "Какая мелочь в отношениях делает тебя счастливым(ой)?", textEn: "What small thing in a relationship makes you happy?" },
-  { id: "lq38", text: market !== "ru" ? "What do you value most in being cared for?" : "Что ты особенно ценишь в заботе?", textRu: "Что ты особенно ценишь в заботе?", textEn: "What do you value most in being cared for?" },
-  { id: "lq39", text: market !== "ru" ? "What couple rituals do you enjoy?" : "Какие ритуалы в паре тебе нравятся?", textRu: "Какие ритуалы в паре тебе нравятся?", textEn: "What couple rituals do you enjoy?" },
-  { id: "lq40", text: market !== "ru" ? "How do you feel about surprises in a relationship?" : "Как ты относишься к сюрпризам в отношениях?", textRu: "Как ты относишься к сюрпризам в отношениях?", textEn: "How do you feel about surprises in a relationship?" },
-  { id: "lq41", text: market !== "ru" ? "When do you feel romance most strongly?" : "Когда ты чувствуешь романтику сильнее всего?", textRu: "Когда ты чувствуешь романтику сильнее всего?", textEn: "When do you feel romance most strongly?" },
-  { id: "lq42", text: market !== "ru" ? "Which dates do you prefer: quiet or exciting ones?" : "Какие свидания тебе нравятся больше: тихие или яркие?", textRu: "Какие свидания тебе нравятся больше: тихие или яркие?", textEn: "Which dates do you prefer: quiet or exciting ones?" },
-  { id: "lq43", text: market !== "ru" ? "What does it mean to you to feel desired?" : "Что для тебя значит быть желанным(ой)?", textRu: "Что для тебя значит быть желанным(ой)?", textEn: "What does it mean to you to feel desired?" },
-  { id: "lq44", text: market !== "ru" ? "What's your favorite form of tenderness?" : "Какая твоя любимая форма нежности?", textRu: "Какая твоя любимая форма нежности?", textEn: "What's your favorite form of tenderness?" },
-  { id: "lq45", text: market !== "ru" ? "How do you know someone truly accepts you?" : "Как ты понимаешь, что тебя по-настоящему принимают?", textRu: "Как ты понимаешь, что тебя по-настоящему принимают?", textEn: "How do you know someone truly accepts you?" },
-  { id: "lq46", text: market !== "ru" ? "What would you like to do more often with your partner?" : "Что тебе хотелось бы чаще делать вместе с партнёром?", textRu: "Что тебе хотелось бы чаще делать вместе с партнёром?", textEn: "What would you like to do more often with your partner?" },
-  { id: "lq47", text: market !== "ru" ? "What would you like to try for the first time in a relationship?" : "Что бы ты хотел(а) попробовать в отношениях впервые?", textRu: "Что бы ты хотел(а) попробовать в отношениях впервые?", textEn: "What would you like to try for the first time in a relationship?" },
-  { id: "lq48", text: market !== "ru" ? "What dream would you like to share with someone you love?" : "Какую мечту ты бы хотел(а) разделить с любимым человеком?", textRu: "Какую мечту ты бы хотел(а) разделить с любимым человеком?", textEn: "What dream would you like to share with someone you love?" },
-  { id: "lq49", text: market !== "ru" ? "What conversation between you two do you consider the most important?" : "Какой разговор между вами ты считаешь самым важным?", textRu: "Какой разговор между вами ты считаешь самым важным?", textEn: "What conversation between you two do you consider the most important?" },
-  { id: "lq50", text: market !== "ru" ? "What's the hardest thing for you to apologize for?" : "За что тебе сложнее всего просить прощения?", textRu: "За что тебе сложнее всего просить прощения?", textEn: "What's the hardest thing for you to apologize for?" },
-  { id: "lq51", text: market !== "ru" ? "What do you expect from a partner during hard times?" : "Чего ты ждёшь от партнёра в трудные периоды жизни?", textRu: "Чего ты ждёшь от партнёра в трудные периоды жизни?", textEn: "What do you expect from a partner during hard times?" },
-  { id: "lq52", text: market !== "ru" ? "What helps you feel connected again after some distance?" : "Что тебе помогает чувствовать связь после дистанции?", textRu: "Что тебе помогает чувствовать связь после дистанции?", textEn: "What helps you feel connected again after some distance?" },
-  { id: "lq53", text: market !== "ru" ? "What matters more to you: attention or actions?" : "Что для тебя важнее: внимание или действия?", textRu: "Что для тебя важнее: внимание или действия?", textEn: "What matters more to you: attention or actions?" },
-  { id: "lq54", text: market !== "ru" ? "What compliment stays with you for a long time?" : "Какой комплимент запоминается тебе надолго?", textRu: "Какой комплимент запоминается тебе надолго?", textEn: "What compliment stays with you for a long time?" },
-  { id: "lq55", text: market !== "ru" ? "What would you like to change about your own behavior in relationships?" : "Что бы ты хотел(а) изменить в своём поведении в отношениях?", textRu: "Что бы ты хотел(а) изменить в своём поведении в отношениях?", textEn: "What would you like to change about your own behavior in relationships?" },
-  { id: "lq56", text: market !== "ru" ? "What lesson did a past relationship teach you?" : "Какой урок тебе дали прошлые отношения?", textRu: "Какой урок тебе дали прошлые отношения?", textEn: "What lesson did a past relationship teach you?" },
-  { id: "lq57", text: market !== "ru" ? "What do you protect most carefully in love?" : "Что ты особенно бережёшь в любви?", textRu: "Что ты особенно бережёшь в любви?", textEn: "What do you protect most carefully in love?" },
-  { id: "lq58", text: market !== "ru" ? "What promises in a relationship are sacred to you?" : "Какие обещания в отношениях для тебя священны?", textRu: "Какие обещания в отношениях для тебя священны?", textEn: "What promises in a relationship are sacred to you?" },
-  { id: "lq59", text: market !== "ru" ? "How do you know the two of you are truly drawn to each other?" : "Как ты понимаешь, что вас двоих тянет друг к другу по-настоящему?", textRu: "Как ты понимаешь, что вас двоих тянет друг к другу по-настоящему?", textEn: "How do you know the two of you are truly drawn to each other?" },
-  { id: "lq60", text: market !== "ru" ? "When is it especially important for you to just be close in silence?" : "Когда тебе бывает особенно важно побыть рядом молча?", textRu: "Когда тебе бывает особенно важно побыть рядом молча?", textEn: "When is it especially important for you to just be close in silence?" },
-  { id: "lq61", text: market !== "ru" ? "What do you wish your partner understood better about you?" : "Что бы ты хотел(а), чтобы партнёр лучше понимал о тебе?", textRu: "Что бы ты хотел(а), чтобы партнёр лучше понимал о тебе?", textEn: "What do you wish your partner understood better about you?" },
-  { id: "lq62", text: market !== "ru" ? "How do you cope with distance growing in a relationship?" : "Как ты переживаешь отдаление в отношениях?", textRu: "Как ты переживаешь отдаление в отношениях?", textEn: "How do you cope with distance growing in a relationship?" },
-  { id: "lq63", text: market !== "ru" ? "What helps you grow close again after tension?" : "Что помогает тебе снова сближаться после напряжения?", textRu: "Что помогает тебе снова сближаться после напряжения?", textEn: "What helps you grow close again after tension?" },
-  { id: "lq64", text: market !== "ru" ? "What weakness of yours shows up most often in love?" : "Какая твоя слабая сторона чаще всего проявляется в любви?", textRu: "Какая твоя слабая сторона чаще всего проявляется в любви?", textEn: "What weakness of yours shows up most often in love?" },
-  { id: "lq65", text: market !== "ru" ? "What do you especially need but rarely talk about?" : "В чём ты особенно нуждаешься, но редко об этом говоришь?", textRu: "В чём ты особенно нуждаешься, но редко об этом говоришь?", textEn: "What do you especially need but rarely talk about?" },
-  { id: "lq66", text: market !== "ru" ? "What's harder for you: trusting someone or keeping your feelings intact?" : "Что тебе сложнее: довериться или сохранить чувства?", textRu: "Что тебе сложнее: довериться или сохранить чувства?", textEn: "What's harder for you: trusting someone or keeping your feelings intact?" },
-  { id: "lq67", text: market !== "ru" ? "What act could restore your faith in relationships?" : "Какой поступок может вернуть тебе веру в отношения?", textRu: "Какой поступок может вернуть тебе веру в отношения?", textEn: "What act could restore your faith in relationships?" },
-  { id: "lq68", text: market !== "ru" ? "What's important for you to hear after a fight?" : "Что тебе важно слышать после ссоры?", textRu: "Что тебе важно слышать после ссоры?", textEn: "What's important for you to hear after a fight?" },
-  { id: "lq69", text: market !== "ru" ? "How do you know a relationship is becoming serious?" : "Как ты понимаешь, что отношения становятся серьёзными?", textRu: "Как ты понимаешь, что отношения становятся серьёзными?", textEn: "How do you know a relationship is becoming serious?" },
-  { id: "lq70", text: market !== "ru" ? "What boundaries are non-negotiable for you in love?" : "Какие границы для тебя обязательны в любви?", textRu: "Какие границы для тебя обязательны в любви?", textEn: "What boundaries are non-negotiable for you in love?" },
-  { id: "lq71", text: market !== "ru" ? "What do you value in a person more than looks?" : "Что ты ценишь в человеке сильнее внешности?", textRu: "Что ты ценишь в человеке сильнее внешности?", textEn: "What do you value in a person more than looks?" },
-  { id: "lq72", text: market !== "ru" ? "What trait makes a person especially attractive?" : "Какая черта делает человека особенно привлекательным?", textRu: "Какая черта делает человека особенно привлекательным?", textEn: "What trait makes a person especially attractive?" },
-  { id: "lq73", text: market !== "ru" ? "What inspires you to love more deeply?" : "Что тебя вдохновляет любить сильнее?", textRu: "Что тебя вдохновляет любить сильнее?", textEn: "What inspires you to love more deeply?" },
-  { id: "lq74", text: market !== "ru" ? "How do you feel about showing vulnerability to someone you love?" : "Как ты относишься к проявлению слабости перед любимым человеком?", textRu: "Как ты относишься к проявлению слабости перед любимым человеком?", textEn: "How do you feel about showing vulnerability to someone you love?" },
-  { id: "lq75", text: market !== "ru" ? "What gives you a sense of \\u2018us\\u2019?" : "Что даёт тебе чувство «мы»?", textRu: "Что даёт тебе чувство «мы»?", textEn: "What gives you a sense of \\u2018us\\u2019?" },
-  { id: "lq76", text: market !== "ru" ? "In what moments do you especially need support?" : "В каких моментах тебе особенно нужна поддержка?", textRu: "В каких моментах тебе особенно нужна поддержка?", textEn: "In what moments do you especially need support?" },
-  { id: "lq77", text: market !== "ru" ? "What does a happy life together look like to you?" : "Как ты представляешь счастливую совместную жизнь?", textRu: "Как ты представляешь счастливую совместную жизнь?", textEn: "What does a happy life together look like to you?" },
-  { id: "lq78", text: market !== "ru" ? "What matters more to you: matching personalities or effort for each other?" : "Что для тебя важнее: совпадение характеров или усилия друг ради друга?", textRu: "Что для тебя важнее: совпадение характеров или усилия друг ради друга?", textEn: "What matters more to you: matching personalities or effort for each other?" },
-  { id: "lq79", text: market !== "ru" ? "What words of love sound the most sincere to you?" : "Какие слова любви для тебя звучат наиболее искренне?", textRu: "Какие слова любви для тебя звучат наиболее искренне?", textEn: "What words of love sound the most sincere to you?" },
-  { id: "lq80", text: market !== "ru" ? "What would you like to do more often for someone you love?" : "Что ты хотел(а) бы чаще делать для любимого человека?", textRu: "Что ты хотел(а) бы чаще делать для любимого человека?", textEn: "What would you like to do more often for someone you love?" },
-  { id: "lq81", text: market !== "ru" ? "What do you dream of telling your partner but keep putting off?" : "О чём ты мечтаешь рассказать партнёру, но всё откладываешь?", textRu: "О чём ты мечтаешь рассказать партнёру, но всё откладываешь?", textEn: "What do you dream of telling your partner but keep putting off?" },
-  { id: "lq82", text: market !== "ru" ? "What shared goal could make your relationship stronger?" : "Какая общая цель могла бы сделать вашу пару сильнее?", textRu: "Какая общая цель могла бы сделать вашу пару сильнее?", textEn: "What shared goal could make your relationship stronger?" },
-  { id: "lq83", text: market !== "ru" ? "What fear about love would you like to let go of?" : "Какой страх в любви тебе хотелось бы отпустить?", textRu: "Какой страх в любви тебе хотелось бы отпустить?", textEn: "What fear about love would you like to let go of?" },
-  { id: "lq84", text: market !== "ru" ? "What makes a relationship feel mature to you?" : "Что делает отношения для тебя зрелыми?", textRu: "Что делает отношения для тебя зрелыми?", textEn: "What makes a relationship feel mature to you?" },
-  { id: "lq85", text: market !== "ru" ? "How do you know someone can be called \\u2018yours\\u2019?" : "Как ты понимаешь, что человека можно назвать «своим»?", textRu: "Как ты понимаешь, что человека можно назвать «своим»?", textEn: "How do you know someone can be called \\u2018yours\\u2019?" },
-  { id: "lq86", text: market !== "ru" ? "What would you like to keep in a relationship for years to come?" : "Что бы ты хотел(а) сохранить в отношениях на долгие годы?", textRu: "Что бы ты хотел(а) сохранить в отношениях на долгие годы?", textEn: "What would you like to keep in a relationship for years to come?" },
-  { id: "lq87", text: market !== "ru" ? "How do you feel about complete honesty in love?" : "Как ты относишься к полной честности в любви?", textRu: "Как ты относишься к полной честности в любви?", textEn: "How do you feel about complete honesty in love?" },
-  { id: "lq88", text: market !== "ru" ? "What would you like to hear from your partner right now?" : "Что бы ты хотел(а) услышать от партнёра прямо сейчас?", textRu: "Что бы ты хотел(а) услышать от партнёра прямо сейчас?", textEn: "What would you like to hear from your partner right now?" },
-  { id: "lq89", text: market !== "ru" ? "What dream about love have you had since childhood?" : "Какая мечта о любви у тебя была с детства?", textRu: "Какая мечта о любви у тебя была с детства?", textEn: "What dream about love have you had since childhood?" },
-  { id: "lq90", text: market !== "ru" ? "What does it mean to you to truly love someone?" : "Что для тебя значит любить по-настоящему?", textRu: "Что для тебя значит любить по-настоящему?", textEn: "What does it mean to you to truly love someone?" },
+  { id: "lq1", text: market === "fi" ? "Milloin viimeksi tunsit itsesi todella rakastetuksi?" : market === "en" ? "When was the last time you felt truly loved?" : "Когда ты в последний раз чувствовал(а) себя по-настоящему любимым(ой)?", textRu: "Когда ты в последний раз чувствовал(а) себя по-настоящему любимым(ой)?", textEn: "When was the last time you felt truly loved?", textFi: "Milloin viimeksi tunsit itsesi todella rakastetuksi?" },
+  { id: "lq2", text: market === "fi" ? "Mitä todellinen läheisyys parisuhteessa tarkoittaa sinulle?" : market === "en" ? "What does real closeness in a relationship mean to you?" : "Что для тебя значит настоящая близость в отношениях?", textRu: "Что для тебя значит настоящая близость в отношениях?", textEn: "What does real closeness in a relationship mean to you?", textFi: "Mitä todellinen läheisyys parisuhteessa tarkoittaa sinulle?" },
+  { id: "lq3", text: market === "fi" ? "Mitä sinulta joskus puuttuu rakkaudessa?" : market === "en" ? "What do you sometimes feel is missing in love?" : "Чего тебе иногда не хватает в любви?", textRu: "Чего тебе иногда не хватает в любви?", textEn: "What do you sometimes feel is missing in love?", textFi: "Mitä sinulta joskus puuttuu rakkaudessa?" },
+  { id: "lq4", text: market === "fi" ? "Minkä menettämistä pelkäät eniten parisuhteessa?" : market === "en" ? "What are you most afraid of losing in a relationship?" : "Что ты боишься потерять в отношениях сильнее всего?", textRu: "Что ты боишься потерять в отношениях сильнее всего?", textEn: "What are you most afraid of losing in a relationship?", textFi: "Minkä menettämistä pelkäät eniten parisuhteessa?" },
+  { id: "lq5", text: market === "fi" ? "Miten yleensä näytät, että joku on sinulle tärkeä?" : market === "en" ? "How do you usually show someone they matter to you?" : "Как ты обычно показываешь, что человек тебе дорог?", textRu: "Как ты обычно показываешь, что человек тебе дорог?", textEn: "How do you usually show someone they matter to you?", textFi: "Miten yleensä näytät, että joku on sinulle tärkeä?" },
+  { id: "lq6", text: market === "fi" ? "Mitä sanoja haluaisit kuulla kumppaniltasi useammin?" : market === "en" ? "What words would you like to hear from your partner more often?" : "Какие слова ты хотел(а) бы чаще слышать от партнёра?", textRu: "Какие слова ты хотел(а) бы чаще слышать от партнёра?", textEn: "What words would you like to hear from your partner more often?", textFi: "Mitä sanoja haluaisit kuulla kumppaniltasi useammin?" },
+  { id: "lq7", text: market === "fi" ? "Mikä hetki parisuhteessa on mielestäsi lämpimin?" : market === "en" ? "What moment in a relationship do you consider the warmest?" : "Какой момент в отношениях ты считаешь самым тёплым?", textRu: "Какой момент в отношениях ты считаешь самым тёплым?", textEn: "What moment in a relationship do you consider the warmest?", textFi: "Mikä hetki parisuhteessa on mielestäsi lämpimin?" },
+  { id: "lq8", text: market === "fi" ? "Mikä tekee ihmisestä sinulle todella luotettavan?" : market === "en" ? "What makes someone truly reliable to you?" : "Что делает человека по-настоящему надёжным для тебя?", textRu: "Что делает человека по-настоящему надёжным для тебя?", textEn: "What makes someone truly reliable to you?", textFi: "Mikä tekee ihmisestä sinulle todella luotettavan?" },
+  { id: "lq9", text: market === "fi" ? "Mistä tiedät, että voit luottaa johonkuhun?" : market === "en" ? "How do you know you can trust someone?" : "Как ты понимаешь, что можешь доверять человеку?", textRu: "Как ты понимаешь, что можешь доверять человеку?", textEn: "How do you know you can trust someone?", textFi: "Mistä tiedät, että voit luottaa johonkuhun?" },
+  { id: "lq10", text: market === "fi" ? "Mikä antaa sinulle turvallisuuden tunteen parisuhteessa?" : market === "en" ? "What gives you a sense of safety in a relationship?" : "Что в отношениях даёт тебе чувство безопасности?", textRu: "Что в отношениях даёт тебе чувство безопасности?", textEn: "What gives you a sense of safety in a relationship?", textFi: "Mikä antaa sinulle turvallisuuden tunteen parisuhteessa?" },
+  { id: "lq11", text: market === "fi" ? "Mistä on sinulle vaikea puhua jopa läheisen ihmisen kanssa?" : market === "en" ? "What's hard for you to talk about even with someone close?" : "О чём тебе бывает сложно говорить даже с близким человеком?", textRu: "О чём тебе бывает сложно говорить даже с близким человеком?", textEn: "What's hard for you to talk about even with someone close?", textFi: "Mistä on sinulle vaikea puhua jopa läheisen ihmisen kanssa?" },
+  { id: "lq12", text: market === "fi" ? "Miten käyttäydyt, kun loukkaannut?" : market === "en" ? "How do you act when you're hurt?" : "Как ты ведёшь себя, когда обижаешься?", textRu: "Как ты ведёшь себя, когда обижаешься?", textEn: "How do you act when you're hurt?", textFi: "Miten käyttäydyt, kun loukkaannut?" },
+  { id: "lq13", text: market === "fi" ? "Mikä auttaa sinua sopimaan riidan jälkeen?" : market === "en" ? "What helps you make up after a fight?" : "Что тебе помогает мириться после ссоры?", textRu: "Что тебе помогает мириться после ссоры?", textEn: "What helps you make up after a fight?", textFi: "Mikä auttaa sinua sopimaan riidan jälkeen?" },
+  { id: "lq14", text: market === "fi" ? "Mistä voit suuttua pitkäksi aikaa?" : market === "en" ? "What can make you stay angry for a long time?" : "За что ты можешь долго злиться?", textRu: "За что ты можешь долго злиться?", textEn: "What can make you stay angry for a long time?", textFi: "Mistä voit suuttua pitkäksi aikaa?" },
+  { id: "lq15", text: market === "fi" ? "Mitä et haluaisi kokea parisuhteessa enää koskaan uudelleen?" : market === "en" ? "What would you never want to go through again in a relationship?" : "Что бы ты никогда не хотел(а) пережить в отношениях снова?", textRu: "Что бы ты никогда не хотел(а) пережить в отношениях снова?", textEn: "What would you never want to go through again in a relationship?", textFi: "Mitä et haluaisi kokea parisuhteessa enää koskaan uudelleen?" },
+  { id: "lq16", text: market === "fi" ? "Mikä on vahvin tarpeesi rakkaudessa?" : market === "en" ? "What's your strongest need in love?" : "Какая твоя самая сильная потребность в любви?", textRu: "Какая твоя самая сильная потребность в любви?", textEn: "What's your strongest need in love?", textFi: "Mikä on vahvin tarpeesi rakkaudessa?" },
+  { id: "lq17", text: market === "fi" ? "Mitkä teot satuttavat sinua enemmän kuin sanat?" : market === "en" ? "What actions hurt you more than words?" : "Какие поступки ранят тебя сильнее слов?", textRu: "Какие поступки ранят тебя сильнее слов?", textEn: "What actions hurt you more than words?", textFi: "Mitkä teot satuttavat sinua enemmän kuin sanat?" },
+  { id: "lq18", text: market === "fi" ? "Mistä tiedät, että joku todella kuuntelee sinua?" : market === "en" ? "How do you know someone is really listening to you?" : "Как ты понимаешь, что человек тебя слышит?", textRu: "Как ты понимаешь, что человек тебя слышит?", textEn: "How do you know someone is really listening to you?", textFi: "Mistä tiedät, että joku todella kuuntelee sinua?" },
+  { id: "lq19", text: market === "fi" ? "Mitä tarvitset rakkaalta ihmiseltä vaikeana päivänä?" : market === "en" ? "What do you need from a loved one on a hard day?" : "Что тебе нужно в трудный день от любимого человека?", textRu: "Что тебе нужно в трудный день от любимого человека?", textEn: "What do you need from a loved one on a hard day?", textFi: "Mitä tarvitset rakkaalta ihmiseltä vaikeana päivänä?" },
+  { id: "lq20", text: market === "fi" ? "Millaista on sinulle täydellinen emotionaalinen tuki?" : market === "en" ? "What does ideal emotional support look like to you?" : "Как выглядит идеальная эмоциональная поддержка для тебя?", textRu: "Как выглядит идеальная эмоциональная поддержка для тебя?", textEn: "What does ideal emotional support look like to you?", textFi: "Millaista on sinulle täydellinen emotionaalinen tuki?" },
+  { id: "lq21", text: market === "fi" ? "Mikä on sinulle tärkeämpää: intohimo, ystävyys vai rauhallisuus parisuhteessa?" : market === "en" ? "What matters more to you: passion, friendship, or calm in a relationship?" : "Что для тебя важнее: страсть, дружба или спокойствие в отношениях?", textRu: "Что для тебя важнее: страсть, дружба или спокойствие в отношениях?", textEn: "What matters more to you: passion, friendship, or calm in a relationship?", textFi: "Mikä on sinulle tärkeämpää: intohimo, ystävyys vai rauhallisuus parisuhteessa?" },
+  { id: "lq22", text: market === "fi" ? "Minkä koet varoitusmerkiksi parisuhteessa?" : market === "en" ? "What do you consider a red flag in a relationship?" : "Что ты считаешь красным флагом в отношениях?", textRu: "Что ты считаешь красным флагом в отношениях?", textEn: "What do you consider a red flag in a relationship?", textFi: "Minkä koet varoitusmerkiksi parisuhteessa?" },
+  { id: "lq23", text: market === "fi" ? "Mikä auttaa sinua avautumaan toiselle?" : market === "en" ? "What helps you open up to someone?" : "Что помогает тебе открываться человеку?", textRu: "Что помогает тебе открываться человеку?", textEn: "What helps you open up to someone?", textFi: "Mikä auttaa sinua avautumaan toiselle?" },
+  { id: "lq24", text: market === "fi" ? "Missä hetkessä tunnet olosi erityisen haavoittuvaiseksi?" : market === "en" ? "When do you feel especially vulnerable?" : "В какой момент ты чувствуешь себя особенно уязвимым(ой)?", textRu: "В какой момент ты чувствуешь себя особенно уязвимым(ой)?", textEn: "When do you feel especially vulnerable?", textFi: "Missä hetkessä tunnet olosi erityisen haavoittuvaiseksi?" },
+  { id: "lq25", text: market === "fi" ? "Miten reagoit, kun olet mustasukkainen?" : market === "en" ? "How do you react when you're jealous?" : "Как ты реагируешь, когда ревнуешь?", textRu: "Как ты реагируешь, когда ревнуешь?", textEn: "How do you react when you're jealous?", textFi: "Miten reagoit, kun olet mustasukkainen?" },
+  { id: "lq26", text: market === "fi" ? "Minkä lasket jo pettämiseksi?" : market === "en" ? "What already counts as cheating for you?" : "Что для тебя уже считается изменой?", textRu: "Что для тебя уже считается изменой?", textEn: "What already counts as cheating for you?", textFi: "Minkä lasket jo pettämiseksi?" },
+  { id: "lq27", text: market === "fi" ? "Miten ymmärrät sanan ‘uskollisuus’?" : market === "en" ? "How do you understand the word \\u2018faithfulness\\u2019?" : "Как ты понимаешь слово «верность»?", textRu: "Как ты понимаешь слово «верность»?", textEn: "How do you understand the word \\u2018faithfulness\\u2019?", textFi: "Miten ymmärrät sanan ‘uskollisuus’?" },
+  { id: "lq28", text: market === "fi" ? "Minkä haluat pitää yksityisenä jopa parisuhteessa?" : market === "en" ? "What's important for you to keep private even in a relationship?" : "Что тебе важно сохранять личным даже в отношениях?", textRu: "Что тебе важно сохранять личным даже в отношениях?", textEn: "What's important for you to keep private even in a relationship?", textFi: "Minkä haluat pitää yksityisenä jopa parisuhteessa?" },
+  { id: "lq29", text: market === "fi" ? "Millainen vapaus parisuhteessa tuntuu sinusta terveeltä?" : market === "en" ? "What kind of freedom in a couple feels healthy to you?" : "Какой формат свободы в паре тебе кажется здоровым?", textRu: "Какой формат свободы в паре тебе кажется здоровым?", textEn: "What kind of freedom in a couple feels healthy to you?", textFi: "Millainen vapaus parisuhteessa tuntuu sinusta terveeltä?" },
+  { id: "lq30", text: market === "fi" ? "Mikä rauhoittaa sinua, kun parisuhteeseen ilmestyy ahdistusta?" : market === "en" ? "What calms you down when anxiety shows up in a relationship?" : "Что тебя успокаивает, когда в отношениях появляется тревога?", textRu: "Что тебя успокаивает, когда в отношениях появляется тревога?", textEn: "What calms you down when anxiety shows up in a relationship?", textFi: "Mikä rauhoittaa sinua, kun parisuhteeseen ilmestyy ahdistusta?" },
+  { id: "lq31", text: market === "fi" ? "Millaisesta tulevaisuudesta rakkaan ihmisen kanssa unelmoit?" : market === "en" ? "What kind of future do you dream of with someone you love?" : "О каком будущем с любимым человеком ты мечтаешь?", textRu: "О каком будущем с любимым человеком ты мечтаешь?", textEn: "What kind of future do you dream of with someone you love?", textFi: "Millaisesta tulevaisuudesta rakkaan ihmisen kanssa unelmoit?" },
+  { id: "lq32", text: market === "fi" ? "Oletko enemmän vakauden vai voimakkaiden tunteiden ihminen?" : market === "en" ? "Are you more about stability or intense emotions?" : "Ты больше про стабильность или про яркие эмоции?", textRu: "Ты больше про стабильность или про яркие эмоции?", textEn: "Are you more about stability or intense emotions?", textFi: "Oletko enemmän vakauden vai voimakkaiden tunteiden ihminen?" },
+  { id: "lq33", text: market === "fi" ? "Mitä ‘olla tiimi’ tarkoittaa sinulle?" : market === "en" ? "What does \\u2018being a team\\u2019 mean to you?" : "Что для тебя значит «быть командой»?", textRu: "Что для тебя значит «быть командой»?", textEn: "What does \\u2018being a team\\u2019 mean to you?", textFi: "Mitä ‘olla tiimi’ tarkoittaa sinulle?" },
+  { id: "lq34", text: market === "fi" ? "Mitkä perhearvot ovat sinulle erityisen tärkeitä?" : market === "en" ? "What family values matter most to you?" : "Какие семейные ценности тебе особенно близки?", textRu: "Какие семейные ценности тебе особенно близки?", textEn: "What family values matter most to you?", textFi: "Mitkä perhearvot ovat sinulle erityisen tärkeitä?" },
+  { id: "lq35", text: market === "fi" ? "Millainen on mielestäsi täydellinen yhteinen ilta?" : market === "en" ? "What does your ideal evening together look like?" : "Как ты представляешь идеальный совместный вечер?", textRu: "Как ты представляешь идеальный совместный вечер?", textEn: "What does your ideal evening together look like?", textFi: "Millainen on mielestäsi täydellinen yhteinen ilta?" },
+  { id: "lq36", text: market === "fi" ? "Millainen loma rakkaan ihmisen kanssa on sinulle mieluisin?" : market === "en" ? "What kind of vacation with a loved one appeals to you most?" : "Какой отдых с любимым человеком тебе ближе всего?", textRu: "Какой отдых с любимым человеком тебе ближе всего?", textEn: "What kind of vacation with a loved one appeals to you most?", textFi: "Millainen loma rakkaan ihmisen kanssa on sinulle mieluisin?" },
+  { id: "lq37", text: market === "fi" ? "Mikä pieni asia parisuhteessa tekee sinut onnelliseksi?" : market === "en" ? "What small thing in a relationship makes you happy?" : "Какая мелочь в отношениях делает тебя счастливым(ой)?", textRu: "Какая мелочь в отношениях делает тебя счастливым(ой)?", textEn: "What small thing in a relationship makes you happy?", textFi: "Mikä pieni asia parisuhteessa tekee sinut onnelliseksi?" },
+  { id: "lq38", text: market === "fi" ? "Mitä erityisesti arvostat huolenpidossa?" : market === "en" ? "What do you value most in being cared for?" : "Что ты особенно ценишь в заботе?", textRu: "Что ты особенно ценишь в заботе?", textEn: "What do you value most in being cared for?", textFi: "Mitä erityisesti arvostat huolenpidossa?" },
+  { id: "lq39", text: market === "fi" ? "Mistä yhteisistä rituaaleista pidät parisuhteessa?" : market === "en" ? "What couple rituals do you enjoy?" : "Какие ритуалы в паре тебе нравятся?", textRu: "Какие ритуалы в паре тебе нравятся?", textEn: "What couple rituals do you enjoy?", textFi: "Mistä yhteisistä rituaaleista pidät parisuhteessa?" },
+  { id: "lq40", text: market === "fi" ? "Miten suhtaudut yllätyksiin parisuhteessa?" : market === "en" ? "How do you feel about surprises in a relationship?" : "Как ты относишься к сюрпризам в отношениях?", textRu: "Как ты относишься к сюрпризам в отношениях?", textEn: "How do you feel about surprises in a relationship?", textFi: "Miten suhtaudut yllätyksiin parisuhteessa?" },
+  { id: "lq41", text: market === "fi" ? "Milloin tunnet romantiikkaa voimakkaimmin?" : market === "en" ? "When do you feel romance most strongly?" : "Когда ты чувствуешь романтику сильнее всего?", textRu: "Когда ты чувствуешь романтику сильнее всего?", textEn: "When do you feel romance most strongly?", textFi: "Milloin tunnet romantiikkaa voimakkaimmin?" },
+  { id: "lq42", text: market === "fi" ? "Kummista treffeistä pidät enemmän: rauhallisista vai eläväisistä?" : market === "en" ? "Which dates do you prefer: quiet or exciting ones?" : "Какие свидания тебе нравятся больше: тихие или яркие?", textRu: "Какие свидания тебе нравятся больше: тихие или яркие?", textEn: "Which dates do you prefer: quiet or exciting ones?", textFi: "Kummista treffeistä pidät enemmän: rauhallisista vai eläväisistä?" },
+  { id: "lq43", text: market === "fi" ? "Mitä sinulle tarkoittaa tuntea itsensä halutuksi?" : market === "en" ? "What does it mean to you to feel desired?" : "Что для тебя значит быть желанным(ой)?", textRu: "Что для тебя значит быть желанным(ой)?", textEn: "What does it mean to you to feel desired?", textFi: "Mitä sinulle tarkoittaa tuntea itsensä halutuksi?" },
+  { id: "lq44", text: market === "fi" ? "Mikä on lempimuotosi hellyydelle?" : market === "en" ? "What's your favorite form of tenderness?" : "Какая твоя любимая форма нежности?", textRu: "Какая твоя любимая форма нежности?", textEn: "What's your favorite form of tenderness?", textFi: "Mikä on lempimuotosi hellyydelle?" },
+  { id: "lq45", text: market === "fi" ? "Mistä tiedät, että sinut todella hyväksytään?" : market === "en" ? "How do you know someone truly accepts you?" : "Как ты понимаешь, что тебя по-настоящему принимают?", textRu: "Как ты понимаешь, что тебя по-настоящему принимают?", textEn: "How do you know someone truly accepts you?", textFi: "Mistä tiedät, että sinut todella hyväksytään?" },
+  { id: "lq46", text: market === "fi" ? "Mitä haluaisit tehdä useammin yhdessä kumppanisi kanssa?" : market === "en" ? "What would you like to do more often with your partner?" : "Что тебе хотелось бы чаще делать вместе с партнёром?", textRu: "Что тебе хотелось бы чаще делать вместе с партнёром?", textEn: "What would you like to do more often with your partner?", textFi: "Mitä haluaisit tehdä useammin yhdessä kumppanisi kanssa?" },
+  { id: "lq47", text: market === "fi" ? "Mitä haluaisit kokeilla parisuhteessa ensimmäistä kertaa?" : market === "en" ? "What would you like to try for the first time in a relationship?" : "Что бы ты хотел(а) попробовать в отношениях впервые?", textRu: "Что бы ты хотел(а) попробовать в отношениях впервые?", textEn: "What would you like to try for the first time in a relationship?", textFi: "Mitä haluaisit kokeilla parisuhteessa ensimmäistä kertaa?" },
+  { id: "lq48", text: market === "fi" ? "Minkä unelman haluaisit jakaa rakkaan ihmisen kanssa?" : market === "en" ? "What dream would you like to share with someone you love?" : "Какую мечту ты бы хотел(а) разделить с любимым человеком?", textRu: "Какую мечту ты бы хотел(а) разделить с любимым человеком?", textEn: "What dream would you like to share with someone you love?", textFi: "Minkä unelman haluaisit jakaa rakkaan ihmisen kanssa?" },
+  { id: "lq49", text: market === "fi" ? "Mikä keskustelu teidän välillänne on mielestäsi tärkein?" : market === "en" ? "What conversation between you two do you consider the most important?" : "Какой разговор между вами ты считаешь самым важным?", textRu: "Какой разговор между вами ты считаешь самым важным?", textEn: "What conversation between you two do you consider the most important?", textFi: "Mikä keskustelu teidän välillänne on mielestäsi tärkein?" },
+  { id: "lq50", text: market === "fi" ? "Mistä on sinulle vaikeinta pyytää anteeksi?" : market === "en" ? "What's the hardest thing for you to apologize for?" : "За что тебе сложнее всего просить прощения?", textRu: "За что тебе сложнее всего просить прощения?", textEn: "What's the hardest thing for you to apologize for?", textFi: "Mistä on sinulle vaikeinta pyytää anteeksi?" },
+  { id: "lq51", text: market === "fi" ? "Mitä odotat kumppaniltasi elämän vaikeina aikoina?" : market === "en" ? "What do you expect from a partner during hard times?" : "Чего ты ждёшь от партнёра в трудные периоды жизни?", textRu: "Чего ты ждёшь от партнёра в трудные периоды жизни?", textEn: "What do you expect from a partner during hard times?", textFi: "Mitä odotat kumppaniltasi elämän vaikeina aikoina?" },
+  { id: "lq52", text: market === "fi" ? "Mikä auttaa sinua tuntemaan yhteyden jälleen etäisyyden jälkeen?" : market === "en" ? "What helps you feel connected again after some distance?" : "Что тебе помогает чувствовать связь после дистанции?", textRu: "Что тебе помогает чувствовать связь после дистанции?", textEn: "What helps you feel connected again after some distance?", textFi: "Mikä auttaa sinua tuntemaan yhteyden jälleen etäisyyden jälkeen?" },
+  { id: "lq53", text: market === "fi" ? "Kumpi on sinulle tärkeämpää: huomio vai teot?" : market === "en" ? "What matters more to you: attention or actions?" : "Что для тебя важнее: внимание или действия?", textRu: "Что для тебя важнее: внимание или действия?", textEn: "What matters more to you: attention or actions?", textFi: "Kumpi on sinulle tärkeämpää: huomio vai teot?" },
+  { id: "lq54", text: market === "fi" ? "Millainen kohteliaisuus jää mieleesi pitkäksi aikaa?" : market === "en" ? "What compliment stays with you for a long time?" : "Какой комплимент запоминается тебе надолго?", textRu: "Какой комплимент запоминается тебе надолго?", textEn: "What compliment stays with you for a long time?", textFi: "Millainen kohteliaisuus jää mieleesi pitkäksi aikaa?" },
+  { id: "lq55", text: market === "fi" ? "Mitä haluaisit muuttaa omassa käytöksessäsi parisuhteessa?" : market === "en" ? "What would you like to change about your own behavior in relationships?" : "Что бы ты хотел(а) изменить в своём поведении в отношениях?", textRu: "Что бы ты хотел(а) изменить в своём поведении в отношениях?", textEn: "What would you like to change about your own behavior in relationships?", textFi: "Mitä haluaisit muuttaa omassa käytöksessäsi parisuhteessa?" },
+  { id: "lq56", text: market === "fi" ? "Minkä opetuksen menneet suhteet antoivat sinulle?" : market === "en" ? "What lesson did a past relationship teach you?" : "Какой урок тебе дали прошлые отношения?", textRu: "Какой урок тебе дали прошлые отношения?", textEn: "What lesson did a past relationship teach you?", textFi: "Minkä opetuksen menneet suhteet antoivat sinulle?" },
+  { id: "lq57", text: market === "fi" ? "Mitä erityisesti vaalit rakkaudessa?" : market === "en" ? "What do you protect most carefully in love?" : "Что ты особенно бережёшь в любви?", textRu: "Что ты особенно бережёшь в любви?", textEn: "What do you protect most carefully in love?", textFi: "Mitä erityisesti vaalit rakkaudessa?" },
+  { id: "lq58", text: market === "fi" ? "Mitkä lupaukset parisuhteessa ovat sinulle pyhiä?" : market === "en" ? "What promises in a relationship are sacred to you?" : "Какие обещания в отношениях для тебя священны?", textRu: "Какие обещания в отношениях для тебя священны?", textEn: "What promises in a relationship are sacred to you?", textFi: "Mitkä lupaukset parisuhteessa ovat sinulle pyhiä?" },
+  { id: "lq59", text: market === "fi" ? "Mistä tiedät, että teitä kahta vetää toisiinne aidosti?" : market === "en" ? "How do you know the two of you are truly drawn to each other?" : "Как ты понимаешь, что вас двоих тянет друг к другу по-настоящему?", textRu: "Как ты понимаешь, что вас двоих тянет друг к другу по-настоящему?", textEn: "How do you know the two of you are truly drawn to each other?", textFi: "Mistä tiedät, että teitä kahta vetää toisiinne aidosti?" },
+  { id: "lq60", text: market === "fi" ? "Milloin sinulle on erityisen tärkeää olla vain hiljaa vierekkäin?" : market === "en" ? "When is it especially important for you to just be close in silence?" : "Когда тебе бывает особенно важно побыть рядом молча?", textRu: "Когда тебе бывает особенно важно побыть рядом молча?", textEn: "When is it especially important for you to just be close in silence?", textFi: "Milloin sinulle on erityisen tärkeää olla vain hiljaa vierekkäin?" },
+  { id: "lq61", text: market === "fi" ? "Mitä haluaisit kumppanisi ymmärtävän sinusta paremmin?" : market === "en" ? "What do you wish your partner understood better about you?" : "Что бы ты хотел(а), чтобы партнёр лучше понимал о тебе?", textRu: "Что бы ты хотел(а), чтобы партнёр лучше понимал о тебе?", textEn: "What do you wish your partner understood better about you?", textFi: "Mitä haluaisit kumppanisi ymmärtävän sinusta paremmin?" },
+  { id: "lq62", text: market === "fi" ? "Miten koet etääntymisen parisuhteessa?" : market === "en" ? "How do you cope with distance growing in a relationship?" : "Как ты переживаешь отдаление в отношениях?", textRu: "Как ты переживаешь отдаление в отношениях?", textEn: "How do you cope with distance growing in a relationship?", textFi: "Miten koet etääntymisen parisuhteessa?" },
+  { id: "lq63", text: market === "fi" ? "Mikä auttaa teitä lähentymään uudelleen jännitteiden jälkeen?" : market === "en" ? "What helps you grow close again after tension?" : "Что помогает тебе снова сближаться после напряжения?", textRu: "Что помогает тебе снова сближаться после напряжения?", textEn: "What helps you grow close again after tension?", textFi: "Mikä auttaa teitä lähentymään uudelleen jännitteiden jälkeen?" },
+  { id: "lq64", text: market === "fi" ? "Mikä heikkoutesi näkyy useimmin rakkaudessa?" : market === "en" ? "What weakness of yours shows up most often in love?" : "Какая твоя слабая сторона чаще всего проявляется в любви?", textRu: "Какая твоя слабая сторона чаще всего проявляется в любви?", textEn: "What weakness of yours shows up most often in love?", textFi: "Mikä heikkoutesi näkyy useimmin rakkaudessa?" },
+  { id: "lq65", text: market === "fi" ? "Mitä erityisesti tarvitset, mutta puhut siitä harvoin?" : market === "en" ? "What do you especially need but rarely talk about?" : "В чём ты особенно нуждаешься, но редко об этом говоришь?", textRu: "В чём ты особенно нуждаешься, но редко об этом говоришь?", textEn: "What do you especially need but rarely talk about?", textFi: "Mitä erityisesti tarvitset, mutta puhut siitä harvoin?" },
+  { id: "lq66", text: market === "fi" ? "Kumpi on sinulle vaikeampaa: luottaa vai säilyttää tunteet?" : market === "en" ? "What's harder for you: trusting someone or keeping your feelings intact?" : "Что тебе сложнее: довериться или сохранить чувства?", textRu: "Что тебе сложнее: довериться или сохранить чувства?", textEn: "What's harder for you: trusting someone or keeping your feelings intact?", textFi: "Kumpi on sinulle vaikeampaa: luottaa vai säilyttää tunteet?" },
+  { id: "lq67", text: market === "fi" ? "Mikä teko voisi palauttaa uskosi parisuhteisiin?" : market === "en" ? "What act could restore your faith in relationships?" : "Какой поступок может вернуть тебе веру в отношения?", textRu: "Какой поступок может вернуть тебе веру в отношения?", textEn: "What act could restore your faith in relationships?", textFi: "Mikä teko voisi palauttaa uskosi parisuhteisiin?" },
+  { id: "lq68", text: market === "fi" ? "Mitä sinulle on tärkeää kuulla riidan jälkeen?" : market === "en" ? "What's important for you to hear after a fight?" : "Что тебе важно слышать после ссоры?", textRu: "Что тебе важно слышать после ссоры?", textEn: "What's important for you to hear after a fight?", textFi: "Mitä sinulle on tärkeää kuulla riidan jälkeen?" },
+  { id: "lq69", text: market === "fi" ? "Mistä tiedät, että suhde muuttuu vakavaksi?" : market === "en" ? "How do you know a relationship is becoming serious?" : "Как ты понимаешь, что отношения становятся серьёзными?", textRu: "Как ты понимаешь, что отношения становятся серьёзными?", textEn: "How do you know a relationship is becoming serious?", textFi: "Mistä tiedät, että suhde muuttuu vakavaksi?" },
+  { id: "lq70", text: market === "fi" ? "Mitkä rajat ovat sinulle ehdottomia rakkaudessa?" : market === "en" ? "What boundaries are non-negotiable for you in love?" : "Какие границы для тебя обязательны в любви?", textRu: "Какие границы для тебя обязательны в любви?", textEn: "What boundaries are non-negotiable for you in love?", textFi: "Mitkä rajat ovat sinulle ehdottomia rakkaudessa?" },
+  { id: "lq71", text: market === "fi" ? "Mitä arvostat ihmisessä ulkonäköä enemmän?" : market === "en" ? "What do you value in a person more than looks?" : "Что ты ценишь в человеке сильнее внешности?", textRu: "Что ты ценишь в человеке сильнее внешности?", textEn: "What do you value in a person more than looks?", textFi: "Mitä arvostat ihmisessä ulkonäköä enemmän?" },
+  { id: "lq72", text: market === "fi" ? "Mikä piirre tekee ihmisestä erityisen viehättävän?" : market === "en" ? "What trait makes a person especially attractive?" : "Какая черта делает человека особенно привлекательным?", textRu: "Какая черта делает человека особенно привлекательным?", textEn: "What trait makes a person especially attractive?", textFi: "Mikä piirre tekee ihmisestä erityisen viehättävän?" },
+  { id: "lq73", text: market === "fi" ? "Mikä inspiroi sinua rakastamaan voimakkaammin?" : market === "en" ? "What inspires you to love more deeply?" : "Что тебя вдохновляет любить сильнее?", textRu: "Что тебя вдохновляет любить сильнее?", textEn: "What inspires you to love more deeply?", textFi: "Mikä inspiroi sinua rakastamaan voimakkaammin?" },
+  { id: "lq74", text: market === "fi" ? "Miten suhtaudut heikkouden näyttämiseen rakkaalle ihmiselle?" : market === "en" ? "How do you feel about showing vulnerability to someone you love?" : "Как ты относишься к проявлению слабости перед любимым человеком?", textRu: "Как ты относишься к проявлению слабости перед любимым человеком?", textEn: "How do you feel about showing vulnerability to someone you love?", textFi: "Miten suhtaudut heikkouden näyttämiseen rakkaalle ihmiselle?" },
+  { id: "lq75", text: market === "fi" ? "Mikä antaa sinulle tunteen ‘me’?" : market === "en" ? "What gives you a sense of \\u2018us\\u2019?" : "Что даёт тебе чувство «мы»?", textRu: "Что даёт тебе чувство «мы»?", textEn: "What gives you a sense of \\u2018us\\u2019?", textFi: "Mikä antaa sinulle tunteen ‘me’?" },
+  { id: "lq76", text: market === "fi" ? "Missä hetkissä tarvitset erityisesti tukea?" : market === "en" ? "In what moments do you especially need support?" : "В каких моментах тебе особенно нужна поддержка?", textRu: "В каких моментах тебе особенно нужна поддержка?", textEn: "In what moments do you especially need support?", textFi: "Missä hetkissä tarvitset erityisesti tukea?" },
+  { id: "lq77", text: market === "fi" ? "Millaisena kuvittelet onnellisen yhteisen elämän?" : market === "en" ? "What does a happy life together look like to you?" : "Как ты представляешь счастливую совместную жизнь?", textRu: "Как ты представляешь счастливую совместную жизнь?", textEn: "What does a happy life together look like to you?", textFi: "Millaisena kuvittelet onnellisen yhteisen elämän?" },
+  { id: "lq78", text: market === "fi" ? "Kumpi on sinulle tärkeämpää: luonteiden yhteensopivuus vai toistensa eteen näkemä vaiva?" : market === "en" ? "What matters more to you: matching personalities or effort for each other?" : "Что для тебя важнее: совпадение характеров или усилия друг ради друга?", textRu: "Что для тебя важнее: совпадение характеров или усилия друг ради друга?", textEn: "What matters more to you: matching personalities or effort for each other?", textFi: "Kumpi on sinulle tärkeämpää: luonteiden yhteensopivuus vai toistensa eteen näkemä vaiva?" },
+  { id: "lq79", text: market === "fi" ? "Mitkä rakkauden sanat kuulostavat sinusta vilpittömimmiltä?" : market === "en" ? "What words of love sound the most sincere to you?" : "Какие слова любви для тебя звучат наиболее искренне?", textRu: "Какие слова любви для тебя звучат наиболее искренне?", textEn: "What words of love sound the most sincere to you?", textFi: "Mitkä rakkauden sanat kuulostavat sinusta vilpittömimmiltä?" },
+  { id: "lq80", text: market === "fi" ? "Mitä haluaisit tehdä useammin rakkaan ihmisen hyväksi?" : market === "en" ? "What would you like to do more often for someone you love?" : "Что ты хотел(а) бы чаще делать для любимого человека?", textRu: "Что ты хотел(а) бы чаще делать для любимого человека?", textEn: "What would you like to do more often for someone you love?", textFi: "Mitä haluaisit tehdä useammin rakkaan ihmisen hyväksi?" },
+  { id: "lq81", text: market === "fi" ? "Mistä unelmoit kertovasi kumppanillesi, mutta lykkäät jatkuvasti?" : market === "en" ? "What do you dream of telling your partner but keep putting off?" : "О чём ты мечтаешь рассказать партнёру, но всё откладываешь?", textRu: "О чём ты мечтаешь рассказать партнёру, но всё откладываешь?", textEn: "What do you dream of telling your partner but keep putting off?", textFi: "Mistä unelmoit kertovasi kumppanillesi, mutta lykkäät jatkuvasti?" },
+  { id: "lq82", text: market === "fi" ? "Mikä yhteinen tavoite voisi vahvistaa suhdettanne?" : market === "en" ? "What shared goal could make your relationship stronger?" : "Какая общая цель могла бы сделать вашу пару сильнее?", textRu: "Какая общая цель могла бы сделать вашу пару сильнее?", textEn: "What shared goal could make your relationship stronger?", textFi: "Mikä yhteinen tavoite voisi vahvistaa suhdettanne?" },
+  { id: "lq83", text: market === "fi" ? "Minkä pelon rakkaudessa haluaisit päästää irti?" : market === "en" ? "What fear about love would you like to let go of?" : "Какой страх в любви тебе хотелось бы отпустить?", textRu: "Какой страх в любви тебе хотелось бы отпустить?", textEn: "What fear about love would you like to let go of?", textFi: "Minkä pelon rakkaudessa haluaisit päästää irti?" },
+  { id: "lq84", text: market === "fi" ? "Mikä tekee parisuhteesta sinulle kypsän?" : market === "en" ? "What makes a relationship feel mature to you?" : "Что делает отношения для тебя зрелыми?", textRu: "Что делает отношения для тебя зрелыми?", textEn: "What makes a relationship feel mature to you?", textFi: "Mikä tekee parisuhteesta sinulle kypsän?" },
+  { id: "lq85", text: market === "fi" ? "Mistä tiedät, että jotakuta voi kutsua ‘omakseen’?" : market === "en" ? "How do you know someone can be called \\u2018yours\\u2019?" : "Как ты понимаешь, что человека можно назвать «своим»?", textRu: "Как ты понимаешь, что человека можно назвать «своим»?", textEn: "How do you know someone can be called \\u2018yours\\u2019?", textFi: "Mistä tiedät, että jotakuta voi kutsua ‘omakseen’?" },
+  { id: "lq86", text: market === "fi" ? "Minkä haluaisit säilyttää parisuhteessa vuosien ajan?" : market === "en" ? "What would you like to keep in a relationship for years to come?" : "Что бы ты хотел(а) сохранить в отношениях на долгие годы?", textRu: "Что бы ты хотел(а) сохранить в отношениях на долгие годы?", textEn: "What would you like to keep in a relationship for years to come?", textFi: "Minkä haluaisit säilyttää parisuhteessa vuosien ajan?" },
+  { id: "lq87", text: market === "fi" ? "Miten suhtaudut täydelliseen rehellisyyteen rakkaudessa?" : market === "en" ? "How do you feel about complete honesty in love?" : "Как ты относишься к полной честности в любви?", textRu: "Как ты относишься к полной честности в любви?", textEn: "How do you feel about complete honesty in love?", textFi: "Miten suhtaudut täydelliseen rehellisyyteen rakkaudessa?" },
+  { id: "lq88", text: market === "fi" ? "Mitä haluaisit kuulla kumppaniltasi juuri nyt?" : market === "en" ? "What would you like to hear from your partner right now?" : "Что бы ты хотел(а) услышать от партнёра прямо сейчас?", textRu: "Что бы ты хотел(а) услышать от партнёра прямо сейчас?", textEn: "What would you like to hear from your partner right now?", textFi: "Mitä haluaisit kuulla kumppaniltasi juuri nyt?" },
+  { id: "lq89", text: market === "fi" ? "Millainen unelma rakkaudesta sinulla on ollut lapsuudesta asti?" : market === "en" ? "What dream about love have you had since childhood?" : "Какая мечта о любви у тебя была с детства?", textRu: "Какая мечта о любви у тебя была с детства?", textEn: "What dream about love have you had since childhood?", textFi: "Millainen unelma rakkaudesta sinulla on ollut lapsuudesta asti?" },
+  { id: "lq90", text: market === "fi" ? "Mitä sinulle tarkoittaa rakastaa todella?" : market === "en" ? "What does it mean to you to truly love someone?" : "Что для тебя значит любить по-настоящему?", textRu: "Что для тебя значит любить по-настоящему?", textEn: "What does it mean to you to truly love someone?", textFi: "Mitä sinulle tarkoittaa rakastaa todella?" },
 ];
 
 const PAIR_LEVELS_RU = [
@@ -10466,10 +10502,14 @@ const activePoll = POLLS.find((poll) => poll.id === activePollId) || null;
   return (
     <div style={{ padding: 20 }}>
       <button onClick={() => setActivePollId(null)}>
-        {market !== "ru" ? "Back" : "Назад"}
+        {market === "fi" ? "Takaisin" : market === "en" ? "Back" : "Назад"}
       </button>
       <div style={{ marginTop: 16, opacity: 0.7 }}>
-        {market !== "ru" ? "This poll has no questions yet" : "В этом опросе пока нет вопросов"}
+        {market === "fi"
+          ? "Tässä kyselyssä ei ole vielä kysymyksiä"
+          : market === "en"
+            ? "This poll has no questions yet"
+            : "В этом опросе пока нет вопросов"}
       </div>
     </div>
   );
@@ -10679,7 +10719,7 @@ async function handleFinish() {
       cursor: page === 1 ? "not-allowed" : "pointer",
     }}
   >
-    {market !== "ru" ? "← Previous" : "← Предыдущая"}
+    {market === "fi" ? "← Edellinen" : market === "en" ? "← Previous" : "← Предыдущая"}
   </button>
 
   <button
@@ -10692,7 +10732,7 @@ async function handleFinish() {
       cursor: page === totalPages ? "not-allowed" : "pointer",
     }}
   >
-    {market !== "ru" ? "Next →" : "Следующая →"}
+    {market === "fi" ? "Seuraava →" : market === "en" ? "Next →" : "Следующая →"}
   </button>
 </div>
 
@@ -10708,10 +10748,16 @@ async function handleFinish() {
     <div style={{ padding: 14 }}>
       <div style={{ ...cardBaseStyle(), padding: 16 }}>
         <div style={{ fontSize: 28, fontWeight: 900, color: ink }}>
-          {market !== "ru" ? "Done 🎉" : "Готово 🎉"}
+          {market === "fi" ? "Valmis 🎉" : market === "en" ? "Done 🎉" : "Готово 🎉"}
         </div>
         <div style={{ marginTop: 10, color: muted, lineHeight: 1.5 }}>
-          {market !== "ru" ? (
+          {market === "fi" ? (
+            <>
+              Suoritit kyselyn{" "}
+              <b>{activePoll.titleEn ?? activePoll.title}</b> ja ansaitsit{" "}
+              <b>+{activePoll.reward} pistettä</b>.
+            </>
+          ) : market === "en" ? (
             <>
               You completed the poll{" "}
               <b>{activePoll.titleEn ?? activePoll.title}</b> and earned{" "}
@@ -10729,7 +10775,7 @@ async function handleFinish() {
           onClick={handleFinish}
           style={{ ...getPrimaryButtonStyle(isDark), width: "100%", marginTop: 14 }}
         >
-          {market !== "ru" ? "Claim points" : "Забрать очки"}
+          {market === "fi" ? "Kerää pisteet" : market === "en" ? "Claim points" : "Забрать очки"}
         </button>
       </div>
     </div>
@@ -10827,7 +10873,7 @@ async function handleFinish() {
           onClick={() => setActivePollId(null)}
           style={{ ...secondaryButtonStyle, marginTop: 10 }}
         >
-          {market !== "ru" ? "Exit poll" : "Выйти из опроса"}
+          {market === "fi" ? "Poistu kyselystä" : market === "en" ? "Exit poll" : "Выйти из опроса"}
         </button>
       </div>
     </div>
@@ -10940,7 +10986,7 @@ const psychologistAvatar =
     >
       <div style={{ ...cardBaseStyle(), padding: 14 }}>
         <div style={{ fontSize: 22, fontWeight: 900, color: ink }}>
-          {market !== "ru" ? "Relationship Express-Check 🩺" : "Экспресс-чек отношений 🩺"}
+          {market === "fi" ? "Parisuhteen pikatesti 🩺" : market === "en" ? "Relationship Express-Check 🩺" : "Экспресс-чек отношений 🩺"}
         </div>
 
         <div
@@ -10968,7 +11014,7 @@ const psychologistAvatar =
           >
             <img
   src={psychologistAvatar}
-  alt={market !== "ru" ? "Psychologist" : "Психолог"}
+  alt={market === "fi" ? "Psykologi" : market === "en" ? "Psychologist" : "Психолог"}
   style={{
   width: 96,
   height: 96,
@@ -11038,7 +11084,7 @@ const psychologistAvatar =
                 marginBottom: 10,
               }}
             >
-              {market !== "ru" ? "Choose an answer" : "Выберите ответ"}
+              {market === "fi" ? "Valitse vastaus" : market === "en" ? "Choose an answer" : "Выберите ответ"}
             </div>
 
             {aiTyping ? (
@@ -11064,7 +11110,7 @@ const psychologistAvatar =
         animation: "pulse 1s infinite",
       }}
     />
-    {market !== "ru" ? "Analyzing your answer..." : "Анализирую ваш ответ..."}
+    {market === "fi" ? "Analysoin vastaustasi..." : market === "en" ? "Analyzing your answer..." : "Анализирую ваш ответ..."}
   </div>
 ) : (
   showAiAnswers && (
@@ -11102,7 +11148,7 @@ const psychologistAvatar =
             >
               <img
   src={AI_PSYCHOLOGIST_AVATARS.happy}
-  alt={market !== "ru" ? "Psychologist" : "Психолог"}
+  alt={market === "fi" ? "Psykologi" : market === "en" ? "Psychologist" : "Психолог"}
                 style={{
                   width: 54,
                   height: 54,
@@ -11121,7 +11167,7 @@ const psychologistAvatar =
                     fontWeight: 800,
                   }}
                 >
-                  {market !== "ru" ? "Analysis ready" : "Анализ готов"}
+                  {market === "fi" ? "Analyysi valmis" : market === "en" ? "Analysis ready" : "Анализ готов"}
                 </div>
 
                 <div
@@ -11164,7 +11210,7 @@ const psychologistAvatar =
 
           <div style={{ ...cardBaseStyle(), padding: 18 }}>
             <div style={{ fontSize: 18, fontWeight: 900, color: ink }}>
-              {market !== "ru" ? "What you can do right now 💞" : "Что можно сделать уже сейчас 💞"}
+              {market === "fi" ? "Mitä voit tehdä juuri nyt 💞" : market === "en" ? "What you can do right now 💞" : "Что можно сделать уже сейчас 💞"}
             </div>
 
             <div style={{ display: "grid", gap: 10, marginTop: 14 }}>
@@ -11191,7 +11237,7 @@ const psychologistAvatar =
             onClick={() => startGame("ai-psychologist")}
             style={{ ...getPrimaryButtonStyle(isDark), width: "100%" }}
           >
-            {market !== "ru" ? "Take it again" : "Пройти ещё раз"}
+            {market === "fi" ? "Tee uudelleen" : market === "en" ? "Take it again" : "Пройти ещё раз"}
           </button>
         </>
       )}
@@ -11200,7 +11246,7 @@ const psychologistAvatar =
         onClick={() => setActiveGameId(null)}
         style={{ ...secondaryButtonStyle, width: "100%" }}
       >
-        {market !== "ru" ? "Back to games" : "Назад к играм"}
+        {market === "fi" ? "Takaisin peleihin" : market === "en" ? "Back to games" : "Назад к играм"}
       </button>
     </div>
   );
@@ -11384,7 +11430,7 @@ function handleLoveQuestionFinish() {
       fontWeight: 700,
     }}
   >
-    {market !== "ru" ? "Coming soon 🧠" : "Скоро будет доступно 🧠"}
+    {market === "fi" ? "Tulossa pian 🧠" : market === "en" ? "Coming soon 🧠" : "Скоро будет доступно 🧠"}
   </div>
 )}
 
@@ -11632,7 +11678,7 @@ function handleLoveQuestionFinish() {
         onClick={() => setActiveGameId(null)}
         style={{ ...secondaryButtonStyle, width: "100%" }}
       >
-        {market !== "ru" ? "Back to games" : "Назад к играм"}
+        {market === "fi" ? "Takaisin peleihin" : market === "en" ? "Back to games" : "Назад к играм"}
       </button>
     </div>
   );
@@ -11917,7 +11963,7 @@ function BottleGameScreen({
     <div style={{ padding: 16, display: "grid", gap: 14 }}>
       <div style={{ ...cardBaseStyle(), padding: 18 }}>
         <div style={{ fontSize: 26, fontWeight: 900, color: ink }}>
-          {market !== "ru" ? "Spin the Bottle" : "Бутылочка"}
+          {market === "fi" ? "Pullonpyöritys" : market === "en" ? "Spin the Bottle" : "Бутылочка"}
         </div>
 
         <div
@@ -11928,9 +11974,11 @@ function BottleGameScreen({
             lineHeight: 1.45,
           }}
         >
-          {market !== "ru"
-            ? "Spin the bottle and get a task for whoever it points to."
-            : "Крути бутылку и получай задание для того, на кого она покажет."}
+          {market === "fi"
+            ? "Pyöritä pulloa ja saat tehtävän sille, kenen kohdalle se pysähtyy."
+            : market === "en"
+              ? "Spin the bottle and get a task for whoever it points to."
+              : "Крути бутылку и получай задание для того, на кого она покажет."}
         </div>
       </div>
 
@@ -11952,8 +12000,8 @@ function BottleGameScreen({
             color: muted,
           }}
         >
-          <span>{market !== "ru" ? "👧 Girl" : "👧 Девушка"}</span>
-          <span>{market !== "ru" ? "👦 Guy" : "👦 Парень"}</span>
+          <span>{market === "fi" ? "👧 Tyttö" : market === "en" ? "👧 Girl" : "👧 Девушка"}</span>
+          <span>{market === "fi" ? "👦 Poika" : market === "en" ? "👦 Guy" : "👦 Парень"}</span>
         </div>
 
         <div
@@ -12016,13 +12064,17 @@ function BottleGameScreen({
             cursor: isSpinning ? "not-allowed" : "pointer",
           }}
         >
-          {market !== "ru"
+          {market === "fi"
             ? isSpinning
-              ? "Spinning..."
-              : "Spin the bottle"
-            : isSpinning
-              ? "Крутим..."
-              : "Крутить бутылку"}
+              ? "Pyöritetään..."
+              : "Pyöritä pulloa"
+            : market === "en"
+              ? isSpinning
+                ? "Spinning..."
+                : "Spin the bottle"
+              : isSpinning
+                ? "Крутим..."
+                : "Крутить бутылку"}
         </button>
 
         <button
@@ -12070,7 +12122,7 @@ function BottleGameScreen({
                 fontSize: 13,
               }}
             >
-              {market !== "ru" ? "💫 Bottle task" : "💫 Задание бутылочки"}
+              {market === "fi" ? "💫 Pullotehtävä" : market === "en" ? "💫 Bottle task" : "💫 Задание бутылочки"}
             </div>
 
             <div
@@ -12082,13 +12134,17 @@ function BottleGameScreen({
                 color: "#1f1d3a",
               }}
             >
-              {market !== "ru"
+              {market === "fi"
                 ? activeTask.target === "boy"
-                  ? "Task for him"
-                  : "Task for her"
-                : activeTask.target === "boy"
-                  ? "Задание для него"
-                  : "Задание для неё"}
+                  ? "Tehtävä hänelle"
+                  : "Tehtävä hänelle"
+                : market === "en"
+                  ? activeTask.target === "boy"
+                    ? "Task for him"
+                    : "Task for her"
+                  : activeTask.target === "boy"
+                    ? "Задание для него"
+                    : "Задание для неё"}
             </div>
 
            <div style={{ marginTop: 10, fontSize: 16, lineHeight: 1.55, color: "#4b446a", padding: "14px 16px", borderRadius: 20, background: "rgba(107,70,255,0.06)", }} > {activeTask.text} </div>
@@ -12098,14 +12154,14 @@ function BottleGameScreen({
                 onClick={handleCompleteBottleTask}
                 style={{ ...getPrimaryButtonStyle(isDark), width: "100%" }}
               >
-                {market !== "ru" ? "Task done" : "Задание выполнено"}
+                {market === "fi" ? "Tehtävä suoritettu" : market === "en" ? "Task done" : "Задание выполнено"}
               </button>
 
               <button
                 onClick={handleAnotherBottleTask}
                 style={{ ...secondaryButtonStyle, width: "100%" }}
               >
-                {market !== "ru" ? "Another task" : "Другое задание"}
+                {market === "fi" ? "Toinen tehtävä" : market === "en" ? "Another task" : "Другое задание"}
               </button>
             </div>
           </div>
@@ -12211,7 +12267,7 @@ setAppState((prev) => ({
     <div style={{ padding: 16, display: "grid", gap: 14 }}>
       <div style={{ ...cardBaseStyle(), padding: 18 }}>
         <div style={{ fontSize: 26, fontWeight: 900, color: ink }}>
-          {market !== "ru" ? "90 Questions" : "90 вопросов"}
+          {market === "fi" ? "90 kysymystä" : market === "en" ? "90 Questions" : "90 вопросов"}
         </div>
 
         <div
@@ -12222,9 +12278,11 @@ setAppState((prev) => ({
             lineHeight: 1.45,
           }}
         >
-          {market !== "ru"
-            ? "Deep questions about feelings, closeness, and relationships."
-            : "Глубокие вопросы про чувства, близость и отношения."}
+          {market === "fi"
+            ? "Syviä kysymyksiä tunteista, läheisyydestä ja suhteista."
+            : market === "en"
+              ? "Deep questions about feelings, closeness, and relationships."
+              : "Глубокие вопросы про чувства, близость и отношения."}
         </div>
       </div>
 
@@ -12266,7 +12324,7 @@ setAppState((prev) => ({
                     fontSize: 13,
                   }}
                 >
-                  {market !== "ru" ? "90 Questions 💞" : "90 вопросов 💞"}
+                  {market === "fi" ? "90 kysymystä 💞" : market === "en" ? "90 Questions 💞" : "90 вопросов 💞"}
                 </div>
 
                 <div
@@ -12305,7 +12363,7 @@ setAppState((prev) => ({
       color: accent,
     }}
   >
-    {market !== "ru" ? "✔ You already answered this one" : "✔ Вы уже отвечали на этот вопрос"}
+    {market === "fi" ? "✔ Olet jo vastannut tähän" : market === "en" ? "✔ You already answered this one" : "✔ Вы уже отвечали на этот вопрос"}
   </div>
 )}
             </div>
@@ -12321,7 +12379,7 @@ setAppState((prev) => ({
                 cursor: animating ? "not-allowed" : "pointer",
               }}
             >
-              {market !== "ru" ? "Answered" : "Ответили"}
+              {market === "fi" ? "Vastattu" : market === "en" ? "Answered" : "Ответили"}
             </button>
           </>
         ) : (
@@ -12334,13 +12392,15 @@ setAppState((prev) => ({
                 lineHeight: 1.35,
               }}
             >
-              {market !== "ru" ? "You've run out of questions 🎉" : "Вопросы закончились 🎉"}
+              {market === "fi" ? "Kysymykset loppuivat 🎉" : market === "en" ? "You've run out of questions 🎉" : "Вопросы закончились 🎉"}
             </div>
 
             <div style={{ marginTop: 12, color: muted, lineHeight: 1.45 }}>
-              {market !== "ru"
-                ? "You went through the whole current set of questions."
-                : "Ты прошёл(а) весь текущий набор вопросов."}
+              {market === "fi"
+                ? "Kävit läpi koko nykyisen kysymyssarjan."
+                : market === "en"
+                  ? "You went through the whole current set of questions."
+                  : "Ты прошёл(а) весь текущий набор вопросов."}
             </div>
           </>
         )}
@@ -12378,14 +12438,16 @@ function NeverHaveIEverGameScreen({
     emoji: string,
     textRu: string,
     textEn: string,
+    textFi: string,
     taskRu: string,
-    taskEn: string
+    taskEn: string,
+    taskFi: string
   ) => ({
     id,
     type,
     emoji,
-    text: market !== "ru" ? textEn : textRu,
-    task: market !== "ru" ? taskEn : taskRu,
+    text: market === "fi" ? textFi : market === "en" ? textEn : textRu,
+    task: market === "fi" ? taskFi : market === "en" ? taskEn : taskRu,
   });
 
   const cards = [
@@ -12395,8 +12457,10 @@ function NeverHaveIEverGameScreen({
       "😈",
       "Я никогда не играл(а) в карты на раздевание",
       "I have never played strip poker (or any strip game)",
+      "En ole koskaan pelannut riisumiskorttipeliä (tai muuta riisumispeliä)",
       "Если партнёр делал это — ему пора пыхтеть 😏",
-      "If your partner has, they're in the hot seat now 😏"
+      "If your partner has, they're in the hot seat now 😏",
+      "Jos kumppanisi on, nyt on hänen vuoronsa hikoilla 😏"
     ),
     nhCard(
       "nh2",
@@ -12404,8 +12468,10 @@ function NeverHaveIEverGameScreen({
       "🤣",
       "Я никогда не пел(а) вслух в душе",
       "I have never sung out loud in the shower",
+      "En ole koskaan laulanut ääneen suihkussa",
       "Если партнёр делал это — поёт одну строчку любой песни",
-      "If your partner has, they sing one line of any song"
+      "If your partner has, they sing one line of any song",
+      "Jos kumppanisi on, hän laulaa yhden rivin mistä tahansa kappaleesta"
     ),
     nhCard(
       "nh3",
@@ -12413,8 +12479,10 @@ function NeverHaveIEverGameScreen({
       "🔥",
       "Я никогда не устраивал(а) романтический сюрприз",
       "I have never planned a romantic surprise",
+      "En ole koskaan järjestänyt romanttista yllätystä",
       "Если партнёр делал это — делится самой милой историей",
-      "If your partner has, they share their sweetest story"
+      "If your partner has, they share their sweetest story",
+      "Jos kumppanisi on, hän kertoo suloisimman tarinansa"
     ),
     nhCard(
       "nh4",
@@ -12422,8 +12490,10 @@ function NeverHaveIEverGameScreen({
       "😈",
       "Я никогда не писал(а) бывшему ночью",
       "I have never texted an ex late at night",
+      "En ole koskaan kirjoittanut ex-kumppanilleni yöllä",
       "Если партнёр делал это — рассказывает неловкую историю",
-      "If your partner has, they tell an awkward story"
+      "If your partner has, they tell an awkward story",
+      "Jos kumppanisi on, hän kertoo kiusallisen tarinan"
     ),
     nhCard(
       "nh5",
@@ -12431,8 +12501,10 @@ function NeverHaveIEverGameScreen({
       "🤣",
       "Я никогда не засыпал(а) на свидании",
       "I have never fallen asleep on a date",
+      "En ole koskaan nukahtanut treffeillä",
       "Если партнёр делал это — показывает это в лицах",
-      "If your partner has, they act it out"
+      "If your partner has, they act it out",
+      "Jos kumppanisi on, hän näyttelee sen"
     ),
     nhCard(
       "nh6",
@@ -12440,8 +12512,10 @@ function NeverHaveIEverGameScreen({
       "🔥",
       "Я никогда не мечтал(а) о ленивом дне вдвоём без дел",
       "I have never dreamed of a lazy do-nothing day together",
+      "En ole koskaan haaveillut laiskasta päivästä yhdessä ilman mitään tekemistä",
       "Если партнёр делал это — описывает этот день тремя словами",
-      "If your partner has, they describe that day in three words"
+      "If your partner has, they describe that day in three words",
+      "Jos kumppanisi on, hän kuvailee sen päivän kolmella sanalla"
     ),
     nhCard(
       "nh7",
@@ -12449,8 +12523,10 @@ function NeverHaveIEverGameScreen({
       "😈",
       "Я никогда не ревновал(а) без причины",
       "I have never been jealous without a reason",
+      "En ole koskaan ollut mustasukkainen ilman syytä",
       "Если партнёр делал это — обнимает тебя 20 секунд",
-      "If your partner has, they hug you for 20 seconds"
+      "If your partner has, they hug you for 20 seconds",
+      "Jos kumppanisi on, hän halaa sinua 20 sekuntia"
     ),
     nhCard(
       "nh8",
@@ -12458,8 +12534,10 @@ function NeverHaveIEverGameScreen({
       "🤣",
       "Я никогда не говорил(а) 'я в пути', ещё не выйдя из дома",
       "I have never said 'I'm on my way' before actually leaving the house",
+      "En ole koskaan sanonut 'olen jo matkalla' ennen kuin olen edes lähtenyt kotoa",
       "Если партнёр делал это — изображает очень виноватый вид 10 секунд",
-      "If your partner has, they make a guilty face for 10 seconds"
+      "If your partner has, they make a guilty face for 10 seconds",
+      "Jos kumppanisi on, hän näyttää mahdollisimman syyllistä ilmettä 10 sekuntia"
     ),
     nhCard(
       "nh9",
@@ -12467,8 +12545,10 @@ function NeverHaveIEverGameScreen({
       "🔥",
       "Я никогда не представлял(а) наш идеальный совместный выходной",
       "I have never imagined our perfect day off together",
+      "En ole koskaan kuvitellut meidän täydellistä yhteistä vapaapäiväämme",
       "Если партнёр делал это — быстро рассказывает свой вариант",
-      "If your partner has, they quickly describe theirs"
+      "If your partner has, they quickly describe theirs",
+      "Jos kumppanisi on, hän kertoo nopeasti oman versionsa"
     ),
     nhCard(
       "nh10",
@@ -12476,8 +12556,10 @@ function NeverHaveIEverGameScreen({
       "😈",
       "Я никогда не флиртовал(а) ради шутки",
       "I have never flirted just as a joke",
+      "En ole koskaan flirttaillut vain leikilläni",
       "Если партнёр делал это — выполняет твоё мини-желание",
-      "If your partner has, they grant you a small wish"
+      "If your partner has, they grant you a small wish",
+      "Jos kumppanisi on, hän toteuttaa yhden pienen toiveesi"
     ),
     nhCard(
       "nh11",
@@ -12485,8 +12567,10 @@ function NeverHaveIEverGameScreen({
       "🤣",
       "Я никогда не путал(а) имя человека",
       "I have never mixed up someone's name",
+      "En ole koskaan sekoittanut jonkun nimeä",
       "Если партнёр делал это — рассказывает самую неловкую ситуацию",
-      "If your partner has, they tell their most awkward story about it"
+      "If your partner has, they tell their most awkward story about it",
+      "Jos kumppanisi on, hän kertoo kiusallisimman tarinansa siitä"
     ),
     nhCard(
       "nh12",
@@ -12494,8 +12578,10 @@ function NeverHaveIEverGameScreen({
       "🔥",
       "Я никогда не придумывал(а) милое прозвище для любимого человека",
       "I have never come up with a cute nickname for someone I love",
+      "En ole koskaan keksinyt söpöä lempinimeä rakkaalle ihmiselle",
       "Если партнёр делал это — придумывает тебе новое прямо сейчас",
-      "If your partner has, they make up a new one for you right now"
+      "If your partner has, they make up a new one for you right now",
+      "Jos kumppanisi on, hän keksii sinulle uuden juuri nyt"
     ),
     nhCard(
       "nh13",
@@ -12503,8 +12589,10 @@ function NeverHaveIEverGameScreen({
       "😈",
       "Я никогда не подглядывал(а) в чужой телефон",
       "I have never snooped on someone else's phone",
+      "En ole koskaan vilkuillut toisen puhelinta",
       "Если партнёр делал это — честно признаётся, зачем",
-      "If your partner has, they honestly admit why"
+      "If your partner has, they honestly admit why",
+      "Jos kumppanisi on, hän myöntää rehellisesti miksi"
     ),
     nhCard(
       "nh14",
@@ -12512,8 +12600,10 @@ function NeverHaveIEverGameScreen({
       "🤣",
       "Я никогда не делал(а) вид, что слушаю, хотя мысли были в другом месте",
       "I have never pretended to listen while my mind was somewhere else",
+      "En ole koskaan teeskennellyt kuuntelevani, vaikka ajatukset olivat muualla",
       "Если партнёр делал это — должен(на) очень внимательно слушать тебя 30 секунд",
-      "If your partner has, they have to listen to you very closely for 30 seconds"
+      "If your partner has, they have to listen to you very closely for 30 seconds",
+      "Jos kumppanisi on, hänen täytyy kuunnella sinua todella tarkasti 30 sekuntia"
     ),
     nhCard(
       "nh15",
@@ -12521,8 +12611,10 @@ function NeverHaveIEverGameScreen({
       "🔥",
       "Я никогда не влюблялся(ась) с первого взгляда",
       "I have never fallen in love at first sight",
+      "En ole koskaan rakastunut ensisilmäyksellä",
       "Если партнёр делал это — делает тебе комплимент",
-      "If your partner has, they give you a compliment"
+      "If your partner has, they give you a compliment",
+      "Jos kumppanisi on, hän antaa sinulle kohteliaisuuden"
     ),
     nhCard(
       "nh16",
@@ -12530,8 +12622,10 @@ function NeverHaveIEverGameScreen({
       "😈",
       "Я никогда не хотел(а) поцеловать человека в первый же вечер",
       "I have never wanted to kiss someone on the very first night",
+      "En ole koskaan halunnut suudella jotakuta jo ensimmäisenä iltana",
       "Если партнёр делал это — улыбается максимально загадочно",
-      "If your partner has, they smile as mysteriously as possible"
+      "If your partner has, they smile as mysteriously as possible",
+      "Jos kumppanisi on, hän hymyilee mahdollisimman salaperäisesti"
     ),
     nhCard(
       "nh17",
@@ -12539,8 +12633,10 @@ function NeverHaveIEverGameScreen({
       "🤣",
       "Я никогда не танцевал(а) без музыки",
       "I have never danced without any music playing",
+      "En ole koskaan tanssinut ilman musiikkia",
       "Если партнёр делал это — показывает 5 секунд танца",
-      "If your partner has, they show 5 seconds of that dance"
+      "If your partner has, they show 5 seconds of that dance",
+      "Jos kumppanisi on, hän näyttää 5 sekuntia siitä tanssista"
     ),
     nhCard(
       "nh18",
@@ -12548,8 +12644,10 @@ function NeverHaveIEverGameScreen({
       "🔥",
       "Я никогда не хотел(а) устроить спонтанную поездку вдвоём",
       "I have never wanted to go on a spontaneous trip together",
+      "En ole koskaan halunnut lähteä spontaanille matkalle yhdessä",
       "Если партнёр делал это — называет место, куда хотел(а) бы поехать с тобой",
-      "If your partner has, they name a place they'd want to go with you"
+      "If your partner has, they name a place they'd want to go with you",
+      "Jos kumppanisi on, hän kertoo paikan, johon haluaisi mennä kanssasi"
     ),
     nhCard(
       "nh19",
@@ -12557,8 +12655,10 @@ function NeverHaveIEverGameScreen({
       "😈",
       "Я никогда не писал(а) длинное сообщение и потом не удалял(а) его",
       "I have never written a long message and then deleted it instead of sending",
+      "En ole koskaan kirjoittanut pitkää viestiä ja sitten poistanut sitä lähettämättä",
       "Если партнёр делал это — говорит, почему передумал(а)",
-      "If your partner has, they say why they changed their mind"
+      "If your partner has, they say why they changed their mind",
+      "Jos kumppanisi on, hän kertoo miksi muutti mielensä"
     ),
     nhCard(
       "nh20",
@@ -12566,8 +12666,10 @@ function NeverHaveIEverGameScreen({
       "🤣",
       "Я никогда не удалял(а) фото из-за того, что плохо получился(ась)",
       "I have never deleted a photo just because I looked bad in it",
+      "En ole koskaan poistanut kuvaa, koska näytin siinä huonolta",
       "Если партнёр делал это — показывает свою самую смешную мину",
-      "If your partner has, they make their funniest face"
+      "If your partner has, they make their funniest face",
+      "Jos kumppanisi on, hän näyttää hassuimman ilmeensä"
     ),
     nhCard(
       "nh21",
@@ -12575,8 +12677,10 @@ function NeverHaveIEverGameScreen({
       "🔥",
       "Я никогда не скучал(а) настолько, что пересматривал(а) фото человека",
       "I have never missed someone so much I kept scrolling through their photos",
+      "En ole koskaan kaivannut jotakuta niin paljon, että selailin hänen kuviaan",
       "Если партнёр делал это — признаётся, чьи фото так смотрел(а)",
-      "If your partner has, they admit whose photos it was"
+      "If your partner has, they admit whose photos it was",
+      "Jos kumppanisi on, hän myöntää kenen kuvia ne olivat"
     ),
     nhCard(
       "nh22",
@@ -12584,8 +12688,10 @@ function NeverHaveIEverGameScreen({
       "😈",
       "Я никогда не говорил(а) 'мне всё равно', когда было очень даже не всё равно",
       "I have never said 'I don't care' when I actually cared a lot",
+      "En ole koskaan sanonut 'ihan sama', vaikka ei ollut yhtään sama",
       "Если партнёр делал это — говорит 3 вещи, которые ему(ей) не всё равно",
-      "If your partner has, they name 3 things they actually care about"
+      "If your partner has, they name 3 things they actually care about",
+      "Jos kumppanisi on, hän nimeää 3 asiaa, jotka ovat hänelle todella tärkeitä"
     ),
     nhCard(
       "nh23",
@@ -12593,8 +12699,10 @@ function NeverHaveIEverGameScreen({
       "🤣",
       "Я никогда не выбирал(а) одежду дольше часа",
       "I have never spent over an hour picking an outfit",
+      "En ole koskaan valinnut vaatteita yli tunnin ajan",
       "Если партнёр делал это — рассказывает про свой самый сложный выбор",
-      "If your partner has, they tell the story of their hardest outfit choice"
+      "If your partner has, they tell the story of their hardest outfit choice",
+      "Jos kumppanisi on, hän kertoo vaikeimmasta valinnastaan"
     ),
     nhCard(
       "nh24",
@@ -12602,8 +12710,10 @@ function NeverHaveIEverGameScreen({
       "🔥",
       "Я никогда не мечтал(а) проснуться у моря рядом с любимым человеком",
       "I have never dreamed of waking up by the sea next to someone I love",
+      "En ole koskaan haaveillut heräämisestä meren äärellä rakkaan ihmisen vierellä",
       "Если партнёр делал это — описывает такое утро одной фразой",
-      "If your partner has, they describe that morning in one sentence"
+      "If your partner has, they describe that morning in one sentence",
+      "Jos kumppanisi on, hän kuvailee sen aamun yhdellä lauseella"
     ),
     nhCard(
       "nh25",
@@ -12611,8 +12721,10 @@ function NeverHaveIEverGameScreen({
       "😈",
       "Я никогда не ревновал(а) к прошлому партнёра",
       "I have never been jealous of a partner's past relationship",
+      "En ole koskaan ollut mustasukkainen kumppanini menneisyydestä",
       "Если партнёр делал это — честно признаётся, что именно задевало",
-      "If your partner has, they honestly admit what exactly bothered them"
+      "If your partner has, they honestly admit what exactly bothered them",
+      "Jos kumppanisi on, hän myöntää rehellisesti, mikä siinä häiritsi eniten"
     ),
     nhCard(
       "nh26",
@@ -12620,8 +12732,10 @@ function NeverHaveIEverGameScreen({
       "🤣",
       "Я никогда не опаздывал(а) на свидание больше чем на 30 минут",
       "I have never been more than 30 minutes late for a date",
+      "En ole koskaan myöhästynyt treffeiltä yli 30 minuuttia",
       "Если партнёр делал это — извиняется максимально драматично",
-      "If your partner has, they apologize as dramatically as possible"
+      "If your partner has, they apologize as dramatically as possible",
+      "Jos kumppanisi on, hän pyytää anteeksi mahdollisimman dramaattisesti"
     ),
     nhCard(
       "nh27",
@@ -12629,8 +12743,10 @@ function NeverHaveIEverGameScreen({
       "🔥",
       "Я никогда не делал(а) сюрприз без повода",
       "I have never planned a surprise for no reason at all",
+      "En ole koskaan järjestänyt yllätystä ilman syytä",
       "Если партнёр делал это — обещает маленький сюрприз в будущем",
-      "If your partner has, they promise a small surprise in the future"
+      "If your partner has, they promise a small surprise in the future",
+      "Jos kumppanisi on, hän lupaa pienen yllätyksen tulevaisuudessa"
     ),
     nhCard(
       "nh28",
@@ -12638,8 +12754,10 @@ function NeverHaveIEverGameScreen({
       "😈",
       "Я никогда не скрывал(а), что мне кто-то нравится",
       "I have never hidden that I liked someone",
+      "En ole koskaan salannut, että pidän jostakusta",
       "Если партнёр делал это — показывает, как он(а) это обычно скрывает",
-      "If your partner has, they show how they usually hide it"
+      "If your partner has, they show how they usually hide it",
+      "Jos kumppanisi on, hän näyttää, miten yleensä salaa sen"
     ),
     nhCard(
       "nh29",
@@ -12647,8 +12765,10 @@ function NeverHaveIEverGameScreen({
       "🤣",
       "Я никогда не делал(а) скриншот переписки",
       "I have never taken a screenshot of a chat",
+      "En ole koskaan ottanut kuvakaappausta viestittelystä",
       "Если партнёр делал это — делает максимально innocent face",
-      "If your partner has, they make the most innocent face possible"
+      "If your partner has, they make the most innocent face possible",
+      "Jos kumppanisi on, hän näyttää mahdollisimman viattoman ilmeen"
     ),
     nhCard(
       "nh30",
@@ -12656,8 +12776,10 @@ function NeverHaveIEverGameScreen({
       "🔥",
       "Я никогда не представлял(а) совместную жизнь через 10 лет",
       "I have never imagined our life together 10 years from now",
+      "En ole koskaan kuvitellut yhteistä elämäämme 10 vuoden päästä",
       "Если партнёр делал это — рассказывает один такой образ",
-      "If your partner has, they share one such picture"
+      "If your partner has, they share one such picture",
+      "Jos kumppanisi on, hän kertoo yhden sellaisen mielikuvan"
     ),
     nhCard(
       "nh31",
@@ -12665,8 +12787,10 @@ function NeverHaveIEverGameScreen({
       "😈",
       "Я никогда не задерживал(а) ответ специально",
       "I have never delayed replying on purpose",
+      "En ole koskaan viivytellyt vastaamista tarkoituksella",
       "Если партнёр делал это — признаётся, зачем так делал(а)",
-      "If your partner has, they admit why they did it"
+      "If your partner has, they admit why they did it",
+      "Jos kumppanisi on, hän myöntää miksi teki niin"
     ),
     nhCard(
       "nh32",
@@ -12674,8 +12798,10 @@ function NeverHaveIEverGameScreen({
       "🤣",
       "Я никогда не делал(а) вид, что не заметил(а) сообщение",
       "I have never pretended I didn't see a message",
+      "En ole koskaan teeskennellyt, etten huomannut viestiä",
       "Если партнёр делал это — признаётся, почему так бывает",
-      "If your partner has, they admit why that happens"
+      "If your partner has, they admit why that happens",
+      "Jos kumppanisi on, hän myöntää miksi niin joskus käy"
     ),
     nhCard(
       "nh33",
@@ -12683,8 +12809,10 @@ function NeverHaveIEverGameScreen({
       "🔥",
       "Я никогда не хотел(а) обнять человека сильнее, чем позволяли обстоятельства",
       "I have never wanted to hug someone more than the situation allowed",
+      "En ole koskaan halunnut halata jotakuta enemmän kuin tilanne salli",
       "Если партнёр делал это — обнимает тебя прямо сейчас",
-      "If your partner has, they hug you right now"
+      "If your partner has, they hug you right now",
+      "Jos kumppanisi on, hän halaa sinua juuri nyt"
     ),
     nhCard(
       "nh34",
@@ -12692,8 +12820,10 @@ function NeverHaveIEverGameScreen({
       "😈",
       "Я никогда не устраивал(а) сцену ревности",
       "I have never made a jealous scene",
+      "En ole koskaan tehnyt mustasukkaisuuskohtausta",
       "Если партнёр делал это — изображает свою ревность без слов",
-      "If your partner has, they act out their jealousy without words"
+      "If your partner has, they act out their jealousy without words",
+      "Jos kumppanisi on, hän näyttelee mustasukkaisuutensa sanattomasti"
     ),
     nhCard(
       "nh35",
@@ -12701,8 +12831,10 @@ function NeverHaveIEverGameScreen({
       "🤣",
       "Я никогда не врал(а), что мне нравится подарок",
       "I have never lied about liking a gift",
+      "En ole koskaan valehdellut pitäväni lahjasta",
       "Если партнёр делал это — рассказывает про самый странный подарок",
-      "If your partner has, they tell the story of the strangest gift"
+      "If your partner has, they tell the story of the strangest gift",
+      "Jos kumppanisi on, hän kertoo tarinan oudoimmasta lahjastaan"
     ),
     nhCard(
       "nh36",
@@ -12710,8 +12842,10 @@ function NeverHaveIEverGameScreen({
       "🔥",
       "Я никогда не думал(а): 'с этим человеком было бы очень спокойно'",
       "I have never thought 'life would feel so calm with this person'",
+      "En ole koskaan ajatellut: 'tämän ihmisen kanssa olisi hyvin rauhallista'",
       "Если партнёр делал это — говорит, что для него(неё) значит спокойствие в любви",
-      "If your partner has, they say what calm love means to them"
+      "If your partner has, they say what calm love means to them",
+      "Jos kumppanisi on, hän kertoo, mitä rauhallisuus rakkaudessa hänelle tarkoittaa"
     ),
     nhCard(
       "nh37",
@@ -12719,8 +12853,10 @@ function NeverHaveIEverGameScreen({
       "😈",
       "Я никогда не хотел(а) сбежать с вечеринки домой с кем-то вдвоём",
       "I have never wanted to sneak away from a party with someone",
+      "En ole koskaan halunnut livahtaa pois juhlista jonkun kanssa kahdestaan",
       "Если партнёр делал это — объясняет, что для него(неё) идеальный вечер",
-      "If your partner has, they describe their idea of a perfect night out"
+      "If your partner has, they describe their idea of a perfect night out",
+      "Jos kumppanisi on, hän kuvailee täydellisen iltansa"
     ),
     nhCard(
       "nh38",
@@ -12728,8 +12864,10 @@ function NeverHaveIEverGameScreen({
       "🤣",
       "Я никогда не краснел(а) из-за комплимента",
       "I have never blushed because of a compliment",
+      "En ole koskaan punastunut kohteliaisuuden takia",
       "Если партнёр делал это — получает от тебя новый комплимент",
-      "If your partner has, they get a new compliment from you"
+      "If your partner has, they get a new compliment from you",
+      "Jos kumppanisi on, hän saa sinulta uuden kohteliaisuuden"
     ),
     nhCard(
       "nh39",
@@ -12737,8 +12875,10 @@ function NeverHaveIEverGameScreen({
       "🔥",
       "Я никогда не хранил(а) мелочь на память о важном человеке",
       "I have never kept a small memento of someone important to me",
+      "En ole koskaan säilyttänyt pientä muistoesinettä tärkeästä ihmisestä",
       "Если партнёр делал это — рассказывает, что это была за вещь",
-      "If your partner has, they tell you what it was"
+      "If your partner has, they tell you what it was",
+      "Jos kumppanisi on, hän kertoo, mikä esine se oli"
     ),
     nhCard(
       "nh40",
@@ -12746,8 +12886,10 @@ function NeverHaveIEverGameScreen({
       "😈",
       "Я никогда не хотел(а) пофлиртовать, просто чтобы проверить реакцию",
       "I have never flirted just to test someone's reaction",
+      "En ole koskaan flirttaillut vain testatakseni reaktiota",
       "Если партнёр делал это — признаётся, что это было очень рискованно",
-      "If your partner has, they admit it was pretty risky"
+      "If your partner has, they admit it was pretty risky",
+      "Jos kumppanisi on, hän myöntää, että se oli aika riskialtista"
     ),
     nhCard(
       "nh41",
@@ -12755,8 +12897,10 @@ function NeverHaveIEverGameScreen({
       "🤣",
       "Я никогда не пугался(ась) собственного сообщения на максимальной громкости",
       "I have never been startled by my own notification at max volume",
+      "En ole koskaan säikähtänyt omaa ilmoitusääntäni täydellä äänenvoimakkuudella",
       "Если партнёр делал это — изображает этот момент",
-      "If your partner has, they act out that moment"
+      "If your partner has, they act out that moment",
+      "Jos kumppanisi on, hän näyttelee sen hetken"
     ),
     nhCard(
       "nh42",
@@ -12764,8 +12908,10 @@ function NeverHaveIEverGameScreen({
       "🔥",
       "Я никогда не представлял(а), как мы выглядели бы в старости",
       "I have never imagined what we'd look like when we're old",
+      "En ole koskaan kuvitellut, miltä näyttäisimme vanhoina",
       "Если партнёр делал это — рассказывает одну милую деталь",
-      "If your partner has, they share one sweet detail"
+      "If your partner has, they share one sweet detail",
+      "Jos kumppanisi on, hän kertoo yhden söpön yksityiskohdan"
     ),
     nhCard(
       "nh43",
@@ -12773,8 +12919,10 @@ function NeverHaveIEverGameScreen({
       "😈",
       "Я никогда не писал(а) бывшему первым(ой) после расставания",
       "I have never texted an ex first after a breakup",
+      "En ole koskaan kirjoittanut ex-kumppanilleni ensimmäisenä eron jälkeen",
       "Если партнёр делал это — рассказывает, зачем это было",
-      "If your partner has, they explain why"
+      "If your partner has, they explain why",
+      "Jos kumppanisi on, hän kertoo miksi"
     ),
     nhCard(
       "nh44",
@@ -12782,8 +12930,10 @@ function NeverHaveIEverGameScreen({
       "🤣",
       "Я никогда не спотыкался(ась) на ровном месте на глазах у других",
       "I have never tripped over nothing in front of other people",
+      "En ole koskaan kompastunut tyhjään paikkaan muiden nähden",
       "Если партнёр делал это — показывает свой самый достойный выход из неловкости",
-      "If your partner has, they show their smoothest recovery move"
+      "If your partner has, they show their smoothest recovery move",
+      "Jos kumppanisi on, hän näyttää parhaan tapansa selvitä tilanteesta tyylikkäästi"
     ),
     nhCard(
       "nh45",
@@ -12791,8 +12941,10 @@ function NeverHaveIEverGameScreen({
       "🔥",
       "Я никогда не хотел(а) провести целый день вдвоём без телефонов",
       "I have never wanted to spend a whole day together with no phones",
+      "En ole koskaan halunnut viettää kokonaista päivää yhdessä ilman puhelimia",
       "Если партнёр делал это — описывает этот день одной фразой",
-      "If your partner has, they describe that day in one sentence"
+      "If your partner has, they describe that day in one sentence",
+      "Jos kumppanisi on, hän kuvailee sen päivän yhdellä lauseella"
     ),
     nhCard(
       "nh46",
@@ -12800,8 +12952,10 @@ function NeverHaveIEverGameScreen({
       "😈",
       "Я никогда не делал(а) первый шаг в отношениях",
       "I have never made the first move in a relationship",
+      "En ole koskaan tehnyt ensimmäistä siirtoa suhteessa",
       "Если партнёр делал это — рассказывает, как это было",
-      "If your partner has, they tell the story of how it happened"
+      "If your partner has, they tell the story of how it happened",
+      "Jos kumppanisi on, hän kertoo, miten se tapahtui"
     ),
     nhCard(
       "nh47",
@@ -12809,8 +12963,10 @@ function NeverHaveIEverGameScreen({
       "🤣",
       "Я никогда не делал(а) виноватое лицо, чтобы выкрутиться",
       "I have never put on a guilty face just to get out of trouble",
+      "En ole koskaan tehnyt syyllistä ilmettä päästäkseni pälkähästä",
       "Если партнёр делал это — показывает своё лучшее виноватое лицо",
-      "If your partner has, they show their best guilty face"
+      "If your partner has, they show their best guilty face",
+      "Jos kumppanisi on, hän näyttää parhaan syyllisen ilmeensä"
     ),
     nhCard(
       "nh48",
@@ -12818,8 +12974,10 @@ function NeverHaveIEverGameScreen({
       "🔥",
       "Я никогда не переслушивал(а) песню из-за воспоминаний о человеке",
       "I have never replayed a song over and over because it reminded me of someone",
+      "En ole koskaan kuunnellut samaa kappaletta uudestaan ja uudestaan, koska se muistutti jostakusta",
       "Если партнёр делал это — называет эту песню или её настроение",
-      "If your partner has, they name the song or its mood"
+      "If your partner has, they name the song or its mood",
+      "Jos kumppanisi on, hän nimeää kappaleen tai sen tunnelman"
     ),
     nhCard(
       "nh49",
@@ -12827,8 +12985,10 @@ function NeverHaveIEverGameScreen({
       "😈",
       "Я никогда не хотел(а) поцеловать кого-то неожиданно",
       "I have never wanted to kiss someone out of the blue",
+      "En ole koskaan halunnut suudella jotakuta yllättäen",
       "Если партнёр делал это — говорит, насколько это было спонтанно по шкале от 1 до 10",
-      "If your partner has, they rate how spontaneous it was from 1 to 10"
+      "If your partner has, they rate how spontaneous it was from 1 to 10",
+      "Jos kumppanisi on, hän arvioi asteikolla 1-10, kuinka spontaania se oli"
     ),
     nhCard(
       "nh50",
@@ -12836,8 +12996,10 @@ function NeverHaveIEverGameScreen({
       "🤣",
       "Я никогда не отправлял(а) сообщение не тому человеку",
       "I have never sent a message to the wrong person",
+      "En ole koskaan lähettänyt viestiä väärälle henkilölle",
       "Если партнёр делал это — рассказывает, что это было за сообщение",
-      "If your partner has, they tell you what the message said"
+      "If your partner has, they tell you what the message said",
+      "Jos kumppanisi on, hän kertoo, mitä viestissä luki"
     ),
     nhCard(
       "nh51",
@@ -12845,8 +13007,10 @@ function NeverHaveIEverGameScreen({
       "🔥",
       "Я никогда не мечтал(а) о красивом признании в любви",
       "I have never dreamed of a beautiful love confession",
+      "En ole koskaan haaveillut kauniista rakkaudentunnustuksesta",
       "Если партнёр делал это — делится одной такой идеей",
-      "If your partner has, they share one such idea"
+      "If your partner has, they share one such idea",
+      "Jos kumppanisi on, hän jakaa yhden sellaisen idean"
     ),
     nhCard(
       "nh52",
@@ -12854,8 +13018,10 @@ function NeverHaveIEverGameScreen({
       "😈",
       "Я никогда не вёл(вела) себя слишком гордо после ссоры",
       "I have never been too proud to make up after a fight",
+      "En ole koskaan ollut liian ylpeä sopiakseni riidan jälkeen",
       "Если партнёр делал это — говорит одну фразу для примирения",
-      "If your partner has, they say one line to make peace"
+      "If your partner has, they say one line to make peace",
+      "Jos kumppanisi on, hän sanoo yhden sovintolauseen"
     ),
     nhCard(
       "nh53",
@@ -12863,8 +13029,10 @@ function NeverHaveIEverGameScreen({
       "🤣",
       "Я никогда не делал(а) вид, что всё нормально, когда было очень смешно",
       "I have never pretended everything was fine when it was actually hilarious",
+      "En ole koskaan teeskennellyt, että kaikki on hyvin, vaikka oli todella hauskaa",
       "Если партнёр делал это — пытается не засмеяться 5 секунд, глядя на тебя",
-      "If your partner has, they try not to laugh for 5 seconds while looking at you"
+      "If your partner has, they try not to laugh for 5 seconds while looking at you",
+      "Jos kumppanisi on, hän yrittää olla nauramatta 5 sekuntia katsoessaan sinua"
     ),
     nhCard(
       "nh54",
@@ -12872,8 +13040,10 @@ function NeverHaveIEverGameScreen({
       "🔥",
       "Я никогда не хотел(а) сказать человеку что-то очень нежное, но стеснялся(ась)",
       "I have never wanted to say something very tender to someone but got too shy",
+      "En ole koskaan halunnut sanoa jollekulle jotain hyvin hellää, mutta hävettänyt liikaa",
       "Если партнёр делал это — говорит тебе это сейчас в мягкой форме",
-      "If your partner has, they say it to you now, gently"
+      "If your partner has, they say it to you now, gently",
+      "Jos kumppanisi on, hän sanoo sen sinulle nyt pehmeästi"
     ),
     nhCard(
       "nh55",
@@ -12881,8 +13051,10 @@ function NeverHaveIEverGameScreen({
       "😈",
       "Я никогда не делал(а) вид, что мне неинтересно, хотя было очень интересно",
       "I have never pretended not to be interested when I really was",
+      "En ole koskaan teeskennellyt, etten ole kiinnostunut, vaikka olin todella kiinnostunut",
       "Если партнёр делал это — честно признаётся, когда так бывало",
-      "If your partner has, they honestly admit when that happened"
+      "If your partner has, they honestly admit when that happened",
+      "Jos kumppanisi on, hän myöntää rehellisesti, milloin niin on käynyt"
     ),
     nhCard(
       "nh56",
@@ -12890,8 +13062,10 @@ function NeverHaveIEverGameScreen({
       "🤣",
       "Я никогда не репетировал(а) разговор заранее в голове",
       "I have never rehearsed a conversation in my head beforehand",
+      "En ole koskaan harjoitellut keskustelua etukäteen päässäni",
       "Если партнёр делал это — изображает, как это выглядит",
-      "If your partner has, they act out what that looks like"
+      "If your partner has, they act out what that looks like",
+      "Jos kumppanisi on, hän näyttelee, miltä se näyttää"
     ),
     nhCard(
       "nh57",
@@ -12899,8 +13073,10 @@ function NeverHaveIEverGameScreen({
       "🔥",
       "Я никогда не хотел(а) провести с человеком весь день, ничего особо не делая",
       "I have never wanted to spend the whole day with someone, doing nothing in particular",
+      "En ole koskaan halunnut viettää koko päivää jonkun kanssa tekemättä mitään erityistä",
       "Если партнёр делал это — говорит, почему это для него(неё) ценно",
-      "If your partner has, they say why that matters to them"
+      "If your partner has, they say why that matters to them",
+      "Jos kumppanisi on, hän kertoo, miksi se on hänelle arvokasta"
     ),
     nhCard(
       "nh58",
@@ -12908,8 +13084,10 @@ function NeverHaveIEverGameScreen({
       "😈",
       "Я никогда не делал(а) намёк вместо прямого признания",
       "I have never dropped a hint instead of just saying it directly",
+      "En ole koskaan vihjaillut suoran tunnustuksen sijaan",
       "Если партнёр делал это — признаётся, понял(а) ли кто-то этот намёк",
-      "If your partner has, they admit whether anyone actually got the hint"
+      "If your partner has, they admit whether anyone actually got the hint",
+      "Jos kumppanisi on, hän myöntää, ymmärsikö kukaan vihjettä"
     ),
     nhCard(
       "nh59",
@@ -12917,8 +13095,10 @@ function NeverHaveIEverGameScreen({
       "🤣",
       "Я никогда не терял(а) мысль посреди разговора",
       "I have never lost my train of thought in the middle of a conversation",
+      "En ole koskaan kadottanut ajatuksenjuoksuani kesken keskustelun",
       "Если партнёр делал это — должен(на) придумать очень умный вид на 3 секунды",
-      "If your partner has, they have to look extremely smart for 3 seconds"
+      "If your partner has, they have to look extremely smart for 3 seconds",
+      "Jos kumppanisi on, hänen täytyy näyttää erittäin fiksulta 3 sekuntia"
     ),
   ];
 
@@ -12975,11 +13155,11 @@ function handleNext() {
     <div style={{ padding: 16, display: "grid", gap: 14 }}>
       <div style={{ ...cardBaseStyle(), padding: 18 }}>
         <div style={{ fontSize: 28, fontWeight: 900, color: ink }}>
-          {market !== "ru" ? "Never Have I Ever..." : "Я никогда не..."}
+          {market === "fi" ? "En ole koskaan..." : market === "en" ? "Never Have I Ever..." : "Я никогда не..."}
         </div>
 
         <div style={{ marginTop: 8, color: muted, fontSize: 15 }}>
-          {market !== "ru" ? "Loading cards..." : "Загружаем карточки..."}
+          {market === "fi" ? "Ladataan kortteja..." : market === "en" ? "Loading cards..." : "Загружаем карточки..."}
         </div>
       </div>
 
@@ -12994,23 +13174,29 @@ const rewardKey = `never-have:${card.id}`;
 const alreadyPlayed = playedGameRewardKeys.includes(rewardKey);
 
 const categoryLabel =
-  market !== "ru"
+  market === "fi"
     ? card.type === "romantic"
-      ? "Romantic"
+      ? "Romanttinen"
       : card.type === "spicy"
-      ? "Bold"
-      : "Funny"
-    : card.type === "romantic"
-    ? "Романтика"
-    : card.type === "spicy"
-    ? "Провокация"
-    : "Смешное";
+        ? "Rohkea"
+        : "Hauska"
+    : market === "en"
+      ? card.type === "romantic"
+        ? "Romantic"
+        : card.type === "spicy"
+        ? "Bold"
+        : "Funny"
+      : card.type === "romantic"
+      ? "Романтика"
+      : card.type === "spicy"
+      ? "Провокация"
+      : "Смешное";
 
 return (
   <div style={{ padding: 16, display: "grid", gap: 14 }}>
     <div style={{ ...cardBaseStyle(), padding: 18 }}>
       <div style={{ fontSize: 28, fontWeight: 900, color: ink }}>
-        {market !== "ru" ? "Never Have I Ever..." : "Я никогда не..."}
+        {market === "fi" ? "En ole koskaan..." : market === "en" ? "Never Have I Ever..." : "Я никогда не..."}
       </div>
 
       <div
@@ -13021,9 +13207,11 @@ return (
           lineHeight: 1.45,
         }}
       >
-        {market !== "ru"
-          ? "Say something you've never done in your life — if your partner has done it, they complete the task on the card."
-          : "Скажите что-то, чего вы никогда в жизни не делали, и если ваш партнёр делал это, он выполняет задание с карточки."}
+        {market === "fi"
+          ? "Sano jotain, mitä et ole koskaan tehnyt elämässäsi — jos kumppanisi on tehnyt sen, hän suorittaa kortin tehtävän."
+          : market === "en"
+            ? "Say something you've never done in your life — if your partner has done it, they complete the task on the card."
+            : "Скажите что-то, чего вы никогда в жизни не делали, и если ваш партнёр делал это, он выполняет задание с карточки."}
       </div>
 
       <div
@@ -13034,9 +13222,11 @@ return (
           lineHeight: 1.45,
         }}
       >
-        {market !== "ru"
-          ? "For example: “I have never played strip poker” — if your partner has done it at least once, it's their turn to complete the task."
-          : "Например: «Я ни разу не играл в карты на раздевание» — если партнёр хотя бы раз делал это, ему пора выполнять задание."}
+        {market === "fi"
+          ? "Esimerkiksi: “En ole koskaan pelannut riisumiskorttipeliä” — jos kumppanisi on tehnyt niin edes kerran, on hänen vuoronsa suorittaa tehtävä."
+          : market === "en"
+            ? "For example: “I have never played strip poker” — if your partner has done it at least once, it's their turn to complete the task."
+            : "Например: «Я ни разу не играл в карты на раздевание» — если партнёр хотя бы раз делал это, ему пора выполнять задание."}
       </div>
 
       <div
@@ -13049,9 +13239,11 @@ return (
           fontWeight: 800,
         }}
       >
-        {market !== "ru"
-          ? `Reward per card: +${reward} points`
-          : `Награда за карточку: +${reward} очков`}
+        {market === "fi"
+          ? `Palkkio kortilta: +${reward} pistettä`
+          : market === "en"
+            ? `Reward per card: +${reward} points`
+            : `Награда за карточку: +${reward} очков`}
       </div>
     </div>
 
@@ -13147,7 +13339,7 @@ return (
                 color: "#241b40",
               }}
             >
-              {card.emoji} {market !== "ru" ? "Task" : "Задание"}
+              {card.emoji} {market === "fi" ? "Tehtävä" : market === "en" ? "Task" : "Задание"}
             </div>
 
             <div
@@ -13168,13 +13360,17 @@ return (
         onClick={() => setFlipped((prev) => !prev)}
         style={{ ...getPrimaryButtonStyle(isDark), width: "100%", marginTop: 16 }}
       >
-        {market !== "ru"
+        {market === "fi"
           ? flipped
-            ? "Show question"
-            : "Show task"
-          : flipped
-            ? "Показать вопрос"
-            : "Показать задание"}
+            ? "Näytä kysymys"
+            : "Näytä tehtävä"
+          : market === "en"
+            ? flipped
+              ? "Show question"
+              : "Show task"
+            : flipped
+              ? "Показать вопрос"
+              : "Показать задание"}
       </button>
 
 
@@ -13190,13 +13386,17 @@ return (
       cursor: rewardClaimed || alreadyPlayed ? "not-allowed" : "pointer",
     }}
   >
-    {market !== "ru"
+    {market === "fi"
       ? alreadyPlayed
-        ? "Card already played"
-        : "Card played"
-      : alreadyPlayed
-        ? "Карточка уже сыграна"
-        : "Карточка сыграна"}
+        ? "Kortti jo pelattu"
+        : "Kortti pelattu"
+      : market === "en"
+        ? alreadyPlayed
+          ? "Card already played"
+          : "Card played"
+        : alreadyPlayed
+          ? "Карточка уже сыграна"
+          : "Карточка сыграна"}
   </button>
 )}
 
@@ -13526,7 +13726,7 @@ if (!activeTestId) {
       <div style={{ padding: 16 }}>
         <div style={{ ...cardBaseStyle(), padding: 20 }}>
           <div style={{ fontSize: 30, fontWeight: 900, color: ink }}>
-            {market !== "ru" ? "Test Result ✨" : "Результат теста ✨"}
+            {market === "fi" ? "Testin tulos ✨" : market === "en" ? "Test Result ✨" : "Результат теста ✨"}
           </div>
 
           <div style={{ marginTop: 16, fontSize: 26, fontWeight: 900, color: ink }}>
@@ -13560,7 +13760,7 @@ if (!activeTestId) {
             onClick={handleFinish}
             style={{ ...getPrimaryButtonStyle(isDark), width: "100%", marginTop: 16 }}
           >
-            {market !== "ru" ? "Claim points" : "Забрать очки"}
+            {market === "fi" ? "Kerää pisteet" : market === "en" ? "Claim points" : "Забрать очки"}
           </button>
         </div>
       </div>
@@ -13643,7 +13843,7 @@ if (!activeTestId) {
        
 
         <button onClick={() => setActiveTestId(null)} style={secondaryButtonStyle}>
-          {market !== "ru" ? "Exit test" : "Выйти из теста"}
+          {market === "fi" ? "Poistu testistä" : market === "en" ? "Exit test" : "Выйти из теста"}
         </button>
       </div>
     </div>
@@ -16430,7 +16630,7 @@ const t = market === "fi" ? TEXT_FI : market === "en" ? TEXT_EN : TEXT_RU;
 
       <div style={{ ...cardBaseStyle(), padding: 18 }}>
   <div style={{ fontSize: 22, fontWeight: 900, color: ink }}>
-    {market !== "ru" ? "Invite friends 👥" : "Пригласи друзей 👥"}
+    {t.referrals.title} 👥
   </div>
 
   <div
