@@ -10689,13 +10689,17 @@ async function handleFinish() {
             opacity: completed ? 0.92 : 1,
           }}
         >
-          {market !== "ru"
+          {market === "fi"
             ? completed
-              ? "Try again"
-              : "Start"
-            : completed
-            ? "Пройти снова"
-            : "Начать"}
+              ? "Yritä uudelleen"
+              : "Aloita"
+            : market === "en"
+              ? completed
+                ? "Try again"
+                : "Start"
+              : completed
+              ? "Пройти снова"
+              : "Начать"}
         </button>
       </div>
     );
@@ -11445,7 +11449,17 @@ function handleLoveQuestionFinish() {
   opacity: completed ? 0.92 : 1,
 }}
             >
-              {completed ? "Сыграть снова" : "Начать"}
+              {market === "fi"
+                ? completed
+                  ? "Pelaa uudelleen"
+                  : "Aloita"
+                : market === "en"
+                  ? completed
+                    ? "Play again"
+                    : "Start"
+                  : completed
+                    ? "Сыграть снова"
+                    : "Начать"}
             </button>
           </div>
         );
@@ -13695,13 +13709,17 @@ if (!activeTestId) {
   }}
 >
             
-              {market !== "ru"
+              {market === "fi"
                 ? completed
-                  ? "Take again"
-                  : "Start"
-                : completed
-                  ? "Пройти снова"
-                  : "Начать"}
+                  ? "Tee uudelleen"
+                  : "Aloita"
+                : market === "en"
+                  ? completed
+                    ? "Take again"
+                    : "Start"
+                  : completed
+                    ? "Пройти снова"
+                    : "Начать"}
             </button>
           </div>
         );
