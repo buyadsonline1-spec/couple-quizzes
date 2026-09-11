@@ -8306,8 +8306,6 @@ function getCurrentWeekKey() {
   return `${now.getFullYear()}-W${week}`;
 }
 
-console.log("CURRENT WEEK:", getCurrentWeekKey());
-
 function getCurrentDayKey() {
   const now = new Date();
 
@@ -13374,11 +13372,6 @@ function selectOption(optionIndex: number) {
       return false;
     }
 
-    console.log(
-      "GIVEAWAY TICKET ADDED:",
-      result.entry
-    );
-
     return true;
   } catch (error) {
     console.error(
@@ -17267,10 +17260,6 @@ async function claimReferralReward(initData: string) {
   }
 
   if (!data?.ok) {
-    console.log(
-      "Referral reward not granted:",
-      data?.reason
-    );
 
     return {
       ok: false,
@@ -17279,11 +17268,6 @@ async function claimReferralReward(initData: string) {
         "not-awarded",
     };
   }
-
-  console.log(
-    "Referral reward granted:",
-    data
-  );
 
   return {
     ok: true,
@@ -17505,12 +17489,7 @@ function toggleTheme() {
 
   function getLiveTelegramUser(): TgUser | null {
   const tgUser = window.Telegram?.WebApp?.initDataUnsafe?.user;
-   const startParam =
-    window.Telegram?.WebApp?.initDataUnsafe?.start_param;
 
-  if (startParam === "welcome") {
-    console.log("Welcome user 🚀");
-  }
   if (!tgUser?.id) return null;
 
 
@@ -17557,7 +17536,6 @@ async function confirmGiveawayAction(
       return false;
     }
 
-    console.log("GIVEAWAY TICKET ADDED:", result);
 
     return true;
   } catch (error) {
@@ -17680,7 +17658,6 @@ const handleBuyPremium = async () => {
     });
 
     const data = await res.json();
-    console.log("BUY PREMIUM RESPONSE:", data);
 
     if (!res.ok) {
       throw new Error(data?.error || t.errors.paymentCreateFailed);
@@ -17693,7 +17670,6 @@ const handleBuyPremium = async () => {
 
     if (window.Telegram?.WebApp?.openInvoice) {
       window.Telegram.WebApp.openInvoice(invoiceLink, async (status) => {
-  console.log("INVOICE STATUS:", status);
 
   if (status !== "paid" || !user?.id) return;
 
@@ -18327,7 +18303,6 @@ const handleClaimWeeklyTopReward = async () => {
   const result = await claimWeeklyPairTopReward();
 
   if (!result?.awarded) {
-    console.log("Weekly top reward not claimed:", result?.reason);
     return;
   }
 
@@ -19157,10 +19132,6 @@ const [levelUpData, setLevelUpData] = useState<{ level: number; title: string } 
     }
 
     const tg = window.Telegram?.WebApp;
-    console.log("WINDOW TELEGRAM:", window.Telegram);
-console.log("WEBAPP:", window.Telegram?.WebApp);
-console.log("INIT DATA UNSAFE:", window.Telegram?.WebApp?.initDataUnsafe);
-console.log("TG USER:", window.Telegram?.WebApp?.initDataUnsafe?.user);
     tg?.ready?.();
     tg?.expand?.();
 
@@ -19192,14 +19163,12 @@ if (!telegramUser?.id) {
 }
 
 if (!telegramUser?.id) {
-  console.log("Telegram user still not available");
   return;
 }
 
 const telegramId = telegramUser.id;
 
 if (!telegramId) {
-  console.log("Telegram user id is missing");
   return;
 }
 
@@ -19305,7 +19274,6 @@ let dailyPairHistoryFromDb = bootstrapData.dailyPair?.history ?? [];
 if (!nextPairState.pairId && startParam?.startsWith("invite_")) {
   const inviteCode = startParam.replace("invite_", "");
 
-  console.log("TRY JOIN WITH CODE:", inviteCode);
 
   const joinedPair = await joinPairByInviteCode(
     currentUser.id!,
@@ -19325,7 +19293,6 @@ if (!nextPairState.pairId && startParam?.startsWith("invite_")) {
   }
 }
 
-console.log("PAIR STATE AFTER BOOTSTRAP:", nextPairState);
 
 setAppState((prev) => ({
   ...prev,
