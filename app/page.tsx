@@ -15917,6 +15917,10 @@ type PetShopItem = {
   // Для комнаты — фон карточки; для шапки/аксессуара не используется
   // (они рисуются поверх PetFace).
   roomBackground?: string;
+  // Для комнаты — мелкий декор сцены (иконки, разбросанные по фону
+  // карточки), чтобы комната ощущалась как окружение, а не просто
+  // заливка за питомцем.
+  roomDecor?: string[];
 };
 
 const PET_SHOP_ITEMS: PetShopItem[] = [
@@ -15941,6 +15945,7 @@ const PET_SHOP_ITEMS: PetShopItem[] = [
     nameEn: "Meadow",
     nameFi: "Niitty",
     roomBackground: "linear-gradient(160deg, #cdeccb 0%, #a8dba8 100%)",
+    roomDecor: ["🌼", "🦋", "🌿"],
   },
   {
     id: "room_night",
@@ -15951,6 +15956,7 @@ const PET_SHOP_ITEMS: PetShopItem[] = [
     nameEn: "Night",
     nameFi: "Yö",
     roomBackground: "linear-gradient(160deg, #2b2560 0%, #6a3b6e 100%)",
+    roomDecor: ["⭐", "🌙", "✨"],
   },
   {
     id: "room_beach",
@@ -15961,6 +15967,7 @@ const PET_SHOP_ITEMS: PetShopItem[] = [
     nameEn: "Beach",
     nameFi: "Ranta",
     roomBackground: "linear-gradient(160deg, #ffe9b3 0%, #8ed1e8 100%)",
+    roomDecor: ["🐚", "☀️", "🌴"],
   },
   {
     id: "room_forest",
@@ -15971,6 +15978,7 @@ const PET_SHOP_ITEMS: PetShopItem[] = [
     nameEn: "Forest",
     nameFi: "Metsä",
     roomBackground: "linear-gradient(160deg, #bfe0c0 0%, #4f8f5b 100%)",
+    roomDecor: ["🌲", "🍄", "🍃"],
   },
   {
     id: "room_space",
@@ -15981,6 +15989,7 @@ const PET_SHOP_ITEMS: PetShopItem[] = [
     nameEn: "Space",
     nameFi: "Avaruus",
     roomBackground: "linear-gradient(160deg, #10122b 0%, #33265f 100%)",
+    roomDecor: ["🪐", "🌟", "☄️"],
   },
   {
     id: "room_candy",
@@ -15991,6 +16000,7 @@ const PET_SHOP_ITEMS: PetShopItem[] = [
     nameEn: "Candy",
     nameFi: "Karkki",
     roomBackground: "linear-gradient(160deg, #ffd1e8 0%, #ffe9a8 100%)",
+    roomDecor: ["🍭", "🍬", "🧁"],
   },
 ];
 
@@ -16068,6 +16078,44 @@ const PET_SPECIES_OPTIONS: Array<{
 
 function speciesLabel(option: (typeof PET_SPECIES_OPTIONS)[number], market: Market): string {
   return market === "fi" ? option.labelFi : market === "en" ? option.labelEn : option.labelRu;
+}
+
+// Настоящие сгенерированные изображения питомцев (3D-игрушечный стиль,
+// прозрачный фон) — для видов, где ассет уже готов. Остальные виды
+// (пока только корова) продолжают рисоваться вручную через PetFaceBody
+// ниже, так что добавление нового фото сюда — это всё, что нужно для
+// переключения вида с SVG-заглушки на настоящую картинку.
+const PET_PHOTO_SRC: Partial<Record<PetSpecies, string>> = {
+  dog: "/pets/dog.png",
+  cat: "/pets/cat.png",
+  rabbit: "/pets/rabbit.png",
+  hippo: "/pets/hippo.png",
+  owl: "/pets/owl.png",
+};
+
+// Питомец растёт вместе с уровнем — три стадии, от малыша до
+// взрослого. Это чисто визуальный масштаб одного и того же ассета
+// (фото или SVG), без отдельной отрисовки на каждую стадию.
+type PetGrowthStage = {
+  key: "baby" | "kid" | "adult";
+  scale: number;
+  labelRu: string;
+  labelEn: string;
+  labelFi: string;
+};
+
+function getPetGrowthStage(level: number): PetGrowthStage {
+  if (level >= 6) {
+    return { key: "adult", scale: 1, labelRu: "Взрослый", labelEn: "Adult", labelFi: "Aikuinen" };
+  }
+  if (level >= 3) {
+    return { key: "kid", scale: 0.86, labelRu: "Подросток", labelEn: "Teen", labelFi: "Nuori" };
+  }
+  return { key: "baby", scale: 0.7, labelRu: "Малыш", labelEn: "Baby", labelFi: "Vauva" };
+}
+
+function petGrowthStageLabel(stage: PetGrowthStage, market: Market): string {
+  return market === "fi" ? stage.labelFi : market === "en" ? stage.labelEn : stage.labelRu;
 }
 
 // Нарисованные вручную "лица" питомцев (SVG, 200×200) — вместо голого
@@ -16351,16 +16399,83 @@ function PetFace({
   size,
   hat,
   accessory,
+  scale = 1,
 }: {
   species: PetSpecies;
   size: number;
   hat?: string | null;
   accessory?: string | null;
+  // Стадия роста (см. getPetGrowthStage) — визуально уменьшает
+  // питомца на ранних уровнях, не трогая сам ассет.
+  scale?: number;
 }) {
+  const photoSrc = PET_PHOTO_SRC[species];
+  const hatItem = hat ? PET_SHOP_ITEMS.find((item) => item.id === hat) : null;
+  const accessoryItem = accessory ? PET_SHOP_ITEMS.find((item) => item.id === accessory) : null;
+
+  if (photoSrc) {
+    // Настоящее фото питомца: шапка/аксессуар рисуются как наклейки
+    // поверх фото (эмодзи из каталога), а не подгоняются пиксель в
+    // пиксель под силуэт — на реальном фото это выглядит опрятнее и
+    // проще поддерживать, чем точное позиционирование под 6 разных
+    // питомцев с разными пропорциями.
+    return (
+      <div
+        style={{
+          position: "relative",
+          width: size,
+          height: size,
+          transform: `scale(${scale})`,
+          transition: "transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1)",
+        }}
+      >
+        <img
+          src={photoSrc}
+          alt=""
+          style={{ width: "100%", height: "100%", objectFit: "contain", display: "block", userSelect: "none" }}
+          draggable={false}
+        />
+        {accessoryItem && (
+          <div
+            style={{
+              position: "absolute",
+              top: "56%",
+              left: "50%",
+              transform: "translate(-50%, -50%)",
+              fontSize: size * 0.24,
+              filter: "drop-shadow(0 2px 4px rgba(0,0,0,0.25))",
+            }}
+          >
+            {accessoryItem.emoji}
+          </div>
+        )}
+        {hatItem && (
+          <div
+            style={{
+              position: "absolute",
+              top: "-4%",
+              left: "50%",
+              transform: "translate(-50%, 0) rotate(-8deg)",
+              fontSize: size * 0.28,
+              filter: "drop-shadow(0 2px 4px rgba(0,0,0,0.25))",
+            }}
+          >
+            {hatItem.emoji}
+          </div>
+        )}
+      </div>
+    );
+  }
+
   // Аксессуары-шляпы иногда рисуют выше y=0 (цилиндр) — overflow
   // visible, чтобы их не обрезало по краю viewBox/контейнера.
   return (
-    <svg width={size} height={size} viewBox="0 0 200 200" style={{ overflow: "visible" }}>
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 200 200"
+      style={{ overflow: "visible", transform: `scale(${scale})`, transition: "transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1)" }}
+    >
       <PetFaceBody species={species} />
       {accessory && <PetAccessoryOverlay accessory={accessory} />}
       {hat && <PetHatOverlay hat={hat} />}
@@ -16462,11 +16577,12 @@ function PetScreen({
     .pet-glow-pulse { animation: petGlowPulse 3.2s ease-in-out infinite; }
     .pet-sparkle-1 { animation: petSparkleFloat 4s ease-in-out infinite; }
     .pet-sparkle-2 { animation: petSparkleFloat 4.6s ease-in-out infinite 0.6s; }
+    .pet-sparkle-3 { animation: petSparkleFloat 5.2s ease-in-out infinite 1.1s; }
     .pet-level-up-banner { animation: petLevelUpIn 0.4s cubic-bezier(0.22, 1, 0.36, 1) both; }
     .pet-species-active { animation: petCardSpeciesPop 0.3s ease; }
     .pet-blink { animation: petBlink 4.5s ease-in-out infinite; }
     @media (prefers-reduced-motion: reduce) {
-      .pet-avatar-bounce, .pet-glow-pulse, .pet-sparkle-1, .pet-sparkle-2, .pet-blink { animation: none !important; }
+      .pet-avatar-bounce, .pet-glow-pulse, .pet-sparkle-1, .pet-sparkle-2, .pet-sparkle-3, .pet-blink { animation: none !important; }
     }
   `;
 
@@ -16705,6 +16821,13 @@ function PetScreen({
   const equippedRoomItem = pet?.equippedRoom
     ? PET_SHOP_ITEMS.find((item) => item.id === pet.equippedRoom)
     : null;
+  const growthStage = getPetGrowthStage(pet?.level ?? 1);
+  // Комнаты рисуются насыщенным градиентом (в т.ч. тёмным — ночь,
+  // космос), поэтому текст поверх карточки всегда светлый и с тенью,
+  // независимо от текущей темы приложения — иначе он теряется на фоне.
+  const sceneInk = equippedRoomItem ? "#ffffff" : ink;
+  const sceneMuted = equippedRoomItem ? "rgba(255,255,255,0.88)" : muted;
+  const sceneTextShadow = equippedRoomItem ? "0 1px 4px rgba(0,0,0,0.35)" : "none";
 
   async function handleShopTap(item: PetShopItem) {
     const owned = pet?.ownedItems.includes(item.id) ?? false;
@@ -16842,13 +16965,47 @@ function PetScreen({
         </div>
       )}
 
-      <div style={{ ...cardBaseStyle(), padding: 24, textAlign: "center", position: "relative", overflow: "hidden" }}>
-        <div className="pet-sparkle-1" style={{ position: "absolute", top: 14, left: 20, fontSize: 16, opacity: 0.6 }}>
-          ✨
-        </div>
-        <div className="pet-sparkle-2" style={{ position: "absolute", top: 20, right: 24, fontSize: 14, opacity: 0.5 }}>
-          💫
-        </div>
+      <div
+        style={{
+          ...cardBaseStyle(),
+          padding: 24,
+          textAlign: "center",
+          position: "relative",
+          overflow: "hidden",
+          // Купленная комната становится фоном всей карточки (как
+          // окружение, а не просто заливкой кружка за питомцем) — если
+          // комната ещё не куплена, карточка остаётся обычным
+          // "стеклянным" фоном приложения.
+          background: equippedRoomItem?.roomBackground ?? cardBaseStyle().background,
+          transition: "background 0.4s ease",
+        }}
+      >
+        {equippedRoomItem?.roomDecor ? (
+          <>
+            {[
+              { top: "9%", left: "8%" },
+              { top: "13%", right: "10%" },
+              { top: "78%", right: "12%" },
+            ].map((pos, i) => (
+              <div
+                key={i}
+                className={i === 0 ? "pet-sparkle-1" : i === 1 ? "pet-sparkle-2" : "pet-sparkle-3"}
+                style={{ position: "absolute", ...pos, fontSize: 18, opacity: 0.75 }}
+              >
+                {equippedRoomItem.roomDecor![i]}
+              </div>
+            ))}
+          </>
+        ) : (
+          <>
+            <div className="pet-sparkle-1" style={{ position: "absolute", top: 14, left: 20, fontSize: 16, opacity: 0.6 }}>
+              ✨
+            </div>
+            <div className="pet-sparkle-2" style={{ position: "absolute", top: 20, right: 24, fontSize: 14, opacity: 0.5 }}>
+              💫
+            </div>
+          </>
+        )}
 
         <div style={{ position: "relative", width: ringSize, height: ringSize, margin: "0 auto" }}>
           <div
@@ -16893,8 +17050,13 @@ function PetScreen({
               alignItems: "center",
               justifyContent: "center",
               overflow: "hidden",
-              background: equippedRoomItem?.roomBackground ?? accentGradient,
-              boxShadow: `0 10px 28px ${accentGlow}`,
+              // С купленной комнатой питомец стоит прямо на её фоне —
+              // круг за ним становится лёгкой "тенью-подставкой" вместо
+              // сплошной заливки, чтобы сцена читалась целиком.
+              background: equippedRoomItem
+                ? "radial-gradient(ellipse at 50% 88%, rgba(0,0,0,0.22), transparent 62%)"
+                : accentGradient,
+              boxShadow: equippedRoomItem ? "none" : `0 10px 28px ${accentGlow}`,
             }}
           >
             <PetFace
@@ -16902,6 +17064,7 @@ function PetScreen({
               size={ringSize - (ringStroke + 6) * 2}
               hat={pet.equippedHat}
               accessory={pet.equippedAccessory}
+              scale={growthStage.scale}
             />
           </div>
           <div
@@ -16928,13 +17091,15 @@ function PetScreen({
           </div>
         </div>
 
-        <div style={{ marginTop: 14, fontSize: 22, fontWeight: 900, color: ink }}>
+        <div style={{ marginTop: 14, fontSize: 22, fontWeight: 900, color: sceneInk, textShadow: sceneTextShadow }}>
           {pet.name} {pet.gender === "boy" ? "♂" : "♀"}
         </div>
-        <div style={{ marginTop: 2, fontSize: 13, color: muted, fontWeight: 700 }}>
+        <div style={{ marginTop: 2, fontSize: 13, color: sceneMuted, fontWeight: 700, textShadow: sceneTextShadow }}>
           {market === "fi" ? `Taso ${pet.level}` : market === "en" ? `Level ${pet.level}` : `Уровень ${pet.level}`}
+          {" · "}
+          {petGrowthStageLabel(growthStage, market)}
         </div>
-        <div style={{ marginTop: 8, fontSize: 11.5, color: muted }}>
+        <div style={{ marginTop: 8, fontSize: 11.5, color: sceneMuted, textShadow: sceneTextShadow }}>
           {pet.xp} / {pet.xpToNext} XP
         </div>
       </div>
