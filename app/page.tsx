@@ -17147,20 +17147,34 @@ function PetScreen({
 
         {showPetInfo && (
           <div
+            onClick={() => setShowPetInfo(false)}
             style={{
-              position: "relative",
-              zIndex: 2,
-              margin: "0 0 14px",
+              position: "absolute",
+              inset: 0,
+              zIndex: 3,
+              cursor: "pointer",
+            }}
+          />
+        )}
+
+        {showPetInfo && (
+          <div
+            style={{
+              position: "absolute",
+              top: 44,
+              left: 14,
+              right: 14,
+              zIndex: 4,
               padding: "12px 14px",
               borderRadius: 16,
-              background: sceneInk === "#ffffff" ? "rgba(0,0,0,0.28)" : "rgba(255,255,255,0.55)",
+              background: sceneInk === "#ffffff" ? "rgba(30,26,50,0.92)" : "rgba(255,255,255,0.96)",
               backdropFilter: "blur(6px)",
               WebkitBackdropFilter: "blur(6px)",
+              boxShadow: "0 12px 30px rgba(0,0,0,0.3)",
               textAlign: "left",
               fontSize: 12,
               lineHeight: 1.5,
-              color: sceneInk,
-              textShadow: sceneTextShadow,
+              color: sceneInk === "#ffffff" ? "#ffffff" : ink,
             }}
           >
             <div style={{ fontWeight: 900, marginBottom: 4 }}>
