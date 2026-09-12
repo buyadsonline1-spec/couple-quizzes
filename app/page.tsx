@@ -15923,9 +15923,15 @@ const PET_SHOP_ITEMS: PetShopItem[] = [
   { id: "hat_cap", slot: "hat", price: 250, emoji: "🧢", nameRu: "Кепка", nameEn: "Cap", nameFi: "Lippis" },
   { id: "hat_top", slot: "hat", price: 300, emoji: "🎩", nameRu: "Цилиндр", nameEn: "Top hat", nameFi: "Hattu" },
   { id: "hat_crown", slot: "hat", price: 800, emoji: "👑", nameRu: "Корона", nameEn: "Crown", nameFi: "Kruunu" },
+  { id: "hat_beanie", slot: "hat", price: 150, emoji: "🧶", nameRu: "Шапка", nameEn: "Beanie", nameFi: "Pipo" },
+  { id: "hat_flower", slot: "hat", price: 300, emoji: "🌸", nameRu: "Веночек", nameEn: "Flower crown", nameFi: "Kukkaseppele" },
+  { id: "hat_party", slot: "hat", price: 200, emoji: "🥳", nameRu: "Колпак", nameEn: "Party hat", nameFi: "Juhlahattu" },
   { id: "acc_bow", slot: "accessory", price: 200, emoji: "🎀", nameRu: "Бантик", nameEn: "Bow", nameFi: "Rusetti" },
   { id: "acc_sunglasses", slot: "accessory", price: 250, emoji: "🕶️", nameRu: "Очки", nameEn: "Sunglasses", nameFi: "Aurinkolasit" },
   { id: "acc_scarf", slot: "accessory", price: 300, emoji: "🧣", nameRu: "Шарф", nameEn: "Scarf", nameFi: "Huivi" },
+  { id: "acc_glasses", slot: "accessory", price: 200, emoji: "👓", nameRu: "Очки-нёрд", nameEn: "Glasses", nameFi: "Silmälasit" },
+  { id: "acc_collar", slot: "accessory", price: 220, emoji: "🔔", nameRu: "Ошейник", nameEn: "Collar", nameFi: "Kaulapanta" },
+  { id: "acc_medal", slot: "accessory", price: 350, emoji: "🏅", nameRu: "Медаль", nameEn: "Medal", nameFi: "Mitali" },
   {
     id: "room_meadow",
     slot: "room",
@@ -15955,6 +15961,36 @@ const PET_SHOP_ITEMS: PetShopItem[] = [
     nameEn: "Beach",
     nameFi: "Ranta",
     roomBackground: "linear-gradient(160deg, #ffe9b3 0%, #8ed1e8 100%)",
+  },
+  {
+    id: "room_forest",
+    slot: "room",
+    price: 450,
+    emoji: "🌲",
+    nameRu: "Лес",
+    nameEn: "Forest",
+    nameFi: "Metsä",
+    roomBackground: "linear-gradient(160deg, #bfe0c0 0%, #4f8f5b 100%)",
+  },
+  {
+    id: "room_space",
+    slot: "room",
+    price: 600,
+    emoji: "🚀",
+    nameRu: "Космос",
+    nameEn: "Space",
+    nameFi: "Avaruus",
+    roomBackground: "linear-gradient(160deg, #10122b 0%, #33265f 100%)",
+  },
+  {
+    id: "room_candy",
+    slot: "room",
+    price: 450,
+    emoji: "🍭",
+    nameRu: "Карамель",
+    nameEn: "Candy",
+    nameFi: "Karkki",
+    roomBackground: "linear-gradient(160deg, #ffd1e8 0%, #ffe9a8 100%)",
   },
 ];
 
@@ -16056,6 +16092,10 @@ function PetFaceBody({ species }: { species: PetSpecies }) {
         <path d="M100 137 Q100 145 108 147" stroke="#3e2723" strokeWidth="3" fill="none" strokeLinecap="round" />
         <ellipse cx="66" cy="120" rx="10" ry="6" fill="#ff9e9e" opacity="0.55" />
         <ellipse cx="134" cy="120" rx="10" ry="6" fill="#ff9e9e" opacity="0.55" />
+        <g className="pet-blink">
+          <rect x="72" y="97" width="16" height="4" rx="2" fill="#f4c98b" />
+          <rect x="112" y="97" width="16" height="4" rx="2" fill="#f4c98b" />
+        </g>
       </>
     );
   }
@@ -16078,6 +16118,10 @@ function PetFaceBody({ species }: { species: PetSpecies }) {
         <path d="M50,120 L20,114 M50,127 L20,130 M150,120 L180,114 M150,127 L180,130" stroke="#8a6a45" strokeWidth="2" strokeLinecap="round" />
         <ellipse cx="68" cy="130" rx="9" ry="5.5" fill="#ff9e9e" opacity="0.5" />
         <ellipse cx="132" cy="130" rx="9" ry="5.5" fill="#ff9e9e" opacity="0.5" />
+        <g className="pet-blink">
+          <rect x="72" y="105" width="16" height="5" rx="2.5" fill="#ffc98b" />
+          <rect x="112" y="105" width="16" height="5" rx="2.5" fill="#ffc98b" />
+        </g>
       </>
     );
   }
@@ -16099,6 +16143,10 @@ function PetFaceBody({ species }: { species: PetSpecies }) {
         <path d="M100 136 Q100 141 108 143" stroke="#c9a8a8" strokeWidth="2.5" fill="none" strokeLinecap="round" />
         <ellipse cx="66" cy="128" rx="9" ry="5.5" fill="#ff9e9e" opacity="0.5" />
         <ellipse cx="134" cy="128" rx="9" ry="5.5" fill="#ff9e9e" opacity="0.5" />
+        <g className="pet-blink">
+          <rect x="72" y="109" width="16" height="5" rx="2.5" fill="#ffffff" />
+          <rect x="112" y="109" width="16" height="5" rx="2.5" fill="#ffffff" />
+        </g>
       </>
     );
   }
@@ -16120,6 +16168,10 @@ function PetFaceBody({ species }: { species: PetSpecies }) {
         <ellipse cx="100" cy="145" rx="38" ry="24" fill="#ffc1cc" />
         <ellipse cx="90" cy="145" rx="4.5" ry="7" fill="#a85a6b" />
         <ellipse cx="110" cy="145" rx="4.5" ry="7" fill="#a85a6b" />
+        <g className="pet-blink">
+          <rect x="72" y="103" width="16" height="5" rx="2.5" fill="#ffffff" />
+          <rect x="112" y="103" width="16" height="5" rx="2.5" fill="#ffffff" />
+        </g>
       </>
     );
   }
@@ -16137,6 +16189,10 @@ function PetFaceBody({ species }: { species: PetSpecies }) {
         <circle cx="126.5" cy="95.5" r="2" fill="#fff" />
         <ellipse cx="88" cy="148" rx="5" ry="7" fill="#8a7599" />
         <ellipse cx="112" cy="148" rx="5" ry="7" fill="#8a7599" />
+        <g className="pet-blink">
+          <rect x="68" y="95" width="16" height="5" rx="2.5" fill="#c3b3d6" />
+          <rect x="116" y="95" width="16" height="5" rx="2.5" fill="#c3b3d6" />
+        </g>
       </>
     );
   }
@@ -16155,6 +16211,10 @@ function PetFaceBody({ species }: { species: PetSpecies }) {
       <circle cx="85" cy="108" r="3" fill="#fff" />
       <circle cx="121" cy="108" r="3" fill="#fff" />
       <path d="M100,128 L91,144 L109,144 Z" fill="#f2a65a" />
+      <g className="pet-blink">
+        <rect x="61" y="104" width="42" height="16" rx="8" fill="#ecdfc4" />
+        <rect x="97" y="104" width="42" height="16" rx="8" fill="#ecdfc4" />
+      </g>
     </>
   );
 }
@@ -16192,6 +16252,38 @@ function PetHatOverlay({ hat }: { hat: string }) {
       </g>
     );
   }
+  if (hat === "hat_beanie") {
+    return (
+      <g>
+        <path d="M62,46 Q62,4 100,4 Q138,4 138,46 Z" fill="#e05c6e" />
+        <rect x="60" y="40" width="80" height="14" rx="7" fill="#c0475a" />
+        <circle cx="100" cy="6" r="7" fill="#ffd54f" />
+      </g>
+    );
+  }
+  if (hat === "hat_flower") {
+    return (
+      <g>
+        {[0, 1, 2, 3, 4].map((i) => {
+          const angle = (i / 5) * Math.PI * 2;
+          const cx = 100 + Math.cos(angle) * 34;
+          const cy = 34 + Math.sin(angle) * 12;
+          return <circle key={i} cx={cx} cy={cy} r="9" fill={["#ff8fc4", "#ffd54f", "#8f6bff", "#5ddcff", "#ff9e6d"][i]} />;
+        })}
+        <circle cx="100" cy="34" r="6" fill="#fff6e8" />
+      </g>
+    );
+  }
+  if (hat === "hat_party") {
+    return (
+      <g>
+        <path d="M100,2 L128,46 L72,46 Z" fill="#5ddcff" />
+        <circle cx="100" cy="2" r="5" fill="#ffd54f" />
+        <circle cx="90" cy="24" r="3" fill="#fff" opacity="0.7" />
+        <circle cx="108" cy="34" r="3" fill="#fff" opacity="0.7" />
+      </g>
+    );
+  }
   return null;
 }
 
@@ -16219,6 +16311,35 @@ function PetAccessoryOverlay({ accessory }: { accessory: string }) {
       <g>
         <path d="M56,150 Q100,172 144,150 L144,166 Q100,186 56,166 Z" fill="#5ddcff" />
         <rect x="92" y="164" width="14" height="24" rx="4" fill="#3fb8dd" />
+      </g>
+    );
+  }
+  if (accessory === "acc_glasses") {
+    return (
+      <g>
+        <circle cx="80" cy="107" r="17" fill="none" stroke="#2b2118" strokeWidth="4" />
+        <circle cx="122" cy="107" r="17" fill="none" stroke="#2b2118" strokeWidth="4" />
+        <path d="M97,107 L105,107" stroke="#2b2118" strokeWidth="4" />
+        <path d="M63,104 L54,100" stroke="#2b2118" strokeWidth="3" strokeLinecap="round" />
+        <path d="M139,104 L148,100" stroke="#2b2118" strokeWidth="3" strokeLinecap="round" />
+      </g>
+    );
+  }
+  if (accessory === "acc_collar") {
+    return (
+      <g>
+        <path d="M58,150 Q100,168 142,150 L142,160 Q100,178 58,160 Z" fill="#ff6ec7" />
+        <circle cx="100" cy="168" r="8" fill="#ffd54f" />
+        <circle cx="100" cy="168" r="4" fill="#e0a900" />
+      </g>
+    );
+  }
+  if (accessory === "acc_medal") {
+    return (
+      <g>
+        <path d="M90,150 L82,180 L100,170 L118,180 L110,150 Z" fill="#5ddcff" />
+        <circle cx="100" cy="152" r="16" fill="#ffd54f" stroke="#e0a900" strokeWidth="2" />
+        <path d="M100,143 L103,150 L110,150 L104,155 L106,162 L100,158 L94,162 L96,155 L90,150 L97,150 Z" fill="#fff6e8" />
       </g>
     );
   }
@@ -16333,14 +16454,19 @@ function PetScreen({
       40% { transform: scale(1.08); }
       100% { transform: scale(1); }
     }
+    @keyframes petBlink {
+      0%, 92%, 100% { opacity: 0; }
+      94%, 96% { opacity: 1; }
+    }
     .pet-avatar-bounce { animation: petBounce 3.2s ease-in-out infinite; }
     .pet-glow-pulse { animation: petGlowPulse 3.2s ease-in-out infinite; }
     .pet-sparkle-1 { animation: petSparkleFloat 4s ease-in-out infinite; }
     .pet-sparkle-2 { animation: petSparkleFloat 4.6s ease-in-out infinite 0.6s; }
     .pet-level-up-banner { animation: petLevelUpIn 0.4s cubic-bezier(0.22, 1, 0.36, 1) both; }
     .pet-species-active { animation: petCardSpeciesPop 0.3s ease; }
+    .pet-blink { animation: petBlink 4.5s ease-in-out infinite; }
     @media (prefers-reduced-motion: reduce) {
-      .pet-avatar-bounce, .pet-glow-pulse, .pet-sparkle-1, .pet-sparkle-2 { animation: none !important; }
+      .pet-avatar-bounce, .pet-glow-pulse, .pet-sparkle-1, .pet-sparkle-2, .pet-blink { animation: none !important; }
     }
   `;
 

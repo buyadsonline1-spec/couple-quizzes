@@ -47,24 +47,42 @@ begin
     when 'hat_top' then 300
     when 'hat_cap' then 250
     when 'hat_crown' then 800
+    when 'hat_beanie' then 150
+    when 'hat_flower' then 300
+    when 'hat_party' then 200
     when 'acc_sunglasses' then 250
     when 'acc_bow' then 200
     when 'acc_scarf' then 300
+    when 'acc_glasses' then 200
+    when 'acc_collar' then 220
+    when 'acc_medal' then 350
     when 'room_meadow' then 400
     when 'room_night' then 400
     when 'room_beach' then 500
+    when 'room_forest' then 450
+    when 'room_space' then 600
+    when 'room_candy' then 450
     else null
   end,
   case p_item_id
     when 'hat_top' then 'hat'
     when 'hat_cap' then 'hat'
     when 'hat_crown' then 'hat'
+    when 'hat_beanie' then 'hat'
+    when 'hat_flower' then 'hat'
+    when 'hat_party' then 'hat'
     when 'acc_sunglasses' then 'accessory'
     when 'acc_bow' then 'accessory'
     when 'acc_scarf' then 'accessory'
+    when 'acc_glasses' then 'accessory'
+    when 'acc_collar' then 'accessory'
+    when 'acc_medal' then 'accessory'
     when 'room_meadow' then 'room'
     when 'room_night' then 'room'
     when 'room_beach' then 'room'
+    when 'room_forest' then 'room'
+    when 'room_space' then 'room'
+    when 'room_candy' then 'room'
     else null
   end
   into v_price, v_slot;
