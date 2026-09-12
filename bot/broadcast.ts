@@ -45,25 +45,50 @@ function parseArgs() {
     buttonText: get("--button-text"),
     buttonUrl: get("--button-url"),
     limit: get("--limit") ? Number(get("--limit")) : undefined,
+    // Пропустить первые N получателей (по возрастанию telegram_id) —
+    // для догоняющей рассылки тем, кого не хватило в предыдущем
+    // запуске (см. пагинацию ниже), без повторной отправки уже
+    // получившим сообщение.
+    offset: get("--offset") ? Number(get("--offset")) : 0,
     ratePerSecond: get("--rate") ? Number(get("--rate")) : 20,
   };
 }
 
-async function loadRecipients(limit?: number): Promise<number[]> {
-  // .gt(0) — только реальные Telegram id; синтетические (standalone
-  // iOS) отрицательные и у них всё равно нет Telegram-чата для отправки.
-  let query = supabaseAdmin
-    .from("profiles")
-    .select("telegram_id")
-    .gt("telegram_id", 0)
-    .order("telegram_id", { ascending: true });
+// PostgREST по умолчанию режет любой select на 1000 строк, даже без
+// явного .limit() — без пагинации это тихо отправляло рассылку только
+// первым 1000 пользователям (по возрастанию telegram_id), а не всем.
+// Тянем страницами по 1000, пока не придёт страница короче полной.
+async function loadRecipients(limit?: number, offset = 0): Promise<number[]> {
+  const pageSize = 1000;
+  const all: number[] = [];
+  let from = offset;
 
-  if (limit) query = query.limit(limit);
+  for (;;) {
+    const to = limit
+      ? Math.min(from + pageSize - 1, offset + limit - 1)
+      : from + pageSize - 1;
 
-  const { data, error } = await query;
-  if (error) throw error;
+    // .gt(0) — только реальные Telegram id; синтетические (standalone
+    // iOS) отрицательные и у них всё равно нет Telegram-чата для отправки.
+    const { data, error } = await supabaseAdmin
+      .from("profiles")
+      .select("telegram_id")
+      .gt("telegram_id", 0)
+      .order("telegram_id", { ascending: true })
+      .range(from, to);
 
-  return (data ?? []).map((row) => row.telegram_id as number);
+    if (error) throw error;
+
+    const rows = data ?? [];
+    all.push(...rows.map((row) => row.telegram_id as number));
+
+    if (rows.length < to - from + 1) break; // последняя страница
+    if (limit && all.length >= limit) break;
+
+    from = to + 1;
+  }
+
+  return all;
 }
 
 function sleep(ms: number) {
@@ -75,7 +100,7 @@ async function main() {
 
   if (!opts.messageFile) {
     console.error(
-      "Использование: npx tsx bot/broadcast.ts --message-file ./broadcast.txt [--dry-run] [--parse-mode HTML] [--button-text \"...\"] [--button-url \"...\"] [--limit N] [--rate 20]"
+      "Использование: npx tsx bot/broadcast.ts --message-file ./broadcast.txt [--dry-run] [--parse-mode HTML] [--button-text \"...\"] [--button-url \"...\"] [--limit N] [--offset N] [--rate 20]"
     );
     process.exit(1);
   }
@@ -86,7 +111,7 @@ async function main() {
     process.exit(1);
   }
 
-  const recipients = await loadRecipients(opts.limit);
+  const recipients = await loadRecipients(opts.limit, opts.offset);
   console.log(`Получателей: ${recipients.length}`);
   console.log("--- Текст сообщения ---");
   console.log(text);
