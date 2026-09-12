@@ -15891,6 +15891,8 @@ return (
 type PetSpecies = "dog" | "cat" | "rabbit" | "cow" | "hippo" | "owl";
 type PetGender = "boy" | "girl";
 
+type PetItemSlot = "hat" | "accessory" | "room";
+
 type PetState = {
   species: PetSpecies;
   gender: PetGender;
@@ -15898,7 +15900,67 @@ type PetState = {
   level: number;
   xp: number;
   xpToNext: number;
+  equippedHat: string | null;
+  equippedAccessory: string | null;
+  equippedRoom: string | null;
+  ownedItems: string[];
 };
+
+type PetShopItem = {
+  id: string;
+  slot: PetItemSlot;
+  price: number;
+  emoji: string;
+  nameRu: string;
+  nameEn: string;
+  nameFi: string;
+  // Для комнаты — фон карточки; для шапки/аксессуара не используется
+  // (они рисуются поверх PetFace).
+  roomBackground?: string;
+};
+
+const PET_SHOP_ITEMS: PetShopItem[] = [
+  { id: "hat_cap", slot: "hat", price: 250, emoji: "🧢", nameRu: "Кепка", nameEn: "Cap", nameFi: "Lippis" },
+  { id: "hat_top", slot: "hat", price: 300, emoji: "🎩", nameRu: "Цилиндр", nameEn: "Top hat", nameFi: "Hattu" },
+  { id: "hat_crown", slot: "hat", price: 800, emoji: "👑", nameRu: "Корона", nameEn: "Crown", nameFi: "Kruunu" },
+  { id: "acc_bow", slot: "accessory", price: 200, emoji: "🎀", nameRu: "Бантик", nameEn: "Bow", nameFi: "Rusetti" },
+  { id: "acc_sunglasses", slot: "accessory", price: 250, emoji: "🕶️", nameRu: "Очки", nameEn: "Sunglasses", nameFi: "Aurinkolasit" },
+  { id: "acc_scarf", slot: "accessory", price: 300, emoji: "🧣", nameRu: "Шарф", nameEn: "Scarf", nameFi: "Huivi" },
+  {
+    id: "room_meadow",
+    slot: "room",
+    price: 400,
+    emoji: "🌼",
+    nameRu: "Лужайка",
+    nameEn: "Meadow",
+    nameFi: "Niitty",
+    roomBackground: "linear-gradient(160deg, #cdeccb 0%, #a8dba8 100%)",
+  },
+  {
+    id: "room_night",
+    slot: "room",
+    price: 400,
+    emoji: "🌙",
+    nameRu: "Ночь",
+    nameEn: "Night",
+    nameFi: "Yö",
+    roomBackground: "linear-gradient(160deg, #2b2560 0%, #6a3b6e 100%)",
+  },
+  {
+    id: "room_beach",
+    slot: "room",
+    price: 500,
+    emoji: "🏖️",
+    nameRu: "Пляж",
+    nameEn: "Beach",
+    nameFi: "Ranta",
+    roomBackground: "linear-gradient(160deg, #ffe9b3 0%, #8ed1e8 100%)",
+  },
+];
+
+function petItemName(item: PetShopItem, market: Market): string {
+  return market === "fi" ? item.nameFi : market === "en" ? item.nameEn : item.nameRu;
+}
 
 const PET_SPECIES_OPTIONS: Array<{
   id: PetSpecies;
@@ -15972,23 +16034,242 @@ function speciesLabel(option: (typeof PET_SPECIES_OPTIONS)[number], market: Mark
   return market === "fi" ? option.labelFi : market === "en" ? option.labelEn : option.labelRu;
 }
 
+// Нарисованные вручную "лица" питомцев (SVG, 200×200) — вместо голого
+// emoji, чтобы выглядело как собственный маскот, а не иконка из
+// системного шрифта. Ничего внешнего не грузит (ни картинок, ни
+// шрифтов) — только векторные фигуры, поэтому не зависит от
+// платформы/эмоджи-набора устройства и всегда выглядит одинаково.
+function PetFaceBody({ species }: { species: PetSpecies }) {
+  if (species === "dog") {
+    return (
+      <>
+        <ellipse cx="55" cy="88" rx="24" ry="46" fill="#c17a3f" transform="rotate(-18 55 88)" />
+        <ellipse cx="145" cy="88" rx="24" ry="46" fill="#c17a3f" transform="rotate(18 145 88)" />
+        <circle cx="100" cy="112" r="56" fill="#f4c98b" />
+        <ellipse cx="100" cy="138" rx="34" ry="26" fill="#fff6e8" />
+        <circle cx="80" cy="100" r="7.5" fill="#2b2118" />
+        <circle cx="120" cy="100" r="7.5" fill="#2b2118" />
+        <circle cx="82.5" cy="97" r="2" fill="#fff" />
+        <circle cx="122.5" cy="97" r="2" fill="#fff" />
+        <ellipse cx="100" cy="130" rx="10" ry="7" fill="#3e2723" />
+        <path d="M100 137 Q100 145 92 147" stroke="#3e2723" strokeWidth="3" fill="none" strokeLinecap="round" />
+        <path d="M100 137 Q100 145 108 147" stroke="#3e2723" strokeWidth="3" fill="none" strokeLinecap="round" />
+        <ellipse cx="66" cy="120" rx="10" ry="6" fill="#ff9e9e" opacity="0.55" />
+        <ellipse cx="134" cy="120" rx="10" ry="6" fill="#ff9e9e" opacity="0.55" />
+      </>
+    );
+  }
+
+  if (species === "cat") {
+    return (
+      <>
+        <path d="M62,68 L38,18 L88,55 Z" fill="#ffb27a" />
+        <path d="M138,68 L162,18 L112,55 Z" fill="#ffb27a" />
+        <path d="M64,62 L48,30 L82,53 Z" fill="#ffd9bd" />
+        <path d="M136,62 L152,30 L118,53 Z" fill="#ffd9bd" />
+        <circle cx="100" cy="115" r="55" fill="#ffc98b" />
+        <ellipse cx="80" cy="108" rx="9" ry="12" fill="#4caf50" />
+        <ellipse cx="120" cy="108" rx="9" ry="12" fill="#4caf50" />
+        <ellipse cx="80" cy="110" rx="3.5" ry="8" fill="#20301f" />
+        <ellipse cx="120" cy="110" rx="3.5" ry="8" fill="#20301f" />
+        <path d="M100,128 L94,136 L106,136 Z" fill="#ff8fa3" />
+        <path d="M100 136 Q100 141 93 142" stroke="#6b4a2b" strokeWidth="2.5" fill="none" strokeLinecap="round" />
+        <path d="M100 136 Q100 141 107 142" stroke="#6b4a2b" strokeWidth="2.5" fill="none" strokeLinecap="round" />
+        <path d="M50,120 L20,114 M50,127 L20,130 M150,120 L180,114 M150,127 L180,130" stroke="#8a6a45" strokeWidth="2" strokeLinecap="round" />
+        <ellipse cx="68" cy="130" rx="9" ry="5.5" fill="#ff9e9e" opacity="0.5" />
+        <ellipse cx="132" cy="130" rx="9" ry="5.5" fill="#ff9e9e" opacity="0.5" />
+      </>
+    );
+  }
+
+  if (species === "rabbit") {
+    return (
+      <>
+        <rect x="66" y="6" width="20" height="78" rx="10" fill="#ffffff" stroke="#ecdcec" strokeWidth="2" />
+        <rect x="114" y="6" width="20" height="78" rx="10" fill="#ffffff" stroke="#ecdcec" strokeWidth="2" />
+        <rect x="71" y="18" width="10" height="56" rx="5" fill="#ffc1cc" />
+        <rect x="119" y="18" width="10" height="56" rx="5" fill="#ffc1cc" />
+        <circle cx="100" cy="122" r="53" fill="#ffffff" stroke="#ecdcec" strokeWidth="2" />
+        <circle cx="80" cy="112" r="7" fill="#2b2118" />
+        <circle cx="120" cy="112" r="7" fill="#2b2118" />
+        <circle cx="82.5" cy="109" r="2" fill="#fff" />
+        <circle cx="122.5" cy="109" r="2" fill="#fff" />
+        <path d="M100,128 L93,136 L107,136 Z" fill="#ff8fa3" />
+        <path d="M100 136 Q100 141 92 143" stroke="#c9a8a8" strokeWidth="2.5" fill="none" strokeLinecap="round" />
+        <path d="M100 136 Q100 141 108 143" stroke="#c9a8a8" strokeWidth="2.5" fill="none" strokeLinecap="round" />
+        <ellipse cx="66" cy="128" rx="9" ry="5.5" fill="#ff9e9e" opacity="0.5" />
+        <ellipse cx="134" cy="128" rx="9" ry="5.5" fill="#ff9e9e" opacity="0.5" />
+      </>
+    );
+  }
+
+  if (species === "cow") {
+    return (
+      <>
+        <circle cx="100" cy="118" r="55" fill="#ffffff" />
+        <ellipse cx="68" cy="90" rx="19" ry="15" fill="#3a2e2a" transform="rotate(-15 68 90)" />
+        <ellipse cx="134" cy="145" rx="17" ry="13" fill="#3a2e2a" transform="rotate(20 134 145)" />
+        <path d="M78,68 L72,50 L86,64 Z" fill="#e8d3a3" />
+        <path d="M122,68 L128,50 L114,64 Z" fill="#e8d3a3" />
+        <ellipse cx="44" cy="112" rx="13" ry="18" fill="#ffffff" />
+        <ellipse cx="156" cy="112" rx="13" ry="18" fill="#ffffff" />
+        <ellipse cx="44" cy="112" rx="7" ry="11" fill="#ffc1cc" />
+        <ellipse cx="156" cy="112" rx="7" ry="11" fill="#ffc1cc" />
+        <circle cx="80" cy="106" r="6.5" fill="#2b2118" />
+        <circle cx="120" cy="106" r="6.5" fill="#2b2118" />
+        <ellipse cx="100" cy="145" rx="38" ry="24" fill="#ffc1cc" />
+        <ellipse cx="90" cy="145" rx="4.5" ry="7" fill="#a85a6b" />
+        <ellipse cx="110" cy="145" rx="4.5" ry="7" fill="#a85a6b" />
+      </>
+    );
+  }
+
+  if (species === "hippo") {
+    return (
+      <>
+        <circle cx="62" cy="72" r="14" fill="#b8a6c9" />
+        <circle cx="138" cy="72" r="14" fill="#b8a6c9" />
+        <ellipse cx="100" cy="118" rx="62" ry="54" fill="#c3b3d6" />
+        <ellipse cx="100" cy="148" rx="46" ry="26" fill="#e2d7ef" />
+        <circle cx="76" cy="98" r="6.5" fill="#2b2118" />
+        <circle cx="124" cy="98" r="6.5" fill="#2b2118" />
+        <circle cx="78.5" cy="95.5" r="2" fill="#fff" />
+        <circle cx="126.5" cy="95.5" r="2" fill="#fff" />
+        <ellipse cx="88" cy="148" rx="5" ry="7" fill="#8a7599" />
+        <ellipse cx="112" cy="148" rx="5" ry="7" fill="#8a7599" />
+      </>
+    );
+  }
+
+  // owl
+  return (
+    <>
+      <path d="M74,66 L62,32 L90,58 Z" fill="#7a5a3f" />
+      <path d="M126,66 L138,32 L110,58 Z" fill="#7a5a3f" />
+      <ellipse cx="100" cy="122" rx="58" ry="62" fill="#8a6a4a" />
+      <circle cx="100" cy="118" r="42" fill="#ecdfc4" />
+      <circle cx="82" cy="112" r="20" fill="#ffffff" />
+      <circle cx="118" cy="112" r="20" fill="#ffffff" />
+      <circle cx="82" cy="112" r="10.5" fill="#2b2118" />
+      <circle cx="118" cy="112" r="10.5" fill="#2b2118" />
+      <circle cx="85" cy="108" r="3" fill="#fff" />
+      <circle cx="121" cy="108" r="3" fill="#fff" />
+      <path d="M100,128 L91,144 L109,144 Z" fill="#f2a65a" />
+    </>
+  );
+}
+
+// Аксессуары рисуются поверх лица одним и тем же набором координат
+// для всех видов (голова у всех центрирована примерно в той же
+// области холста) — не идеально точная подгонка под каждый силуэт,
+// но выглядит опрятно на любом из шести питомцев.
+function PetHatOverlay({ hat }: { hat: string }) {
+  if (hat === "hat_top") {
+    return (
+      <g>
+        <rect x="70" y="38" width="60" height="13" rx="4" fill="#2b2118" />
+        <rect x="80" y="6" width="40" height="35" rx="4" fill="#2b2118" />
+        <rect x="80" y="27" width="40" height="8" fill="#5f3dc4" />
+      </g>
+    );
+  }
+  if (hat === "hat_cap") {
+    return (
+      <g>
+        <path d="M62,40 a38,32 0 0 1 76,0 Z" fill="#4c6bff" />
+        <path d="M62,40 Q100,52 138,40 L150,46 Q100,60 50,46 Z" fill="#3752cc" />
+        <circle cx="100" cy="14" r="4" fill="#3752cc" />
+      </g>
+    );
+  }
+  if (hat === "hat_crown") {
+    return (
+      <g>
+        <path d="M60,44 L72,10 L88,32 L100,6 L112,32 L128,10 L140,44 Z" fill="#ffd54f" stroke="#e0a900" strokeWidth="2" />
+        <circle cx="72" cy="10" r="4" fill="#ff6ec7" />
+        <circle cx="100" cy="6" r="4.5" fill="#5ddcff" />
+        <circle cx="128" cy="10" r="4" fill="#ff6ec7" />
+      </g>
+    );
+  }
+  return null;
+}
+
+function PetAccessoryOverlay({ accessory }: { accessory: string }) {
+  if (accessory === "acc_sunglasses") {
+    return (
+      <g>
+        <rect x="62" y="96" width="34" height="22" rx="8" fill="#2b2118" />
+        <rect x="104" y="96" width="34" height="22" rx="8" fill="#2b2118" />
+        <rect x="96" y="103" width="8" height="5" fill="#2b2118" />
+      </g>
+    );
+  }
+  if (accessory === "acc_bow") {
+    return (
+      <g>
+        <path d="M100,158 L78,146 L78,170 Z" fill="#ff6ec7" />
+        <path d="M100,158 L122,146 L122,170 Z" fill="#ff6ec7" />
+        <circle cx="100" cy="158" r="7" fill="#ff4fb3" />
+      </g>
+    );
+  }
+  if (accessory === "acc_scarf") {
+    return (
+      <g>
+        <path d="M56,150 Q100,172 144,150 L144,166 Q100,186 56,166 Z" fill="#5ddcff" />
+        <rect x="92" y="164" width="14" height="24" rx="4" fill="#3fb8dd" />
+      </g>
+    );
+  }
+  return null;
+}
+
+function PetFace({
+  species,
+  size,
+  hat,
+  accessory,
+}: {
+  species: PetSpecies;
+  size: number;
+  hat?: string | null;
+  accessory?: string | null;
+}) {
+  // Аксессуары-шляпы иногда рисуют выше y=0 (цилиндр) — overflow
+  // visible, чтобы их не обрезало по краю viewBox/контейнера.
+  return (
+    <svg width={size} height={size} viewBox="0 0 200 200" style={{ overflow: "visible" }}>
+      <PetFaceBody species={species} />
+      {accessory && <PetAccessoryOverlay accessory={accessory} />}
+      {hat && <PetHatOverlay hat={hat} />}
+    </svg>
+  );
+}
+
 function PetScreen({
   pet,
+  soloPoints,
   loading,
   creating,
   justLeveledUp,
   onDismissLevelUp,
   onCreate,
+  onBuyItem,
+  onEquipItem,
   onBack,
   t,
   theme,
 }: {
   pet: PetState | null;
+  soloPoints: number;
   loading: boolean;
   creating: boolean;
   justLeveledUp: boolean;
   onDismissLevelUp: () => void;
   onCreate: (species: PetSpecies, gender: PetGender, name: string) => void;
+  onBuyItem: (itemId: string) => Promise<{ ok: boolean; reason?: string }>;
+  onEquipItem: (slot: PetItemSlot, itemId: string | null) => void;
   onBack: () => void;
   t: any;
   // Undefined на iOS (тема там не включена) — читается как "light".
@@ -16004,6 +16285,9 @@ function PetScreen({
   const [selectedSpecies, setSelectedSpecies] = useState<PetSpecies | null>(null);
   const [selectedGender, setSelectedGender] = useState<PetGender | null>(null);
   const [name, setName] = useState("");
+  const [shopSlot, setShopSlot] = useState<PetItemSlot | null>(null);
+  const [buyingItemId, setBuyingItemId] = useState<string | null>(null);
+  const [shopError, setShopError] = useState<string | null>(null);
 
   const speciesOption = pet
     ? PET_SPECIES_OPTIONS.find((option) => option.id === pet.species)
@@ -16141,7 +16425,7 @@ function PetScreen({
                       cursor: "pointer",
                     }}
                   >
-                    <div style={{ fontSize: 34 }}>{option.emoji}</div>
+                    <PetFace species={option.id} size={44} />
                     <div style={{ fontSize: 11.5, fontWeight: 800, color: active ? "#fff" : ink }}>
                       {speciesLabel(option, market)}
                     </div>
@@ -16183,11 +16467,11 @@ function PetScreen({
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
-                  fontSize: 30,
+                  overflow: "hidden",
                   background: PET_SPECIES_OPTIONS.find((o) => o.id === selectedSpecies)?.gradient,
                 }}
               >
-                {PET_SPECIES_OPTIONS.find((o) => o.id === selectedSpecies)?.emoji}
+                {selectedSpecies && <PetFace species={selectedSpecies} size={56} />}
               </div>
               <button
                 type="button"
@@ -16292,6 +16576,115 @@ function PetScreen({
     ? "linear-gradient(135deg, #5f3dc4, #a3407e)"
     : "linear-gradient(135deg, #8f6bff, #ff76ba)");
   const accentGlow = speciesOption?.glow ?? "rgba(143,107,255,0.35)";
+  const equippedRoomItem = pet?.equippedRoom
+    ? PET_SHOP_ITEMS.find((item) => item.id === pet.equippedRoom)
+    : null;
+
+  async function handleShopTap(item: PetShopItem) {
+    const owned = pet?.ownedItems.includes(item.id) ?? false;
+
+    if (owned) {
+      const isEquipped =
+        (item.slot === "hat" && pet?.equippedHat === item.id) ||
+        (item.slot === "accessory" && pet?.equippedAccessory === item.id) ||
+        (item.slot === "room" && pet?.equippedRoom === item.id);
+      onEquipItem(item.slot, isEquipped ? null : item.id);
+      return;
+    }
+
+    setShopError(null);
+    setBuyingItemId(item.id);
+    const result = await onBuyItem(item.id);
+    setBuyingItemId(null);
+
+    if (!result.ok) {
+      setShopError(
+        result.reason === "insufficient-points"
+          ? market === "fi"
+            ? "Ei tarpeeksi pisteitä."
+            : market === "en"
+              ? "Not enough points."
+              : "Недостаточно очков."
+          : market === "fi"
+            ? "Jotain meni pieleen."
+            : market === "en"
+              ? "Something went wrong."
+              : "Что-то пошло не так."
+      );
+      return;
+    }
+
+    onEquipItem(item.slot, item.id);
+  }
+
+  function renderShopRow(slot: PetItemSlot) {
+    const items = PET_SHOP_ITEMS.filter((item) => item.slot === slot);
+    return (
+      <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+        {items.map((item) => {
+          const owned = pet?.ownedItems.includes(item.id) ?? false;
+          const equipped =
+            (slot === "hat" && pet?.equippedHat === item.id) ||
+            (slot === "accessory" && pet?.equippedAccessory === item.id) ||
+            (slot === "room" && pet?.equippedRoom === item.id);
+          const affordable = soloPoints >= item.price;
+          const busy = buyingItemId === item.id;
+
+          return (
+            <button
+              key={item.id}
+              type="button"
+              disabled={busy || (!owned && !affordable)}
+              onClick={() => handleShopTap(item)}
+              style={{
+                width: 68,
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                gap: 4,
+                padding: "8px 4px",
+                borderRadius: 14,
+                border: equipped
+                  ? `2px solid ${accent}`
+                  : isDark
+                    ? "1px solid rgba(255,255,255,0.14)"
+                    : "1px solid rgba(255,255,255,0.5)",
+                background: equipped
+                  ? isDark
+                    ? "rgba(224,179,255,0.16)"
+                    : "rgba(143,107,255,0.14)"
+                  : isDark
+                    ? "rgba(255,255,255,0.06)"
+                    : "rgba(255,255,255,0.3)",
+                cursor: busy || (!owned && !affordable) ? "not-allowed" : "pointer",
+                opacity: !owned && !affordable ? 0.5 : 1,
+              }}
+            >
+              <div style={{ fontSize: 22 }}>{busy ? "…" : item.emoji}</div>
+              <div style={{ fontSize: 9.5, fontWeight: 800, color: ink, textAlign: "center", lineHeight: 1.1 }}>
+                {petItemName(item, market)}
+              </div>
+              <div style={{ fontSize: 9, fontWeight: 700, color: equipped ? accent : muted }}>
+                {equipped
+                  ? market === "fi"
+                    ? "Käytössä"
+                    : market === "en"
+                      ? "Worn"
+                      : "Надето"
+                  : owned
+                    ? market === "fi"
+                      ? "Omistat"
+                      : market === "en"
+                        ? "Owned"
+                        : "Куплено"
+                    : `⭐ ${item.price}`}
+              </div>
+            </button>
+          );
+        })}
+      </div>
+    );
+  }
 
   return (
     <div style={{ padding: 16, display: "grid", gap: 14 }}>
@@ -16373,12 +16766,17 @@ function PetScreen({
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              fontSize: 60,
-              background: accentGradient,
+              overflow: "hidden",
+              background: equippedRoomItem?.roomBackground ?? accentGradient,
               boxShadow: `0 10px 28px ${accentGlow}`,
             }}
           >
-            {speciesOption?.emoji}
+            <PetFace
+              species={pet.species}
+              size={ringSize - (ringStroke + 6) * 2}
+              hat={pet.equippedHat}
+              accessory={pet.equippedAccessory}
+            />
           </div>
           <div
             style={{
@@ -16415,71 +16813,57 @@ function PetScreen({
         </div>
       </div>
 
+      {shopError && (
+        <div
+          style={{
+            ...cardBaseStyle(),
+            padding: "10px 14px",
+            fontSize: 12.5,
+            fontWeight: 700,
+            color: isDark ? "#ffb4ae" : "#c1352f",
+            textAlign: "center",
+          }}
+        >
+          {shopError}
+        </div>
+      )}
+
       <div style={{ ...cardBaseStyle(), padding: 18 }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
-          <div style={{ fontSize: 22 }}>🎨</div>
-          <div style={{ flex: 1 }}>
-            <div style={{ fontSize: 14, fontWeight: 900, color: ink }}>
-              {market === "fi" ? "Ulkoasut" : market === "en" ? "Skins" : "Скины"}
-            </div>
-            <div style={{ marginTop: 1, fontSize: 11.5, color: muted }}>
-              {market === "fi" ? "Tulossa pian" : market === "en" ? "Coming soon" : "Скоро"}
-            </div>
+        <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 4 }}>
+          <div style={{ fontSize: 22 }}>🎩</div>
+          <div style={{ fontSize: 14, fontWeight: 900, color: ink }}>
+            {market === "fi" ? "Hatut" : market === "en" ? "Hats" : "Шапки"}
           </div>
         </div>
-        <div style={{ display: "flex", gap: 8 }}>
-          {["#f6a94d", "#8f6bff", "#4dd0c4"].map((color, index) => (
-            <div
-              key={color}
-              style={{
-                width: 40,
-                height: 40,
-                borderRadius: 12,
-                background: isDark ? "rgba(255,255,255,0.08)" : "rgba(255,255,255,0.35)",
-                border: `2px dashed ${color}55`,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                fontSize: 15,
-                opacity: 0.7,
-              }}
-            >
-              🔒
-            </div>
-          ))}
-        </div>
+        <div style={{ marginTop: 10 }}>{renderShopRow("hat")}</div>
       </div>
 
       <div style={{ ...cardBaseStyle(), padding: 18 }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
-          <div style={{ fontSize: 22 }}>🏠</div>
-          <div style={{ flex: 1 }}>
-            <div style={{ fontSize: 14, fontWeight: 900, color: ink }}>
-              {market === "fi" ? "Huone" : market === "en" ? "Room" : "Комната"}
-            </div>
-            <div style={{ marginTop: 1, fontSize: 11.5, color: muted }}>
-              {market === "fi" ? "Tulossa pian" : market === "en" ? "Coming soon" : "Скоро"}
-            </div>
+        <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 4 }}>
+          <div style={{ fontSize: 22 }}>🎀</div>
+          <div style={{ fontSize: 14, fontWeight: 900, color: ink }}>
+            {market === "fi" ? "Asusteet" : market === "en" ? "Accessories" : "Аксессуары"}
           </div>
         </div>
-        <div
-          style={{
-            height: 48,
-            borderRadius: 12,
-            background: isDark
-              ? "linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0.04))"
-              : "linear-gradient(135deg, rgba(255,255,255,0.5), rgba(255,255,255,0.2))",
-            border: isDark ? "1px dashed rgba(255,255,255,0.18)" : "1px dashed rgba(143,107,255,0.3)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            fontSize: 12,
-            fontWeight: 700,
-            color: muted,
-          }}
-        >
-          🔒 {market === "fi" ? "Avautuu myöhemmin" : market === "en" ? "Unlocks later" : "Откроется позже"}
+        <div style={{ marginTop: 10 }}>{renderShopRow("accessory")}</div>
+      </div>
+
+      <div style={{ ...cardBaseStyle(), padding: 18 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 4 }}>
+          <div style={{ fontSize: 22 }}>🏠</div>
+          <div style={{ fontSize: 14, fontWeight: 900, color: ink }}>
+            {market === "fi" ? "Huone" : market === "en" ? "Room" : "Комната"}
+          </div>
         </div>
+        <div style={{ marginTop: 10 }}>{renderShopRow("room")}</div>
+      </div>
+
+      <div style={{ fontSize: 11, color: muted, textAlign: "center" }}>
+        {market === "fi"
+          ? `Sinun pisteesi: ⭐ ${soloPoints}`
+          : market === "en"
+            ? `Your points: ⭐ ${soloPoints}`
+            : `Твои очки: ⭐ ${soloPoints}`}
       </div>
 
       <button onClick={onBack} style={secondaryButtonStyle}>
@@ -18926,6 +19310,10 @@ async function handleOpenPet() {
         level: result.pet.level,
         xp: result.pet.xp,
         xpToNext: result.pet.xpToNext,
+        equippedHat: result.pet.equippedHat ?? null,
+        equippedAccessory: result.pet.equippedAccessory ?? null,
+        equippedRoom: result.pet.equippedRoom ?? null,
+        ownedItems: result.pet.ownedItems ?? [],
       }
     : null;
 
@@ -18963,6 +19351,33 @@ async function handleCreatePet(species: PetSpecies, gender: PetGender, name: str
   // Сервер вернул только что созданного питомца без уровня/опыта
   // (свежая пара, XP ещё не считали) — сразу перечитываем полное
   // состояние, чтобы получить level/xp/xpToNext от get_pair_pet_state.
+  await handleOpenPet();
+}
+
+// Покупка/примерка вещи для питомца. Цену и владение проверяет сервер
+// (buy_pair_pet_item/equip_pair_pet_item, см. supabase/pair_pets_shop.sql) —
+// здесь только вызов и перечитывание состояния, чтобы экран сразу
+// показал актуальные soloPoints/ownedItems/equipped*.
+async function handleBuyPetItem(itemId: string): Promise<{ ok: boolean; reason?: string }> {
+  const result = await petFetch("/api/pet/buy", { itemId });
+
+  if (!result?.ok) {
+    return { ok: false, reason: result?.reason };
+  }
+
+  setAppState((prev) => ({
+    ...prev,
+    soloPoints: result.soloPoints,
+    points: result.soloPoints,
+  }));
+
+  await handleOpenPet();
+  return { ok: true };
+}
+
+async function handleEquipPetItem(slot: PetItemSlot, itemId: string | null) {
+  const result = await petFetch("/api/pet/equip", { slot, itemId });
+  if (!result?.ok) return;
   await handleOpenPet();
 }
 
@@ -21128,11 +21543,14 @@ showPaywall={() => {
   <PetScreen
     t={t}
     pet={pet}
+    soloPoints={appState.soloPoints}
     loading={petLoading}
     creating={petCreating}
     justLeveledUp={petJustLeveledUp}
     onDismissLevelUp={() => setPetJustLeveledUp(false)}
     onCreate={handleCreatePet}
+    onBuyItem={handleBuyPetItem}
+    onEquipItem={handleEquipPetItem}
     onBack={() => setScreen("menu")}
     theme={isCapacitorApp() ? undefined : theme}
   />
