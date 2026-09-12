@@ -107,7 +107,35 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const pairId = profile?.pair_id ?? null;
+    let pairId = profile?.pair_id ?? null;
+
+    // pair_id появляется на профиле уже в момент создания пары — ДО
+    // того, как партнёр реально подключился (см. hasPairCreated vs
+    // hasFullPair в PairScreen). Если передать такой pair_id в
+    // award_activity_points как есть, очки пары (pairs.total_points,
+    // "Уровень пары") начнут расти у пары, где по факту участвует
+    // только один человек — что и происходило до этой проверки.
+    // Личные solo_points при этом всё равно начисляются нормально
+    // (award_activity_points сам решает, что делать без pair_id).
+    if (pairId) {
+      const { data: pairRow, error: pairError } = await supabaseAdmin
+        .from("pairs")
+        .select("partner_2_telegram_id")
+        .eq("id", pairId)
+        .maybeSingle();
+
+      if (pairError) {
+        console.error("ACTIVITY AWARD pair lookup error:", pairError);
+        return NextResponse.json(
+          { error: "Internal server error" },
+          { status: 500 }
+        );
+      }
+
+      if (!pairRow?.partner_2_telegram_id) {
+        pairId = null;
+      }
+    }
 
     // "completion" дополнительно проверяем: реально ли пройдены ВСЕ
     // позиции этого типа (не просто локальный флаг с устройства).

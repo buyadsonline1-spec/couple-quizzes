@@ -353,6 +353,8 @@ export const TEXT_FI = {
     youAreInPair: "Olette pari 💕",
     youCreatedPair: "Loitte parin 💞",
     keepGettingToKnow: "Jatkakaa tutustumista toisiinne 💫",
+    pairAwaitingPartnerTitle: "Melkein valmista ⏳",
+    pairAwaitingPartnerText: "Odotetaan vain, että kumppani liittyy linkin tai koodin kautta",
     sendCodeOrLink:
       "Lähetä koodi tai linkki kumppanillesi, jotta hän voi liittyä pariinne.",
     defaultUserName: "Käyttäjä",

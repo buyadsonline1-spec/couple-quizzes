@@ -354,6 +354,12 @@ export const TEXT_RU = {
   youAreInPair: "Вы в паре 💕",
   youCreatedPair: "Вы создали пару 💞",
   keepGettingToKnow: "Продолжайте узнавать друг друга 💫",
+  // Пара создана, но партнёр ещё не подключился — youCreatedPair
+  // звучит так, будто пара уже реально собрана, поэтому до
+  // подключения партнёра показываем эти вместо неё (см. hasFullPair
+  // в PairScreen).
+  pairAwaitingPartnerTitle: "Пара почти готова ⏳",
+  pairAwaitingPartnerText: "Осталось дождаться, пока партнёр подключится по ссылке или коду",
   sendCodeOrLink:
     "Отправь код или ссылку партнёру, чтобы он подключился к вашей паре.",
   defaultUserName: "Пользователь",

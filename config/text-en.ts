@@ -351,6 +351,8 @@ export const TEXT_EN = {
   youAreInPair: "You are a pair 💕",
   youCreatedPair: "You created a pair 💞",
   keepGettingToKnow: "Keep getting to know each other 💫",
+  pairAwaitingPartnerTitle: "Almost there ⏳",
+  pairAwaitingPartnerText: "Just waiting for your partner to join via the link or code",
   sendCodeOrLink:
     "Send the code or link to your partner so they can join your pair.",
   defaultUserName: "User",

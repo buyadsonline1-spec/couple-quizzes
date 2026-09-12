@@ -3906,7 +3906,7 @@ function PairScreen({
     color: ink,
   }}
 >
-  {hasFullPair ? t.pair.youAreInPair : t.pair.youCreatedPair}
+  {hasFullPair ? t.pair.youAreInPair : t.pair.pairAwaitingPartnerTitle}
 </div>
 
 <div
@@ -3916,7 +3916,7 @@ function PairScreen({
     color: muted,
   }}
 >
-  {t.pair.keepGettingToKnow}
+  {hasFullPair ? t.pair.keepGettingToKnow : t.pair.pairAwaitingPartnerText}
 </div>
 
               {!hasPartnerConnected && (
@@ -4195,7 +4195,7 @@ function PairScreen({
         </>
       )}
 
-      {hasPairCreated && (
+      {hasFullPair && (
         <div style={{ ...cardBaseStyle(), padding: 16, marginTop: 10 }}>
           {confirmingLeavePair ? (
             <div style={{ display: "grid", gap: 8 }}>
