@@ -303,6 +303,9 @@ export const TEXT_EN = {
       wonPrizeText: "You won a prize 🎁 Message the manager to claim it",
       claimPrizeButton: "Claim prize 🎁",
       managerMessageTemplate: "Hello! I won a prize: {title} 🎁",
+      bonusPointsClaimedText: "The points are already on your balance — spend them or spin again right away!",
+      bonusSpinClaimedText: "Your free spin is already banked — use it whenever you like.",
+      bonusContinueButton: "Awesome! 🎉",
     },
   },
 

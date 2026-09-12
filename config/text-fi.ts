@@ -307,6 +307,9 @@ export const TEXT_FI = {
       wonPrizeText: "Voitit palkinnon 🎁 Ota yhteyttä managerille lunastaaksesi sen",
       claimPrizeButton: "Lunasta palkinto 🎁",
       managerMessageTemplate: "Hei! Voitin palkinnon: {title} 🎁",
+      bonusPointsClaimedText: "Pisteet on jo lisätty saldoosi — voit käyttää ne heti tai pyörittää uudelleen!",
+      bonusSpinClaimedText: "Ilmainen pyöräytys on jo pankissasi — käytä se milloin haluat.",
+      bonusContinueButton: "Mahtavaa! 🎉",
     },
   },
 

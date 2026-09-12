@@ -14498,7 +14498,8 @@ const visibleRewards = rewardsExpanded
         {selectedReward.title}
       </div>
 
-      {/* 💬 описание */}
+      {/* 💬 описание — бонусы (очки/прокрут) начисляются сами, звать
+          писать менеджеру за ними как за настоящим призом не за чем. */}
       <div
         style={{
           marginTop: 8,
@@ -14507,12 +14508,24 @@ const visibleRewards = rewardsExpanded
           lineHeight: 1.4,
         }}
       >
-        {t.rewards.wheelScreen.wonPrizeText}
+        {selectedReward.outcomeType === "bonus_points"
+          ? t.rewards.wheelScreen.bonusPointsClaimedText
+          : selectedReward.outcomeType === "bonus_spin"
+            ? t.rewards.wheelScreen.bonusSpinClaimedText
+            : t.rewards.wheelScreen.wonPrizeText}
       </div>
 
       {/* 🔘 кнопка */}
       <button
         onClick={() => {
+          if (
+            selectedReward.outcomeType === "bonus_points" ||
+            selectedReward.outcomeType === "bonus_spin"
+          ) {
+            setShowRewardScreen(false);
+            return;
+          }
+
           const text = encodeURIComponent(
             t.rewards.wheelScreen.managerMessageTemplate.replace(
               "{title}",
@@ -14538,7 +14551,9 @@ const visibleRewards = rewardsExpanded
           fontSize: 16,
         }}
       >
-        {t.rewards.wheelScreen.claimPrizeButton}
+        {selectedReward.outcomeType === "bonus_points" || selectedReward.outcomeType === "bonus_spin"
+          ? t.rewards.wheelScreen.bonusContinueButton
+          : t.rewards.wheelScreen.claimPrizeButton}
       </button>
 
       {/* ❌ закрыть */}
