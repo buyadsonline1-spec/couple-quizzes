@@ -1251,6 +1251,8 @@ bot.on(
         await handleDatingSuperlikePayment(telegramId, msg.chat.id, payload);
       } else if (plan.startsWith("dating_boost_")) {
         await handleDatingBoostPayment(telegramId, msg.chat.id, plan);
+      } else if (plan === "pet_item") {
+        await handlePetItemPayment(telegramId, msg.chat.id, payload);
       } else {
         await handlePremiumPayment(telegramId, msg.chat.id, plan);
       }
@@ -1436,6 +1438,57 @@ async function handleDatingBoostPayment(
   await bot.sendMessage(
     chatId,
     `🚀 Буст анкеты активирован на ${label}! Сейчас твоя анкета показывается первой всем подходящим пользователям.`
+  );
+}
+
+// Вещи для питомца за Stars (корона/медаль/комната «Космос») — цену
+// проверяет сама create-stars-invoice (PET_ITEM_STARS), здесь только
+// выдача владения через grant_pair_pet_item, которая НЕ списывает
+// solo_points и не проверяет уровень/достижения (это уже оплачено
+// реальными деньгами, а не заработано). Список item_id, которые
+// grant_pair_pet_item реально примет, зашит в саму RPC — так что
+// опечатка здесь просто вернёт ok:false, а не выдаст что попало.
+const PET_ITEM_NAMES: Record<string, string> = {
+  hat_crown: "Корона",
+  acc_medal: "Медаль",
+  room_space: "Комната «Космос»",
+};
+
+async function handlePetItemPayment(
+  telegramId: number,
+  chatId: number,
+  payload: Record<string, unknown>
+) {
+  const itemId = typeof payload.itemId === "string" ? payload.itemId : "";
+
+  if (!itemId) {
+    console.error("❌ PET ITEM PAYMENT: missing itemId in payload", payload);
+    await bot.sendMessage(
+      chatId,
+      "❗ Оплата прошла, но не удалось определить вещь для питомца. Напиши в поддержку."
+    );
+    return;
+  }
+
+  const { data, error } = await supabaseAdmin.rpc(
+    "grant_pair_pet_item",
+    { p_telegram_id: telegramId, p_item_id: itemId }
+  );
+
+  if (error || !data?.ok) {
+    console.error("❌ GRANT_PAIR_PET_ITEM RPC ERROR:", error || data);
+    await bot.sendMessage(
+      chatId,
+      "❗ Оплата прошла, но при выдаче вещи питомцу произошла ошибка. Напиши в поддержку."
+    );
+    return;
+  }
+
+  const label = PET_ITEM_NAMES[itemId] ?? itemId;
+
+  await bot.sendMessage(
+    chatId,
+    `🎉 Оплата прошла! «${label}» появилась в магазине питомца — загляни примерить.`
   );
 }
 

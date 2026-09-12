@@ -43,6 +43,17 @@ const PLANS: Record<
   },
 };
 
+// Вещи для питомца, доступные только за Stars (не за очки) — тот же
+// принцип, что и у dating_superlike: клиент присылает только itemId,
+// цену и допустимость решает сервер. Список id должен совпадать с
+// grant_pair_pet_item (supabase/pair_pets_unlocks.sql) — иначе оплата
+// пройдёт, а выдать вещь боту будет нечего.
+const PET_ITEM_STARS: Record<string, { title: string; amount: number }> = {
+  hat_crown: { title: "Корона для питомца", amount: 40 },
+  acc_medal: { title: "Медаль для питомца", amount: 35 },
+  room_space: { title: "Комната «Космос» для питомца", amount: 60 },
+};
+
 export async function POST(req: NextRequest) {
   try {
     if (!BOT_TOKEN) {
@@ -58,7 +69,6 @@ export async function POST(req: NextRequest) {
 
     const telegramId = body?.telegramId;
     const plan = body?.plan;
-    const planConfig = typeof plan === "string" ? PLANS[plan] : undefined;
 
     if (!telegramId) {
       return NextResponse.json(
@@ -66,6 +76,28 @@ export async function POST(req: NextRequest) {
         { status: 400 }
       );
     }
+
+    // pet_item — отдельная ветка: один "план" на все Stars-вещи
+    // питомца, цена берётся из PET_ITEM_STARS по itemId (клиент
+    // присылает только id, не сумму), а не заводить в PLANS запись
+    // на каждую вещь по отдельности.
+    const petItemId = plan === "pet_item" && typeof body?.itemId === "string" ? body.itemId : undefined;
+    const petItemConfig = petItemId ? PET_ITEM_STARS[petItemId] : undefined;
+
+    const planConfig =
+      plan === "pet_item"
+        ? petItemConfig
+          ? {
+              title: "Couple Quizzes — вещь для питомца",
+              description: petItemConfig.title,
+              label: petItemConfig.title,
+              amount: petItemConfig.amount,
+              requiresTarget: false,
+            }
+          : undefined
+        : typeof plan === "string"
+          ? PLANS[plan]
+          : undefined;
 
     if (!planConfig) {
       return NextResponse.json(
@@ -87,6 +119,7 @@ export async function POST(req: NextRequest) {
       telegramId,
       plan,
       ...(planConfig.requiresTarget ? { toTelegramId } : {}),
+      ...(petItemId ? { itemId: petItemId } : {}),
     });
 
     const tgRes = await fetch(

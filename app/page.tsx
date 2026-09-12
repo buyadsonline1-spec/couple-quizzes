@@ -15925,21 +15925,31 @@ type PetShopItem = {
   // (трава/песок/пол), на которой визуально стоит питомец — без неё
   // roomBackground выглядит просто как плоский цвет, а не место.
   roomGround?: string;
+  // Разблокировка сверх цены — сервер (buy_pair_pet_item) проверяет
+  // то же самое, здесь только чтобы витрина показала правильный
+  // замочек и текст условия ДО попытки покупки, а не после отказа.
+  unlockPetLevel?: number;
+  unlockPairPoints?: number;
+  unlockStreakDays?: number;
+  // Вещи за Stars (реальные деньги) не имеют цены в очках вообще —
+  // покупаются через Telegram-инвойс (см. openPetStarsInvoice), price
+  // в этом случае не используется и равен 0.
+  priceStars?: number;
 };
 
 const PET_SHOP_ITEMS: PetShopItem[] = [
   { id: "hat_cap", slot: "hat", price: 250, emoji: "🧢", nameRu: "Кепка", nameEn: "Cap", nameFi: "Lippis" },
-  { id: "hat_top", slot: "hat", price: 300, emoji: "🎩", nameRu: "Цилиндр", nameEn: "Top hat", nameFi: "Hattu" },
-  { id: "hat_crown", slot: "hat", price: 800, emoji: "👑", nameRu: "Корона", nameEn: "Crown", nameFi: "Kruunu" },
+  { id: "hat_top", slot: "hat", price: 300, emoji: "🎩", nameRu: "Цилиндр", nameEn: "Top hat", nameFi: "Hattu", unlockPetLevel: 3 },
+  { id: "hat_crown", slot: "hat", price: 0, emoji: "👑", nameRu: "Корона", nameEn: "Crown", nameFi: "Kruunu", priceStars: 40 },
   { id: "hat_beanie", slot: "hat", price: 150, emoji: "🧶", nameRu: "Шапка", nameEn: "Beanie", nameFi: "Pipo" },
-  { id: "hat_flower", slot: "hat", price: 300, emoji: "🌸", nameRu: "Веночек", nameEn: "Flower crown", nameFi: "Kukkaseppele" },
+  { id: "hat_flower", slot: "hat", price: 300, emoji: "🌸", nameRu: "Веночек", nameEn: "Flower crown", nameFi: "Kukkaseppele", unlockStreakDays: 3 },
   { id: "hat_party", slot: "hat", price: 200, emoji: "🥳", nameRu: "Колпак", nameEn: "Party hat", nameFi: "Juhlahattu" },
   { id: "acc_bow", slot: "accessory", price: 200, emoji: "🎀", nameRu: "Бантик", nameEn: "Bow", nameFi: "Rusetti" },
-  { id: "acc_sunglasses", slot: "accessory", price: 250, emoji: "🕶️", nameRu: "Очки", nameEn: "Sunglasses", nameFi: "Aurinkolasit" },
-  { id: "acc_scarf", slot: "accessory", price: 300, emoji: "🧣", nameRu: "Шарф", nameEn: "Scarf", nameFi: "Huivi" },
+  { id: "acc_sunglasses", slot: "accessory", price: 250, emoji: "🕶️", nameRu: "Очки", nameEn: "Sunglasses", nameFi: "Aurinkolasit", unlockPetLevel: 4 },
+  { id: "acc_scarf", slot: "accessory", price: 300, emoji: "🧣", nameRu: "Шарф", nameEn: "Scarf", nameFi: "Huivi", unlockPairPoints: 1500 },
   { id: "acc_glasses", slot: "accessory", price: 200, emoji: "👓", nameRu: "Очки-нёрд", nameEn: "Glasses", nameFi: "Silmälasit" },
   { id: "acc_collar", slot: "accessory", price: 220, emoji: "🔔", nameRu: "Ошейник", nameEn: "Collar", nameFi: "Kaulapanta" },
-  { id: "acc_medal", slot: "accessory", price: 350, emoji: "🏅", nameRu: "Медаль", nameEn: "Medal", nameFi: "Mitali" },
+  { id: "acc_medal", slot: "accessory", price: 0, emoji: "🏅", nameRu: "Медаль", nameEn: "Medal", nameFi: "Mitali", priceStars: 35 },
   {
     id: "room_meadow",
     slot: "room",
@@ -15963,6 +15973,7 @@ const PET_SHOP_ITEMS: PetShopItem[] = [
     roomBackground: "linear-gradient(180deg, #171337 0%, #2b2560 45%, #6a3b6e 100%)",
     roomDecor: ["⭐", "🌙", "✨"],
     roomGround: "linear-gradient(180deg, rgba(26,20,64,0) 0%, #1a1440 100%)",
+    unlockPetLevel: 5,
   },
   {
     id: "room_beach",
@@ -15987,11 +15998,12 @@ const PET_SHOP_ITEMS: PetShopItem[] = [
     roomBackground: "linear-gradient(180deg, #cdeccb 0%, #7bb87e 55%, #3f7a49 100%)",
     roomDecor: ["🌲", "🍄", "🍃"],
     roomGround: "linear-gradient(180deg, rgba(47,107,60,0) 0%, #2f6b3c 100%)",
+    unlockStreakDays: 5,
   },
   {
     id: "room_space",
     slot: "room",
-    price: 600,
+    price: 0,
     emoji: "🚀",
     nameRu: "Космос",
     nameEn: "Space",
@@ -15999,6 +16011,7 @@ const PET_SHOP_ITEMS: PetShopItem[] = [
     roomBackground: "linear-gradient(180deg, #1c1a3d 0%, #10122b 55%, #33265f 100%)",
     roomDecor: ["🪐", "🌟", "☄️"],
     roomGround: "linear-gradient(180deg, rgba(5,4,15,0) 0%, #05040f 100%)",
+    priceStars: 60,
   },
   {
     id: "room_candy",
@@ -16011,6 +16024,7 @@ const PET_SHOP_ITEMS: PetShopItem[] = [
     roomBackground: "linear-gradient(180deg, #ffe3f0 0%, #ffd1e8 55%, #ffb8dc 100%)",
     roomDecor: ["🍭", "🍬", "🧁"],
     roomGround: "linear-gradient(180deg, rgba(255,143,192,0) 0%, #ff8fc0 100%)",
+    unlockPairPoints: 3000,
   },
 ];
 
@@ -16579,12 +16593,15 @@ function PetFace({
 function PetScreen({
   pet,
   soloPoints,
+  pairTotalPoints,
+  streakDays,
   loading,
   creating,
   justLeveledUp,
   onDismissLevelUp,
   onCreate,
   onBuyItem,
+  onBuyItemWithStars,
   onEquipItem,
   onBack,
   t,
@@ -16592,12 +16609,20 @@ function PetScreen({
 }: {
   pet: PetState | null;
   soloPoints: number;
+  // Для замочков разблокировки по достижениям пары — очки пары
+  // (acc_scarf/room_candy) и дневной стрик покупающего (hat_flower/
+  // room_forest). Реальную проверку всё равно делает сервер
+  // (buy_pair_pet_item) — здесь только чтобы витрина сразу показала
+  // правильное состояние, а не полагалась на отказ после тапа.
+  pairTotalPoints: number;
+  streakDays: number;
   loading: boolean;
   creating: boolean;
   justLeveledUp: boolean;
   onDismissLevelUp: () => void;
   onCreate: (species: PetSpecies, gender: PetGender, name: string) => void;
   onBuyItem: (itemId: string) => Promise<{ ok: boolean; reason?: string }>;
+  onBuyItemWithStars: (item: PetShopItem) => Promise<{ ok: boolean }>;
   onEquipItem: (slot: PetItemSlot, itemId: string | null) => void;
   onBack: () => void;
   t: any;
@@ -16923,6 +16948,44 @@ function PetScreen({
   const sceneMuted = equippedRoomItem ? "rgba(255,255,255,0.88)" : muted;
   const sceneTextShadow = equippedRoomItem ? "0 1px 4px rgba(0,0,0,0.35)" : "none";
 
+  const petLevel = pet?.level ?? 1;
+
+  // Чего не хватает для разблокировки — null, если условий нет или
+  // они уже выполнены. Один и тот же расчёт нужен и для дизейбла
+  // кнопки, и для текста замочка, и для сообщения об ошибке.
+  function getLockRequirement(
+    item: PetShopItem
+  ): { kind: "level" | "pairPoints" | "streak"; required: number; current: number } | null {
+    if (item.unlockPetLevel && petLevel < item.unlockPetLevel) {
+      return { kind: "level", required: item.unlockPetLevel, current: petLevel };
+    }
+    if (item.unlockPairPoints && pairTotalPoints < item.unlockPairPoints) {
+      return { kind: "pairPoints", required: item.unlockPairPoints, current: pairTotalPoints };
+    }
+    if (item.unlockStreakDays && streakDays < item.unlockStreakDays) {
+      return { kind: "streak", required: item.unlockStreakDays, current: streakDays };
+    }
+    return null;
+  }
+
+  function lockRequirementLabel(requirement: NonNullable<ReturnType<typeof getLockRequirement>>): string {
+    if (requirement.kind === "level") {
+      return market === "fi"
+        ? `🔒 Taso ${requirement.required}`
+        : market === "en"
+          ? `🔒 Lvl ${requirement.required}`
+          : `🔒 Ур. ${requirement.required}`;
+    }
+    if (requirement.kind === "pairPoints") {
+      return `🔒 ${requirement.required}⭐`;
+    }
+    return market === "fi"
+      ? `🔒 ${requirement.required} pv putki`
+      : market === "en"
+        ? `🔒 ${requirement.required}-day streak`
+        : `🔒 Стрик ${requirement.required}`;
+  }
+
   async function handleShopTap(item: PetShopItem) {
     const owned = pet?.ownedItems.includes(item.id) ?? false;
 
@@ -16935,14 +16998,19 @@ function PetScreen({
       return;
     }
 
+    if (getLockRequirement(item)) return;
+
     setShopError(null);
     setBuyingItemId(item.id);
-    const result = await onBuyItem(item.id);
+    const result = item.priceStars
+      ? await onBuyItemWithStars(item)
+      : await onBuyItem(item.id);
     setBuyingItemId(null);
 
     if (!result.ok) {
+      const reason = "reason" in result ? result.reason : undefined;
       setShopError(
-        result.reason === "insufficient-points"
+        reason === "insufficient-points"
           ? market === "fi"
             ? "Ei tarpeeksi pisteitä."
             : market === "en"
@@ -16970,14 +17038,16 @@ function PetScreen({
             (slot === "hat" && pet?.equippedHat === item.id) ||
             (slot === "accessory" && pet?.equippedAccessory === item.id) ||
             (slot === "room" && pet?.equippedRoom === item.id);
-          const affordable = soloPoints >= item.price;
+          const lockRequirement = owned ? null : getLockRequirement(item);
+          const affordable = item.priceStars ? true : soloPoints >= item.price;
           const busy = buyingItemId === item.id;
+          const disabled = busy || Boolean(lockRequirement) || (!owned && !affordable);
 
           return (
             <button
               key={item.id}
               type="button"
-              disabled={busy || (!owned && !affordable)}
+              disabled={disabled}
               onClick={() => handleShopTap(item)}
               style={{
                 width: 68,
@@ -16999,15 +17069,15 @@ function PetScreen({
                   : isDark
                     ? "rgba(255,255,255,0.06)"
                     : "rgba(255,255,255,0.3)",
-                cursor: busy || (!owned && !affordable) ? "not-allowed" : "pointer",
-                opacity: !owned && !affordable ? 0.5 : 1,
+                cursor: disabled ? "not-allowed" : "pointer",
+                opacity: !owned && (lockRequirement || !affordable) ? 0.5 : 1,
               }}
             >
               <div style={{ fontSize: 22 }}>{busy ? "…" : item.emoji}</div>
               <div style={{ fontSize: 9.5, fontWeight: 800, color: ink, textAlign: "center", lineHeight: 1.1 }}>
                 {petItemName(item, market)}
               </div>
-              <div style={{ fontSize: 9, fontWeight: 700, color: equipped ? accent : muted }}>
+              <div style={{ fontSize: 9, fontWeight: 700, color: equipped ? accent : muted, textAlign: "center" }}>
                 {equipped
                   ? market === "fi"
                     ? "Käytössä"
@@ -17020,7 +17090,11 @@ function PetScreen({
                       : market === "en"
                         ? "Owned"
                         : "Куплено"
-                    : `⭐ ${item.price}`}
+                    : lockRequirement
+                      ? lockRequirementLabel(lockRequirement)
+                      : item.priceStars
+                        ? `🌟 ${item.priceStars}`
+                        : `⭐ ${item.price}`}
               </div>
             </button>
           );
@@ -19882,6 +19956,21 @@ async function handleEquipPetItem(slot: PetItemSlot, itemId: string | null) {
   }
 }
 
+// Вещи за Stars (hat_crown/acc_medal/room_space) не списывают
+// solo_points вообще — их выдаёт bot.ts (successful_payment →
+// grant_pair_pet_item) сразу после реальной оплаты. Здесь только
+// открываем инвойс и, если он оплачен, перечитываем состояние
+// питомца — как и остальные Stars-покупки в приложении (см.
+// openDatingStarsInvoice), без ветки Apple IAP: питомец сейчас
+// доступен только в Telegram-версии.
+async function handleBuyPetItemWithStars(item: PetShopItem): Promise<{ ok: boolean }> {
+  const paid = await openDatingStarsInvoice("pet_item", { itemId: item.id });
+  if (!paid) return { ok: false };
+
+  await handleOpenPet();
+  return { ok: true };
+}
+
 // ---- Знакомства ----
 
 async function datingFetch(path: string, body: Record<string, unknown> = {}) {
@@ -22045,12 +22134,15 @@ showPaywall={() => {
     t={t}
     pet={pet}
     soloPoints={appState.soloPoints}
+    pairTotalPoints={appState.pair.totalPoints || 0}
+    streakDays={appState.dailyBonus.streakDay || 0}
     loading={petLoading}
     creating={petCreating}
     justLeveledUp={petJustLeveledUp}
     onDismissLevelUp={() => setPetJustLeveledUp(false)}
     onCreate={handleCreatePet}
     onBuyItem={handleBuyPetItem}
+    onBuyItemWithStars={handleBuyPetItemWithStars}
     onEquipItem={handleEquipPetItem}
     onBack={() => setScreen("menu")}
     theme={isCapacitorApp() ? undefined : theme}
