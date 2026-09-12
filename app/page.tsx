@@ -15921,6 +15921,10 @@ type PetShopItem = {
   // карточки), чтобы комната ощущалась как окружение, а не просто
   // заливка за питомцем.
   roomDecor?: string[];
+  // Для комнаты — "пол" сцены: полупрозрачная полоса внизу карточки
+  // (трава/песок/пол), на которой визуально стоит питомец — без неё
+  // roomBackground выглядит просто как плоский цвет, а не место.
+  roomGround?: string;
 };
 
 const PET_SHOP_ITEMS: PetShopItem[] = [
@@ -15944,8 +15948,9 @@ const PET_SHOP_ITEMS: PetShopItem[] = [
     nameRu: "Лужайка",
     nameEn: "Meadow",
     nameFi: "Niitty",
-    roomBackground: "linear-gradient(160deg, #cdeccb 0%, #a8dba8 100%)",
+    roomBackground: "linear-gradient(180deg, #d7f5e3 0%, #a8dba8 55%, #6cbf6f 100%)",
     roomDecor: ["🌼", "🦋", "🌿"],
+    roomGround: "linear-gradient(180deg, rgba(79,157,82,0) 0%, #4f9d52 100%)",
   },
   {
     id: "room_night",
@@ -15955,8 +15960,9 @@ const PET_SHOP_ITEMS: PetShopItem[] = [
     nameRu: "Ночь",
     nameEn: "Night",
     nameFi: "Yö",
-    roomBackground: "linear-gradient(160deg, #2b2560 0%, #6a3b6e 100%)",
+    roomBackground: "linear-gradient(180deg, #171337 0%, #2b2560 45%, #6a3b6e 100%)",
     roomDecor: ["⭐", "🌙", "✨"],
+    roomGround: "linear-gradient(180deg, rgba(26,20,64,0) 0%, #1a1440 100%)",
   },
   {
     id: "room_beach",
@@ -15966,8 +15972,9 @@ const PET_SHOP_ITEMS: PetShopItem[] = [
     nameRu: "Пляж",
     nameEn: "Beach",
     nameFi: "Ranta",
-    roomBackground: "linear-gradient(160deg, #ffe9b3 0%, #8ed1e8 100%)",
+    roomBackground: "linear-gradient(180deg, #bdeaf5 0%, #ffe9b3 55%, #f5d382 100%)",
     roomDecor: ["🐚", "☀️", "🌴"],
+    roomGround: "linear-gradient(180deg, rgba(232,195,116,0) 0%, #e8c374 100%)",
   },
   {
     id: "room_forest",
@@ -15977,8 +15984,9 @@ const PET_SHOP_ITEMS: PetShopItem[] = [
     nameRu: "Лес",
     nameEn: "Forest",
     nameFi: "Metsä",
-    roomBackground: "linear-gradient(160deg, #bfe0c0 0%, #4f8f5b 100%)",
+    roomBackground: "linear-gradient(180deg, #cdeccb 0%, #7bb87e 55%, #3f7a49 100%)",
     roomDecor: ["🌲", "🍄", "🍃"],
+    roomGround: "linear-gradient(180deg, rgba(47,107,60,0) 0%, #2f6b3c 100%)",
   },
   {
     id: "room_space",
@@ -15988,8 +15996,9 @@ const PET_SHOP_ITEMS: PetShopItem[] = [
     nameRu: "Космос",
     nameEn: "Space",
     nameFi: "Avaruus",
-    roomBackground: "linear-gradient(160deg, #10122b 0%, #33265f 100%)",
+    roomBackground: "linear-gradient(180deg, #1c1a3d 0%, #10122b 55%, #33265f 100%)",
     roomDecor: ["🪐", "🌟", "☄️"],
+    roomGround: "linear-gradient(180deg, rgba(5,4,15,0) 0%, #05040f 100%)",
   },
   {
     id: "room_candy",
@@ -15999,8 +16008,9 @@ const PET_SHOP_ITEMS: PetShopItem[] = [
     nameRu: "Карамель",
     nameEn: "Candy",
     nameFi: "Karkki",
-    roomBackground: "linear-gradient(160deg, #ffd1e8 0%, #ffe9a8 100%)",
+    roomBackground: "linear-gradient(180deg, #ffe3f0 0%, #ffd1e8 55%, #ffb8dc 100%)",
     roomDecor: ["🍭", "🍬", "🧁"],
+    roomGround: "linear-gradient(180deg, rgba(255,143,192,0) 0%, #ff8fc0 100%)",
   },
 ];
 
@@ -16092,6 +16102,83 @@ const PET_PHOTO_SRC: Partial<Record<PetSpecies, string>> = {
   hippo: "/pets/hippo.png",
   owl: "/pets/owl.png",
 };
+
+// Где именно "приклеить" наклейку шапки/аксессуара поверх фото —
+// у всех 6 питомцев одинаковая рамка кадра (анфас, в polный рост,
+// голова сверху по центру), поэтому один и тот же набор координат на
+// каждый ПРЕДМЕТ (а не на каждый вид) работает достаточно точно:
+// шапки — на макушку, очки — на уровень глаз, ошейник/медаль/бантик —
+// на шею/грудь. top/left — проценты от размера квадрата с питомцем.
+type PetItemAnchor = { top: string; rotate?: number; sizeFactor: number };
+
+const PET_HAT_ANCHOR: Record<string, PetItemAnchor> = {
+  hat_cap: { top: "-2%", rotate: -6, sizeFactor: 0.26 },
+  hat_top: { top: "-7%", rotate: -4, sizeFactor: 0.3 },
+  hat_crown: { top: "-6%", rotate: 0, sizeFactor: 0.3 },
+  hat_beanie: { top: "-3%", rotate: -4, sizeFactor: 0.28 },
+  hat_flower: { top: "3%", rotate: 0, sizeFactor: 0.3 },
+  hat_party: { top: "-9%", rotate: 6, sizeFactor: 0.26 },
+};
+const PET_HAT_ANCHOR_DEFAULT: PetItemAnchor = { top: "-4%", rotate: -8, sizeFactor: 0.28 };
+
+const PET_ACCESSORY_ANCHOR: Record<string, PetItemAnchor> = {
+  // Очки — на уровень глаз, а не на грудь.
+  acc_sunglasses: { top: "22%", sizeFactor: 0.3 },
+  acc_glasses: { top: "22%", sizeFactor: 0.26 },
+  // Бантик/шарф/ошейник/медаль — на шею и грудь.
+  acc_bow: { top: "47%", sizeFactor: 0.22 },
+  acc_scarf: { top: "48%", sizeFactor: 0.26 },
+  acc_collar: { top: "48%", sizeFactor: 0.22 },
+  acc_medal: { top: "55%", sizeFactor: 0.24 },
+};
+const PET_ACCESSORY_ANCHOR_DEFAULT: PetItemAnchor = { top: "50%", sizeFactor: 0.24 };
+
+// Настоящие нарисованные предметы (те же SVG-фигуры, что рисуются на
+// SVG-питомце — PetHatOverlay/PetAccessoryOverlay ниже) вместо голого
+// эмодзи поверх фото. Каждый предмет рисуется в общей координатной
+// сетке 0..200 — bbox вырезает именно ту область, где нарисован
+// конкретный предмет, и viewBox отдельного <svg> "приближает" её так,
+// будто это самостоятельная иконка.
+const PET_HAT_BBOX: Record<string, [number, number, number, number]> = {
+  hat_top: [67, 3, 66, 51],
+  hat_cap: [47, 5, 106, 58],
+  hat_crown: [57, -1, 86, 48],
+  hat_beanie: [57, -4, 86, 61],
+  hat_flower: [60, 10, 86, 48],
+  hat_party: [69, -6, 62, 55],
+};
+
+const PET_ACCESSORY_BBOX: Record<string, [number, number, number, number]> = {
+  acc_sunglasses: [59, 93, 82, 28],
+  acc_bow: [75, 143, 50, 30],
+  acc_scarf: [53, 147, 94, 44],
+  acc_glasses: [51, 83, 100, 49],
+  acc_collar: [55, 147, 90, 34],
+  acc_medal: [79, 131, 42, 52],
+};
+
+// Рендерит один предмет из каталога как самостоятельную маленькую
+// иконку (не эмодзи) — вырезает его bbox из общей SVG-сетки шапок/
+// аксессуаров и масштабирует под нужную ширину, сохраняя пропорции.
+function PetItemIcon({
+  kind,
+  itemId,
+  width,
+}: {
+  kind: "hat" | "accessory";
+  itemId: string;
+  width: number;
+}) {
+  const bboxMap = kind === "hat" ? PET_HAT_BBOX : PET_ACCESSORY_BBOX;
+  const bbox = bboxMap[itemId] ?? [60, 60, 80, 80];
+  const [, , bw, bh] = bbox;
+  const height = width * (bh / bw);
+  return (
+    <svg width={width} height={height} viewBox={bbox.join(" ")} style={{ overflow: "visible" }}>
+      {kind === "hat" ? <PetHatOverlay hat={itemId} /> : <PetAccessoryOverlay accessory={itemId} />}
+    </svg>
+  );
+}
 
 // Питомец растёт вместе с уровнем — три стадии, от малыша до
 // взрослого. Это чисто визуальный масштаб одного и того же ассета
@@ -16435,34 +16522,40 @@ function PetFace({
           style={{ width: "100%", height: "100%", objectFit: "contain", display: "block", userSelect: "none" }}
           draggable={false}
         />
-        {accessoryItem && (
-          <div
-            style={{
-              position: "absolute",
-              top: "56%",
-              left: "50%",
-              transform: "translate(-50%, -50%)",
-              fontSize: size * 0.24,
-              filter: "drop-shadow(0 2px 4px rgba(0,0,0,0.25))",
-            }}
-          >
-            {accessoryItem.emoji}
-          </div>
-        )}
-        {hatItem && (
-          <div
-            style={{
-              position: "absolute",
-              top: "-4%",
-              left: "50%",
-              transform: "translate(-50%, 0) rotate(-8deg)",
-              fontSize: size * 0.28,
-              filter: "drop-shadow(0 2px 4px rgba(0,0,0,0.25))",
-            }}
-          >
-            {hatItem.emoji}
-          </div>
-        )}
+        {accessoryItem &&
+          (() => {
+            const anchor = PET_ACCESSORY_ANCHOR[accessoryItem.id] ?? PET_ACCESSORY_ANCHOR_DEFAULT;
+            return (
+              <div
+                style={{
+                  position: "absolute",
+                  top: anchor.top,
+                  left: "50%",
+                  transform: `translate(-50%, -50%)${anchor.rotate ? ` rotate(${anchor.rotate}deg)` : ""}`,
+                  filter: "drop-shadow(0 2px 4px rgba(0,0,0,0.25))",
+                }}
+              >
+                <PetItemIcon kind="accessory" itemId={accessoryItem.id} width={size * anchor.sizeFactor} />
+              </div>
+            );
+          })()}
+        {hatItem &&
+          (() => {
+            const anchor = PET_HAT_ANCHOR[hatItem.id] ?? PET_HAT_ANCHOR_DEFAULT;
+            return (
+              <div
+                style={{
+                  position: "absolute",
+                  top: anchor.top,
+                  left: "50%",
+                  transform: `translate(-50%, 0)${anchor.rotate ? ` rotate(${anchor.rotate}deg)` : ""}`,
+                  filter: "drop-shadow(0 2px 4px rgba(0,0,0,0.25))",
+                }}
+              >
+                <PetItemIcon kind="hat" itemId={hatItem.id} width={size * anchor.sizeFactor} />
+              </div>
+            );
+          })()}
       </div>
     );
   }
@@ -16524,6 +16617,7 @@ function PetScreen({
   const [shopSlot, setShopSlot] = useState<PetItemSlot | null>(null);
   const [buyingItemId, setBuyingItemId] = useState<string | null>(null);
   const [shopError, setShopError] = useState<string | null>(null);
+  const [showPetInfo, setShowPetInfo] = useState(false);
 
   const speciesOption = pet
     ? PET_SPECIES_OPTIONS.find((option) => option.id === pet.species)
@@ -16980,11 +17074,25 @@ function PetScreen({
           transition: "background 0.4s ease",
         }}
       >
+        {equippedRoomItem?.roomGround && (
+          <div
+            style={{
+              position: "absolute",
+              left: 0,
+              right: 0,
+              bottom: 0,
+              height: "42%",
+              background: equippedRoomItem.roomGround,
+              pointerEvents: "none",
+            }}
+          />
+        )}
+
         {equippedRoomItem?.roomDecor ? (
           <>
             {[
               { top: "9%", left: "8%" },
-              { top: "13%", right: "10%" },
+              { top: "13%", right: "22%" },
               { top: "78%", right: "12%" },
             ].map((pos, i) => (
               <div
@@ -17005,6 +17113,78 @@ function PetScreen({
               💫
             </div>
           </>
+        )}
+
+        <button
+          type="button"
+          onClick={() => setShowPetInfo((v) => !v)}
+          aria-label={market === "fi" ? "Tietoja" : market === "en" ? "Info" : "Информация"}
+          style={{
+            position: "absolute",
+            top: 10,
+            right: 10,
+            width: 26,
+            height: 26,
+            borderRadius: 999,
+            border: "none",
+            background: showPetInfo
+              ? sceneInk === "#ffffff"
+                ? "rgba(255,255,255,0.9)"
+                : "rgba(31,29,58,0.85)"
+              : "rgba(0,0,0,0.16)",
+            color: showPetInfo ? (sceneInk === "#ffffff" ? "#1f1d3a" : "#fff") : sceneInk,
+            fontSize: 13,
+            fontWeight: 900,
+            fontStyle: "italic",
+            fontFamily: "Georgia, serif",
+            cursor: "pointer",
+            lineHeight: "26px",
+            zIndex: 2,
+          }}
+        >
+          i
+        </button>
+
+        {showPetInfo && (
+          <div
+            style={{
+              position: "relative",
+              zIndex: 2,
+              margin: "0 0 14px",
+              padding: "12px 14px",
+              borderRadius: 16,
+              background: sceneInk === "#ffffff" ? "rgba(0,0,0,0.28)" : "rgba(255,255,255,0.55)",
+              backdropFilter: "blur(6px)",
+              WebkitBackdropFilter: "blur(6px)",
+              textAlign: "left",
+              fontSize: 12,
+              lineHeight: 1.5,
+              color: sceneInk,
+              textShadow: sceneTextShadow,
+            }}
+          >
+            <div style={{ fontWeight: 900, marginBottom: 4 }}>
+              {market === "fi"
+                ? "🌱 Kasvu ja esineet"
+                : market === "en"
+                  ? "🌱 Growth & items"
+                  : "🌱 Рост и предметы"}
+            </div>
+            <div>
+              {market === "fi"
+                ? "Lemmikki kasvaa tasojen myötä: Vauva (1-2) → Nuori (3-5) → Aikuinen (6+). Tasot tulevat XP:stä, jonka pari ansaitsee testeistä ja kyselyistä."
+                : market === "en"
+                  ? "Your pet grows with its level: Baby (1-2) → Teen (3-5) → Adult (6+). Levels come from XP your pair earns via tests and polls."
+                  : "Питомец растёт вместе с уровнем: Малыш (1-2) → Подросток (3-5) → Взрослый (6+). Уровни считаются из очков опыта, которые пара зарабатывает тестами и опросами."}
+            </div>
+            <div style={{ marginTop: 6 }}>
+              {market === "fi"
+                ? "Ostetut hatut/esineet/huoneet ovat yhteisiä molemmille kumppaneille — kuka tahansa voi pukea tai vaihtaa ne."
+                : market === "en"
+                  ? "Bought hats/accessories/rooms are shared by both partners — either of you can equip or swap them."
+                  : "Купленные шапки, аксессуары и комнаты общие на двоих — надеть или сменить может любой партнёр."}
+            </div>
+          </div>
         )}
 
         <div style={{ position: "relative", width: ringSize, height: ringSize, margin: "0 auto" }}>
