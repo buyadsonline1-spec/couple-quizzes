@@ -7468,6 +7468,30 @@ function AiPsychologistChatScreen({
           bottom: 0,
         }}
       >
+        <button
+          type="button"
+          onClick={onBack}
+          aria-label={t.common.back}
+          title={t.common.back}
+          style={{
+            flexShrink: 0,
+            width: 40,
+            height: 40,
+            borderRadius: 999,
+            border: isDark ? "1px solid rgba(255,255,255,0.18)" : "1px solid rgba(255,255,255,0.4)",
+            background: isDark ? "rgba(255,255,255,0.1)" : "rgba(255,255,255,0.45)",
+            color: ink,
+            fontSize: 16,
+            fontWeight: 900,
+            cursor: "pointer",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          ✕
+        </button>
+
         <input
           value={inputText}
           onChange={(e) => setInputText(e.target.value)}
