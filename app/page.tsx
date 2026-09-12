@@ -17159,8 +17159,11 @@ function PetScreen({
   }
 
   const xpPercent = Math.min(100, Math.round((pet.xp / Math.max(1, pet.xpToNext)) * 100));
-  const ringSize = 156;
-  const ringStroke = 8;
+  // Питомец должен быть достаточно большим, чтобы шапка/аксессуар
+  // были реально видны на нём (раньше при 156px мелкие иконки
+  // предметов почти сливались с фото) — крупнее почти вдвое.
+  const ringSize = 220;
+  const ringStroke = 9;
   const ringRadius = (ringSize - ringStroke) / 2;
   const ringCircumference = 2 * Math.PI * ringRadius;
   const ringOffset = ringCircumference * (1 - xpPercent / 100);
@@ -17260,9 +17263,22 @@ function PetScreen({
   }
 
   function renderShopRow(slot: PetItemSlot) {
-    const items = PET_SHOP_ITEMS.filter((item) => item.slot === slot);
+    // Сначала вещи за очки, потом за Stars — платные идут в хвосте
+    // ряда, а не вперемешку со всем остальным. Внутри каждой группы
+    // порядок каталога не трогаем (стабильная сортировка).
+    const items = PET_SHOP_ITEMS.filter((item) => item.slot === slot).sort(
+      (a, b) => (a.priceStars ? 1 : 0) - (b.priceStars ? 1 : 0)
+    );
     return (
-      <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+      <div
+        style={{
+          display: "flex",
+          gap: 6,
+          overflowX: "auto",
+          paddingBottom: 2,
+          WebkitOverflowScrolling: "touch",
+        }}
+      >
         {items.map((item) => {
           const owned = pet?.ownedItems.includes(item.id) ?? false;
           const equipped =
@@ -17281,13 +17297,14 @@ function PetScreen({
               disabled={disabled}
               onClick={() => handleShopTap(item)}
               style={{
-                width: 68,
+                width: 54,
+                flexShrink: 0,
                 display: "flex",
                 flexDirection: "column",
                 alignItems: "center",
-                gap: 4,
-                padding: "8px 4px",
-                borderRadius: 14,
+                gap: 2,
+                padding: "6px 3px",
+                borderRadius: 12,
                 border: equipped
                   ? `2px solid ${accent}`
                   : isDark
@@ -17304,11 +17321,23 @@ function PetScreen({
                 opacity: !owned && (lockRequirement || !affordable) ? 0.5 : 1,
               }}
             >
-              <div style={{ fontSize: 22 }}>{busy ? "…" : item.emoji}</div>
-              <div style={{ fontSize: 9.5, fontWeight: 800, color: ink, textAlign: "center", lineHeight: 1.1 }}>
+              <div style={{ fontSize: 17 }}>{busy ? "…" : item.emoji}</div>
+              <div
+                style={{
+                  fontSize: 8,
+                  fontWeight: 800,
+                  color: ink,
+                  textAlign: "center",
+                  lineHeight: 1.1,
+                  whiteSpace: "nowrap",
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                  maxWidth: "100%",
+                }}
+              >
                 {petItemName(item, market)}
               </div>
-              <div style={{ fontSize: 9, fontWeight: 700, color: equipped ? accent : muted, textAlign: "center" }}>
+              <div style={{ fontSize: 7.5, fontWeight: 700, color: equipped ? accent : muted, textAlign: "center" }}>
                 {equipped
                   ? market === "fi"
                     ? "Käytössä"
