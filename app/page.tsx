@@ -10089,7 +10089,7 @@ function MainMenu({
         <div style={{ fontSize: 20, color: accent, flexShrink: 0 }}>→</div>
       </button>
 
-      {hasPair && !isCapacitorApp() && (
+      {!isCapacitorApp() && (
         <button
           type="button"
           onClick={onOpenPet}
@@ -10123,9 +10123,13 @@ function MainMenu({
                 lineHeight: 1.35,
               }}
             >
-              {getMarket() !== "ru"
-                ? "Grows together with your progress"
-                : "Растёт вместе с вашим прогрессом"}
+              {hasPair
+                ? getMarket() !== "ru"
+                  ? "Grows together with your progress"
+                  : "Растёт вместе с вашим прогрессом"
+                : getMarket() !== "ru"
+                  ? "Preview — pair up to raise it for real"
+                  : "Демо — заведите пару, чтобы растить по-настоящему"}
             </div>
           </div>
 
@@ -16592,6 +16596,10 @@ function PetFace({
 
 function PetScreen({
   pet,
+  hasPair,
+  soloDemoPet,
+  onCreateSoloDemo,
+  onResetSoloDemo,
   soloPoints,
   pairTotalPoints,
   streakDays,
@@ -16604,10 +16612,19 @@ function PetScreen({
   onBuyItemWithStars,
   onEquipItem,
   onBack,
+  onGoToPair,
   t,
   theme,
 }: {
   pet: PetState | null;
+  // false — пара ещё не укомплектована (нет партнёра). Настоящего
+  // питомца в этом случае завести нельзя (create_pair_pet вернёт
+  // pair-incomplete), поэтому показываем чисто ознакомительную
+  // локальную версию — см. soloDemoPet ниже.
+  hasPair: boolean;
+  soloDemoPet: { species: PetSpecies; gender: PetGender; name: string } | null;
+  onCreateSoloDemo: (species: PetSpecies, gender: PetGender, name: string) => void;
+  onResetSoloDemo: () => void;
   soloPoints: number;
   // Для замочков разблокировки по достижениям пары — очки пары
   // (acc_scarf/room_candy) и дневной стрик покупающего (hat_flower/
@@ -16625,6 +16642,7 @@ function PetScreen({
   onBuyItemWithStars: (item: PetShopItem) => Promise<{ ok: boolean }>;
   onEquipItem: (slot: PetItemSlot, itemId: string | null) => void;
   onBack: () => void;
+  onGoToPair: () => void;
   t: any;
   // Undefined на iOS (тема там не включена) — читается как "light".
   theme?: "light" | "dark";
@@ -16717,6 +16735,219 @@ function PetScreen({
             {market === "fi" ? "Ladataan..." : market === "en" ? "Loading..." : "Загрузка..."}
           </div>
         </div>
+      </div>
+    );
+  }
+
+  if (!hasPair) {
+    if (!soloDemoPet) {
+      return (
+        <div style={{ padding: 16, display: "grid", gap: 14 }}>
+          <style>{petAnimStyle}</style>
+          <div style={{ ...cardBaseStyle(), padding: 20, textAlign: "center" }}>
+            <div className="pet-avatar-bounce" style={{ fontSize: 40 }}>
+              🐾
+            </div>
+            <div style={{ fontSize: 20, fontWeight: 900, color: ink, marginTop: 6 }}>
+              {market === "fi"
+                ? "Tutustu lemmikkiin"
+                : market === "en"
+                  ? "Meet your future pet"
+                  : "Познакомьтесь с питомцем"}
+            </div>
+            <div style={{ marginTop: 6, fontSize: 13, color: muted, lineHeight: 1.4 }}>
+              {market === "fi"
+                ? "Tämä on esikatselu — kun pariudutte, lemmikki alkaa oikeasti kasvaa ja voitte pukea sitä yhdessä."
+                : market === "en"
+                  ? "This is just a preview — pair up with a partner and your pet will actually grow and you'll be able to dress it up together."
+                  : "Это только предпросмотр — как только заведёте пару, питомец начнёт по-настоящему расти, и вы сможете наряжать его вместе."}
+            </div>
+          </div>
+
+          <div style={{ ...cardBaseStyle(), padding: 20 }}>
+            <div style={{ fontSize: 14, fontWeight: 800, color: muted, marginBottom: 12 }}>
+              {market === "fi" ? "Valitse laji" : market === "en" ? "Choose a species" : "Выберите питомца"}
+            </div>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 10 }}>
+              {PET_SPECIES_OPTIONS.map((option) => {
+                const active = selectedSpecies === option.id;
+                return (
+                  <button
+                    key={option.id}
+                    type="button"
+                    onClick={() => setSelectedSpecies(option.id)}
+                    className={active ? "pet-species-active" : undefined}
+                    style={{
+                      border: active
+                        ? "2px solid rgba(143,107,255,0.55)"
+                        : isDark
+                          ? "2px solid rgba(255,255,255,0.12)"
+                          : "2px solid transparent",
+                      borderRadius: 18,
+                      padding: "16px 8px",
+                      background: active
+                        ? option.gradient
+                        : isDark
+                          ? "rgba(255,255,255,0.08)"
+                          : "rgba(255,255,255,0.28)",
+                      boxShadow: active ? `0 10px 24px ${option.glow}` : "none",
+                      display: "flex",
+                      flexDirection: "column",
+                      alignItems: "center",
+                      gap: 6,
+                      cursor: "pointer",
+                    }}
+                  >
+                    <PetFace species={option.id} size={44} />
+                    <div style={{ fontSize: 11.5, fontWeight: 800, color: active ? "#fff" : ink }}>
+                      {speciesLabel(option, market)}
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+
+            <div style={{ fontSize: 12.5, fontWeight: 800, color: muted, margin: "16px 0 8px" }}>
+              {market === "fi" ? "Lemmikin sukupuoli" : market === "en" ? "Pet's gender" : "Пол питомца"}
+            </div>
+            <div style={{ display: "flex", gap: 8, marginBottom: 16 }}>
+              <button
+                type="button"
+                onClick={() => setSelectedGender("boy")}
+                style={genderChoiceStyle(selectedGender === "boy")}
+              >
+                {market === "fi" ? "Poika ♂" : market === "en" ? "Male ♂" : "Мальчик ♂"}
+              </button>
+              <button
+                type="button"
+                onClick={() => setSelectedGender("girl")}
+                style={genderChoiceStyle(selectedGender === "girl")}
+              >
+                {market === "fi" ? "Tyttö ♀" : market === "en" ? "Female ♀" : "Девочка ♀"}
+              </button>
+            </div>
+
+            <div style={{ fontSize: 12.5, fontWeight: 800, color: muted, marginBottom: 8 }}>
+              {market === "fi" ? "Nimi" : market === "en" ? "Name" : "Имя"}
+            </div>
+            <input
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              maxLength={20}
+              placeholder={market === "fi" ? "esim. Nalle" : market === "en" ? "e.g. Fluffy" : "Например, Пушок"}
+              style={{
+                width: "100%",
+                boxSizing: "border-box",
+                border: isDark ? "1px solid rgba(255,255,255,0.18)" : "1px solid rgba(255,255,255,0.5)",
+                borderRadius: 14,
+                background: isDark ? "rgba(255,255,255,0.12)" : "rgba(255,255,255,0.55)",
+                padding: "12px 14px",
+                fontSize: 14,
+                color: ink,
+              }}
+            />
+
+            <button
+              type="button"
+              disabled={!selectedSpecies || !selectedGender || !name.trim()}
+              onClick={() => {
+                if (!selectedSpecies || !selectedGender || !name.trim()) return;
+                onCreateSoloDemo(selectedSpecies, selectedGender, name.trim());
+              }}
+              style={{
+                ...getPrimaryButtonStyle(isDark),
+                width: "100%",
+                marginTop: 18,
+                opacity: selectedSpecies && selectedGender && name.trim() ? 1 : 0.5,
+                cursor: selectedSpecies && selectedGender && name.trim() ? "pointer" : "not-allowed",
+              }}
+            >
+              {market === "fi" ? "Esikatsele" : market === "en" ? "Preview" : "Посмотреть"}
+            </button>
+          </div>
+
+          <button onClick={onBack} style={secondaryButtonStyle}>
+            {t.common.back}
+          </button>
+        </div>
+      );
+    }
+
+    const demoOption = PET_SPECIES_OPTIONS.find((option) => option.id === soloDemoPet.species);
+
+    return (
+      <div style={{ padding: 16, display: "grid", gap: 14 }}>
+        <style>{petAnimStyle}</style>
+
+        <div style={{ ...cardBaseStyle(), padding: 24, textAlign: "center" }}>
+          <div
+            className="pet-avatar-bounce"
+            style={{
+              width: 140,
+              height: 140,
+              margin: "0 auto",
+              borderRadius: 999,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              background:
+                demoOption?.gradient ??
+                (isDark
+                  ? "linear-gradient(135deg, #5f3dc4, #a3407e)"
+                  : "linear-gradient(135deg, #8f6bff, #ff76ba)"),
+              boxShadow: `0 10px 28px ${demoOption?.glow ?? "rgba(143,107,255,0.35)"}`,
+            }}
+          >
+            <PetFace species={soloDemoPet.species} size={116} />
+          </div>
+
+          <div style={{ marginTop: 14, fontSize: 22, fontWeight: 900, color: ink }}>
+            {soloDemoPet.name} {soloDemoPet.gender === "boy" ? "♂" : "♀"}
+          </div>
+          <div style={{ marginTop: 4, fontSize: 12.5, color: muted, fontWeight: 700 }}>
+            {market === "fi" ? "Esikatselu" : market === "en" ? "Preview" : "Предпросмотр"}
+          </div>
+        </div>
+
+        <div
+          style={{
+            ...cardBaseStyle(),
+            padding: 18,
+            background: isDark
+              ? "linear-gradient(135deg, rgba(255,180,120,0.18), rgba(143,107,255,0.16))"
+              : "linear-gradient(135deg, rgba(255,180,120,0.24), rgba(143,107,255,0.16))",
+          }}
+        >
+          <div style={{ fontSize: 14, fontWeight: 900, color: ink, marginBottom: 6 }}>
+            {market === "fi" ? "💕 Pariudu kasvattaaksesi lemmikin" : market === "en" ? "💕 Pair up to actually raise it" : "💕 Заведите пару, чтобы растить его по-настоящему"}
+          </div>
+          <div style={{ fontSize: 12.5, color: muted, lineHeight: 1.4 }}>
+            {market === "fi"
+              ? "Yhdessä partnerin kanssa lemmikki kasvaa tasoja tehtyjen testien ja kyselyiden myötä, ja voitte ostaa sille yhdessä vaatteita ja huoneita."
+              : market === "en"
+                ? "With a partner, your pet levels up from the tests and polls you complete together, and you can shop for hats, accessories and rooms as a couple."
+                : "С партнёром питомец будет расти по уровням от пройденных вместе тестов и опросов, а ещё вы сможете вдвоём покупать ему шапки, аксессуары и комнаты."}
+          </div>
+          <button
+            type="button"
+            onClick={onGoToPair}
+            style={{ ...getPrimaryButtonStyle(isDark), width: "100%", marginTop: 14 }}
+          >
+            {market === "fi" ? "Etsi pari" : market === "en" ? "Find a partner" : "Найти пару"}
+          </button>
+        </div>
+
+        <button
+          type="button"
+          onClick={onResetSoloDemo}
+          style={{ border: "none", background: "none", color: accent, fontSize: 12.5, fontWeight: 800, cursor: "pointer" }}
+        >
+          {market === "fi" ? "Valitse toinen" : market === "en" ? "Choose a different pet" : "Выбрать другого питомца"}
+        </button>
+
+        <button onClick={onBack} style={secondaryButtonStyle}>
+          {t.common.back}
+        </button>
       </div>
     );
   }
@@ -19888,6 +20119,14 @@ function applyPetStateResult(result: any): boolean {
 
 async function handleOpenPet() {
   setScreen("pet");
+
+  // Без укомплектованной пары настоящего питомца на сервере нет и
+  // быть не может (create_pair_pet требует partner_2 — см.
+  // supabase/pair_pets.sql) — сразу показываем демо-версию, не тратя
+  // round-trip на заведомо пустой /api/pet/state.
+  const hasPair = !!appState.pair?.pairId && !!appState.pair?.partner;
+  if (!hasPair) return;
+
   setPetLoading(true);
 
   const result = await petFetch("/api/pet/state");
@@ -20527,6 +20766,46 @@ const [petCreating, setPetCreating] = useState(false);
 // уже видели, чтобы не запускать конфетти на каждый обычный рефреш.
 const [petSeenLevel, setPetSeenLevel] = useState<number | null>(null);
 const [petJustLeveledUp, setPetJustLeveledUp] = useState(false);
+// Ознакомительная версия питомца для тех, у кого ещё нет пары
+// (hasPair === false) — целиком локальная, без сервера: настоящий
+// pair_pets требует укомплектованной пары (create_pair_pet вернёт
+// pair-incomplete), так что тут просто запоминаем выбор в
+// localStorage, без уровня/опыта/магазина. Это только "витрина",
+// подталкивающая завести пару, а не полноценный питомец.
+const [soloDemoPet, setSoloDemoPet] = useState<{
+  species: PetSpecies;
+  gender: PetGender;
+  name: string;
+} | null>(null);
+
+useEffect(() => {
+  if (typeof window === "undefined") return;
+  try {
+    const raw = window.localStorage.getItem("solo-pet-demo");
+    if (raw) setSoloDemoPet(JSON.parse(raw));
+  } catch (error) {
+    console.error("solo-pet-demo localStorage read error:", error);
+  }
+}, []);
+
+function handleCreateSoloDemoPet(species: PetSpecies, gender: PetGender, name: string) {
+  const next = { species, gender, name };
+  setSoloDemoPet(next);
+  try {
+    window.localStorage.setItem("solo-pet-demo", JSON.stringify(next));
+  } catch (error) {
+    console.error("solo-pet-demo localStorage write error:", error);
+  }
+}
+
+function handleResetSoloDemoPet() {
+  setSoloDemoPet(null);
+  try {
+    window.localStorage.removeItem("solo-pet-demo");
+  } catch (error) {
+    console.error("solo-pet-demo localStorage remove error:", error);
+  }
+}
 
 // Знакомства — только Telegram (см. isCapacitorApp() у точек входа).
 const [datingProfile, setDatingProfile] = useState<DatingProfile | null>(null);
@@ -22133,6 +22412,10 @@ showPaywall={() => {
   <PetScreen
     t={t}
     pet={pet}
+    hasPair={!!appState.pair?.pairId && !!appState.pair?.partner}
+    soloDemoPet={soloDemoPet}
+    onCreateSoloDemo={handleCreateSoloDemoPet}
+    onResetSoloDemo={handleResetSoloDemoPet}
     soloPoints={appState.soloPoints}
     pairTotalPoints={appState.pair.totalPoints || 0}
     streakDays={appState.dailyBonus.streakDay || 0}
@@ -22145,6 +22428,7 @@ showPaywall={() => {
     onBuyItemWithStars={handleBuyPetItemWithStars}
     onEquipItem={handleEquipPetItem}
     onBack={() => setScreen("menu")}
+    onGoToPair={() => setScreen("pair")}
     theme={isCapacitorApp() ? undefined : theme}
   />
 )}
