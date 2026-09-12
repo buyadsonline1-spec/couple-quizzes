@@ -47,6 +47,19 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Тот же приём, что и в /api/pet/buy — дочитываем полное
+    // состояние здесь же, чтобы клиент не делал отдельный round-trip
+    // на /api/pet/state сразу после успешной примерки.
+    if (data?.ok) {
+      const { data: stateData, error: stateError } = await supabaseAdmin.rpc(
+        "get_pair_pet_state",
+        { p_telegram_id: validation.telegramId }
+      );
+      if (!stateError && stateData?.ok) {
+        return NextResponse.json({ ...data, pet: stateData.pet });
+      }
+    }
+
     return NextResponse.json(data);
   } catch (error) {
     console.error("PET EQUIP ERROR:", error);

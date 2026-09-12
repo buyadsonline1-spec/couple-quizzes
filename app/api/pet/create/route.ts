@@ -54,6 +54,23 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // create_pair_pet не возвращает level/xp/xpToNext (их считает
+    // get_pair_pet_state из activity_point_claims) — раньше клиент
+    // после создания сразу делал ВТОРОЙ поход на /api/pet/state за
+    // этими полями, отчего "Завести питомца" ощутимо подвисало на
+    // двух последовательных round-trip'ах подряд. Дочитываем полное
+    // состояние прямо здесь, одним лишним запросом к БД вместо
+    // лишнего запроса по сети от клиента.
+    if (data?.ok) {
+      const { data: stateData, error: stateError } = await supabaseAdmin.rpc(
+        "get_pair_pet_state",
+        { p_telegram_id: validation.telegramId }
+      );
+      if (!stateError && stateData?.ok) {
+        return NextResponse.json(stateData);
+      }
+    }
+
     return NextResponse.json(data);
   } catch (error) {
     console.error("PET CREATE ERROR:", error);

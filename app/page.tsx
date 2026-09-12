@@ -19777,15 +19777,10 @@ async function petFetch(path: string, body: Record<string, unknown> = {}) {
 // актуальными на момент входа и чтобы поймать level-up, случившийся
 // между визитами (очки в других разделах начисляются независимо от
 // того, открыт ли сейчас этот экран).
-async function handleOpenPet() {
-  setScreen("pet");
-  setPetLoading(true);
-
-  const result = await petFetch("/api/pet/state");
-
-  setPetLoading(false);
-
-  if (!result?.ok) return;
+// Общая часть handleOpenPet/handleCreatePet — обе в итоге получают тот
+// же формат ответа (см. get_pair_pet_state), просто по разным путям.
+function applyPetStateResult(result: any): boolean {
+  if (!result?.ok) return false;
 
   const nextPet: PetState | null = result.pet
     ? {
@@ -19813,6 +19808,18 @@ async function handleOpenPet() {
       return nextPet.level;
     });
   }
+
+  return true;
+}
+
+async function handleOpenPet() {
+  setScreen("pet");
+  setPetLoading(true);
+
+  const result = await petFetch("/api/pet/state");
+
+  setPetLoading(false);
+  applyPetStateResult(result);
 }
 
 async function handleCreatePet(species: PetSpecies, gender: PetGender, name: string) {
@@ -19833,10 +19840,13 @@ async function handleCreatePet(species: PetSpecies, gender: PetGender, name: str
     return;
   }
 
-  // Сервер вернул только что созданного питомца без уровня/опыта
-  // (свежая пара, XP ещё не считали) — сразу перечитываем полное
-  // состояние, чтобы получить level/xp/xpToNext от get_pair_pet_state.
-  await handleOpenPet();
+  // /api/pet/create теперь сам дочитывает level/xp/xpToNext на
+  // сервере и возвращает полное состояние за один round-trip — но на
+  // случай, если это почему-то не удалось (см. route.ts), подстрахуемся
+  // отдельным запросом как раньше, а не молча покажем пустой экран.
+  if (!applyPetStateResult(result)) {
+    await handleOpenPet();
+  }
 }
 
 // Покупка/примерка вещи для питомца. Цену и владение проверяет сервер
@@ -19856,14 +19866,20 @@ async function handleBuyPetItem(itemId: string): Promise<{ ok: boolean; reason?:
     points: result.soloPoints,
   }));
 
-  await handleOpenPet();
+  // /api/pet/buy теперь тоже возвращает свежий result.pet (см.
+  // route.ts) — используем его напрямую, а не отдельным запросом.
+  if (!applyPetStateResult(result)) {
+    await handleOpenPet();
+  }
   return { ok: true };
 }
 
 async function handleEquipPetItem(slot: PetItemSlot, itemId: string | null) {
   const result = await petFetch("/api/pet/equip", { slot, itemId });
   if (!result?.ok) return;
-  await handleOpenPet();
+  if (!applyPetStateResult(result)) {
+    await handleOpenPet();
+  }
 }
 
 // ---- Знакомства ----

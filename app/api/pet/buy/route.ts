@@ -37,6 +37,22 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // buy_pair_pet_item не возвращает ownedItems/level/xp — раньше
+    // клиент после удачной покупки сразу шёл ВТОРЫМ запросом на
+    // /api/pet/state за этими полями (см. app/page.tsx:
+    // handleBuyPetItem), отчего "нажал купить" ощутимо подвисало на
+    // двух round-trip'ах подряд, особенно при быстрой примерке
+    // нескольких вещей. Дочитываем состояние прямо здесь.
+    if (data?.ok) {
+      const { data: stateData, error: stateError } = await supabaseAdmin.rpc(
+        "get_pair_pet_state",
+        { p_telegram_id: validation.telegramId }
+      );
+      if (!stateError && stateData?.ok) {
+        return NextResponse.json({ ...data, pet: stateData.pet });
+      }
+    }
+
     return NextResponse.json(data);
   } catch (error) {
     console.error("PET BUY ERROR:", error);
