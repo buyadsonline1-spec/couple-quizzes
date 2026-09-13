@@ -17686,7 +17686,13 @@ function PetScreen({
         </div>
       )}
 
-      <div style={{ ...cardBaseStyle(), padding: 18 }}>
+      {/* minWidth: 0 — без этого карточка как элемент CSS grid по
+          умолчанию не сжимается уже своего "min-content" (сумма ширин
+          всех вещей в ряду), и ряд с overflowX:auto вместо прокрутки
+          внутри себя раздвигает всю сетку шире экрана. На десктопе
+          это незаметно, а на iPhone (Safari) даёт видимый сдвиг всего
+          экрана вбок при открытии питомца. */}
+      <div style={{ ...cardBaseStyle(), padding: 18, minWidth: 0 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 4 }}>
           <div style={{ fontSize: 22 }}>🎩</div>
           <div style={{ fontSize: 14, fontWeight: 900, color: ink }}>
@@ -17696,7 +17702,7 @@ function PetScreen({
         <div style={{ marginTop: 10 }}>{renderShopRow("hat")}</div>
       </div>
 
-      <div style={{ ...cardBaseStyle(), padding: 18 }}>
+      <div style={{ ...cardBaseStyle(), padding: 18, minWidth: 0 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 4 }}>
           <div style={{ fontSize: 22 }}>🎀</div>
           <div style={{ fontSize: 14, fontWeight: 900, color: ink }}>
@@ -17706,7 +17712,7 @@ function PetScreen({
         <div style={{ marginTop: 10 }}>{renderShopRow("accessory")}</div>
       </div>
 
-      <div style={{ ...cardBaseStyle(), padding: 18 }}>
+      <div style={{ ...cardBaseStyle(), padding: 18, minWidth: 0 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 4 }}>
           <div style={{ fontSize: 22 }}>🏠</div>
           <div style={{ fontSize: 14, fontWeight: 900, color: ink }}>
