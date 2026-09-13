@@ -4987,13 +4987,10 @@ function PairStreakInfoScreen({
           style={{
             display: "grid",
             gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
-            gap: 12,
-            marginTop: 16,
+            gap: 8,
+            marginTop: 12,
           }}
         >
-
-         
-
           {milestones.map(({ days, reward, icon }) => {
             const reached = reachedMilestones.includes(days);
             const isNext = !reached && nextMilestone?.days === days;
@@ -5002,8 +4999,8 @@ function PairStreakInfoScreen({
               <div
                 key={days}
                 style={{
-                  borderRadius: 22,
-                  padding: 16,
+                  borderRadius: 18,
+                  padding: 12,
                   background: reached
                     ? "linear-gradient(135deg, rgba(255,236,244,0.98), rgba(255,255,255,0.92))"
                     : isNext
@@ -5028,14 +5025,14 @@ function PairStreakInfoScreen({
                 >
                   <div
                     style={{
-                      width: 34,
-                      height: 34,
+                      width: 24,
+                      height: 24,
                       borderRadius: 999,
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",
                       background: "rgba(255,255,255,0.72)",
-                      fontSize: 18,
+                      fontSize: 13,
                       opacity: reached ? 1 : 0.35,
                       filter: reached ? "none" : "grayscale(1)",
                     }}
@@ -5043,15 +5040,14 @@ function PairStreakInfoScreen({
                     {icon}
                   </div>
 
-
                   {reached && (
                     <div
                       style={{
-                        fontSize: 11,
+                        fontSize: 9.5,
                         fontWeight: 800,
                         color: "#ff5ea8",
                         background: "rgba(255,255,255,0.82)",
-                        padding: "5px 8px",
+                        padding: "3px 6px",
                         borderRadius: 999,
                       }}
                     >
@@ -5062,11 +5058,11 @@ function PairStreakInfoScreen({
                   {!reached && isNext && (
                     <div
                       style={{
-                        fontSize: 11,
+                        fontSize: 9.5,
                         fontWeight: 800,
                         color: "#6f54ff",
                         background: "rgba(255,255,255,0.82)",
-                        padding: "5px 8px",
+                        padding: "3px 6px",
                         borderRadius: 999,
                       }}
                     >
@@ -5077,38 +5073,43 @@ function PairStreakInfoScreen({
 
                 <div
                   style={{
-                    marginTop: 16,
-                    fontSize: 34,
-                    fontWeight: 900,
-                    color: ink,
-                    lineHeight: 1,
+                    marginTop: 8,
+                    display: "flex",
+                    alignItems: "baseline",
+                    gap: 6,
                   }}
                 >
-                  {days}
+                  <div
+                    style={{
+                      fontSize: 22,
+                      fontWeight: 900,
+                      color: ink,
+                      lineHeight: 1,
+                    }}
+                  >
+                    {days}
+                  </div>
+
+                  <div
+                    style={{
+                      fontSize: 11.5,
+                      fontWeight: 700,
+                      color: muted,
+                    }}
+                  >
+                    {t.pair.streakInfoScreen.daysInARow}
+                  </div>
                 </div>
 
                 <div
                   style={{
                     marginTop: 6,
-                    fontSize: 15,
-                    fontWeight: 700,
-                    color: muted,
-                  }}
-                >
-                  {t.pair.streakInfoScreen.daysInARow}
-                </div>
-
-                <div
-                  style={{
-                    marginTop: 12,
-                    fontSize: 22,
+                    fontSize: 16,
                     fontWeight: 900,
                     color: accent,
                   }}
                 >
                   +{reward}
-
-                  
                 </div>
               </div>
             );
