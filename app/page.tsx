@@ -15960,6 +15960,11 @@ type PetShopItem = {
   // Для комнаты — фон карточки; для шапки/аксессуара не используется
   // (они рисуются поверх PetFace).
   roomBackground?: string;
+  // Для комнаты — реальная иллюстрация сцены (public/rooms/*.jpg),
+  // рисуется поверх roomBackground через background-size:cover —
+  // roomBackground в этом случае остаётся как цвет-заглушка на время
+  // загрузки картинки, а не как видимый фон.
+  roomImage?: string;
   // Для комнаты — мелкий декор сцены (иконки, разбросанные по фону
   // карточки), чтобы комната ощущалась как окружение, а не просто
   // заливка за питомцем.
@@ -16002,8 +16007,9 @@ const PET_SHOP_ITEMS: PetShopItem[] = [
     nameEn: "Meadow",
     nameFi: "Niitty",
     roomBackground: "linear-gradient(180deg, #d7f5e3 0%, #a8dba8 55%, #6cbf6f 100%)",
+    roomImage: "/rooms/room_meadow.jpg",
     roomDecor: ["🌼", "🦋", "🌿"],
-    roomGround: "linear-gradient(180deg, rgba(79,157,82,0) 0%, #4f9d52 100%)",
+    roomGround: "linear-gradient(180deg, rgba(79,157,82,0) 0%, rgba(79,157,82,0.55) 100%)",
   },
   {
     id: "room_night",
@@ -16014,8 +16020,9 @@ const PET_SHOP_ITEMS: PetShopItem[] = [
     nameEn: "Night",
     nameFi: "Yö",
     roomBackground: "linear-gradient(180deg, #171337 0%, #2b2560 45%, #6a3b6e 100%)",
+    roomImage: "/rooms/room_night.jpg",
     roomDecor: ["⭐", "🌙", "✨"],
-    roomGround: "linear-gradient(180deg, rgba(26,20,64,0) 0%, #1a1440 100%)",
+    roomGround: "linear-gradient(180deg, rgba(26,20,64,0) 0%, rgba(26,20,64,0.6) 100%)",
     unlockPetLevel: 5,
   },
   {
@@ -16027,8 +16034,9 @@ const PET_SHOP_ITEMS: PetShopItem[] = [
     nameEn: "Beach",
     nameFi: "Ranta",
     roomBackground: "linear-gradient(180deg, #bdeaf5 0%, #ffe9b3 55%, #f5d382 100%)",
+    roomImage: "/rooms/room_beach.jpg",
     roomDecor: ["🐚", "☀️", "🌴"],
-    roomGround: "linear-gradient(180deg, rgba(232,195,116,0) 0%, #e8c374 100%)",
+    roomGround: "linear-gradient(180deg, rgba(232,195,116,0) 0%, rgba(232,195,116,0.55) 100%)",
   },
   {
     id: "room_forest",
@@ -16039,8 +16047,9 @@ const PET_SHOP_ITEMS: PetShopItem[] = [
     nameEn: "Forest",
     nameFi: "Metsä",
     roomBackground: "linear-gradient(180deg, #cdeccb 0%, #7bb87e 55%, #3f7a49 100%)",
+    roomImage: "/rooms/room_forest.jpg",
     roomDecor: ["🌲", "🍄", "🍃"],
-    roomGround: "linear-gradient(180deg, rgba(47,107,60,0) 0%, #2f6b3c 100%)",
+    roomGround: "linear-gradient(180deg, rgba(47,107,60,0) 0%, rgba(47,107,60,0.55) 100%)",
     unlockStreakDays: 5,
   },
   {
@@ -16052,8 +16061,9 @@ const PET_SHOP_ITEMS: PetShopItem[] = [
     nameEn: "Space",
     nameFi: "Avaruus",
     roomBackground: "linear-gradient(180deg, #1c1a3d 0%, #10122b 55%, #33265f 100%)",
+    roomImage: "/rooms/room_space.jpg",
     roomDecor: ["🪐", "🌟", "☄️"],
-    roomGround: "linear-gradient(180deg, rgba(5,4,15,0) 0%, #05040f 100%)",
+    roomGround: "linear-gradient(180deg, rgba(5,4,15,0) 0%, rgba(5,4,15,0.55) 100%)",
     priceStars: 60,
   },
   {
@@ -16065,8 +16075,9 @@ const PET_SHOP_ITEMS: PetShopItem[] = [
     nameEn: "Candy",
     nameFi: "Karkki",
     roomBackground: "linear-gradient(180deg, #ffe3f0 0%, #ffd1e8 55%, #ffb8dc 100%)",
+    roomImage: "/rooms/room_candy.jpg",
     roomDecor: ["🍭", "🍬", "🧁"],
-    roomGround: "linear-gradient(180deg, rgba(255,143,192,0) 0%, #ff8fc0 100%)",
+    roomGround: "linear-gradient(180deg, rgba(255,143,192,0) 0%, rgba(255,143,192,0.55) 100%)",
     unlockPairPoints: 3000,
   },
 ];
@@ -17213,13 +17224,18 @@ function PetScreen({
   const equippedRoomItem = pet?.equippedRoom
     ? PET_SHOP_ITEMS.find((item) => item.id === pet.equippedRoom)
     : null;
+  // Пока комната не куплена, сцена не должна быть пустой стеклянной
+  // карточкой — показываем "Лужайку" как декоративный дефолт (не
+  // владение, просто фон), чтобы экран питомца сразу выглядел живым.
+  const displayRoomItem =
+    equippedRoomItem ?? PET_SHOP_ITEMS.find((item) => item.id === "room_meadow") ?? null;
   const growthStage = getPetGrowthStage(pet?.level ?? 1);
   // Комнаты рисуются насыщенным градиентом (в т.ч. тёмным — ночь,
   // космос), поэтому текст поверх карточки всегда светлый и с тенью,
   // независимо от текущей темы приложения — иначе он теряется на фоне.
-  const sceneInk = equippedRoomItem ? "#ffffff" : ink;
-  const sceneMuted = equippedRoomItem ? "rgba(255,255,255,0.88)" : muted;
-  const sceneTextShadow = equippedRoomItem ? "0 1px 4px rgba(0,0,0,0.35)" : "none";
+  const sceneInk = displayRoomItem ? "#ffffff" : ink;
+  const sceneMuted = displayRoomItem ? "rgba(255,255,255,0.88)" : muted;
+  const sceneTextShadow = displayRoomItem ? "0 1px 4px rgba(0,0,0,0.35)" : "none";
 
   const petLevel = pet?.level ?? 1;
 
@@ -17360,7 +17376,25 @@ function PetScreen({
                 opacity: !owned && (lockRequirement || !affordable) ? 0.5 : 1,
               }}
             >
-              <div style={{ fontSize: 17 }}>{busy ? "…" : item.emoji}</div>
+              {item.roomImage ? (
+                <div
+                  style={{
+                    width: 28,
+                    height: 28,
+                    borderRadius: 8,
+                    backgroundImage: `url(${item.roomImage})`,
+                    backgroundSize: "cover",
+                    backgroundPosition: "center",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                >
+                  {busy && <span style={{ fontSize: 12 }}>…</span>}
+                </div>
+              ) : (
+                <div style={{ fontSize: 17 }}>{busy ? "…" : item.emoji}</div>
+              )}
               <div
                 style={{
                   fontSize: 8,
@@ -17439,15 +17473,18 @@ function PetScreen({
           textAlign: "center",
           position: "relative",
           overflow: "hidden",
-          // Купленная комната становится фоном всей карточки (как
-          // окружение, а не просто заливкой кружка за питомцем) — если
-          // комната ещё не куплена, карточка остаётся обычным
-          // "стеклянным" фоном приложения.
-          background: equippedRoomItem?.roomBackground ?? cardBaseStyle().background,
+          // Комната (куплена или дефолтная "Лужайка") становится фоном
+          // всей карточки — реальная иллюстрация сцены поверх
+          // roomBackground (тот остаётся как цвет-заглушка на время
+          // загрузки картинки).
+          background: displayRoomItem?.roomBackground ?? cardBaseStyle().background,
+          backgroundImage: displayRoomItem?.roomImage ? `url(${displayRoomItem.roomImage})` : undefined,
+          backgroundSize: "cover",
+          backgroundPosition: "center",
           transition: "background 0.4s ease",
         }}
       >
-        {equippedRoomItem?.roomGround && (
+        {displayRoomItem?.roomGround && (
           <div
             style={{
               position: "absolute",
@@ -17455,13 +17492,13 @@ function PetScreen({
               right: 0,
               bottom: 0,
               height: "42%",
-              background: equippedRoomItem.roomGround,
+              background: displayRoomItem.roomGround,
               pointerEvents: "none",
             }}
           />
         )}
 
-        {equippedRoomItem?.roomDecor ? (
+        {displayRoomItem?.roomDecor ? (
           <>
             {[
               { top: "9%", left: "8%" },
@@ -17473,7 +17510,7 @@ function PetScreen({
                 className={i === 0 ? "pet-sparkle-1" : i === 1 ? "pet-sparkle-2" : "pet-sparkle-3"}
                 style={{ position: "absolute", ...pos, fontSize: 18, opacity: 0.75 }}
               >
-                {equippedRoomItem.roomDecor![i]}
+                {displayRoomItem.roomDecor![i]}
               </div>
             ))}
           </>
@@ -17620,10 +17657,10 @@ function PetScreen({
               // С купленной комнатой питомец стоит прямо на её фоне —
               // круг за ним становится лёгкой "тенью-подставкой" вместо
               // сплошной заливки, чтобы сцена читалась целиком.
-              background: equippedRoomItem
+              background: displayRoomItem
                 ? "radial-gradient(ellipse at 50% 88%, rgba(0,0,0,0.22), transparent 62%)"
                 : accentGradient,
-              boxShadow: equippedRoomItem ? "none" : `0 10px 28px ${accentGlow}`,
+              boxShadow: displayRoomItem ? "none" : `0 10px 28px ${accentGlow}`,
             }}
           >
             <PetFace
