@@ -16181,11 +16181,11 @@ type PetItemAnchor = { top: string; rotate?: number; sizeFactor: number };
 
 const PET_HAT_ANCHOR: Record<string, PetItemAnchor> = {
   hat_cap: { top: "-2%", rotate: -6, sizeFactor: 0.26 },
-  hat_top: { top: "-7%", rotate: -4, sizeFactor: 0.3 },
-  hat_crown: { top: "-6%", rotate: 0, sizeFactor: 0.3 },
+  hat_top: { top: "-3%", rotate: -4, sizeFactor: 0.3 },
+  hat_crown: { top: "-3%", rotate: 0, sizeFactor: 0.3 },
   hat_beanie: { top: "-3%", rotate: -4, sizeFactor: 0.28 },
   hat_flower: { top: "3%", rotate: 0, sizeFactor: 0.3 },
-  hat_party: { top: "-9%", rotate: 6, sizeFactor: 0.26 },
+  hat_party: { top: "-4%", rotate: 6, sizeFactor: 0.26 },
 };
 const PET_HAT_ANCHOR_DEFAULT: PetItemAnchor = { top: "-4%", rotate: -8, sizeFactor: 0.28 };
 
