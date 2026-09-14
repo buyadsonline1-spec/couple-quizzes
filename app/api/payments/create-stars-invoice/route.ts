@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { validateRequestAuth } from "@/lib/server/telegram-auth";
 
 const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
 
@@ -67,15 +68,25 @@ export async function POST(req: NextRequest) {
     console.log("CREATE INVOICE BODY:", body);
     console.log("BOT TOKEN EXISTS:", !!BOT_TOKEN);
 
-    const telegramId = body?.telegramId;
-    const plan = body?.plan;
+    // Раньше telegramId брался прямо из тела запроса (клиент присылал
+    // Telegram.WebApp.initDataUnsafe.user.id — "unsafe" в названии не
+    // просто так, это не подписано и легко подделывается) без всякой
+    // проверки подписи. Из-за этого можно было сгенерировать реальную
+    // Stars-инвойс-ссылку с ЧУЖИМ telegramId в payload — оплативший её
+    // (кто угодно) фактически спонсировал премиум/вещь на чужой
+    // аккаунт. Теперь telegramId берётся только из подписанного
+    // initData/Supabase-сессии, как и везде в экономике.
+    const validation = await validateRequestAuth(body);
 
-    if (!telegramId) {
+    if (!validation.valid || !validation.telegramId) {
       return NextResponse.json(
-        { error: "telegramId is required" },
-        { status: 400 }
+        { error: "Invalid Telegram data" },
+        { status: 401 }
       );
     }
+
+    const telegramId = validation.telegramId;
+    const plan = body?.plan;
 
     // pet_item — отдельная ветка: один "план" на все Stars-вещи
     // питомца, цена берётся из PET_ITEM_STARS по itemId (клиент

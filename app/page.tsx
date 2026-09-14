@@ -19414,7 +19414,7 @@ const handleBuyPremium = async () => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        telegramId: user?.id,
+        initData: window.Telegram?.WebApp?.initData,
         plan: "premium_month",
       }),
     });
@@ -20413,7 +20413,7 @@ async function openDatingStarsInvoice(
     const res = await fetch("/api/payments/create-stars-invoice", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ telegramId: user.id, plan, ...extra }),
+      body: JSON.stringify({ initData: window.Telegram?.WebApp?.initData, plan, ...extra }),
     });
 
     const data = await res.json();
