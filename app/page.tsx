@@ -21101,6 +21101,17 @@ let startParam = tg?.initDataUnsafe?.start_param;
 const saved = loadState();
 setAppState(saved);
 
+// Приветственный экран (лого + "Старт") — только для действительно
+// первого визита на этом устройстве. saved.profile.gender ставится
+// один раз при онбординге и это тот же признак, по которому кнопка
+// "Старт" ниже решает, вести на "menu" или на "gender-select" — если
+// он уже есть, онбординг пройден раньше, и welcome можно пропустить
+// сразу на "menu". Дневной бонус сработает там же сам: ниже он и так
+// ждёт screen !== "welcome" && screen !== "gender-select".
+if (saved.profile.gender) {
+  setScreen("menu");
+}
+
 const alreadyClaimed = hasClaimedToday(saved.dailyBonus.lastClaimDate);
 const nextDay = getNextStreakDay(
   saved.dailyBonus.lastClaimDate,
