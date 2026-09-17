@@ -3803,6 +3803,7 @@ function PairScreen({
                   disabled={pairProposalResponding === proposal.matchId}
                   style={{
                     flex: 1,
+                    minWidth: 0,
                     border: "none",
                     borderRadius: 13,
                     padding: "10px 12px",
@@ -3821,6 +3822,7 @@ function PairScreen({
                   disabled={pairProposalResponding === proposal.matchId}
                   style={{
                     flex: 1,
+                    minWidth: 0,
                     border: "1px solid rgba(0,0,0,0.12)",
                     borderRadius: 13,
                     padding: "10px 12px",
@@ -6710,6 +6712,7 @@ function DatingChatScreen({
               }}
               style={{
                 flex: 1,
+                minWidth: 0,
                 border: "none",
                 borderRadius: 14,
                 padding: "10px 12px",
@@ -7275,7 +7278,7 @@ function AiPsychologistChatScreen({
           textAlign: "left",
         }}
       >
-        <div style={{ flex: 1 }}>
+        <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ fontSize: 13, fontWeight: 800, color: ink }}>
             ✨{" "}
             {language === "en"
@@ -10006,11 +10009,15 @@ function MainMenu({
     </button>
   )}
 
-  {/* Знакомства пока только в Telegram — iOS-ревью Apple ещё не
-      пройдено, а раздел трогает третьих лиц (переписка, фото) и
-      требует отдельного модерационного/возрастного контура, который
-      ещё не готов для повторной отправки. См. onOpenDating. */}
-  {!hasPair && !isCapacitorApp() && (
+  {/* Знакомства теперь и на iOS — модерационный контур уже готов
+      (блокировка + автоблок при жалобе, 18+ на сервере в
+      upsert_dating_profile, переписка только между мэтчами и только
+      для Premium, см. supabase/dating*.sql и handleBlockDatingUser/
+      handleReportDatingUser). Авторизация тоже общая — Capacitor-шим
+      в lib/platform.ts делает initData валидным Supabase-токеном
+      прозрачно для всех ~25 существующих fetch-мест, включая Dating,
+      без отдельной доработки под iOS. */}
+  {!hasPair && (
     <button
       onClick={onOpenDating}
       style={{
@@ -10095,7 +10102,13 @@ function MainMenu({
       >
         <div style={{ fontSize: 30, flexShrink: 0 }}>🧠</div>
 
-        <div style={{ flex: 1 }}>
+        {/* minWidth: 0 — без него flex-элемент не сжимается уже своего
+            "min-content" (по умолчанию min-width:auto), и длинный EN-
+            подзаголовок ("Tell us what's going on — let's work through
+            it together") расталкивает всю строку шире экрана. Это и
+            словил Apple Review на iPhone 17 Pro Max (Guideline 4) —
+            локаль ревьюера была EN, где текст длиннее русского. */}
+        <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ fontSize: 15, fontWeight: 900, color: ink }}>
             {t.aiPsychologist.menuTitle}
           </div>
@@ -10136,7 +10149,7 @@ function MainMenu({
         >
           <div style={{ fontSize: 30, flexShrink: 0 }}>🐾</div>
 
-          <div style={{ flex: 1 }}>
+          <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{ fontSize: 15, fontWeight: 900, color: ink }}>
               {getMarket() !== "ru" ? "Your pet" : "Ваш питомец"}
             </div>
@@ -11070,6 +11083,7 @@ const psychologistAvatar =
                 ...cardBaseStyle(),
                 padding: 16,
                 flex: 1,
+                minWidth: 0,
                 borderTopLeftRadius: 12,
               }}
             >
