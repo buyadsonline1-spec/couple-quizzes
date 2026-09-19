@@ -19,7 +19,7 @@ const BUNDLE_ID = "com.couplequizzes.app";
 // подписки взаимозаменяемы: checkIsPremium просто ищет активную
 // строку по telegram_id, ей всё равно, какой provider её создал).
 const PRODUCT_ID_TO_PLAN: Record<string, string> = {
-  "com.couplequizzes.app.premium_month": "premium_month",
+  "com.couplequizzes.app.premium_month2": "premium_month",
 };
 
 export async function POST(request: NextRequest) {

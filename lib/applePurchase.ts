@@ -26,4 +26,4 @@ export const ApplePurchase = registerPlugin<ApplePurchasePlugin>(
 // PRODUCT_ID_TO_PLAN (app/api/payments/apple-iap-verify/route.ts) и с
 // тем, что будет создано в App Store Connect.
 export const APPLE_PREMIUM_MONTH_PRODUCT_ID =
-  "com.couplequizzes.app.premium_month";
+  "com.couplequizzes.app.premium_month2";
