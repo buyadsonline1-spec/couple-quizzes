@@ -17620,6 +17620,20 @@ function PetScreen({
                 >
                   {busy && <span style={{ fontSize: 12 }}>…</span>}
                 </div>
+              ) : item.slot === "jacket" ? (
+                // Куртки — единственная категория, где у всех вещей
+                // общий эмодзи-заглушка (🧥, нет отдельных эмодзи под
+                // бомбер/джинсовку/худи/пуховик) — вместо него тут
+                // настоящая мини-иконка того же SVG-рисунка, что и на
+                // самом питомце, чтобы вещи отличались друг от друга
+                // визуально, а не только подписью.
+                <div style={{ width: 28, height: 28, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                  {busy ? (
+                    <span style={{ fontSize: 12 }}>…</span>
+                  ) : (
+                    <PetItemIcon kind="jacket" itemId={item.id} width={28} />
+                  )}
+                </div>
               ) : (
                 <div style={{ fontSize: 17 }}>{busy ? "…" : item.emoji}</div>
               )}
