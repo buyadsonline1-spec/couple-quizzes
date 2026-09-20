@@ -16281,10 +16281,10 @@ const PET_ACCESSORY_ANCHOR_OVERRIDES: PetItemAnchorOverrides = {
 };
 
 const PET_JACKET_ANCHOR: Record<string, PetItemAnchor> = {
-  jacket_bomber: { top: "45%", sizeFactor: 0.5 },
-  jacket_denim: { top: "45%", sizeFactor: 0.5 },
-  jacket_hoodie: { top: "43%", sizeFactor: 0.48 },
-  jacket_puffer: { top: "46%", sizeFactor: 0.5 },
+  jacket_bomber: { top: "44%", sizeFactor: 0.66 },
+  jacket_denim: { top: "44%", sizeFactor: 0.66 },
+  jacket_hoodie: { top: "41%", sizeFactor: 0.62 },
+  jacket_puffer: { top: "45%", sizeFactor: 0.66 },
 };
 const PET_JACKET_ANCHOR_DEFAULT: PetItemAnchor = { top: "45%", sizeFactor: 0.5 };
 const PET_JACKET_ANCHOR_OVERRIDES: PetItemAnchorOverrides = {
@@ -16863,7 +16863,25 @@ function PetFace({
       style={{ overflow: "visible", transform: `scale(${scale})`, transition: "transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1)" }}
     >
       <PetFaceBody species={species} />
-      {jacket && <PetJacketOverlay jacket={jacket} />}
+      {jacket &&
+        (() => {
+          // PetFaceBody рисует только голову-бюст (сейчас это только
+          // корова — единственный вид без фото, см. PET_PHOTO_SRC), без
+          // торса/рук. Куртка нарисована в расчёте на полноростовое
+          // фото — в родном размере она перекрыла бы всю морду.
+          // Сжимаем её в узкую полосу под мордой (170-197), чтобы был
+          // виден намёк на воротник, а не заглушка вместо лица.
+          const bbox = PET_JACKET_BBOX[jacket] ?? [60, 130, 80, 60];
+          const [, bboxTop, , bboxHeight] = bbox;
+          const targetTop = 172;
+          const targetHeight = 26;
+          const jacketScale = targetHeight / bboxHeight;
+          return (
+            <g transform={`translate(100, ${targetTop}) scale(${jacketScale}) translate(-100, ${-bboxTop})`}>
+              <PetJacketOverlay jacket={jacket} />
+            </g>
+          );
+        })()}
       {accessory && <PetAccessoryOverlay accessory={accessory} />}
       {hat && <PetHatOverlay hat={hat} />}
     </svg>
