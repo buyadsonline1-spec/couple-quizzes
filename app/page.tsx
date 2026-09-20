@@ -16339,6 +16339,23 @@ const PET_JACKET_BBOX: Record<string, [number, number, number, number]> = {
   jacket_puffer: [50, 134, 100, 63],
 };
 
+// Реальный контур тела/рук каждого вида (проценты от размера кадра,
+// x=слева-направо, y=сверху-вниз) — снят по альфа-каналу настоящих
+// фото (см. историю чата), сглажен и слегка сужен внутрь (~5пп с
+// каждой стороны), чтобы куртка садилась НА тело, а не точно по краю
+// меха. Раньше куртка была одной и той же прямоугольной формой на
+// всех 5 видов и на многих либо не доставала до рук, либо торчала
+// шире силуэта — теперь она обрезается по этому контуру, так что
+// форма руки/талии видна у любого питомца, а не только у того, под
+// кого форму подгоняли изначально.
+const PET_JACKET_BODY_CLIP: Partial<Record<PetSpecies, string>> = {
+  dog: "M 36.6,42.0 L 38.9,45.8 L 40.9,49.7 L 40.2,53.5 L 36.9,57.3 L 33.9,61.2 L 31.4,65.0 L 29.7,68.8 L 32.0,72.7 L 34.9,76.5 L 38.3,80.3 L 38.2,84.2 L 38.2,88.0 L 60.3,88.0 L 60.2,84.2 L 63.1,80.3 L 67.6,76.5 L 72.3,72.7 L 73.6,68.8 L 70.3,65.0 L 65.8,61.2 L 60.5,57.3 L 57.3,53.5 L 57.2,49.7 L 62.9,45.8 L 67.6,42.0 Z",
+  cat: "M 29.7,42.0 L 32.2,45.8 L 36.9,49.7 L 39.3,53.5 L 38.7,57.3 L 35.3,61.2 L 32.4,65.0 L 30.2,68.8 L 29.3,72.7 L 31.6,76.5 L 34.6,80.3 L 37.9,84.2 L 38.3,88.0 L 58.8,88.0 L 62.8,84.2 L 68.6,80.3 L 74.9,76.5 L 77.8,72.7 L 79.0,68.8 L 79.1,65.0 L 71.7,61.2 L 63.2,57.3 L 58.8,53.5 L 62.8,49.7 L 68.3,45.8 L 69.9,42.0 Z",
+  rabbit: "M 38.9,56.0 L 39.8,59.3 L 40.7,62.7 L 38.4,66.0 L 35.7,69.3 L 33.5,72.7 L 32.4,76.0 L 34.3,79.3 L 36.8,82.7 L 39.4,86.0 L 38.4,89.3 L 37.1,92.7 L 35.5,96.0 L 63.4,96.0 L 62.0,92.7 L 60.3,89.3 L 60.0,86.0 L 62.3,82.7 L 65.2,79.3 L 66.4,76.0 L 64.3,72.7 L 60.9,69.3 L 56.8,66.0 L 56.7,62.7 L 59.1,59.3 L 61.8,56.0 Z",
+  hippo: "M 30.8,45.0 L 33.4,48.8 L 35.2,52.7 L 34.4,56.5 L 30.8,60.3 L 28.0,64.2 L 26.1,68.0 L 25.5,71.8 L 28.0,75.7 L 30.9,79.5 L 33.9,83.3 L 33.3,87.2 L 33.2,91.0 L 63.8,91.0 L 63.4,87.2 L 65.0,83.3 L 67.7,79.5 L 70.3,75.7 L 70.2,71.8 L 69.3,68.0 L 67.0,64.2 L 63.8,60.3 L 62.6,56.5 L 63.9,52.7 L 67.3,48.8 L 69.2,45.0 Z",
+  owl: "M 31.9,45.0 L 34.5,48.8 L 36.5,52.7 L 35.3,56.5 L 31.6,60.3 L 28.6,64.2 L 26.8,68.0 L 26.2,71.8 L 28.2,75.7 L 31.9,79.5 L 37.0,83.3 L 37.8,87.2 L 38.1,91.0 L 59.8,91.0 L 60.1,87.2 L 61.0,83.3 L 66.0,79.5 L 69.8,75.7 L 71.4,71.8 L 70.6,68.0 L 68.4,64.2 L 65.3,60.3 L 62.3,56.5 L 63.3,52.7 L 67.2,48.8 L 71.0,45.0 Z",
+};
+
 // Рендерит один предмет из каталога как самостоятельную маленькую
 // иконку (не эмодзи) — вырезает его bbox из общей SVG-сетки шапок/
 // аксессуаров/курток и масштабирует под нужную ширину, сохраняя
@@ -16674,60 +16691,94 @@ function PetAccessoryOverlay({ accessory }: { accessory: string }) {
 // Куртки рисуются поверх туловища тем же общим набором координат, что
 // и остальные вещи (см. комментарий у PetItemAnchor выше) — накрывают
 // торс между шеей и руками/лапами.
+// Мягкий градиент + скруглённые силуэты вместо плоской заливки —
+// плоский цветной прямоугольник поверх 3D-фото питомца выглядел как
+// приклеенный стикер. Верх светлее (имитация света сверху), низ темнее
+// — тот же приём, что уже "продаёт" объём у самих питомцев на фото.
 function PetJacketOverlay({ jacket }: { jacket: string }) {
   if (jacket === "jacket_bomber") {
     return (
       <g>
+        <defs>
+          <linearGradient id="petJacketGradBomber" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="#5f9975" />
+            <stop offset="100%" stopColor="#3d6349" />
+          </linearGradient>
+        </defs>
         <path
-          d="M40,150 Q40,138 55,138 L75,138 Q100,148 125,138 L145,138 Q160,138 160,150 L160,185 Q160,195 150,195 L50,195 Q40,195 40,185 Z"
-          fill="#4a7c59"
+          d="M42,152 Q42,137 57,137 L77,137 Q100,147 123,137 L143,137 Q158,137 158,152 L158,183 Q158,194 148,194 L52,194 Q42,194 42,183 Z"
+          fill="url(#petJacketGradBomber)"
         />
-        <rect x="40" y="150" width="14" height="35" rx="6" fill="#3a6349" />
-        <rect x="146" y="150" width="14" height="35" rx="6" fill="#3a6349" />
-        <rect x="70" y="138" width="60" height="10" rx="5" fill="#3a6349" />
-        <rect x="94" y="150" width="12" height="45" fill="#3a6349" opacity="0.5" />
+        <path d="M50,144 Q100,156 150,144" stroke="#ffffff" strokeWidth="2" opacity="0.3" fill="none" strokeLinecap="round" />
+        <rect x="42" y="152" width="15" height="34" rx="7.5" fill="#345940" />
+        <rect x="143" y="152" width="15" height="34" rx="7.5" fill="#345940" />
+        <rect x="72" y="137" width="56" height="9" rx="4.5" fill="#345940" />
+        <rect x="95" y="150" width="10" height="42" rx="3" fill="#345940" opacity="0.55" />
       </g>
     );
   }
   if (jacket === "jacket_denim") {
     return (
       <g>
+        <defs>
+          <linearGradient id="petJacketGradDenim" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="#729bc9" />
+            <stop offset="100%" stopColor="#4c6c93" />
+          </linearGradient>
+        </defs>
         <path
-          d="M42,148 L70,138 L100,148 L130,138 L158,148 L158,190 Q158,196 150,196 L50,196 Q42,196 42,190 Z"
-          fill="#5b7fa6"
+          d="M44,150 Q72,138 100,148 Q128,138 156,150 L156,188 Q156,195 148,195 L52,195 Q44,195 44,188 Z"
+          fill="url(#petJacketGradDenim)"
         />
-        <path d="M70,138 L86,160 L58,160 Z" fill="#4a6a8c" />
-        <path d="M130,138 L114,160 L142,160 Z" fill="#4a6a8c" />
-        <rect x="60" y="170" width="18" height="14" rx="2" fill="#4a6a8c" />
-        <rect x="122" y="170" width="18" height="14" rx="2" fill="#4a6a8c" />
+        <path d="M72,139 Q84,150 60,162 Q56,150 72,139 Z" fill="#3f5c7d" />
+        <path d="M128,139 Q116,150 140,162 Q144,150 128,139 Z" fill="#3f5c7d" />
+        <rect x="62" y="169" width="17" height="13" rx="3" fill="#3f5c7d" />
+        <rect x="121" y="169" width="17" height="13" rx="3" fill="#3f5c7d" />
+        <path d="M50,158 L50,188 M150,158 L150,188" stroke="#e8d9a8" strokeWidth="1.5" opacity="0.4" strokeDasharray="3 3" />
       </g>
     );
   }
   if (jacket === "jacket_hoodie") {
     return (
       <g>
-        <path d="M62,136 Q100,120 138,136 Q100,132 62,136 Z" fill="#7d848f" />
+        <defs>
+          <linearGradient id="petJacketGradHoodie" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="#a3abb6" />
+            <stop offset="100%" stopColor="#7d848f" />
+          </linearGradient>
+        </defs>
+        <path d="M63,137 Q100,122 137,137 Q100,133 63,137 Z" fill="#7d848f" />
         <path
-          d="M45,150 Q45,136 62,136 Q100,150 138,136 Q155,136 155,150 L155,192 Q155,198 147,198 L53,198 Q45,198 45,192 Z"
-          fill="#9098a3"
+          d="M46,151 Q46,137 63,137 Q100,151 137,137 Q154,137 154,151 L154,191 Q154,197 146,197 L54,197 Q46,197 46,191 Z"
+          fill="url(#petJacketGradHoodie)"
         />
-        <line x1="92" y1="150" x2="90" y2="168" stroke="#fff" strokeWidth="3" strokeLinecap="round" />
-        <line x1="108" y1="150" x2="110" y2="168" stroke="#fff" strokeWidth="3" strokeLinecap="round" />
-        <rect x="78" y="172" width="44" height="20" rx="4" fill="#7d848f" />
+        <line x1="92" y1="151" x2="90" y2="167" stroke="#ffffff" strokeWidth="3" strokeLinecap="round" opacity="0.85" />
+        <line x1="108" y1="151" x2="110" y2="167" stroke="#ffffff" strokeWidth="3" strokeLinecap="round" opacity="0.85" />
+        <rect x="79" y="171" width="42" height="19" rx="9" fill="#6c7480" />
       </g>
     );
   }
   if (jacket === "jacket_puffer") {
     return (
       <g>
+        <defs>
+          <linearGradient id="petJacketGradPuffer" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="#e46060" />
+            <stop offset="100%" stopColor="#c23f3f" />
+          </linearGradient>
+        </defs>
+        {/* Стёганые "баффлы" вместо плоского цвета + тонких линий —
+            каждый сегмент отдельным скруглённым прямоугольником, чтобы
+            читалась пухлая объёмная простёжка, а не разлинованный лист. */}
         <path
-          d="M50,148 Q50,136 65,136 L135,136 Q150,136 150,148 L150,190 Q150,197 142,197 L58,197 Q50,197 50,190 Z"
-          fill="#d64545"
+          d="M51,150 Q51,136 66,136 L134,136 Q149,136 149,150 L149,189 Q149,197 141,197 L59,197 Q51,197 51,189 Z"
+          fill="url(#petJacketGradPuffer)"
         />
-        <line x1="50" y1="158" x2="150" y2="158" stroke="#b83636" strokeWidth="3" />
-        <line x1="50" y1="172" x2="150" y2="172" stroke="#b83636" strokeWidth="3" />
-        <line x1="50" y1="186" x2="150" y2="186" stroke="#b83636" strokeWidth="3" />
-        <rect x="94" y="136" width="12" height="61" fill="#b83636" opacity="0.6" />
+        <rect x="53" y="138" width="94" height="14" rx="7" fill="#ffffff" opacity="0.16" />
+        <rect x="53" y="155" width="94" height="13" rx="6.5" fill="#00000012" />
+        <rect x="53" y="171" width="94" height="13" rx="6.5" fill="#ffffff" opacity="0.1" />
+        <rect x="53" y="184" width="94" height="12" rx="6" fill="#00000012" />
+        <rect x="94" y="136" width="12" height="61" rx="5" fill="#a63535" opacity="0.55" />
       </g>
     );
   }
@@ -16789,18 +16840,44 @@ function PetFace({
               species,
               jacketItem.id
             );
+            const clipPath = PET_JACKET_BODY_CLIP[species];
+            const bbox = PET_JACKET_BBOX[jacketItem.id] ?? [60, 130, 80, 60];
+            const [, bboxTop, bboxWidth] = bbox;
+            const anchorTopNum = parseFloat(anchor.top);
+            // Тот же расчёт "точки привязки", что и раньше (центр по
+            // x=100 в родной сетке 0..200 совпадает с 50% контейнера,
+            // верх bbox совпадает с anchor.top) — но теперь рисуем не
+            // вырезанную иконку, а весь 200×200 холст целиком,
+            // растянутый в проценты контейнера, и обрезаем его по
+            // контуру тела конкретного вида (см. PET_JACKET_BODY_CLIP).
+            const clipScale = (anchor.sizeFactor * 100) / bboxWidth;
+            const translateX = 50 - 100 * clipScale;
+            const translateY = anchorTopNum - bboxTop * clipScale;
             return (
-              <div
+              <svg
+                width="100%"
+                height="100%"
+                viewBox="0 0 100 100"
+                preserveAspectRatio="none"
                 style={{
                   position: "absolute",
-                  top: anchor.top,
-                  left: "50%",
-                  transform: `translate(-50%, 0)${anchor.rotate ? ` rotate(${anchor.rotate}deg)` : ""}`,
+                  inset: 0,
                   filter: "drop-shadow(0 2px 4px rgba(0,0,0,0.25))",
                 }}
               >
-                <PetItemIcon kind="jacket" itemId={jacketItem.id} width={size * anchor.sizeFactor} />
-              </div>
+                {clipPath && (
+                  <defs>
+                    <clipPath id={`petJacketClip-${species}`} clipPathUnits="userSpaceOnUse">
+                      <path d={clipPath} />
+                    </clipPath>
+                  </defs>
+                )}
+                <g clipPath={clipPath ? `url(#petJacketClip-${species})` : undefined}>
+                  <g transform={`translate(${translateX}, ${translateY}) scale(${clipScale})`}>
+                    <PetJacketOverlay jacket={jacketItem.id} />
+                  </g>
+                </g>
+              </svg>
             );
           })()}
         {accessoryItem &&
@@ -17454,10 +17531,11 @@ function PetScreen({
 
   const xpPercent = Math.min(100, Math.round((pet.xp / Math.max(1, pet.xpToNext)) * 100));
   // Питомец должен быть достаточно большим, чтобы шапка/аксессуар/
-  // куртка были реально видны на нём (раньше при 156px мелкие иконки
-  // предметов почти сливались с фото, при 220px куртка всё ещё
-  // ощущалась мелковато рядом с остальным экраном) — ещё крупнее.
-  const ringSize = 260;
+  // куртка были реально видны на нём (при 156px мелкие иконки почти
+  // сливались с фото), но карточка с фоном комнаты не должна занимать
+  // весь экран — иначе разделы магазина и кнопка "Назад" не влезают
+  // без скролла. 200px — компромисс между тем и другим.
+  const ringSize = 200;
   const ringStroke = 9;
   const ringRadius = (ringSize - ringStroke) / 2;
   const ringCircumference = 2 * Math.PI * ringRadius;
@@ -17707,7 +17785,7 @@ function PetScreen({
     const itemsInSlot = PET_SHOP_ITEMS.filter((item) => item.slot === slot);
     const ownedCount = itemsInSlot.filter((item) => pet?.ownedItems.includes(item.id)).length;
     return (
-      <div style={{ ...cardBaseStyle(), padding: 18, minWidth: 0 }}>
+      <div style={{ ...cardBaseStyle(), padding: 12, minWidth: 0 }}>
         <button
           type="button"
           onClick={() => setShopSlot(expanded ? null : slot)}
@@ -17779,7 +17857,7 @@ function PetScreen({
       <div
         style={{
           ...cardBaseStyle(),
-          padding: 24,
+          padding: 14,
           textAlign: "center",
           position: "relative",
           overflow: "hidden",
@@ -18011,15 +18089,15 @@ function PetScreen({
           </div>
         </div>
 
-        <div style={{ marginTop: 14, fontSize: 22, fontWeight: 900, color: sceneInk, textShadow: sceneTextShadow }}>
+        <div style={{ marginTop: 6, fontSize: 18, fontWeight: 900, color: sceneInk, textShadow: sceneTextShadow }}>
           {pet.name} {pet.gender === "boy" ? "♂" : "♀"}
         </div>
-        <div style={{ marginTop: 2, fontSize: 13, color: sceneMuted, fontWeight: 700, textShadow: sceneTextShadow }}>
+        <div style={{ marginTop: 2, fontSize: 12, color: sceneMuted, fontWeight: 700, textShadow: sceneTextShadow }}>
           {market === "fi" ? `Taso ${pet.level}` : market === "en" ? `Level ${pet.level}` : `Уровень ${pet.level}`}
           {" · "}
           {petGrowthStageLabel(growthStage, market)}
         </div>
-        <div style={{ marginTop: 8, fontSize: 11.5, color: sceneMuted, textShadow: sceneTextShadow }}>
+        <div style={{ marginTop: 4, fontSize: 10.5, color: sceneMuted, textShadow: sceneTextShadow }}>
           {pet.xp} / {pet.xpToNext} XP
         </div>
       </div>
