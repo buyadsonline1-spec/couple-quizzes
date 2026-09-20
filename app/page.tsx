@@ -16002,21 +16002,31 @@ type PetShopItem = {
 };
 
 const PET_SHOP_ITEMS: PetShopItem[] = [
+  // Бесплатные — выдаются просто за уровень питомца, без цены вообще
+  // (price:0, без priceStars). Не путать с hat_top/acc_sunglasses и
+  // т.п. ниже — у тех тоже есть требование уровня/стрика, но они
+  // ВСЁ РАВНО стоят очки поверх разблокировки.
+  { id: "hat_wizard", slot: "hat", price: 0, emoji: "🧙", nameRu: "Шляпа волшебника", nameEn: "Wizard hat", nameFi: "Velhon hattu", unlockPetLevel: 2 },
+  { id: "hat_bandana", slot: "hat", price: 0, emoji: "🏴", nameRu: "Бандана", nameEn: "Bandana", nameFi: "Bandana", unlockPetLevel: 5 },
   { id: "hat_cap", slot: "hat", price: 250, emoji: "🧢", nameRu: "Кепка", nameEn: "Cap", nameFi: "Lippis" },
   { id: "hat_top", slot: "hat", price: 300, emoji: "🎩", nameRu: "Цилиндр", nameEn: "Top hat", nameFi: "Hattu", unlockPetLevel: 3 },
-  { id: "hat_crown", slot: "hat", price: 0, emoji: "👑", nameRu: "Корона", nameEn: "Crown", nameFi: "Kruunu", priceStars: 40 },
   { id: "hat_beanie", slot: "hat", price: 150, emoji: "🧶", nameRu: "Шапка", nameEn: "Beanie", nameFi: "Pipo" },
   { id: "hat_flower", slot: "hat", price: 300, emoji: "🌸", nameRu: "Веночек", nameEn: "Flower crown", nameFi: "Kukkaseppele", unlockStreakDays: 3 },
   { id: "hat_party", slot: "hat", price: 200, emoji: "🥳", nameRu: "Колпак", nameEn: "Party hat", nameFi: "Juhlahattu" },
+  { id: "hat_crown", slot: "hat", price: 0, emoji: "👑", nameRu: "Корона", nameEn: "Crown", nameFi: "Kruunu", priceStars: 40 },
+  { id: "acc_necklace", slot: "accessory", price: 0, emoji: "📿", nameRu: "Ожерелье", nameEn: "Necklace", nameFi: "Kaulakoru", unlockPetLevel: 2 },
+  { id: "acc_headphones", slot: "accessory", price: 0, emoji: "🎧", nameRu: "Наушники", nameEn: "Headphones", nameFi: "Kuulokkeet", unlockPetLevel: 5 },
   { id: "acc_bow", slot: "accessory", price: 200, emoji: "🎀", nameRu: "Бантик", nameEn: "Bow", nameFi: "Rusetti" },
-  { id: "acc_sunglasses", slot: "accessory", price: 250, emoji: "🕶️", nameRu: "Очки", nameEn: "Sunglasses", nameFi: "Aurinkolasit", unlockPetLevel: 4 },
-  { id: "acc_scarf", slot: "accessory", price: 300, emoji: "🧣", nameRu: "Шарф", nameEn: "Scarf", nameFi: "Huivi", unlockPairPoints: 1500 },
   { id: "acc_glasses", slot: "accessory", price: 200, emoji: "👓", nameRu: "Очки-нёрд", nameEn: "Glasses", nameFi: "Silmälasit" },
   { id: "acc_collar", slot: "accessory", price: 220, emoji: "🔔", nameRu: "Ошейник", nameEn: "Collar", nameFi: "Kaulapanta" },
+  { id: "acc_sunglasses", slot: "accessory", price: 250, emoji: "🕶️", nameRu: "Очки", nameEn: "Sunglasses", nameFi: "Aurinkolasit", unlockPetLevel: 4 },
+  { id: "acc_scarf", slot: "accessory", price: 300, emoji: "🧣", nameRu: "Шарф", nameEn: "Scarf", nameFi: "Huivi", unlockPairPoints: 1500 },
   { id: "acc_medal", slot: "accessory", price: 0, emoji: "🏅", nameRu: "Медаль", nameEn: "Medal", nameFi: "Mitali", priceStars: 35 },
+  { id: "jacket_raincoat", slot: "jacket", price: 0, emoji: "🌧️", nameRu: "Дождевик", nameEn: "Raincoat", nameFi: "Sadetakki", unlockPetLevel: 2 },
+  { id: "jacket_vest", slot: "jacket", price: 0, emoji: "🦺", nameRu: "Жилет", nameEn: "Vest", nameFi: "Liivi", unlockPetLevel: 5 },
+  { id: "jacket_hoodie", slot: "jacket", price: 250, emoji: "🧥", nameRu: "Худи", nameEn: "Hoodie", nameFi: "Huppari" },
   { id: "jacket_bomber", slot: "jacket", price: 280, emoji: "🧥", nameRu: "Бомбер", nameEn: "Bomber jacket", nameFi: "Bomber-takki" },
   { id: "jacket_denim", slot: "jacket", price: 280, emoji: "🧥", nameRu: "Джинсовка", nameEn: "Denim jacket", nameFi: "Farkkutakki", unlockPetLevel: 3 },
-  { id: "jacket_hoodie", slot: "jacket", price: 250, emoji: "🧥", nameRu: "Худи", nameEn: "Hoodie", nameFi: "Huppari" },
   { id: "jacket_puffer", slot: "jacket", price: 0, emoji: "🧥", nameRu: "Пуховик", nameEn: "Puffer vest", nameFi: "Toppaliivi", priceStars: 45 },
   {
     id: "room_meadow",
@@ -16105,6 +16115,26 @@ const PET_SHOP_ITEMS: PetShopItem[] = [
 function petItemName(item: PetShopItem, market: Market): string {
   return market === "fi" ? item.nameFi : market === "en" ? item.nameEn : item.nameRu;
 }
+
+// Три уровня вещей — по деньгам, а не по тому, есть ли условие
+// разблокировки (у hat_top/acc_sunglasses/jacket_denim и т.п. условие
+// ЕСТЬ, но они всё равно стоят очки, поэтому "баланс", а не
+// "бесплатно"):
+//   0 — по-настоящему бесплатные (price:0, без priceStars), выдаются
+//       просто за уровень питомца;
+//   1 — за игровые очки ("баланс", possibly ещё и разблокировка сверху);
+//   2 — за Telegram Stars, то есть реальные деньги.
+function petItemTier(item: PetShopItem): 0 | 1 | 2 {
+  if (item.priceStars) return 2;
+  if (item.price === 0) return 0;
+  return 1;
+}
+
+const PET_ITEM_TIER_BADGE: Record<0 | 1 | 2, string> = {
+  0: "🎁",
+  1: "⭐",
+  2: "🌟",
+};
 
 const PET_SPECIES_OPTIONS: Array<{
   id: PetSpecies;
@@ -16230,6 +16260,8 @@ const PET_HAT_ANCHOR: Record<string, PetItemAnchor> = {
   hat_beanie: { top: "-3%", rotate: -4, sizeFactor: 0.28 },
   hat_flower: { top: "3%", rotate: 0, sizeFactor: 0.3 },
   hat_party: { top: "-4%", rotate: 6, sizeFactor: 0.26 },
+  hat_wizard: { top: "-6%", rotate: -3, sizeFactor: 0.28 },
+  hat_bandana: { top: "-1%", rotate: 0, sizeFactor: 0.3 },
 };
 const PET_HAT_ANCHOR_DEFAULT: PetItemAnchor = { top: "-4%", rotate: -8, sizeFactor: 0.28 };
 const PET_HAT_ANCHOR_OVERRIDES: PetItemAnchorOverrides = {
@@ -16240,6 +16272,8 @@ const PET_HAT_ANCHOR_OVERRIDES: PetItemAnchorOverrides = {
     hat_beanie: { top: "10%" },
     hat_flower: { top: "16%" },
     hat_party: { top: "11%" },
+    hat_wizard: { top: "10%" },
+    hat_bandana: { top: "13%" },
   },
 };
 
@@ -16247,10 +16281,12 @@ const PET_ACCESSORY_ANCHOR: Record<string, PetItemAnchor> = {
   // Очки — на уровень глаз, а не на грудь.
   acc_sunglasses: { top: "22%", sizeFactor: 0.3 },
   acc_glasses: { top: "22%", sizeFactor: 0.26 },
-  // Бантик/шарф/ошейник/медаль — на шею и грудь.
+  acc_headphones: { top: "22%", sizeFactor: 0.34 },
+  // Бантик/шарф/ошейник/медаль/ожерелье — на шею и грудь.
   acc_bow: { top: "47%", sizeFactor: 0.22 },
   acc_scarf: { top: "48%", sizeFactor: 0.26 },
   acc_collar: { top: "48%", sizeFactor: 0.22 },
+  acc_necklace: { top: "48%", sizeFactor: 0.24 },
   acc_medal: { top: "55%", sizeFactor: 0.24 },
 };
 const PET_ACCESSORY_ANCHOR_DEFAULT: PetItemAnchor = { top: "50%", sizeFactor: 0.24 };
@@ -16262,20 +16298,24 @@ const PET_ACCESSORY_ANCHOR_OVERRIDES: PetItemAnchorOverrides = {
     acc_bow: { top: "54%" },
     acc_scarf: { top: "55%" },
     acc_collar: { top: "55%" },
+    acc_necklace: { top: "55%" },
     acc_medal: { top: "61%" },
   },
   owl: {
     acc_bow: { top: "52%" },
     acc_scarf: { top: "53%" },
     acc_collar: { top: "53%" },
+    acc_necklace: { top: "53%" },
     acc_medal: { top: "58%" },
   },
   rabbit: {
     acc_sunglasses: { top: "37%" },
     acc_glasses: { top: "37%" },
+    acc_headphones: { top: "37%" },
     acc_bow: { top: "65%" },
     acc_scarf: { top: "65%" },
     acc_collar: { top: "65%" },
+    acc_necklace: { top: "65%" },
     acc_medal: { top: "71%" },
   },
 };
@@ -16285,6 +16325,8 @@ const PET_JACKET_ANCHOR: Record<string, PetItemAnchor> = {
   jacket_denim: { top: "44%", sizeFactor: 0.66 },
   jacket_hoodie: { top: "41%", sizeFactor: 0.62 },
   jacket_puffer: { top: "45%", sizeFactor: 0.66 },
+  jacket_raincoat: { top: "44%", sizeFactor: 0.66 },
+  jacket_vest: { top: "45%", sizeFactor: 0.66 },
 };
 const PET_JACKET_ANCHOR_DEFAULT: PetItemAnchor = { top: "45%", sizeFactor: 0.5 };
 const PET_JACKET_ANCHOR_OVERRIDES: PetItemAnchorOverrides = {
@@ -16293,18 +16335,24 @@ const PET_JACKET_ANCHOR_OVERRIDES: PetItemAnchorOverrides = {
     jacket_denim: { top: "47%" },
     jacket_hoodie: { top: "45%" },
     jacket_puffer: { top: "48%" },
+    jacket_raincoat: { top: "47%" },
+    jacket_vest: { top: "48%" },
   },
   owl: {
     jacket_bomber: { top: "47%" },
     jacket_denim: { top: "47%" },
     jacket_hoodie: { top: "45%" },
     jacket_puffer: { top: "48%" },
+    jacket_raincoat: { top: "47%" },
+    jacket_vest: { top: "48%" },
   },
   rabbit: {
     jacket_bomber: { top: "58%" },
     jacket_denim: { top: "58%" },
     jacket_hoodie: { top: "56%" },
     jacket_puffer: { top: "59%" },
+    jacket_raincoat: { top: "58%" },
+    jacket_vest: { top: "59%" },
   },
 };
 
@@ -16321,6 +16369,8 @@ const PET_HAT_BBOX: Record<string, [number, number, number, number]> = {
   hat_beanie: [57, -4, 86, 61],
   hat_flower: [60, 10, 86, 48],
   hat_party: [69, -6, 62, 55],
+  hat_wizard: [66, -6, 68, 64],
+  hat_bandana: [58, 6, 98, 52],
 };
 
 const PET_ACCESSORY_BBOX: Record<string, [number, number, number, number]> = {
@@ -16330,6 +16380,8 @@ const PET_ACCESSORY_BBOX: Record<string, [number, number, number, number]> = {
   acc_glasses: [51, 83, 100, 49],
   acc_collar: [55, 147, 90, 34],
   acc_medal: [79, 131, 42, 52],
+  acc_necklace: [58, 146, 84, 38],
+  acc_headphones: [42, 54, 116, 68],
 };
 
 const PET_JACKET_BBOX: Record<string, [number, number, number, number]> = {
@@ -16337,6 +16389,8 @@ const PET_JACKET_BBOX: Record<string, [number, number, number, number]> = {
   jacket_denim: [42, 136, 116, 60],
   jacket_hoodie: [45, 118, 110, 80],
   jacket_puffer: [50, 134, 100, 63],
+  jacket_raincoat: [44, 138, 112, 58],
+  jacket_vest: [52, 136, 96, 61],
 };
 
 // Реальный контур тела/рук каждого вида (проценты от размера кадра,
@@ -16626,6 +16680,28 @@ function PetHatOverlay({ hat }: { hat: string }) {
       </g>
     );
   }
+  if (hat === "hat_wizard") {
+    return (
+      <g>
+        <path d="M100,-4 L130,50 L70,50 Z" fill="#4a3b7a" />
+        <ellipse cx="100" cy="50" rx="34" ry="8" fill="#3a2d61" />
+        <circle cx="100" cy="14" r="3" fill="#ffd54f" />
+        <circle cx="86" cy="28" r="2" fill="#ffd54f" />
+        <circle cx="112" cy="32" r="2" fill="#ffd54f" />
+      </g>
+    );
+  }
+  if (hat === "hat_bandana") {
+    return (
+      <g>
+        <path d="M60,44 Q100,8 140,44 L138,50 Q100,18 62,50 Z" fill="#d64545" />
+        <circle cx="78" cy="28" r="2.5" fill="#fff" />
+        <circle cx="98" cy="20" r="2.5" fill="#fff" />
+        <circle cx="118" cy="28" r="2.5" fill="#fff" />
+        <path d="M138,48 L154,40 L148,56 Z" fill="#c23f3f" />
+      </g>
+    );
+  }
   return null;
 }
 
@@ -16682,6 +16758,26 @@ function PetAccessoryOverlay({ accessory }: { accessory: string }) {
         <path d="M90,150 L82,180 L100,170 L118,180 L110,150 Z" fill="#5ddcff" />
         <circle cx="100" cy="152" r="16" fill="#ffd54f" stroke="#e0a900" strokeWidth="2" />
         <path d="M100,143 L103,150 L110,150 L104,155 L106,162 L100,158 L94,162 L96,155 L90,150 L97,150 Z" fill="#fff6e8" />
+      </g>
+    );
+  }
+  if (accessory === "acc_necklace") {
+    return (
+      <g>
+        <path d="M60,148 Q100,172 140,148" stroke="#e0a900" strokeWidth="4" fill="none" />
+        <circle cx="100" cy="173" r="9" fill="#5ddcff" stroke="#3fb8dd" strokeWidth="2" />
+        <circle cx="97" cy="170" r="2.5" fill="#fff" opacity="0.7" />
+      </g>
+    );
+  }
+  if (accessory === "acc_headphones") {
+    return (
+      <g>
+        <path d="M58,98 Q100,55 142,98" stroke="#2b2118" strokeWidth="6" fill="none" strokeLinecap="round" />
+        <ellipse cx="56" cy="104" rx="13" ry="17" fill="#2b2118" />
+        <ellipse cx="144" cy="104" rx="13" ry="17" fill="#2b2118" />
+        <ellipse cx="56" cy="104" rx="7" ry="10" fill="#4c6bff" />
+        <ellipse cx="144" cy="104" rx="7" ry="10" fill="#4c6bff" />
       </g>
     );
   }
@@ -16779,6 +16875,46 @@ function PetJacketOverlay({ jacket }: { jacket: string }) {
         <rect x="53" y="171" width="94" height="13" rx="6.5" fill="#ffffff" opacity="0.1" />
         <rect x="53" y="184" width="94" height="12" rx="6" fill="#00000012" />
         <rect x="94" y="136" width="12" height="61" rx="5" fill="#a63535" opacity="0.55" />
+      </g>
+    );
+  }
+  if (jacket === "jacket_raincoat") {
+    return (
+      <g>
+        <defs>
+          <linearGradient id="petJacketGradRaincoat" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="#ffd76b" />
+            <stop offset="100%" stopColor="#f0b429" />
+          </linearGradient>
+        </defs>
+        <path
+          d="M44,151 Q72,139 100,149 Q128,139 156,151 L156,190 Q156,196 148,196 L52,196 Q44,196 44,190 Z"
+          fill="url(#petJacketGradRaincoat)"
+        />
+        <path d="M72,140 L88,156 L60,159 Z" fill="#d99a1f" />
+        <path d="M128,140 L112,156 L140,159 Z" fill="#d99a1f" />
+        <circle cx="100" cy="157" r="4" fill="#d99a1f" />
+        <circle cx="100" cy="170" r="4" fill="#d99a1f" />
+        <circle cx="100" cy="183" r="4" fill="#d99a1f" />
+      </g>
+    );
+  }
+  if (jacket === "jacket_vest") {
+    return (
+      <g>
+        <defs>
+          <linearGradient id="petJacketGradVest" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="#93a35f" />
+            <stop offset="100%" stopColor="#6b7a42" />
+          </linearGradient>
+        </defs>
+        <path
+          d="M52,149 Q52,137 65,137 L135,137 Q148,137 148,149 L148,189 Q148,197 140,197 L60,197 Q52,197 52,189 Z"
+          fill="url(#petJacketGradVest)"
+        />
+        <rect x="94" y="137" width="11" height="60" rx="4" fill="#4f5c30" opacity="0.6" />
+        <rect x="62" y="168" width="20" height="15" rx="3" fill="#4f5c30" />
+        <rect x="118" y="168" width="20" height="15" rx="3" fill="#4f5c30" />
       </g>
     );
   }
@@ -17642,11 +17778,13 @@ function PetScreen({
   }
 
   function renderShopRow(slot: PetItemSlot) {
-    // Сначала вещи за очки, потом за Stars — платные идут в хвосте
-    // ряда, а не вперемешку со всем остальным. Внутри каждой группы
-    // порядок каталога не трогаем (стабильная сортировка).
+    // Порядок ряда — по возрастанию "стоимости": сначала по-настоящему
+    // бесплатные (только за уровень), потом за игровые очки (дешевле →
+    // дороже), и только в конце — за Telegram Stars (реальные деньги).
+    // Раньше был только один переход (очки → Stars), бесплатные вещи
+    // могли оказаться где угодно в середине ряда.
     const items = PET_SHOP_ITEMS.filter((item) => item.slot === slot).sort(
-      (a, b) => (a.priceStars ? 1 : 0) - (b.priceStars ? 1 : 0)
+      (a, b) => petItemTier(a) - petItemTier(b) || a.price - b.price
     );
     return (
       <div
@@ -17670,6 +17808,8 @@ function PetScreen({
           const busy = buyingItemId === item.id;
           const disabled = busy || Boolean(lockRequirement) || (!owned && !affordable);
 
+          const tier = petItemTier(item);
+
           return (
             <button
               key={item.id}
@@ -17677,6 +17817,7 @@ function PetScreen({
               disabled={disabled}
               onClick={() => handleShopTap(item)}
               style={{
+                position: "relative",
                 width: 54,
                 flexShrink: 0,
                 display: "flex",
@@ -17701,6 +17842,22 @@ function PetScreen({
                 opacity: !owned && (lockRequirement || !affordable) ? 0.5 : 1,
               }}
             >
+              {/* Значок уровня вещи (бесплатно/за очки/за Stars) — без
+                  него разница между "бесплатно за уровень" и "за очки"
+                  видна только по тексту цены внизу, который к тому же
+                  пропадает, пока вещь заблокирована. */}
+              <div
+                style={{
+                  position: "absolute",
+                  top: -4,
+                  left: -4,
+                  fontSize: 11,
+                  lineHeight: 1,
+                  filter: "drop-shadow(0 1px 1px rgba(0,0,0,0.4))",
+                }}
+              >
+                {PET_ITEM_TIER_BADGE[tier]}
+              </div>
               {item.roomImage ? (
                 <div
                   style={{
