@@ -52,6 +52,7 @@ const PLANS: Record<
 const PET_ITEM_STARS: Record<string, { title: string; amount: number }> = {
   hat_crown: { title: "Корона для питомца", amount: 40 },
   acc_medal: { title: "Медаль для питомца", amount: 35 },
+  jacket_puffer: { title: "Пуховик для питомца", amount: 45 },
   room_space: { title: "Комната «Космос» для питомца", amount: 60 },
 };
 

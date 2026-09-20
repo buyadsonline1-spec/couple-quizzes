@@ -15949,7 +15949,7 @@ return (
 type PetSpecies = "dog" | "cat" | "rabbit" | "cow" | "hippo" | "owl";
 type PetGender = "boy" | "girl";
 
-type PetItemSlot = "hat" | "accessory" | "room";
+type PetItemSlot = "hat" | "accessory" | "jacket" | "room";
 
 type PetState = {
   species: PetSpecies;
@@ -15960,6 +15960,7 @@ type PetState = {
   xpToNext: number;
   equippedHat: string | null;
   equippedAccessory: string | null;
+  equippedJacket: string | null;
   equippedRoom: string | null;
   ownedItems: string[];
 };
@@ -16013,6 +16014,10 @@ const PET_SHOP_ITEMS: PetShopItem[] = [
   { id: "acc_glasses", slot: "accessory", price: 200, emoji: "👓", nameRu: "Очки-нёрд", nameEn: "Glasses", nameFi: "Silmälasit" },
   { id: "acc_collar", slot: "accessory", price: 220, emoji: "🔔", nameRu: "Ошейник", nameEn: "Collar", nameFi: "Kaulapanta" },
   { id: "acc_medal", slot: "accessory", price: 0, emoji: "🏅", nameRu: "Медаль", nameEn: "Medal", nameFi: "Mitali", priceStars: 35 },
+  { id: "jacket_bomber", slot: "jacket", price: 280, emoji: "🧥", nameRu: "Бомбер", nameEn: "Bomber jacket", nameFi: "Bomber-takki" },
+  { id: "jacket_denim", slot: "jacket", price: 280, emoji: "🧥", nameRu: "Джинсовка", nameEn: "Denim jacket", nameFi: "Farkkutakki", unlockPetLevel: 3 },
+  { id: "jacket_hoodie", slot: "jacket", price: 250, emoji: "🧥", nameRu: "Худи", nameEn: "Hoodie", nameFi: "Huppari" },
+  { id: "jacket_puffer", slot: "jacket", price: 0, emoji: "🧥", nameRu: "Пуховик", nameEn: "Puffer vest", nameFi: "Toppaliivi", priceStars: 45 },
   {
     id: "room_meadow",
     slot: "room",
@@ -16186,13 +16191,37 @@ const PET_PHOTO_SRC: Partial<Record<PetSpecies, string>> = {
   owl: "/pets/owl.png",
 };
 
-// Где именно "приклеить" наклейку шапки/аксессуара поверх фото —
-// у всех 6 питомцев одинаковая рамка кадра (анфас, в polный рост,
-// голова сверху по центру), поэтому один и тот же набор координат на
-// каждый ПРЕДМЕТ (а не на каждый вид) работает достаточно точно:
-// шапки — на макушку, очки — на уровень глаз, ошейник/медаль/бантик —
-// на шею/грудь. top/left — проценты от размера квадрата с питомцем.
+// Где именно "приклеить" наклейку шапки/аксессуара/куртки поверх
+// фото — у 5 из 6 питомцев (все, кроме кролика) достаточно похожая
+// рамка кадра (анфас, в polный рост, голова сверху по центру), чтобы
+// один и тот же набор координат на каждый ПРЕДМЕТ (а не на каждый
+// вид) работал достаточно точно: шапки — на макушку, очки — на
+// уровень глаз, ошейник/медаль/бантик/куртка — на шею/грудь/торс.
+// top/left — проценты от размера квадрата с питомцем.
+//
+// Кролик — исключение: высокие уши-стойки съедают верхние ~28% кадра,
+// поэтому его голова и шея визуально начинаются заметно ниже, чем у
+// остальных пяти. Проверено вручную (наложение bbox каждого предмета
+// на реальные фото, см. историю чата) — общий набор координат сажал
+// шапки в пустоту над ушами, а очки/ошейник — на лоб/рот вместо глаз/
+// шеи. PET_*_ANCHOR_OVERRIDES ниже — точечная поправка под кролика,
+// не переписывание всей системы.
 type PetItemAnchor = { top: string; rotate?: number; sizeFactor: number };
+type PetItemAnchorOverrides = Partial<
+  Record<PetSpecies, Record<string, Partial<PetItemAnchor>>>
+>;
+
+function resolveItemAnchor(
+  table: Record<string, PetItemAnchor>,
+  fallback: PetItemAnchor,
+  overrides: PetItemAnchorOverrides,
+  species: PetSpecies,
+  itemId: string
+): PetItemAnchor {
+  const base = table[itemId] ?? fallback;
+  const override = overrides[species]?.[itemId];
+  return override ? { ...base, ...override } : base;
+}
 
 const PET_HAT_ANCHOR: Record<string, PetItemAnchor> = {
   hat_cap: { top: "-2%", rotate: -6, sizeFactor: 0.26 },
@@ -16203,6 +16232,16 @@ const PET_HAT_ANCHOR: Record<string, PetItemAnchor> = {
   hat_party: { top: "-4%", rotate: 6, sizeFactor: 0.26 },
 };
 const PET_HAT_ANCHOR_DEFAULT: PetItemAnchor = { top: "-4%", rotate: -8, sizeFactor: 0.28 };
+const PET_HAT_ANCHOR_OVERRIDES: PetItemAnchorOverrides = {
+  rabbit: {
+    hat_cap: { top: "12%" },
+    hat_top: { top: "12%" },
+    hat_crown: { top: "11%" },
+    hat_beanie: { top: "10%" },
+    hat_flower: { top: "16%" },
+    hat_party: { top: "11%" },
+  },
+};
 
 const PET_ACCESSORY_ANCHOR: Record<string, PetItemAnchor> = {
   // Очки — на уровень глаз, а не на грудь.
@@ -16215,13 +16254,66 @@ const PET_ACCESSORY_ANCHOR: Record<string, PetItemAnchor> = {
   acc_medal: { top: "55%", sizeFactor: 0.24 },
 };
 const PET_ACCESSORY_ANCHOR_DEFAULT: PetItemAnchor = { top: "50%", sizeFactor: 0.24 };
+const PET_ACCESSORY_ANCHOR_OVERRIDES: PetItemAnchorOverrides = {
+  // У бегемота и совы подбородок/клюв заканчиваются чуть ниже, чем у
+  // остальных — общий top для шеи (47-48%) сажал бантик/шарф/ошейник
+  // прямо на рот вместо шеи под ним.
+  hippo: {
+    acc_bow: { top: "54%" },
+    acc_scarf: { top: "55%" },
+    acc_collar: { top: "55%" },
+    acc_medal: { top: "61%" },
+  },
+  owl: {
+    acc_bow: { top: "52%" },
+    acc_scarf: { top: "53%" },
+    acc_collar: { top: "53%" },
+    acc_medal: { top: "58%" },
+  },
+  rabbit: {
+    acc_sunglasses: { top: "37%" },
+    acc_glasses: { top: "37%" },
+    acc_bow: { top: "65%" },
+    acc_scarf: { top: "65%" },
+    acc_collar: { top: "65%" },
+    acc_medal: { top: "71%" },
+  },
+};
+
+const PET_JACKET_ANCHOR: Record<string, PetItemAnchor> = {
+  jacket_bomber: { top: "45%", sizeFactor: 0.5 },
+  jacket_denim: { top: "45%", sizeFactor: 0.5 },
+  jacket_hoodie: { top: "43%", sizeFactor: 0.48 },
+  jacket_puffer: { top: "46%", sizeFactor: 0.5 },
+};
+const PET_JACKET_ANCHOR_DEFAULT: PetItemAnchor = { top: "45%", sizeFactor: 0.5 };
+const PET_JACKET_ANCHOR_OVERRIDES: PetItemAnchorOverrides = {
+  hippo: {
+    jacket_bomber: { top: "47%" },
+    jacket_denim: { top: "47%" },
+    jacket_hoodie: { top: "45%" },
+    jacket_puffer: { top: "48%" },
+  },
+  owl: {
+    jacket_bomber: { top: "47%" },
+    jacket_denim: { top: "47%" },
+    jacket_hoodie: { top: "45%" },
+    jacket_puffer: { top: "48%" },
+  },
+  rabbit: {
+    jacket_bomber: { top: "58%" },
+    jacket_denim: { top: "58%" },
+    jacket_hoodie: { top: "56%" },
+    jacket_puffer: { top: "59%" },
+  },
+};
 
 // Настоящие нарисованные предметы (те же SVG-фигуры, что рисуются на
-// SVG-питомце — PetHatOverlay/PetAccessoryOverlay ниже) вместо голого
-// эмодзи поверх фото. Каждый предмет рисуется в общей координатной
-// сетке 0..200 — bbox вырезает именно ту область, где нарисован
-// конкретный предмет, и viewBox отдельного <svg> "приближает" её так,
-// будто это самостоятельная иконка.
+// SVG-питомце — PetHatOverlay/PetAccessoryOverlay/PetJacketOverlay
+// ниже) вместо голого эмодзи поверх фото. Каждый предмет рисуется в
+// общей координатной сетке 0..200 — bbox вырезает именно ту область,
+// где нарисован конкретный предмет, и viewBox отдельного <svg>
+// "приближает" её так, будто это самостоятельная иконка.
 const PET_HAT_BBOX: Record<string, [number, number, number, number]> = {
   hat_top: [67, 3, 66, 51],
   hat_cap: [47, 5, 106, 58],
@@ -16240,25 +16332,40 @@ const PET_ACCESSORY_BBOX: Record<string, [number, number, number, number]> = {
   acc_medal: [79, 131, 42, 52],
 };
 
+const PET_JACKET_BBOX: Record<string, [number, number, number, number]> = {
+  jacket_bomber: [40, 138, 120, 57],
+  jacket_denim: [42, 136, 116, 60],
+  jacket_hoodie: [45, 118, 110, 80],
+  jacket_puffer: [50, 134, 100, 63],
+};
+
 // Рендерит один предмет из каталога как самостоятельную маленькую
 // иконку (не эмодзи) — вырезает его bbox из общей SVG-сетки шапок/
-// аксессуаров и масштабирует под нужную ширину, сохраняя пропорции.
+// аксессуаров/курток и масштабирует под нужную ширину, сохраняя
+// пропорции.
 function PetItemIcon({
   kind,
   itemId,
   width,
 }: {
-  kind: "hat" | "accessory";
+  kind: "hat" | "accessory" | "jacket";
   itemId: string;
   width: number;
 }) {
-  const bboxMap = kind === "hat" ? PET_HAT_BBOX : PET_ACCESSORY_BBOX;
+  const bboxMap =
+    kind === "hat" ? PET_HAT_BBOX : kind === "accessory" ? PET_ACCESSORY_BBOX : PET_JACKET_BBOX;
   const bbox = bboxMap[itemId] ?? [60, 60, 80, 80];
   const [, , bw, bh] = bbox;
   const height = width * (bh / bw);
   return (
     <svg width={width} height={height} viewBox={bbox.join(" ")} style={{ overflow: "visible" }}>
-      {kind === "hat" ? <PetHatOverlay hat={itemId} /> : <PetAccessoryOverlay accessory={itemId} />}
+      {kind === "hat" ? (
+        <PetHatOverlay hat={itemId} />
+      ) : kind === "accessory" ? (
+        <PetAccessoryOverlay accessory={itemId} />
+      ) : (
+        <PetJacketOverlay jacket={itemId} />
+      )}
     </svg>
   );
 }
@@ -16564,17 +16671,82 @@ function PetAccessoryOverlay({ accessory }: { accessory: string }) {
   return null;
 }
 
+// Куртки рисуются поверх туловища тем же общим набором координат, что
+// и остальные вещи (см. комментарий у PetItemAnchor выше) — накрывают
+// торс между шеей и руками/лапами.
+function PetJacketOverlay({ jacket }: { jacket: string }) {
+  if (jacket === "jacket_bomber") {
+    return (
+      <g>
+        <path
+          d="M40,150 Q40,138 55,138 L75,138 Q100,148 125,138 L145,138 Q160,138 160,150 L160,185 Q160,195 150,195 L50,195 Q40,195 40,185 Z"
+          fill="#4a7c59"
+        />
+        <rect x="40" y="150" width="14" height="35" rx="6" fill="#3a6349" />
+        <rect x="146" y="150" width="14" height="35" rx="6" fill="#3a6349" />
+        <rect x="70" y="138" width="60" height="10" rx="5" fill="#3a6349" />
+        <rect x="94" y="150" width="12" height="45" fill="#3a6349" opacity="0.5" />
+      </g>
+    );
+  }
+  if (jacket === "jacket_denim") {
+    return (
+      <g>
+        <path
+          d="M42,148 L70,138 L100,148 L130,138 L158,148 L158,190 Q158,196 150,196 L50,196 Q42,196 42,190 Z"
+          fill="#5b7fa6"
+        />
+        <path d="M70,138 L86,160 L58,160 Z" fill="#4a6a8c" />
+        <path d="M130,138 L114,160 L142,160 Z" fill="#4a6a8c" />
+        <rect x="60" y="170" width="18" height="14" rx="2" fill="#4a6a8c" />
+        <rect x="122" y="170" width="18" height="14" rx="2" fill="#4a6a8c" />
+      </g>
+    );
+  }
+  if (jacket === "jacket_hoodie") {
+    return (
+      <g>
+        <path d="M62,136 Q100,120 138,136 Q100,132 62,136 Z" fill="#7d848f" />
+        <path
+          d="M45,150 Q45,136 62,136 Q100,150 138,136 Q155,136 155,150 L155,192 Q155,198 147,198 L53,198 Q45,198 45,192 Z"
+          fill="#9098a3"
+        />
+        <line x1="92" y1="150" x2="90" y2="168" stroke="#fff" strokeWidth="3" strokeLinecap="round" />
+        <line x1="108" y1="150" x2="110" y2="168" stroke="#fff" strokeWidth="3" strokeLinecap="round" />
+        <rect x="78" y="172" width="44" height="20" rx="4" fill="#7d848f" />
+      </g>
+    );
+  }
+  if (jacket === "jacket_puffer") {
+    return (
+      <g>
+        <path
+          d="M50,148 Q50,136 65,136 L135,136 Q150,136 150,148 L150,190 Q150,197 142,197 L58,197 Q50,197 50,190 Z"
+          fill="#d64545"
+        />
+        <line x1="50" y1="158" x2="150" y2="158" stroke="#b83636" strokeWidth="3" />
+        <line x1="50" y1="172" x2="150" y2="172" stroke="#b83636" strokeWidth="3" />
+        <line x1="50" y1="186" x2="150" y2="186" stroke="#b83636" strokeWidth="3" />
+        <rect x="94" y="136" width="12" height="61" fill="#b83636" opacity="0.6" />
+      </g>
+    );
+  }
+  return null;
+}
+
 function PetFace({
   species,
   size,
   hat,
   accessory,
+  jacket,
   scale = 1,
 }: {
   species: PetSpecies;
   size: number;
   hat?: string | null;
   accessory?: string | null;
+  jacket?: string | null;
   // Стадия роста (см. getPetGrowthStage) — визуально уменьшает
   // питомца на ранних уровнях, не трогая сам ассет.
   scale?: number;
@@ -16582,13 +16754,16 @@ function PetFace({
   const photoSrc = PET_PHOTO_SRC[species];
   const hatItem = hat ? PET_SHOP_ITEMS.find((item) => item.id === hat) : null;
   const accessoryItem = accessory ? PET_SHOP_ITEMS.find((item) => item.id === accessory) : null;
+  const jacketItem = jacket ? PET_SHOP_ITEMS.find((item) => item.id === jacket) : null;
 
   if (photoSrc) {
-    // Настоящее фото питомца: шапка/аксессуар рисуются как наклейки
-    // поверх фото (эмодзи из каталога), а не подгоняются пиксель в
-    // пиксель под силуэт — на реальном фото это выглядит опрятнее и
-    // проще поддерживать, чем точное позиционирование под 6 разных
-    // питомцев с разными пропорциями.
+    // Настоящее фото питомца: шапка/аксессуар/куртка рисуются как
+    // наклейки поверх фото, а не подгоняются пиксель в пиксель под
+    // силуэт — на реальном фото это выглядит опрятнее и проще
+    // поддерживать, чем точное позиционирование под 6 разных
+    // питомцев с разными пропорциями. Порядок слоёв снизу вверх:
+    // куртка (торс) → аксессуар (шея/глаза, может лежать поверх
+    // воротника куртки) → шапка (макушка, всегда сверху).
     return (
       <div
         style={{
@@ -16605,9 +16780,38 @@ function PetFace({
           style={{ width: "100%", height: "100%", objectFit: "contain", display: "block", userSelect: "none" }}
           draggable={false}
         />
+        {jacketItem &&
+          (() => {
+            const anchor = resolveItemAnchor(
+              PET_JACKET_ANCHOR,
+              PET_JACKET_ANCHOR_DEFAULT,
+              PET_JACKET_ANCHOR_OVERRIDES,
+              species,
+              jacketItem.id
+            );
+            return (
+              <div
+                style={{
+                  position: "absolute",
+                  top: anchor.top,
+                  left: "50%",
+                  transform: `translate(-50%, 0)${anchor.rotate ? ` rotate(${anchor.rotate}deg)` : ""}`,
+                  filter: "drop-shadow(0 2px 4px rgba(0,0,0,0.25))",
+                }}
+              >
+                <PetItemIcon kind="jacket" itemId={jacketItem.id} width={size * anchor.sizeFactor} />
+              </div>
+            );
+          })()}
         {accessoryItem &&
           (() => {
-            const anchor = PET_ACCESSORY_ANCHOR[accessoryItem.id] ?? PET_ACCESSORY_ANCHOR_DEFAULT;
+            const anchor = resolveItemAnchor(
+              PET_ACCESSORY_ANCHOR,
+              PET_ACCESSORY_ANCHOR_DEFAULT,
+              PET_ACCESSORY_ANCHOR_OVERRIDES,
+              species,
+              accessoryItem.id
+            );
             return (
               <div
                 style={{
@@ -16624,7 +16828,13 @@ function PetFace({
           })()}
         {hatItem &&
           (() => {
-            const anchor = PET_HAT_ANCHOR[hatItem.id] ?? PET_HAT_ANCHOR_DEFAULT;
+            const anchor = resolveItemAnchor(
+              PET_HAT_ANCHOR,
+              PET_HAT_ANCHOR_DEFAULT,
+              PET_HAT_ANCHOR_OVERRIDES,
+              species,
+              hatItem.id
+            );
             return (
               <div
                 style={{
@@ -16653,6 +16863,7 @@ function PetFace({
       style={{ overflow: "visible", transform: `scale(${scale})`, transition: "transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1)" }}
     >
       <PetFaceBody species={species} />
+      {jacket && <PetJacketOverlay jacket={jacket} />}
       {accessory && <PetAccessoryOverlay accessory={accessory} />}
       {hat && <PetHatOverlay hat={hat} />}
     </svg>
@@ -17297,6 +17508,7 @@ function PetScreen({
       const isEquipped =
         (item.slot === "hat" && pet?.equippedHat === item.id) ||
         (item.slot === "accessory" && pet?.equippedAccessory === item.id) ||
+        (item.slot === "jacket" && pet?.equippedJacket === item.id) ||
         (item.slot === "room" && pet?.equippedRoom === item.id);
       onEquipItem(item.slot, isEquipped ? null : item.id);
       return;
@@ -17354,6 +17566,7 @@ function PetScreen({
           const equipped =
             (slot === "hat" && pet?.equippedHat === item.id) ||
             (slot === "accessory" && pet?.equippedAccessory === item.id) ||
+            (slot === "jacket" && pet?.equippedJacket === item.id) ||
             (slot === "room" && pet?.equippedRoom === item.id);
           const lockRequirement = owned ? null : getLockRequirement(item);
           const affordable = item.priceStars ? true : soloPoints >= item.price;
@@ -17683,6 +17896,7 @@ function PetScreen({
               size={ringSize - (ringStroke + 6) * 2}
               hat={pet.equippedHat}
               accessory={pet.equippedAccessory}
+              jacket={pet.equippedJacket}
               scale={growthStage.scale}
             />
           </div>
@@ -17762,6 +17976,16 @@ function PetScreen({
           </div>
         </div>
         <div style={{ marginTop: 10 }}>{renderShopRow("accessory")}</div>
+      </div>
+
+      <div style={{ ...cardBaseStyle(), padding: 18, minWidth: 0 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 4 }}>
+          <div style={{ fontSize: 22 }}>🧥</div>
+          <div style={{ fontSize: 14, fontWeight: 900, color: ink }}>
+            {market === "fi" ? "Takit" : market === "en" ? "Jackets" : "Куртки"}
+          </div>
+        </div>
+        <div style={{ marginTop: 10 }}>{renderShopRow("jacket")}</div>
       </div>
 
       <div style={{ ...cardBaseStyle(), padding: 18, minWidth: 0 }}>
@@ -20223,6 +20447,7 @@ function applyPetStateResult(result: any): boolean {
         xpToNext: result.pet.xpToNext,
         equippedHat: result.pet.equippedHat ?? null,
         equippedAccessory: result.pet.equippedAccessory ?? null,
+        equippedJacket: result.pet.equippedJacket ?? null,
         equippedRoom: result.pet.equippedRoom ?? null,
         ownedItems: result.pet.ownedItems ?? [],
       }
