@@ -17453,10 +17453,11 @@ function PetScreen({
   }
 
   const xpPercent = Math.min(100, Math.round((pet.xp / Math.max(1, pet.xpToNext)) * 100));
-  // Питомец должен быть достаточно большим, чтобы шапка/аксессуар
-  // были реально видны на нём (раньше при 156px мелкие иконки
-  // предметов почти сливались с фото) — крупнее почти вдвое.
-  const ringSize = 220;
+  // Питомец должен быть достаточно большим, чтобы шапка/аксессуар/
+  // куртка были реально видны на нём (раньше при 156px мелкие иконки
+  // предметов почти сливались с фото, при 220px куртка всё ещё
+  // ощущалась мелковато рядом с остальным экраном) — ещё крупнее.
+  const ringSize = 260;
   const ringStroke = 9;
   const ringRadius = (ringSize - ringStroke) / 2;
   const ringCircumference = 2 * Math.PI * ringRadius;
@@ -17696,6 +17697,55 @@ function PetScreen({
     );
   }
 
+  // Каждая категория магазина свёрнута по умолчанию и раскрывается по
+  // тапу на заголовок — раньше все 4 ряда (шапки/аксессуары/куртки/
+  // комната) были видны сразу, экран питомца превращался в длинную
+  // простыню карточек. Счётчик "куплено/всего" виден и в свёрнутом
+  // виде, чтобы было понятно, что вообще в разделе, не открывая его.
+  function renderShopSection(slot: PetItemSlot, emoji: string, title: string) {
+    const expanded = shopSlot === slot;
+    const itemsInSlot = PET_SHOP_ITEMS.filter((item) => item.slot === slot);
+    const ownedCount = itemsInSlot.filter((item) => pet?.ownedItems.includes(item.id)).length;
+    return (
+      <div style={{ ...cardBaseStyle(), padding: 18, minWidth: 0 }}>
+        <button
+          type="button"
+          onClick={() => setShopSlot(expanded ? null : slot)}
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 10,
+            width: "100%",
+            background: "none",
+            border: "none",
+            padding: 0,
+            margin: 0,
+            font: "inherit",
+            cursor: "pointer",
+            textAlign: "left",
+          }}
+        >
+          <div style={{ fontSize: 22 }}>{emoji}</div>
+          <div style={{ fontSize: 14, fontWeight: 900, color: ink, flex: 1 }}>{title}</div>
+          <div style={{ fontSize: 11, fontWeight: 700, color: muted }}>
+            {ownedCount}/{itemsInSlot.length}
+          </div>
+          <div
+            style={{
+              fontSize: 11,
+              color: muted,
+              transform: expanded ? "rotate(180deg)" : "rotate(0deg)",
+              transition: "transform 0.25s ease",
+            }}
+          >
+            ▼
+          </div>
+        </button>
+        {expanded && <div style={{ marginTop: 12 }}>{renderShopRow(slot)}</div>}
+      </div>
+    );
+  }
+
   return (
     <div style={{ padding: 16, display: "grid", gap: 14 }}>
       <style>{petAnimStyle}</style>
@@ -17905,7 +17955,6 @@ function PetScreen({
             />
           </svg>
           <div
-            className="pet-avatar-bounce"
             style={{
               position: "absolute",
               inset: ringStroke + 6,
@@ -17923,6 +17972,12 @@ function PetScreen({
               boxShadow: displayRoomItem ? "none" : `0 10px 28px ${accentGlow}`,
             }}
           >
+            {/* Раньше тут был класс pet-avatar-bounce — постоянное
+                покачивание питомца вверх-вниз. На увеличенном размере
+                и с одетой курткой/шапкой это ощущалось суетливо и
+                мешало разглядеть наряд, а не выглядело "живее" —
+                убрано, питомец теперь стоит неподвижно, покачивается
+                только фон-свечение позади (pet-glow-pulse). */}
             <PetFace
               species={pet.species}
               size={ringSize - (ringStroke + 6) * 2}
@@ -17990,45 +18045,14 @@ function PetScreen({
           внутри себя раздвигает всю сетку шире экрана. На десктопе
           это незаметно, а на iPhone (Safari) даёт видимый сдвиг всего
           экрана вбок при открытии питомца. */}
-      <div style={{ ...cardBaseStyle(), padding: 18, minWidth: 0 }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 4 }}>
-          <div style={{ fontSize: 22 }}>🎩</div>
-          <div style={{ fontSize: 14, fontWeight: 900, color: ink }}>
-            {market === "fi" ? "Hatut" : market === "en" ? "Hats" : "Шапки"}
-          </div>
-        </div>
-        <div style={{ marginTop: 10 }}>{renderShopRow("hat")}</div>
-      </div>
-
-      <div style={{ ...cardBaseStyle(), padding: 18, minWidth: 0 }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 4 }}>
-          <div style={{ fontSize: 22 }}>🎀</div>
-          <div style={{ fontSize: 14, fontWeight: 900, color: ink }}>
-            {market === "fi" ? "Asusteet" : market === "en" ? "Accessories" : "Аксессуары"}
-          </div>
-        </div>
-        <div style={{ marginTop: 10 }}>{renderShopRow("accessory")}</div>
-      </div>
-
-      <div style={{ ...cardBaseStyle(), padding: 18, minWidth: 0 }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 4 }}>
-          <div style={{ fontSize: 22 }}>🧥</div>
-          <div style={{ fontSize: 14, fontWeight: 900, color: ink }}>
-            {market === "fi" ? "Takit" : market === "en" ? "Jackets" : "Куртки"}
-          </div>
-        </div>
-        <div style={{ marginTop: 10 }}>{renderShopRow("jacket")}</div>
-      </div>
-
-      <div style={{ ...cardBaseStyle(), padding: 18, minWidth: 0 }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 4 }}>
-          <div style={{ fontSize: 22 }}>🏠</div>
-          <div style={{ fontSize: 14, fontWeight: 900, color: ink }}>
-            {market === "fi" ? "Huone" : market === "en" ? "Room" : "Комната"}
-          </div>
-        </div>
-        <div style={{ marginTop: 10 }}>{renderShopRow("room")}</div>
-      </div>
+      {renderShopSection("hat", "🎩", market === "fi" ? "Hatut" : market === "en" ? "Hats" : "Шапки")}
+      {renderShopSection(
+        "accessory",
+        "🎀",
+        market === "fi" ? "Asusteet" : market === "en" ? "Accessories" : "Аксессуары"
+      )}
+      {renderShopSection("jacket", "🧥", market === "fi" ? "Takit" : market === "en" ? "Jackets" : "Куртки")}
+      {renderShopSection("room", "🏠", market === "fi" ? "Huone" : market === "en" ? "Room" : "Комната")}
 
       <div style={{ fontSize: 11, color: muted, textAlign: "center" }}>
         {market === "fi"
