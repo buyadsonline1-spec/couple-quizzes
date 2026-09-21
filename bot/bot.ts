@@ -1468,8 +1468,14 @@ async function handleDatingBoostPayment(
 // что опечатка здесь просто вернёт ok:false, а не выдаст что попало.
 const PET_ITEM_NAMES: Record<string, string> = {
   hat_crown: "Корона",
+  hat_unicorn: "Рог единорога",
+  hat_astro: "Шлем космонавта",
   acc_medal: "Медаль",
+  acc_monocle: "Монокль",
+  acc_bling: "Золотая цепь",
   jacket_puffer: "Пуховик",
+  jacket_tux: "Смокинг",
+  jacket_superhero: "Плащ супергероя",
   room_space: "Комната «Космос»",
 };
 

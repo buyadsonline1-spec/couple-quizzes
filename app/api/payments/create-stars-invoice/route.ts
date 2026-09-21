@@ -51,8 +51,14 @@ const PLANS: Record<
 // пройдёт, а выдать вещь боту будет нечего.
 const PET_ITEM_STARS: Record<string, { title: string; amount: number }> = {
   hat_crown: { title: "Корона для питомца", amount: 40 },
+  hat_unicorn: { title: "Рог единорога для питомца", amount: 35 },
+  hat_astro: { title: "Шлем космонавта для питомца", amount: 45 },
   acc_medal: { title: "Медаль для питомца", amount: 35 },
+  acc_monocle: { title: "Монокль для питомца", amount: 30 },
+  acc_bling: { title: "Золотая цепь для питомца", amount: 40 },
   jacket_puffer: { title: "Пуховик для питомца", amount: 45 },
+  jacket_tux: { title: "Смокинг для питомца", amount: 55 },
+  jacket_superhero: { title: "Плащ супергероя для питомца", amount: 50 },
   room_space: { title: "Комната «Космос» для питомца", amount: 60 },
 };
 

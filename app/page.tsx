@@ -16007,6 +16007,7 @@ const PET_SHOP_ITEMS: PetShopItem[] = [
   // т.п. ниже — у тех тоже есть требование уровня/стрика, но они
   // ВСЁ РАВНО стоят очки поверх разблокировки.
   { id: "hat_wizard", slot: "hat", price: 0, emoji: "🧙", nameRu: "Шляпа волшебника", nameEn: "Wizard hat", nameFi: "Velhon hattu", unlockPetLevel: 2 },
+  { id: "hat_cowboy", slot: "hat", price: 0, emoji: "🤠", nameRu: "Ковбойская шляпа", nameEn: "Cowboy hat", nameFi: "Cowboy-hattu", unlockPetLevel: 3 },
   { id: "hat_bandana", slot: "hat", price: 0, emoji: "🏴", nameRu: "Бандана", nameEn: "Bandana", nameFi: "Bandana", unlockPetLevel: 5 },
   { id: "hat_cap", slot: "hat", price: 250, emoji: "🧢", nameRu: "Кепка", nameEn: "Cap", nameFi: "Lippis" },
   { id: "hat_top", slot: "hat", price: 300, emoji: "🎩", nameRu: "Цилиндр", nameEn: "Top hat", nameFi: "Hattu", unlockPetLevel: 3 },
@@ -16014,7 +16015,10 @@ const PET_SHOP_ITEMS: PetShopItem[] = [
   { id: "hat_flower", slot: "hat", price: 300, emoji: "🌸", nameRu: "Веночек", nameEn: "Flower crown", nameFi: "Kukkaseppele", unlockStreakDays: 3 },
   { id: "hat_party", slot: "hat", price: 200, emoji: "🥳", nameRu: "Колпак", nameEn: "Party hat", nameFi: "Juhlahattu" },
   { id: "hat_crown", slot: "hat", price: 0, emoji: "👑", nameRu: "Корона", nameEn: "Crown", nameFi: "Kruunu", priceStars: 40 },
+  { id: "hat_unicorn", slot: "hat", price: 0, emoji: "🦄", nameRu: "Единорог", nameEn: "Unicorn horn", nameFi: "Yksisarvinen", priceStars: 35 },
+  { id: "hat_astro", slot: "hat", price: 0, emoji: "🚀", nameRu: "Шлем космонавта", nameEn: "Astro helmet", nameFi: "Astronautin kypärä", priceStars: 45 },
   { id: "acc_necklace", slot: "accessory", price: 0, emoji: "📿", nameRu: "Ожерелье", nameEn: "Necklace", nameFi: "Kaulakoru", unlockPetLevel: 2 },
+  { id: "acc_daisy", slot: "accessory", price: 0, emoji: "🌼", nameRu: "Ромашка", nameEn: "Daisy", nameFi: "Päivänkakkara", unlockPetLevel: 3 },
   { id: "acc_headphones", slot: "accessory", price: 0, emoji: "🎧", nameRu: "Наушники", nameEn: "Headphones", nameFi: "Kuulokkeet", unlockPetLevel: 5 },
   { id: "acc_bow", slot: "accessory", price: 200, emoji: "🎀", nameRu: "Бантик", nameEn: "Bow", nameFi: "Rusetti" },
   { id: "acc_glasses", slot: "accessory", price: 200, emoji: "👓", nameRu: "Очки-нёрд", nameEn: "Glasses", nameFi: "Silmälasit" },
@@ -16022,12 +16026,17 @@ const PET_SHOP_ITEMS: PetShopItem[] = [
   { id: "acc_sunglasses", slot: "accessory", price: 250, emoji: "🕶️", nameRu: "Очки", nameEn: "Sunglasses", nameFi: "Aurinkolasit", unlockPetLevel: 4 },
   { id: "acc_scarf", slot: "accessory", price: 300, emoji: "🧣", nameRu: "Шарф", nameEn: "Scarf", nameFi: "Huivi", unlockPairPoints: 1500 },
   { id: "acc_medal", slot: "accessory", price: 0, emoji: "🏅", nameRu: "Медаль", nameEn: "Medal", nameFi: "Mitali", priceStars: 35 },
+  { id: "acc_monocle", slot: "accessory", price: 0, emoji: "🧐", nameRu: "Монокль", nameEn: "Monocle", nameFi: "Monokkeli", priceStars: 30 },
+  { id: "acc_bling", slot: "accessory", price: 0, emoji: "💰", nameRu: "Золотая цепь", nameEn: "Gold chain", nameFi: "Kultaketju", priceStars: 40 },
   { id: "jacket_raincoat", slot: "jacket", price: 0, emoji: "🌧️", nameRu: "Дождевик", nameEn: "Raincoat", nameFi: "Sadetakki", unlockPetLevel: 2 },
+  { id: "jacket_tshirt", slot: "jacket", price: 0, emoji: "👕", nameRu: "Футболка", nameEn: "T-shirt", nameFi: "T-paita", unlockPetLevel: 3 },
   { id: "jacket_vest", slot: "jacket", price: 0, emoji: "🦺", nameRu: "Жилет", nameEn: "Vest", nameFi: "Liivi", unlockPetLevel: 5 },
   { id: "jacket_hoodie", slot: "jacket", price: 250, emoji: "🧥", nameRu: "Худи", nameEn: "Hoodie", nameFi: "Huppari" },
   { id: "jacket_bomber", slot: "jacket", price: 280, emoji: "🧥", nameRu: "Бомбер", nameEn: "Bomber jacket", nameFi: "Bomber-takki" },
   { id: "jacket_denim", slot: "jacket", price: 280, emoji: "🧥", nameRu: "Джинсовка", nameEn: "Denim jacket", nameFi: "Farkkutakki", unlockPetLevel: 3 },
   { id: "jacket_puffer", slot: "jacket", price: 0, emoji: "🧥", nameRu: "Пуховик", nameEn: "Puffer vest", nameFi: "Toppaliivi", priceStars: 45 },
+  { id: "jacket_tux", slot: "jacket", price: 0, emoji: "🤵", nameRu: "Смокинг", nameEn: "Tuxedo", nameFi: "Smokki", priceStars: 55 },
+  { id: "jacket_superhero", slot: "jacket", price: 0, emoji: "🦸", nameRu: "Плащ супергероя", nameEn: "Superhero cape", nameFi: "Supersankariviitta", priceStars: 50 },
   {
     id: "room_meadow",
     slot: "room",
@@ -16262,6 +16271,9 @@ const PET_HAT_ANCHOR: Record<string, PetItemAnchor> = {
   hat_party: { top: "-4%", rotate: 6, sizeFactor: 0.26 },
   hat_wizard: { top: "-6%", rotate: -3, sizeFactor: 0.28 },
   hat_bandana: { top: "-1%", rotate: 0, sizeFactor: 0.3 },
+  hat_cowboy: { top: "-3%", rotate: 0, sizeFactor: 0.32 },
+  hat_unicorn: { top: "-8%", rotate: 0, sizeFactor: 0.28 },
+  hat_astro: { top: "-5%", rotate: 0, sizeFactor: 0.3 },
 };
 const PET_HAT_ANCHOR_DEFAULT: PetItemAnchor = { top: "-4%", rotate: -8, sizeFactor: 0.28 };
 const PET_HAT_ANCHOR_OVERRIDES: PetItemAnchorOverrides = {
@@ -16274,6 +16286,9 @@ const PET_HAT_ANCHOR_OVERRIDES: PetItemAnchorOverrides = {
     hat_party: { top: "11%" },
     hat_wizard: { top: "10%" },
     hat_bandana: { top: "13%" },
+    hat_cowboy: { top: "12%" },
+    hat_unicorn: { top: "8%" },
+    hat_astro: { top: "10%" },
   },
 };
 
@@ -16287,7 +16302,10 @@ const PET_ACCESSORY_ANCHOR: Record<string, PetItemAnchor> = {
   acc_scarf: { top: "48%", sizeFactor: 0.26 },
   acc_collar: { top: "48%", sizeFactor: 0.22 },
   acc_necklace: { top: "48%", sizeFactor: 0.24 },
+  acc_daisy: { top: "47%", sizeFactor: 0.32 },
+  acc_monocle: { top: "22%", sizeFactor: 0.22 },
   acc_medal: { top: "55%", sizeFactor: 0.24 },
+  acc_bling: { top: "55%", sizeFactor: 0.26 },
 };
 const PET_ACCESSORY_ANCHOR_DEFAULT: PetItemAnchor = { top: "50%", sizeFactor: 0.24 };
 const PET_ACCESSORY_ANCHOR_OVERRIDES: PetItemAnchorOverrides = {
@@ -16299,24 +16317,31 @@ const PET_ACCESSORY_ANCHOR_OVERRIDES: PetItemAnchorOverrides = {
     acc_scarf: { top: "55%" },
     acc_collar: { top: "55%" },
     acc_necklace: { top: "55%" },
+    acc_daisy: { top: "54%" },
     acc_medal: { top: "61%" },
+    acc_bling: { top: "61%" },
   },
   owl: {
     acc_bow: { top: "52%" },
     acc_scarf: { top: "53%" },
     acc_collar: { top: "53%" },
     acc_necklace: { top: "53%" },
+    acc_daisy: { top: "52%" },
     acc_medal: { top: "58%" },
+    acc_bling: { top: "58%" },
   },
   rabbit: {
     acc_sunglasses: { top: "37%" },
     acc_glasses: { top: "37%" },
     acc_headphones: { top: "37%" },
+    acc_monocle: { top: "37%" },
     acc_bow: { top: "65%" },
     acc_scarf: { top: "65%" },
     acc_collar: { top: "65%" },
     acc_necklace: { top: "65%" },
+    acc_daisy: { top: "65%" },
     acc_medal: { top: "71%" },
+    acc_bling: { top: "71%" },
   },
 };
 
@@ -16327,6 +16352,9 @@ const PET_JACKET_ANCHOR: Record<string, PetItemAnchor> = {
   jacket_puffer: { top: "45%", sizeFactor: 0.66 },
   jacket_raincoat: { top: "44%", sizeFactor: 0.66 },
   jacket_vest: { top: "45%", sizeFactor: 0.66 },
+  jacket_tshirt: { top: "44%", sizeFactor: 0.66 },
+  jacket_tux: { top: "44%", sizeFactor: 0.66 },
+  jacket_superhero: { top: "45%", sizeFactor: 0.72 },
 };
 const PET_JACKET_ANCHOR_DEFAULT: PetItemAnchor = { top: "45%", sizeFactor: 0.5 };
 const PET_JACKET_ANCHOR_OVERRIDES: PetItemAnchorOverrides = {
@@ -16337,6 +16365,9 @@ const PET_JACKET_ANCHOR_OVERRIDES: PetItemAnchorOverrides = {
     jacket_puffer: { top: "48%" },
     jacket_raincoat: { top: "47%" },
     jacket_vest: { top: "48%" },
+    jacket_tshirt: { top: "47%" },
+    jacket_tux: { top: "47%" },
+    jacket_superhero: { top: "48%" },
   },
   owl: {
     jacket_bomber: { top: "47%" },
@@ -16345,6 +16376,9 @@ const PET_JACKET_ANCHOR_OVERRIDES: PetItemAnchorOverrides = {
     jacket_puffer: { top: "48%" },
     jacket_raincoat: { top: "47%" },
     jacket_vest: { top: "48%" },
+    jacket_tshirt: { top: "47%" },
+    jacket_tux: { top: "47%" },
+    jacket_superhero: { top: "48%" },
   },
   rabbit: {
     jacket_bomber: { top: "58%" },
@@ -16353,6 +16387,9 @@ const PET_JACKET_ANCHOR_OVERRIDES: PetItemAnchorOverrides = {
     jacket_puffer: { top: "59%" },
     jacket_raincoat: { top: "58%" },
     jacket_vest: { top: "59%" },
+    jacket_tshirt: { top: "58%" },
+    jacket_tux: { top: "58%" },
+    jacket_superhero: { top: "59%" },
   },
 };
 
@@ -16371,6 +16408,9 @@ const PET_HAT_BBOX: Record<string, [number, number, number, number]> = {
   hat_party: [69, -6, 62, 55],
   hat_wizard: [66, -6, 68, 64],
   hat_bandana: [58, 6, 98, 52],
+  hat_cowboy: [52, 10, 96, 42],
+  hat_unicorn: [60, -14, 80, 66],
+  hat_astro: [58, 4, 84, 54],
 };
 
 const PET_ACCESSORY_BBOX: Record<string, [number, number, number, number]> = {
@@ -16382,6 +16422,9 @@ const PET_ACCESSORY_BBOX: Record<string, [number, number, number, number]> = {
   acc_medal: [79, 131, 42, 52],
   acc_necklace: [58, 146, 84, 38],
   acc_headphones: [42, 54, 116, 68],
+  acc_daisy: [58, 143, 84, 46],
+  acc_monocle: [100, 88, 50, 72],
+  acc_bling: [50, 144, 100, 52],
 };
 
 const PET_JACKET_BBOX: Record<string, [number, number, number, number]> = {
@@ -16391,6 +16434,9 @@ const PET_JACKET_BBOX: Record<string, [number, number, number, number]> = {
   jacket_puffer: [50, 134, 100, 63],
   jacket_raincoat: [44, 138, 112, 58],
   jacket_vest: [52, 136, 96, 61],
+  jacket_tshirt: [44, 136, 112, 62],
+  jacket_tux: [42, 138, 116, 58],
+  jacket_superhero: [38, 136, 124, 62],
 };
 
 // Реальный контур тела/рук каждого вида (проценты от размера кадра,
@@ -16702,6 +16748,49 @@ function PetHatOverlay({ hat }: { hat: string }) {
       </g>
     );
   }
+  if (hat === "hat_cowboy") {
+    return (
+      <g>
+        <ellipse cx="100" cy="46" rx="48" ry="10" fill="#8a5a2b" />
+        <path d="M70,46 Q70,14 100,14 Q130,14 130,46 Z" fill="#a06a35" />
+        <rect x="78" y="34" width="44" height="8" rx="4" fill="#6b4520" />
+      </g>
+    );
+  }
+  if (hat === "hat_unicorn") {
+    return (
+      <g>
+        {/* Ободок светлый (белый/розовый) — на светлом мехе (собака,
+            кролик) сливался в почти невидимую линию без явной обводки. */}
+        <path
+          d="M62,42 Q100,20 138,42 L136,50 Q100,32 64,50 Z"
+          fill="#ffe6f3"
+          stroke="#ff8fc4"
+          strokeWidth="2"
+        />
+        <path d="M96,18 L104,18 L102,-8 Q100,-14 98,-8 Z" fill="#ffd54f" stroke="#e0a900" strokeWidth="1.5" />
+        <circle cx="80" cy="34" r="4" fill="#ff8fc4" />
+        <circle cx="118" cy="36" r="4" fill="#5ddcff" />
+      </g>
+    );
+  }
+  if (hat === "hat_astro") {
+    return (
+      <g>
+        {/* Купол шлема нарочно не белый (#f2f2f2 сливался со светлым
+            мехом дога/кролика) — голубовато-серый плюс жирная тёмная
+            обводка держат контур на любом фоне. */}
+        <path
+          d="M62,50 Q62,6 100,6 Q138,6 138,50 Z"
+          fill="#dbe6ea"
+          stroke="#5c7480"
+          strokeWidth="3"
+        />
+        <ellipse cx="100" cy="34" rx="26" ry="20" fill="#4fb8dd" stroke="#2f8aab" strokeWidth="2" />
+        <rect x="60" y="44" width="80" height="10" rx="5" fill="#8a9aa5" stroke="#5c7480" strokeWidth="1.5" />
+      </g>
+    );
+  }
   return null;
 }
 
@@ -16778,6 +16867,38 @@ function PetAccessoryOverlay({ accessory }: { accessory: string }) {
         <ellipse cx="144" cy="104" rx="13" ry="17" fill="#2b2118" />
         <ellipse cx="56" cy="104" rx="7" ry="10" fill="#4c6bff" />
         <ellipse cx="144" cy="104" rx="7" ry="10" fill="#4c6bff" />
+      </g>
+    );
+  }
+  if (accessory === "acc_daisy") {
+    return (
+      <g>
+        {/* Белые лепестки без обводки терялись на светлом мехе — тонкий
+            серый контур держит форму цветка на любом фоне. */}
+        <circle cx="134" cy="182" r="7" fill="#ffffff" stroke="#d8cfc0" strokeWidth="1.5" />
+        <circle cx="100" cy="158" r="7" fill="#ffffff" stroke="#d8cfc0" strokeWidth="1.5" />
+        <circle cx="66" cy="182" r="7" fill="#ffffff" stroke="#d8cfc0" strokeWidth="1.5" />
+        <circle cx="79" cy="150" r="7" fill="#ffffff" stroke="#d8cfc0" strokeWidth="1.5" />
+        <circle cx="121" cy="150" r="7" fill="#ffffff" stroke="#d8cfc0" strokeWidth="1.5" />
+        <circle cx="100" cy="170" r="5" fill="#ffd54f" />
+      </g>
+    );
+  }
+  if (accessory === "acc_monocle") {
+    return (
+      <g>
+        <circle cx="122" cy="107" r="17" fill="#cde8f5" opacity="0.4" stroke="#e0a900" strokeWidth="4" />
+        <circle cx="115" cy="100" r="3" fill="#ffffff" opacity="0.7" />
+        <path d="M137,118 Q145,140 135,155" stroke="#e0a900" strokeWidth="3" fill="none" strokeLinecap="round" />
+      </g>
+    );
+  }
+  if (accessory === "acc_bling") {
+    return (
+      <g>
+        <path d="M55,148 Q100,178 145,148" stroke="#e0a900" strokeWidth="7" fill="none" />
+        <circle cx="100" cy="180" r="14" fill="#ffd54f" stroke="#e0a900" strokeWidth="3" />
+        <circle cx="100" cy="180" r="6" fill="#e0a900" />
       </g>
     );
   }
@@ -16915,6 +17036,64 @@ function PetJacketOverlay({ jacket }: { jacket: string }) {
         <rect x="94" y="137" width="11" height="60" rx="4" fill="#4f5c30" opacity="0.6" />
         <rect x="62" y="168" width="20" height="15" rx="3" fill="#4f5c30" />
         <rect x="118" y="168" width="20" height="15" rx="3" fill="#4f5c30" />
+      </g>
+    );
+  }
+  if (jacket === "jacket_tshirt") {
+    return (
+      <g>
+        <defs>
+          <linearGradient id="petJacketGradTshirt" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="#6de0f0" />
+            <stop offset="100%" stopColor="#3fb8dd" />
+          </linearGradient>
+        </defs>
+        <path
+          d="M46,150 Q46,138 60,138 L80,138 Q100,146 120,138 L140,138 Q154,138 154,150 L154,190 Q154,197 146,197 L54,197 Q46,197 46,190 Z"
+          fill="url(#petJacketGradTshirt)"
+        />
+        <ellipse cx="100" cy="140" rx="14" ry="5" fill="#ffffff" opacity="0.5" />
+      </g>
+    );
+  }
+  if (jacket === "jacket_tux") {
+    return (
+      <g>
+        <defs>
+          <linearGradient id="petJacketGradTux" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="#3a3a3a" />
+            <stop offset="100%" stopColor="#1a1a1a" />
+          </linearGradient>
+        </defs>
+        <path
+          d="M44,150 Q72,138 100,148 Q128,138 156,150 L156,190 Q156,196 148,196 L52,196 Q44,196 44,190 Z"
+          fill="url(#petJacketGradTux)"
+        />
+        <path d="M90,140 L100,152 L110,140 L104,190 L96,190 Z" fill="#ffffff" />
+        <path d="M92,148 L100,154 L108,148 L104,158 L96,158 Z" fill="#1a1a1a" />
+        <path d="M72,139 Q84,150 60,162 Q56,150 72,139 Z" fill="#0d0d0d" />
+        <path d="M128,139 Q116,150 140,162 Q144,150 128,139 Z" fill="#0d0d0d" />
+      </g>
+    );
+  }
+  if (jacket === "jacket_superhero") {
+    return (
+      <g>
+        <defs>
+          <linearGradient id="petJacketGradHero" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="#5a7fd6" />
+            <stop offset="100%" stopColor="#3a5aab" />
+          </linearGradient>
+        </defs>
+        {/* Плащ рисуется первым (сзади торса), шире самого тела — по
+            бокам должны быть видны его уголки, иначе от него ничего
+            не останется после обрезки по силуэту питомца. */}
+        <path d="M50,140 L38,196 L70,180 L100,197 L130,180 L162,196 L150,140 Z" fill="#c23f3f" />
+        <path
+          d="M52,149 Q52,137 65,137 L135,137 Q148,137 148,149 L148,189 Q148,197 140,197 L60,197 Q52,197 52,189 Z"
+          fill="url(#petJacketGradHero)"
+        />
+        <path d="M100,150 L106,162 L118,162 L108,170 L112,182 L100,174 L88,182 L92,170 L82,162 L94,162 Z" fill="#ffd54f" />
       </g>
     );
   }
@@ -17670,8 +17849,10 @@ function PetScreen({
   // куртка были реально видны на нём (при 156px мелкие иконки почти
   // сливались с фото), но карточка с фоном комнаты не должна занимать
   // весь экран — иначе разделы магазина и кнопка "Назад" не влезают
-  // без скролла. 200px — компромисс между тем и другим.
-  const ringSize = 200;
+  // без скролла. 220px — компромисс между тем и другим (свёрнутые по
+  // умолчанию секции магазина освобождают достаточно места, чтобы
+  // питомца можно было чуть увеличить обратно).
+  const ringSize = 220;
   const ringStroke = 9;
   const ringRadius = (ringSize - ringStroke) / 2;
   const ringCircumference = 2 * Math.PI * ringRadius;
@@ -17923,7 +18104,13 @@ function PetScreen({
                       ? lockRequirementLabel(lockRequirement)
                       : item.priceStars
                         ? `🌟 ${item.priceStars}`
-                        : `⭐ ${item.price}`}
+                        : item.price === 0
+                          ? market === "fi"
+                            ? "Ilmainen"
+                            : market === "en"
+                              ? "Free"
+                              : "Бесплатно"
+                          : `⭐ ${item.price}`}
               </div>
             </button>
           );
