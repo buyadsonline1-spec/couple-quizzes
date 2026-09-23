@@ -16362,51 +16362,60 @@ const PET_ACCESSORY_ANCHOR_OVERRIDES: PetItemAnchorOverrides = {
   },
 };
 
+// top здесь — ЦЕНТР куртки (как у аксессуаров, см. resolveItemAnchor +
+// translate(-50%,-50%) в PetFace), а не верх bbox, как было раньше при
+// clipPath-подходе. Раньше воротник садился прямо на рот/подбородок —
+// теперь центр сдвинут ощутимо ниже, на грудь.
 const PET_JACKET_ANCHOR: Record<string, PetItemAnchor> = {
-  jacket_bomber: { top: "44%", sizeFactor: 0.66 },
-  jacket_denim: { top: "44%", sizeFactor: 0.66 },
-  jacket_hoodie: { top: "41%", sizeFactor: 0.62 },
-  jacket_puffer: { top: "45%", sizeFactor: 0.66 },
-  jacket_raincoat: { top: "44%", sizeFactor: 0.66 },
-  jacket_vest: { top: "45%", sizeFactor: 0.66 },
-  jacket_tshirt: { top: "44%", sizeFactor: 0.66 },
-  jacket_tux: { top: "44%", sizeFactor: 0.66 },
-  jacket_superhero: { top: "45%", sizeFactor: 0.72 },
+  jacket_bomber: { top: "70%", sizeFactor: 0.56 },
+  jacket_denim: { top: "70%", sizeFactor: 0.56 },
+  jacket_hoodie: { top: "68%", sizeFactor: 0.54 },
+  jacket_puffer: { top: "71%", sizeFactor: 0.56 },
+  jacket_raincoat: { top: "70%", sizeFactor: 0.56 },
+  jacket_vest: { top: "71%", sizeFactor: 0.54 },
+  jacket_tshirt: { top: "69%", sizeFactor: 0.54 },
+  jacket_tux: { top: "69%", sizeFactor: 0.54 },
+  jacket_superhero: { top: "71%", sizeFactor: 0.6 },
 };
-const PET_JACKET_ANCHOR_DEFAULT: PetItemAnchor = { top: "45%", sizeFactor: 0.5 };
+const PET_JACKET_ANCHOR_DEFAULT: PetItemAnchor = { top: "70%", sizeFactor: 0.45 };
 const PET_JACKET_ANCHOR_OVERRIDES: PetItemAnchorOverrides = {
+  // Подбородок/грудь у бегемота и совы ниже, чем у остальных — та же
+  // поправка, что и у аксессуаров (см. PET_ACCESSORY_ANCHOR_OVERRIDES).
   hippo: {
-    jacket_bomber: { top: "47%" },
-    jacket_denim: { top: "47%" },
-    jacket_hoodie: { top: "45%" },
-    jacket_puffer: { top: "48%" },
-    jacket_raincoat: { top: "47%" },
-    jacket_vest: { top: "48%" },
-    jacket_tshirt: { top: "47%" },
-    jacket_tux: { top: "47%" },
-    jacket_superhero: { top: "48%" },
+    jacket_bomber: { top: "76%" },
+    jacket_denim: { top: "76%" },
+    jacket_hoodie: { top: "74%" },
+    jacket_puffer: { top: "77%" },
+    jacket_raincoat: { top: "76%" },
+    jacket_vest: { top: "77%" },
+    jacket_tshirt: { top: "75%" },
+    jacket_tux: { top: "75%" },
+    jacket_superhero: { top: "77%" },
   },
   owl: {
-    jacket_bomber: { top: "47%" },
-    jacket_denim: { top: "47%" },
-    jacket_hoodie: { top: "45%" },
-    jacket_puffer: { top: "48%" },
-    jacket_raincoat: { top: "47%" },
-    jacket_vest: { top: "48%" },
-    jacket_tshirt: { top: "47%" },
-    jacket_tux: { top: "47%" },
-    jacket_superhero: { top: "48%" },
+    jacket_bomber: { top: "74%" },
+    jacket_denim: { top: "74%" },
+    jacket_hoodie: { top: "72%" },
+    jacket_puffer: { top: "75%" },
+    jacket_raincoat: { top: "74%" },
+    jacket_vest: { top: "75%" },
+    jacket_tshirt: { top: "73%" },
+    jacket_tux: { top: "73%" },
+    jacket_superhero: { top: "75%" },
   },
+  // Кролик — тело и шея визуально начинаются заметно ниже (высокие
+  // уши-стойки съедают верхние ~28% кадра, см. комментарий у
+  // PetItemAnchor выше).
   rabbit: {
-    jacket_bomber: { top: "58%" },
-    jacket_denim: { top: "58%" },
-    jacket_hoodie: { top: "56%" },
-    jacket_puffer: { top: "59%" },
-    jacket_raincoat: { top: "58%" },
-    jacket_vest: { top: "59%" },
-    jacket_tshirt: { top: "58%" },
-    jacket_tux: { top: "58%" },
-    jacket_superhero: { top: "59%" },
+    jacket_bomber: { top: "84%" },
+    jacket_denim: { top: "84%" },
+    jacket_hoodie: { top: "82%" },
+    jacket_puffer: { top: "85%" },
+    jacket_raincoat: { top: "84%" },
+    jacket_vest: { top: "85%" },
+    jacket_tshirt: { top: "83%" },
+    jacket_tux: { top: "83%" },
+    jacket_superhero: { top: "85%" },
   },
 };
 
@@ -16454,23 +16463,6 @@ const PET_JACKET_BBOX: Record<string, [number, number, number, number]> = {
   jacket_tshirt: [44, 136, 112, 62],
   jacket_tux: [42, 138, 116, 58],
   jacket_superhero: [38, 136, 124, 62],
-};
-
-// Реальный контур тела/рук каждого вида (проценты от размера кадра,
-// x=слева-направо, y=сверху-вниз) — снят по альфа-каналу настоящих
-// фото (см. историю чата), сглажен и слегка сужен внутрь (~5пп с
-// каждой стороны), чтобы куртка садилась НА тело, а не точно по краю
-// меха. Раньше куртка была одной и той же прямоугольной формой на
-// всех 5 видов и на многих либо не доставала до рук, либо торчала
-// шире силуэта — теперь она обрезается по этому контуру, так что
-// форма руки/талии видна у любого питомца, а не только у того, под
-// кого форму подгоняли изначально.
-const PET_JACKET_BODY_CLIP: Partial<Record<PetSpecies, string>> = {
-  dog: "M 36.6,42.0 L 38.9,45.8 L 40.9,49.7 L 40.2,53.5 L 36.9,57.3 L 33.9,61.2 L 31.4,65.0 L 29.7,68.8 L 32.0,72.7 L 34.9,76.5 L 38.3,80.3 L 38.2,84.2 L 38.2,88.0 L 60.3,88.0 L 60.2,84.2 L 63.1,80.3 L 67.6,76.5 L 72.3,72.7 L 73.6,68.8 L 70.3,65.0 L 65.8,61.2 L 60.5,57.3 L 57.3,53.5 L 57.2,49.7 L 62.9,45.8 L 67.6,42.0 Z",
-  cat: "M 29.7,42.0 L 32.2,45.8 L 36.9,49.7 L 39.3,53.5 L 38.7,57.3 L 35.3,61.2 L 32.4,65.0 L 30.2,68.8 L 29.3,72.7 L 31.6,76.5 L 34.6,80.3 L 37.9,84.2 L 38.3,88.0 L 58.8,88.0 L 62.8,84.2 L 68.6,80.3 L 74.9,76.5 L 77.8,72.7 L 79.0,68.8 L 79.1,65.0 L 71.7,61.2 L 63.2,57.3 L 58.8,53.5 L 62.8,49.7 L 68.3,45.8 L 69.9,42.0 Z",
-  rabbit: "M 38.9,56.0 L 39.8,59.3 L 40.7,62.7 L 38.4,66.0 L 35.7,69.3 L 33.5,72.7 L 32.4,76.0 L 34.3,79.3 L 36.8,82.7 L 39.4,86.0 L 38.4,89.3 L 37.1,92.7 L 35.5,96.0 L 63.4,96.0 L 62.0,92.7 L 60.3,89.3 L 60.0,86.0 L 62.3,82.7 L 65.2,79.3 L 66.4,76.0 L 64.3,72.7 L 60.9,69.3 L 56.8,66.0 L 56.7,62.7 L 59.1,59.3 L 61.8,56.0 Z",
-  hippo: "M 30.8,45.0 L 33.4,48.8 L 35.2,52.7 L 34.4,56.5 L 30.8,60.3 L 28.0,64.2 L 26.1,68.0 L 25.5,71.8 L 28.0,75.7 L 30.9,79.5 L 33.9,83.3 L 33.3,87.2 L 33.2,91.0 L 63.8,91.0 L 63.4,87.2 L 65.0,83.3 L 67.7,79.5 L 70.3,75.7 L 70.2,71.8 L 69.3,68.0 L 67.0,64.2 L 63.8,60.3 L 62.6,56.5 L 63.9,52.7 L 67.3,48.8 L 69.2,45.0 Z",
-  owl: "M 31.9,45.0 L 34.5,48.8 L 36.5,52.7 L 35.3,56.5 L 31.6,60.3 L 28.6,64.2 L 26.8,68.0 L 26.2,71.8 L 28.2,75.7 L 31.9,79.5 L 37.0,83.3 L 37.8,87.2 L 38.1,91.0 L 59.8,91.0 L 60.1,87.2 L 61.0,83.3 L 66.0,79.5 L 69.8,75.7 L 71.4,71.8 L 70.6,68.0 L 68.4,64.2 L 65.3,60.3 L 62.3,56.5 L 63.3,52.7 L 67.2,48.8 L 71.0,45.0 Z",
 };
 
 // Рендерит один предмет из каталога как самостоятельную маленькую
@@ -17172,44 +17164,18 @@ function PetFace({
               species,
               jacketItem.id
             );
-            const clipPath = PET_JACKET_BODY_CLIP[species];
-            const bbox = PET_JACKET_BBOX[jacketItem.id] ?? [60, 130, 80, 60];
-            const [, bboxTop, bboxWidth] = bbox;
-            const anchorTopNum = parseFloat(anchor.top);
-            // Тот же расчёт "точки привязки", что и раньше (центр по
-            // x=100 в родной сетке 0..200 совпадает с 50% контейнера,
-            // верх bbox совпадает с anchor.top) — но теперь рисуем не
-            // вырезанную иконку, а весь 200×200 холст целиком,
-            // растянутый в проценты контейнера, и обрезаем его по
-            // контуру тела конкретного вида (см. PET_JACKET_BODY_CLIP).
-            const clipScale = (anchor.sizeFactor * 100) / bboxWidth;
-            const translateX = 50 - 100 * clipScale;
-            const translateY = anchorTopNum - bboxTop * clipScale;
             return (
-              <svg
-                width="100%"
-                height="100%"
-                viewBox="0 0 100 100"
-                preserveAspectRatio="none"
+              <div
                 style={{
                   position: "absolute",
-                  inset: 0,
+                  top: anchor.top,
+                  left: "50%",
+                  transform: "translate(-50%, -50%)",
                   filter: "drop-shadow(0 2px 4px rgba(0,0,0,0.25))",
                 }}
               >
-                {clipPath && (
-                  <defs>
-                    <clipPath id={`petJacketClip-${species}`} clipPathUnits="userSpaceOnUse">
-                      <path d={clipPath} />
-                    </clipPath>
-                  </defs>
-                )}
-                <g clipPath={clipPath ? `url(#petJacketClip-${species})` : undefined}>
-                  <g transform={`translate(${translateX}, ${translateY}) scale(${clipScale})`}>
-                    <PetJacketOverlay jacket={jacketItem.id} />
-                  </g>
-                </g>
-              </svg>
+                <PetItemIcon kind="jacket" itemId={jacketItem.id} width={size * anchor.sizeFactor} />
+              </div>
             );
           })()}
         {accessoryItem &&
