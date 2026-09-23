@@ -16262,7 +16262,7 @@ const PET_PHOTO_SRC: Partial<Record<PetSpecies, string>> = {
 // шапки в пустоту над ушами, а очки/ошейник — на лоб/рот вместо глаз/
 // шеи. PET_*_ANCHOR_OVERRIDES ниже — точечная поправка под кролика,
 // не переписывание всей системы.
-type PetItemAnchor = { top: string; rotate?: number; sizeFactor: number };
+type PetItemAnchor = { top: string; left?: string; rotate?: number; sizeFactor: number };
 type PetItemAnchorOverrides = Partial<
   Record<PetSpecies, Record<string, Partial<PetItemAnchor>>>
 >;
@@ -16313,14 +16313,21 @@ const PET_ACCESSORY_ANCHOR: Record<string, PetItemAnchor> = {
   // Очки — на уровень глаз, а не на грудь.
   acc_sunglasses: { top: "22%", sizeFactor: 0.3 },
   acc_glasses: { top: "22%", sizeFactor: 0.26 },
-  acc_headphones: { top: "22%", sizeFactor: 0.34 },
+  // Дужка — над макушкой (как у шапки), а не на уровне глаз: при
+  // центрировании на 22% чашечки-наушники ложились прямо на зрачки и
+  // выглядели как чужие синие глаза вместо наушников на ушах.
+  acc_headphones: { top: "8%", sizeFactor: 0.4 },
   // Бантик/шарф/ошейник/медаль/ожерелье — на шею и грудь.
   acc_bow: { top: "47%", sizeFactor: 0.22 },
   acc_scarf: { top: "48%", sizeFactor: 0.26 },
   acc_collar: { top: "48%", sizeFactor: 0.22 },
   acc_necklace: { top: "48%", sizeFactor: 0.24 },
   acc_daisy: { top: "47%", sizeFactor: 0.32 },
-  acc_monocle: { top: "22%", sizeFactor: 0.22 },
+  // Монокль рисуется только на одном (правом) глазу — bbox уже
+  // обрезан по этой половине сетки, поэтому центр по X сдвинут вправо
+  // (left), иначе он центрировался между глаз и выглядел как
+  // бесхозный кружок над переносицей, а не монокль на глазу.
+  acc_monocle: { top: "27%", left: "65%", sizeFactor: 0.22 },
   acc_medal: { top: "55%", sizeFactor: 0.24 },
   acc_bling: { top: "55%", sizeFactor: 0.26 },
 };
@@ -16350,7 +16357,7 @@ const PET_ACCESSORY_ANCHOR_OVERRIDES: PetItemAnchorOverrides = {
   rabbit: {
     acc_sunglasses: { top: "37%" },
     acc_glasses: { top: "37%" },
-    acc_headphones: { top: "37%" },
+    acc_headphones: { top: "23%" },
     acc_monocle: { top: "37%" },
     acc_bow: { top: "65%" },
     acc_scarf: { top: "65%" },
@@ -17192,7 +17199,7 @@ function PetFace({
                 style={{
                   position: "absolute",
                   top: anchor.top,
-                  left: "50%",
+                  left: anchor.left ?? "50%",
                   transform: `translate(-50%, -50%)${anchor.rotate ? ` rotate(${anchor.rotate}deg)` : ""}`,
                   filter: "drop-shadow(0 2px 4px rgba(0,0,0,0.25))",
                 }}
