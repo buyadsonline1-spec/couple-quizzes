@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/server/supabase-admin";
 import { validateRequestAuth } from "@/lib/server/telegram-auth";
+import { getCurrentWeekKey } from "@/lib/server/week-key";
 import {
   TEST_REWARD,
   TEST_IDS,
@@ -17,15 +18,6 @@ import {
 // initData. Переведено на общий validateRequestAuth (см.
 // app/api/bootstrap/route.ts) — понимает оба источника, для
 // Telegram-пути поведение не меняется.
-
-function getCurrentWeekKey(): string {
-  const now = new Date();
-  const start = new Date(now.getFullYear(), 0, 1);
-  const diff = now.getTime() - start.getTime();
-  const dayOfYear = Math.floor(diff / (1000 * 60 * 60 * 24)) + 1;
-  const week = Math.ceil(dayOfYear / 7);
-  return `${now.getFullYear()}-W${week}`;
-}
 
 type ActivityType = "test" | "poll" | "game" | "game-step" | "completion";
 

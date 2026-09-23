@@ -8361,13 +8361,26 @@ function getTodayLocalDateString() {
   return `${year}-${month}-${day}`;
 }
 
-function getCurrentWeekKey() {
-  const now = new Date();
-  const start = new Date(now.getFullYear(), 0, 1);
-  const diff = now.getTime() - start.getTime();
-  const dayOfYear = Math.floor(diff / (1000 * 60 * 60 * 24)) + 1;
+// Тот же формат, что и на сервере (см. lib/server/week-key.ts,
+// supabase/weekly_pair_top_reward.sql cq_week_key): "2026-W31",
+// dayOfYear/7 по часовому поясу Хельсинки, а не по таймзоне
+// устройства пользователя — иначе у людей не в Хельсинки текущая
+// неделя на клиенте иногда не совпадала бы с той, что реально
+// записана на сервере в week_key.
+function weekKeyFromHelsinkiDate(year: number, month1to12: number, day: number): string {
+  const startOfYearUtc = Date.UTC(year, 0, 1);
+  const dateUtc = Date.UTC(year, month1to12 - 1, day);
+  const dayOfYear = Math.round((dateUtc - startOfYearUtc) / (1000 * 60 * 60 * 24)) + 1;
   const week = Math.ceil(dayOfYear / 7);
-  return `${now.getFullYear()}-W${week}`;
+  return `${year}-W${week}`;
+}
+
+function getCurrentWeekKey() {
+  const helsinkiDate = new Date().toLocaleDateString("en-CA", {
+    timeZone: "Europe/Helsinki",
+  }); // "YYYY-MM-DD"
+  const [year, month, day] = helsinkiDate.split("-").map(Number);
+  return weekKeyFromHelsinkiDate(year, month, day);
 }
 
 function getCurrentDayKey() {
@@ -8376,20 +8389,24 @@ function getCurrentDayKey() {
   return `${now.getFullYear()}-${now.getMonth() + 1}-${now.getDate()}`;
 }
 
+// Раньше возвращала дату понедельника ("2026-01-05") — формат,
+// НИКОГДА не совпадающий с тем, что реально хранится в колонке
+// week_key ("2026-W2"), поэтому loadWeeklyPairLeaderboard(getPreviousWeekKey())
+// всегда получал пустой результат: раздел "прошлая неделя" в топе
+// игроков не показывал данные, даже когда они были. Теперь считает
+// неделю той же формулой, что и getCurrentWeekKey(), просто от даты
+// на 7 дней раньше.
 function getPreviousWeekKey() {
-  const now = new Date();
-  const day = now.getDay();
-  const mondayOffset = day === 0 ? -6 : 1 - day;
-
-  const monday = new Date(now);
-  monday.setHours(0, 0, 0, 0);
-  monday.setDate(now.getDate() + mondayOffset - 7);
-
-  const year = monday.getFullYear();
-  const month = String(monday.getMonth() + 1).padStart(2, "0");
-  const date = String(monday.getDate()).padStart(2, "0");
-
-  return `${year}-${month}-${date}`;
+  const helsinkiDate = new Date().toLocaleDateString("en-CA", {
+    timeZone: "Europe/Helsinki",
+  });
+  const [year, month, day] = helsinkiDate.split("-").map(Number);
+  const sevenDaysAgoUtc = new Date(Date.UTC(year, month - 1, day) - 7 * 24 * 60 * 60 * 1000);
+  return weekKeyFromHelsinkiDate(
+    sevenDaysAgoUtc.getUTCFullYear(),
+    sevenDaysAgoUtc.getUTCMonth() + 1,
+    sevenDaysAgoUtc.getUTCDate()
+  );
 }
 
 function getDailyPairQuestionForToday() {
