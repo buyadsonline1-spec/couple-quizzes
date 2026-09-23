@@ -21706,6 +21706,12 @@ function dismissPairProposalBanner(matchId: string) {
   
   const [screen, setScreen] = useState<Screen>("welcome");
   const [paywallBackScreen, setPaywallBackScreen] = useState<Screen>("menu");
+  // Куда вернуться с экрана "profile" (настройки/профиль) — раньше
+  // "Назад" там был жёстко зашит на "pair-profile-menu" (вкладка
+  // "Пара" нижнего бара), поэтому открыв настройки с главного меню
+  // (⚙️ в MainMenu) пользователь после "Назад" неожиданно попадал в
+  // "Пара", а не туда, откуда на самом деле зашёл.
+  const [profileBackScreen, setProfileBackScreen] = useState<Screen>("menu");
 
   // Догружает сообщения, если пользователь открыл чат ДО того, как
   // оформил Premium прямо из locked-превью (handleOpenDatingChat не
@@ -23005,6 +23011,9 @@ if (finishedAllTests && !appState.completionBonusesClaimed.tests) {
    onNavigate={(next) => {
   // Раздел открывается всегда — сам paywall (если нужен) показывает
   // конкретный экран (PollsScreen/TestsScreen), а не общий счётчик.
+  if (next === "profile") {
+    setProfileBackScreen("menu");
+  }
   setScreen(next);
 }}
   />
@@ -23129,7 +23138,7 @@ showPaywall={() => {
   isPremium={appState.isPremium}
   currentGender={appState.profile.gender}
   onNavigate={setScreen}
-  onBack={() => setScreen("pair-profile-menu")}
+  onBack={() => setScreen(profileBackScreen)}
   onDisplayNameSaved={(name) =>
     setUser((prev) => (prev ? { ...prev, first_name: name, last_name: "" } : prev))
   }
@@ -23451,7 +23460,10 @@ showPaywall={() => {
         label: t.menu.profile,
         description: t.menu.profileDesc,
         emoji: "👤",
-        onClick: () => setScreen("profile"),
+        onClick: () => {
+          setProfileBackScreen("pair-profile-menu");
+          setScreen("profile");
+        },
       },
     ]}
   />
