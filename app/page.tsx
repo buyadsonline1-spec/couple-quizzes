@@ -14063,9 +14063,17 @@ const visibleRewards = rewardsExpanded
 
 
 
+  // Бесплатный прокрут (bonus_spin) не требует очков вообще — сервер
+  // (spin_reward_wheel) списывает его первым, до всякой проверки
+  // points. Раньше клиент блокировал сам вызов и кнопку по одному
+  // только points < WHEEL_SPIN_COST, поэтому игрок, выигравший "+1
+  // бесплатный прокрут" при недостатке очков на обычное вращение, не
+  // мог им воспользоваться вообще — приз висел неиспользуемым.
+  const hasFreeSpin = (spinsInfo?.bonusCredits ?? 0) > 0;
+
   async function handleSpin() {
     if (isSpinning) return;
-    if (points < WHEEL_SPIN_COST) {
+    if (points < WHEEL_SPIN_COST && !hasFreeSpin) {
       setMessage(t.errors.wheelInsufficientPoints);
       return;
     }
@@ -14284,21 +14292,23 @@ const visibleRewards = rewardsExpanded
 
           <button
             onClick={handleSpin}
-            disabled={isSpinning || points < WHEEL_SPIN_COST}
+            disabled={isSpinning || (points < WHEEL_SPIN_COST && !hasFreeSpin)}
             style={{
               ...getPrimaryButtonStyle(isDark),
               width: "100%",
               marginTop: 18,
               padding: "14px",
               fontSize: 16,
-              opacity: isSpinning || points < WHEEL_SPIN_COST ? 0.6 : 1,
+              opacity: isSpinning || (points < WHEEL_SPIN_COST && !hasFreeSpin) ? 0.6 : 1,
               cursor:
-                isSpinning || points < WHEEL_SPIN_COST ? "not-allowed" : "pointer",
+                isSpinning || (points < WHEEL_SPIN_COST && !hasFreeSpin) ? "not-allowed" : "pointer",
             }}
           >
             {isSpinning
               ? t.rewards.wheelScreen.iosOpeningLabel
-              : `${t.rewards.wheelScreen.iosOpenButtonPrefix} ${WHEEL_SPIN_COST} ${t.games.pointsUnit}`}
+              : hasFreeSpin
+                ? t.rewards.wheelScreen.iosOpenButtonFreeLabel
+                : `${t.rewards.wheelScreen.iosOpenButtonPrefix} ${WHEEL_SPIN_COST} ${t.games.pointsUnit}`}
           </button>
 
           {message ? (
@@ -14440,21 +14450,23 @@ const visibleRewards = rewardsExpanded
 
         <button
           onClick={handleSpin}
-          disabled={isSpinning || points < WHEEL_SPIN_COST}
+          disabled={isSpinning || (points < WHEEL_SPIN_COST && !hasFreeSpin)}
           style={{
   ...getPrimaryButtonStyle(isDark),
   width: "100%",
   marginTop: 12,
   padding: "12px 14px",
   fontSize: 15,
-            opacity: isSpinning || points < WHEEL_SPIN_COST ? 0.6 : 1,
+            opacity: isSpinning || (points < WHEEL_SPIN_COST && !hasFreeSpin) ? 0.6 : 1,
             cursor:
-              isSpinning || points < WHEEL_SPIN_COST ? "not-allowed" : "pointer",
+              isSpinning || (points < WHEEL_SPIN_COST && !hasFreeSpin) ? "not-allowed" : "pointer",
           }}
         >
           {isSpinning
             ? t.rewards.wheelScreen.spinningLabel
-            : `${t.rewards.wheelScreen.spinButtonPrefix} ${WHEEL_SPIN_COST} ${t.games.pointsUnit}`}
+            : hasFreeSpin
+              ? t.rewards.wheelScreen.spinButtonFreeLabel
+              : `${t.rewards.wheelScreen.spinButtonPrefix} ${WHEEL_SPIN_COST} ${t.games.pointsUnit}`}
         </button>
 
         {message ? (

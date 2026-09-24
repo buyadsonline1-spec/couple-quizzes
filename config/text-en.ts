@@ -281,6 +281,7 @@ export const TEXT_EN = {
       iosTitle: "Gifts for points",
       iosCostPrefix: "One reveal costs",
       iosOpenButtonPrefix: "Open for",
+      iosOpenButtonFreeLabel: "Open for free",
       iosOpeningLabel: "Opening...",
       iosFreeSpinsLabel: " · free openings:",
       bonusSegmentLabel: "Bonus",
@@ -290,6 +291,7 @@ export const TEXT_EN = {
       spinFailedMessage: "Couldn't spin the wheel. Try again.",
       spinningLabel: "Spinning...",
       spinButtonPrefix: "Spin for",
+      spinButtonFreeLabel: "Free spin",
       bonusPointsMessage: "Bonus: +{value} points!",
       bonusSpinMessage:
         "Bonus: +1 free spin! Your next spin will be free and won't use up your daily limit.",

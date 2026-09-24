@@ -285,6 +285,7 @@ export const TEXT_FI = {
       iosTitle: "Lahjat pisteistä",
       iosCostPrefix: "Yhden avaamisen hinta on",
       iosOpenButtonPrefix: "Avaa hintaan",
+      iosOpenButtonFreeLabel: "Avaa ilmaiseksi",
       iosOpeningLabel: "Avataan...",
       iosFreeSpinsLabel: " · ilmaisia avauksia:",
       bonusSegmentLabel: "Bonus",
@@ -294,6 +295,7 @@ export const TEXT_FI = {
       spinFailedMessage: "Pyörän pyöritys epäonnistui. Yritä uudelleen.",
       spinningLabel: "Pyöritetään...",
       spinButtonPrefix: "Pyöritä hinnalla",
+      spinButtonFreeLabel: "Ilmainen pyöräytys",
       bonusPointsMessage: "Bonus: +{value} pistettä!",
       bonusSpinMessage:
         "Bonus: +1 ilmainen pyöräytys! Seuraava pyöräytys on ilmainen eikä kuluta päivittäistä rajaasi.",

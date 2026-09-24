@@ -284,6 +284,7 @@ export const TEXT_RU = {
       iosTitle: "Подарки за очки",
       iosCostPrefix: "Одно открытие стоит",
       iosOpenButtonPrefix: "Открыть за",
+      iosOpenButtonFreeLabel: "Открыть бесплатно",
       iosOpeningLabel: "Открываем...",
       iosFreeSpinsLabel: " · бесплатных открытий:",
       bonusSegmentLabel: "Бонус",
@@ -293,6 +294,7 @@ export const TEXT_RU = {
       spinFailedMessage: "Не удалось прокрутить колесо. Попробуй ещё раз.",
       spinningLabel: "Крутим...",
       spinButtonPrefix: "Крутить за",
+      spinButtonFreeLabel: "Бесплатный прокрут",
       bonusPointsMessage: "Бонус: +{value} очков!",
       bonusSpinMessage:
         "Бонус: +1 бесплатный прокрут! Следующее вращение будет бесплатным и не потратит дневной лимит.",
