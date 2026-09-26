@@ -2608,10 +2608,10 @@ const GAMES: Game[] = [
     market === "fi" ? "Klikkeri" : market === "en" ? "Clicker" : "Кликер",
   description:
     market === "fi"
-      ? "Napauta sydäntä niin monta kertaa kuin ehdit 15 sekunnissa ja kerää pisteitä. Vain Premium."
+      ? "Napauta sydäntä niin monta kertaa kuin ehdit 15 sekunnissa ja kerää pisteitä. Yksi ilmainen kierros, loput Premiumilla."
       : market === "en"
-        ? "Tap the heart as many times as you can in 15 seconds and earn points. Premium only."
-        : "Тапай по сердцу столько раз, сколько успеешь за 15 секунд, и получай очки. Только с Premium.",
+        ? "Tap the heart as many times as you can in 15 seconds and earn points. One free round, the rest with Premium."
+        : "Тапай по сердцу столько раз, сколько успеешь за 15 секунд, и получай очки. Один раунд бесплатно, дальше — с Premium.",
   reward: 0,
   questions: [],
 },
@@ -13653,6 +13653,11 @@ function HeartClickerGameScreen({
   const [errorReason, setErrorReason] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [roundsInfo, setRoundsInfo] = useState<{ used: number; remaining: number } | null>(null);
+  // Без Premium разрешён один пробный раунд НАВСЕГДА (не в день) — см.
+  // app/api/games/heart-clicker/play. totalRoundsPlayed === null, пока
+  // ещё не узнали с сервера (не решаем ничего по умолчанию); 0 — право
+  // на пробный раунд ещё есть, >0 — уже использован.
+  const [totalRoundsPlayed, setTotalRoundsPlayed] = useState<number | null>(null);
   const [leaderboard, setLeaderboard] = useState<
     Array<{ telegram_id: number; display_name: string; photo_url: string | null; total_points: number }>
   >([]);
@@ -13667,13 +13672,13 @@ function HeartClickerGameScreen({
     };
   }, []);
 
-  // Узнаём реальный дневной остаток раундов СРАЗУ при открытии экрана
-  // (а не только после первой попытки сыграть) — иначе человек, уже
-  // исчерпавший лимит раньше сегодня, всё равно видел бы обычную
-  // кнопку "Начать" и узнавал об ограничении только после раунда тапов.
+  // Узнаём реальный дневной остаток раундов (Premium) или факт
+  // использования пробного раунда (без Premium) СРАЗУ при открытии
+  // экрана, а не только после первой попытки сыграть — иначе человек,
+  // уже исчерпавший лимит раньше, всё равно видел бы обычную кнопку
+  // "Начать" и узнавал об ограничении только после честного раунда
+  // тапов.
   useEffect(() => {
-    if (!isPremium) return;
-
     const initData = window.Telegram?.WebApp?.initData;
     if (!initData) return;
 
@@ -13686,11 +13691,12 @@ function HeartClickerGameScreen({
       .then((data) => {
         if (data?.ok) {
           setRoundsInfo({ used: data.roundsUsedToday, remaining: data.roundsRemainingToday });
+          setTotalRoundsPlayed(data.totalRoundsPlayed ?? 0);
         }
       })
       .catch((error) => console.error("heart clicker state error:", error));
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isPremium]);
+  }, []);
 
   async function finishRound(finalTaps: number) {
     setPhase("result");
@@ -13729,6 +13735,7 @@ function HeartClickerGameScreen({
           totalClickerPoints: data.totalClickerPoints,
         });
         setRoundsInfo({ used: data.roundsUsedToday, remaining: data.roundsRemainingToday });
+        setTotalRoundsPlayed((prev) => (prev ?? 0) + 1);
       }
     } catch (error) {
       console.error("heart clicker play error:", error);
@@ -13799,7 +13806,20 @@ function HeartClickerGameScreen({
         ? "Tap the heart as many times as you can in 15 seconds."
         : "Тапай по сердцу столько раз, сколько успеешь за 15 секунд.";
 
-  if (!isPremium) {
+  // Без Premium — один пробный раунд НАВСЕГДА (не в день), дальше
+  // экран блокировки. totalRoundsPlayed === null — ещё не узнали с
+  // сервера (см. useEffect выше); до этого момента считаем, что право
+  // на пробный раунд, возможно, есть, чтобы кнопка не мигала
+  // "заблокировано" на долю секунды при каждом открытии экрана.
+  const freeRoundAvailable = isPremium || totalRoundsPlayed === null || totalRoundsPlayed === 0;
+
+  // Только на "intro" — иначе только что сыгранный пробный раунд сразу
+  // же переводит totalRoundsPlayed в 1 (см. finishRound), и это же
+  // блокирующее условие мгновенно подменило бы экран результата
+  // экраном "нужен Premium", не дав увидеть, сколько очков реально
+  // заработано. Таблицу лидеров тоже не блокируем — смотреть её можно
+  // без Premium.
+  if (!isPremium && !freeRoundAvailable && phase === "intro") {
     return (
       <div style={{ padding: 16, display: "grid", gap: 14 }}>
         <div style={{ ...cardBaseStyle(), padding: 22, textAlign: "center" }}>
@@ -13811,10 +13831,10 @@ function HeartClickerGameScreen({
           </div>
           <div style={{ marginTop: 8, fontSize: 13.5, color: muted, lineHeight: 1.5 }}>
             {market === "fi"
-              ? "Tämä peli on saatavilla vain Premium-käyttäjille."
+              ? "Ilmainen kokeiluk kierros on käytetty. Loput ovat Premium-käyttäjille."
               : market === "en"
-                ? "This game is available to Premium members only."
-                : "Эта игра доступна только с Premium."}
+                ? "You've used your free trial round. The rest are for Premium members."
+                : "Пробный раунд уже использован. Дальше — только с Premium."}
           </div>
           <button
             onClick={onOpenPaywall}
@@ -14042,6 +14062,24 @@ function HeartClickerGameScreen({
                     : "Возвращайся завтра за новыми раундами."}
               </div>
             </>
+          ) : errorReason === "premium-required" ? (
+            <>
+              <div style={{ fontSize: 36 }}>🔒</div>
+              <div style={{ marginTop: 8, fontSize: 16, fontWeight: 900, color: ink }}>
+                {market === "fi"
+                  ? "Ilmainen kierros käytetty"
+                  : market === "en"
+                    ? "Free round used"
+                    : "Бесплатный раунд использован"}
+              </div>
+              <div style={{ marginTop: 6, fontSize: 13, color: muted }}>
+                {market === "fi"
+                  ? "Loput kierrokset ovat Premium-käyttäjille."
+                  : market === "en"
+                    ? "The rest of the rounds are for Premium members."
+                    : "Дальше игра доступна только с Premium."}
+              </div>
+            </>
           ) : errorReason ? (
             <div style={{ color: muted, fontSize: 14 }}>
               {market === "fi" ? "Jotain meni pieleen." : market === "en" ? "Something went wrong." : "Что-то пошло не так."}
@@ -14055,7 +14093,7 @@ function HeartClickerGameScreen({
               <div style={{ marginTop: 10, fontSize: 26, fontWeight: 900, color: accent }}>
                 +{result?.pointsAwarded ?? 0} {t.games.pointsUnit}
               </div>
-              {roundsInfo && (
+              {isPremium && roundsInfo && (
                 <div style={{ marginTop: 10, fontSize: 12.5, color: muted }}>
                   {market === "fi"
                     ? `Kierroksia tänään: ${roundsInfo.used}/3`
@@ -14064,13 +14102,27 @@ function HeartClickerGameScreen({
                       : `Раундов сегодня: ${roundsInfo.used}/3`}
                 </div>
               )}
+              {!isPremium && (
+                <div style={{ marginTop: 10, fontSize: 12.5, color: muted }}>
+                  {market === "fi"
+                    ? "Ilmainen kierros käytetty — loput Premiumilla."
+                    : market === "en"
+                      ? "That was your free round — the rest need Premium."
+                      : "Это был бесплатный раунд — дальше нужен Premium."}
+                </div>
+              )}
             </>
           )}
 
           <div style={{ display: "grid", gap: 8, marginTop: 18 }}>
-            {!submitting && errorReason !== "daily-limit-reached" && (roundsInfo?.remaining ?? 1) > 0 && (
+            {!submitting && isPremium && errorReason !== "daily-limit-reached" && (roundsInfo?.remaining ?? 1) > 0 && (
               <button onClick={startRound} style={{ ...getPrimaryButtonStyle(isDark), width: "100%" }}>
                 {market === "fi" ? "Pelaa uudelleen" : market === "en" ? "Play again" : "Играть ещё раз"}
+              </button>
+            )}
+            {!submitting && !isPremium && (
+              <button onClick={onOpenPaywall} style={{ ...getPrimaryButtonStyle(isDark), width: "100%" }}>
+                {market === "fi" ? "Avaa Premium ✨" : market === "en" ? "Unlock Premium ✨" : "Разблокировать Premium ✨"}
               </button>
             )}
             <button onClick={openLeaderboard} style={{ ...secondaryButtonStyle, width: "100%" }}>
@@ -14098,20 +14150,35 @@ function HeartClickerGameScreen({
         <div style={{ marginTop: 8, fontSize: 13.5, color: muted, lineHeight: 1.5 }}>
           {subtitle}
         </div>
-        {roundsInfo && (
+        {isPremium ? (
+          roundsInfo && (
+            <div style={{ marginTop: 10, fontSize: 12, color: muted }}>
+              {market === "fi"
+                ? `Kierroksia jäljellä tänään: ${roundsInfo.remaining}/3`
+                : market === "en"
+                  ? `Rounds left today: ${roundsInfo.remaining}/3`
+                  : `Осталось раундов сегодня: ${roundsInfo.remaining}/3`}
+            </div>
+          )
+        ) : (
+          // Без Premium дошли сюда только если пробный раунд ещё не
+          // использован (иначе выше уже отработал блокирующий return) —
+          // явно подписываем, что раунд один-единственный, а не "на
+          // сегодня", чтобы не создавать впечатление, что завтра будет
+          // ещё один бесплатный.
           <div style={{ marginTop: 10, fontSize: 12, color: muted }}>
             {market === "fi"
-              ? `Kierroksia jäljellä tänään: ${roundsInfo.remaining}/3`
+              ? "Yksi ilmainen kokeilukierros — loput Premiumilla."
               : market === "en"
-                ? `Rounds left today: ${roundsInfo.remaining}/3`
-                : `Осталось раундов сегодня: ${roundsInfo.remaining}/3`}
+                ? "One free trial round — the rest need Premium."
+                : "Один бесплатный пробный раунд — дальше нужен Premium."}
           </div>
         )}
-        {roundsInfo?.remaining === 0 ? (
-          // Лимит уже исчерпан ДО того, как человек вообще нажал
-          // "Начать" (roundsInfo подтягивается при открытии экрана) —
-          // не даём тапнуть в раунд, который сервер всё равно отклонит,
-          // сразу показываем итог.
+        {isPremium && roundsInfo?.remaining === 0 ? (
+          // Дневной лимит уже исчерпан ДО того, как человек вообще
+          // нажал "Начать" (roundsInfo подтягивается при открытии
+          // экрана) — не даём тапнуть в раунд, который сервер всё равно
+          // отклонит, сразу показываем итог.
           <div
             style={{
               marginTop: 16,
