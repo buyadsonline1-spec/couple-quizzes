@@ -92,9 +92,18 @@ export async function POST(request: NextRequest) {
       profileData = data;
     }
 
-    const [isPremium, pair] = await Promise.all([
+    // profile.gender раньше жил только в localStorage (см.
+    // supabase/profile_gender_persist.sql) — теперь отдаём его отсюда,
+    // чтобы клиент мог восстановить выбор после переустановки/смены
+    // устройства, а не спрашивать заново при каждом запуске.
+    const [isPremium, pair, genderRow] = await Promise.all([
       checkIsPremium(telegramId),
       loadPairStateForTelegramId(telegramId),
+      supabaseAdmin
+        .from("profiles")
+        .select("gender")
+        .eq("telegram_id", telegramId)
+        .maybeSingle(),
     ]);
 
     let pairPollAnswers: Record<string, number[]> = {};
@@ -125,6 +134,7 @@ export async function POST(request: NextRequest) {
         firstName: profileData.firstName ?? null,
         lastName: profileData.lastName ?? null,
         displayNameCustom: Boolean(profileData.displayNameCustom),
+        gender: genderRow.data?.gender ?? null,
       },
       isPremium,
       pair,

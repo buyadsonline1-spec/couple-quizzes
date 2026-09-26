@@ -2605,7 +2605,7 @@ const GAMES: Game[] = [
 {
   id: "heart-clicker",
   title:
-    market === "fi" ? "Klikkeri 💓" : market === "en" ? "Clicker 💓" : "Кликер 💓",
+    market === "fi" ? "Klikkeri" : market === "en" ? "Clicker" : "Кликер",
   description:
     market === "fi"
       ? "Napauta sydäntä niin monta kertaa kuin ehdit 15 sekunnissa ja kerää pisteitä. Vain Premium."
@@ -13667,6 +13667,31 @@ function HeartClickerGameScreen({
     };
   }, []);
 
+  // Узнаём реальный дневной остаток раундов СРАЗУ при открытии экрана
+  // (а не только после первой попытки сыграть) — иначе человек, уже
+  // исчерпавший лимит раньше сегодня, всё равно видел бы обычную
+  // кнопку "Начать" и узнавал об ограничении только после раунда тапов.
+  useEffect(() => {
+    if (!isPremium) return;
+
+    const initData = window.Telegram?.WebApp?.initData;
+    if (!initData) return;
+
+    fetch("/api/games/heart-clicker/state", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ initData }),
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        if (data?.ok) {
+          setRoundsInfo({ used: data.roundsUsedToday, remaining: data.roundsRemainingToday });
+        }
+      })
+      .catch((error) => console.error("heart clicker state error:", error));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isPremium]);
+
   async function finishRound(finalTaps: number) {
     setPhase("result");
     setSubmitting(true);
@@ -13766,7 +13791,7 @@ function HeartClickerGameScreen({
 
   const backLabel = t.common.back;
   const title =
-    market === "fi" ? "Klikkeri 💓" : market === "en" ? "Clicker 💓" : "Кликер 💓";
+    market === "fi" ? "Klikkeri" : market === "en" ? "Clicker" : "Кликер";
   const subtitle =
     market === "fi"
       ? "Napauta sydäntä niin monta kertaa kuin ehdit 15 sekunnissa."
@@ -14082,12 +14107,37 @@ function HeartClickerGameScreen({
                 : `Осталось раундов сегодня: ${roundsInfo.remaining}/3`}
           </div>
         )}
-        <button
-          onClick={startRound}
-          style={{ ...getPrimaryButtonStyle(isDark), width: "100%", marginTop: 16 }}
-        >
-          {market === "fi" ? "Aloita ▶️" : market === "en" ? "Start ▶️" : "Начать ▶️"}
-        </button>
+        {roundsInfo?.remaining === 0 ? (
+          // Лимит уже исчерпан ДО того, как человек вообще нажал
+          // "Начать" (roundsInfo подтягивается при открытии экрана) —
+          // не даём тапнуть в раунд, который сервер всё равно отклонит,
+          // сразу показываем итог.
+          <div
+            style={{
+              marginTop: 16,
+              padding: "12px 14px",
+              borderRadius: 14,
+              background: isDark ? "rgba(255,255,255,0.08)" : "rgba(255,255,255,0.3)",
+              fontSize: 13.5,
+              fontWeight: 700,
+              color: ink,
+            }}
+          >
+            ⏳{" "}
+            {market === "fi"
+              ? "Tämän päivän kierrokset käytetty. Tule takaisin huomenna."
+              : market === "en"
+                ? "You've used today's rounds. Come back tomorrow."
+                : "Раунды на сегодня закончились. Возвращайся завтра."}
+          </div>
+        ) : (
+          <button
+            onClick={startRound}
+            style={{ ...getPrimaryButtonStyle(isDark), width: "100%", marginTop: 16 }}
+          >
+            {market === "fi" ? "Aloita ▶️" : market === "en" ? "Start ▶️" : "Начать ▶️"}
+          </button>
+        )}
         <button onClick={openLeaderboard} style={{ ...secondaryButtonStyle, width: "100%", marginTop: 10 }}>
           🏆 {market === "fi" ? "Kärkitaulukko" : market === "en" ? "Leaderboard" : "Таблица лидеров"}
         </button>
@@ -20843,6 +20893,23 @@ const handleSelectGender = (gender: "boy" | "girl") => {
   }));
 
   setScreen("menu");
+
+  // Раньше пол сохранялся только в localStorage — на iOS каждая
+  // переустановка тестового билда стирала его, и экран выбора пола
+  // всплывал заново при каждом запуске (см. supabase/
+  // profile_gender_persist.sql). Сохраняем на сервере тоже; ошибку
+  // здесь намеренно не показываем пользователю — экран уже переключён
+  // на "menu" локально, а bootstrap при следующем запуске просто
+  // попробует снова получить пустой gender и спросит ещё раз, не более
+  // того.
+  const initData = window.Telegram?.WebApp?.initData;
+  if (initData) {
+    fetch("/api/profile/update-gender", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ initData, gender }),
+    }).catch((error) => console.error("update-gender error:", error));
+  }
 };
 
 
@@ -22371,7 +22438,13 @@ function dismissPairProposalBanner(matchId: string) {
 
 
   
-  const [screen, setScreen] = useState<Screen>("welcome");
+  // Раньше "welcome" (лого + карточка "Старт") — по просьбе убрали
+  // стартовый экран на всех платформах: сразу открываем выбор пола для
+  // новых пользователей (WelcomeScreen как компонент не удалён, просто
+  // больше никогда не рендерится — тот же принцип, что и у убранных из
+  // списка игр). Возвращающихся пользователей (profile.gender уже
+  // есть) bootstrap ниже всё равно тут же переключает на "menu".
+  const [screen, setScreen] = useState<Screen>("gender-select");
   const [paywallBackScreen, setPaywallBackScreen] = useState<Screen>("menu");
   // Куда вернуться с экрана "profile" (настройки/профиль) — раньше
   // "Назад" там был жёстко зашит на "pair-profile-menu" (вкладка
@@ -22673,6 +22746,21 @@ setAppState((prev) => ({
   // Пока points используется старым UI как личный баланс.
   points: soloPointsFromDb,
 }));
+
+// profile.gender раньше жил только в localStorage — если сервер уже
+// знает пол (сохранён через handleSelectGender при первом выборе),
+// он тут авторитетный источник. Это же чинит повторный экран выбора
+// пола при каждом запуске на iOS, где переустановка тестового билда
+// стирает localStorage: локально пол выглядит "не выбран", хотя
+// сервер его давно знает.
+const genderFromDb = bootstrapData.profile?.gender;
+if (genderFromDb === "boy" || genderFromDb === "girl") {
+  setAppState((prev) => ({
+    ...prev,
+    profile: { ...prev.profile, gender: genderFromDb },
+  }));
+  setScreen((prev) => (prev === "gender-select" ? "menu" : prev));
+}
 
 if (startParam?.startsWith("ref_")) {
   // Локальная проверка startParam — только чтобы не дёргать эндпоинт
