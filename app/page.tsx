@@ -6318,49 +6318,60 @@ function DatingBoostScreen({
         </div>
       )}
 
-      <div style={{ display: "grid", gap: 10 }}>
-        {DATING_BOOST_TIERS.map((tier) => (
-          <button
-            key={tier.plan}
-            onClick={() => onBuy(tier.plan)}
-            disabled={loading || purchasing !== null}
-            style={{
-              ...cardBaseStyle(),
-              padding: 16,
-              border: "none",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              cursor: "pointer",
-              textAlign: "left",
-              width: "100%",
-              opacity: purchasing !== null && purchasing !== tier.plan ? 0.6 : 1,
-            }}
-          >
-            <div>
-              <div style={{ fontSize: 14.5, fontWeight: 900, color: ink }}>
-                {boostLabelByMinutes(tier.minutes)}
-              </div>
-              <div style={{ fontSize: 11.5, color: muted, marginTop: 2 }}>
-                {t.dating.boostTierHint}
-              </div>
-            </div>
-            <div
-              style={{
-                fontSize: 13,
-                fontWeight: 900,
-                color: "#5a3d14",
-                background: "rgba(255,207,92,0.4)",
-                padding: "7px 12px",
-                borderRadius: 999,
-                whiteSpace: "nowrap",
-              }}
-            >
-              {purchasing === tier.plan ? t.common.loading : `⭐ ${tier.price}`}
-            </div>
-          </button>
-        ))}
-      </div>
+      {
+        // Платные тиры буста — только Telegram Stars (openDatingStarsInvoice
+        // читает window.Telegram.WebApp.openInvoice, которого в Capacitor-шиме
+        // нет и не будет — см. lib/platform.ts). На iOS кнопка молча
+        // ничего бы не делала (openInvoice undefined -> paid всегда
+        // false), поэтому скрываем весь блок целиком, а не показываем
+        // нерабочие кнопки. Бесплатный еженедельный буст ниже не
+        // завязан на способ оплаты и работает на iOS как есть.
+        !isCapacitorApp() && (
+          <div style={{ display: "grid", gap: 10 }}>
+            {DATING_BOOST_TIERS.map((tier) => (
+              <button
+                key={tier.plan}
+                onClick={() => onBuy(tier.plan)}
+                disabled={loading || purchasing !== null}
+                style={{
+                  ...cardBaseStyle(),
+                  padding: 16,
+                  border: "none",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  cursor: "pointer",
+                  textAlign: "left",
+                  width: "100%",
+                  opacity: purchasing !== null && purchasing !== tier.plan ? 0.6 : 1,
+                }}
+              >
+                <div>
+                  <div style={{ fontSize: 14.5, fontWeight: 900, color: ink }}>
+                    {boostLabelByMinutes(tier.minutes)}
+                  </div>
+                  <div style={{ fontSize: 11.5, color: muted, marginTop: 2 }}>
+                    {t.dating.boostTierHint}
+                  </div>
+                </div>
+                <div
+                  style={{
+                    fontSize: 13,
+                    fontWeight: 900,
+                    color: "#5a3d14",
+                    background: "rgba(255,207,92,0.4)",
+                    padding: "7px 12px",
+                    borderRadius: 999,
+                    whiteSpace: "nowrap",
+                  }}
+                >
+                  {purchasing === tier.plan ? t.common.loading : `⭐ ${tier.price}`}
+                </div>
+              </button>
+            ))}
+          </div>
+        )
+      }
 
       {isPremium && freeBoostAvailable && (
         <button
@@ -10332,19 +10343,19 @@ function BottomNavBar({
   theme?: "light" | "dark";
   t: any;
 }) {
-  // Знакомства покупают суперлайк/буст только через Telegram Stars
-  // (см. openDatingStarsInvoice) — на iOS платить так нельзя (Apple
-  // Guideline 3.1.1 требует In-App Purchase), а нормальный Apple IAP
-  // для этих покупок ещё не сделан. Поэтому вкладка скрыта именно на
-  // Capacitor — в отличие от нижнего бара и тёмной темы в целом, это
-  // не "заморозка на время ревью", а настоящее ограничение платформы.
+  // Раздел Знакомств теперь доступен и на iOS (свайпы, мэтчи, чат —
+  // ничего из этого не завязано на способ оплаты). Платные действия
+  // внутри (суперлайк, платный буст) отдельно скрыты именно на
+  // Capacitor — см. onSuperlike у DatingSwipeScreen и блок
+  // DATING_BOOST_TIERS в DatingBoostScreen — потому что покупаются
+  // только через Telegram Stars (openDatingStarsInvoice), а на iOS
+  // Apple требует свой In-App Purchase (Guideline 3.1.1), которого для
+  // этих покупок пока нет.
   const tabs: Array<{ id: BottomNavTabId; icon: string; label: string }> = [
     { id: "menu", icon: "🏠", label: t.menu.home },
     { id: "polls-tests-menu", icon: "💌", label: t.menu.polls },
     { id: "games", icon: "🎮", label: t.menu.games },
-    ...(isCapacitorApp()
-      ? []
-      : [{ id: "dating-swipe" as const, icon: "💘", label: t.dating.swipeTitle }]),
+    { id: "dating-swipe", icon: "💘", label: t.dating.swipeTitle },
     { id: "pair-profile-menu", icon: "🫂", label: t.menu.pair },
   ];
 
@@ -21188,10 +21199,13 @@ async function loadDatingIncomingLikes() {
 }
 
 // Общий helper для платных Stars-покупок в Знакомствах (суперлайк,
-// буст) — сам раздел пока только в Telegram (см. isCapacitorApp() у
-// входа), поэтому, в отличие от handleBuyPremium, отдельная ветка
-// Apple IAP тут не нужна. Возвращает true только если оплата реально
-// прошла (status === "paid").
+// буст) — использует window.Telegram.WebApp.openInvoice напрямую,
+// которого в Capacitor-шиме нет (см. lib/platform.ts), поэтому на iOS
+// просто вернёт false, ничего не сломав. Кнопки, которые сюда ведут,
+// отдельно скрыты на iOS (см. onSuperlike у DatingSwipeScreen и
+// DATING_BOOST_TIERS в DatingBoostScreen) — раздел Знакомств в целом
+// теперь доступен на обеих платформах, не завязанные на оплату
+// действия (свайпы, мэтчи, чат, бесплатный буст) работают одинаково.
 async function openDatingStarsInvoice(
   plan: string,
   extra?: Record<string, unknown>
@@ -21708,7 +21722,9 @@ function handleResetSoloDemoPet() {
   }
 }
 
-// Знакомства — только Telegram (см. isCapacitorApp() у точек входа).
+// Знакомства — теперь доступны и на iOS (см. комментарий у
+// openDatingStarsInvoice про то, какие именно действия внутри всё ещё
+// Telegram-only).
 const [datingProfile, setDatingProfile] = useState<DatingProfile | null>(null);
 const [datingCandidates, setDatingCandidates] = useState<DatingCandidate[]>([]);
 const [datingCandidatesLoading, setDatingCandidatesLoading] = useState(false);
@@ -23453,7 +23469,9 @@ showPaywall={() => {
       loadDatingBoostStatus();
       setScreen("dating-boost");
     }}
-    onSuperlike={handleSuperlike}
+    // Суперлайк — тоже только Telegram Stars (см. комментарий у
+    // DATING_BOOST_TIERS выше про openDatingStarsInvoice/openInvoice).
+    onSuperlike={isCapacitorApp() ? undefined : handleSuperlike}
     theme={theme}
   />
 )}
