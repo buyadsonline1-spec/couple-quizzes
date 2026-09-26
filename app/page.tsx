@@ -2598,16 +2598,20 @@ const POLLS: Poll[] = POLL_THEMES.flatMap((item, index) => {
 
 const GAMES: Game[] = [
 
+// "Я никогда не..." заменена на кликер с сердечком по просьбе — карта
+// (never-have-i-ever) и её контент (NeverHaveIEverGameScreen,
+// NEVER_HAVE_CARD_IDS) не удалены, просто больше не в списке, тот же
+// принцип, что и у "Экспресс-чек отношений" выше по файлу.
 {
-  id: "never-have-i-ever",
+  id: "heart-clicker",
   title:
-    market === "fi" ? "En ole koskaan..." : market === "en" ? "Never Have I Ever..." : "Я никогда не...",
+    market === "fi" ? "Sydänklikkeri 💓" : market === "en" ? "Heart Clicker 💓" : "Кликер сердечек 💓",
   description:
     market === "fi"
-      ? "Sano jotain, mitä et ole koskaan tehnyt elämässäsi — jos kumppanisi on tehnyt sen, hän suorittaa kortin tehtävän."
+      ? "Napauta sydäntä niin monta kertaa kuin ehdit 15 sekunnissa ja kerää pisteitä. Vain Premium."
       : market === "en"
-        ? "Say something you've never done in your life — if your partner has done it, they complete the task on the card."
-        : "Скажите что-то, чего вы никогда в жизни не делали, и если ваш партнёр делал это, он выполняет задание с карточки.",
+        ? "Tap the heart as many times as you can in 15 seconds and earn points. Premium only."
+        : "Тапай по сердцу столько раз, сколько успеешь за 15 секунд, и получай очки. Только с Premium.",
   reward: 0,
   questions: [],
 },
@@ -6579,6 +6583,7 @@ function DatingChatScreen({
   const [text, setText] = useState("");
   const [showMenu, setShowMenu] = useState(false);
   const [confirmAction, setConfirmAction] = useState<"block" | "report" | null>(null);
+  const scrollBottomRef = useRef<HTMLDivElement | null>(null);
 
   async function handleSend() {
     const trimmed = text.trim();
@@ -6587,14 +6592,32 @@ function DatingChatScreen({
     await onSend(trimmed);
   }
 
+  useEffect(() => {
+    scrollBottomRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages.length]);
+
+  function formatMessageTime(createdAt: string): string {
+    try {
+      return new Date(createdAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+    } catch {
+      return "";
+    }
+  }
+
   return (
-    <div style={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}>
+    // Раньше minHeight:"100vh" без потолка — flex:1 у списка сообщений
+    // ничего не ограничивал, скроллилась вся страница целиком (та же
+    // причина, что и в AiPsychologistChatScreen). height + overflow
+    // hidden держат чат в размере экрана, скроллится только сам список
+    // сообщений (minHeight:0 + overflowY:auto ниже).
+    <div style={{ display: "flex", flexDirection: "column", height: "100dvh", overflow: "hidden", boxSizing: "border-box" }}>
       <div
         style={{
           display: "flex",
           alignItems: "center",
           gap: 10,
           padding: 16,
+          flexShrink: 0,
           background: isDark ? "rgba(255,255,255,0.08)" : "rgba(255,255,255,0.22)",
           borderBottom: isDark ? "1px solid rgba(255,255,255,0.14)" : "1px solid rgba(255,255,255,0.28)",
           position: "relative",
@@ -6864,7 +6887,17 @@ function DatingChatScreen({
         </div>
       ) : (
         <>
-          <div style={{ flex: 1, padding: 16, display: "flex", flexDirection: "column", gap: 10 }}>
+          <div
+            style={{
+              flex: 1,
+              minHeight: 0,
+              overflowY: "auto",
+              padding: 16,
+              display: "flex",
+              flexDirection: "column",
+              gap: 10,
+            }}
+          >
             {messages.length === 0 ? (
               <div
                 style={{
@@ -6883,27 +6916,41 @@ function DatingChatScreen({
                   <div
                     key={message.id}
                     style={{
-                      alignSelf: isMine ? "flex-end" : "flex-start",
+                      display: "flex",
+                      flexDirection: "column",
+                      alignItems: isMine ? "flex-end" : "flex-start",
                       maxWidth: "76%",
-                      padding: "11px 14px",
-                      borderRadius: 18,
-                      fontSize: 14,
-                      lineHeight: 1.4,
-                      background: isMine
-                        ? primaryGradient
-                        : isDark
-                          ? "rgba(255,255,255,0.14)"
-                          : "rgba(255,255,255,0.65)",
-                      color: isMine ? "#fff" : ink,
-                      borderBottomRightRadius: isMine ? 6 : 18,
-                      borderBottomLeftRadius: isMine ? 18 : 6,
+                      alignSelf: isMine ? "flex-end" : "flex-start",
                     }}
                   >
-                    {message.text}
+                    <div
+                      style={{
+                        padding: "11px 14px",
+                        borderRadius: 18,
+                        fontSize: 14,
+                        lineHeight: 1.4,
+                        background: isMine
+                          ? primaryGradient
+                          : isDark
+                            ? "rgba(255,255,255,0.14)"
+                            : "rgba(255,255,255,0.65)",
+                        color: isMine ? "#fff" : ink,
+                        borderBottomRightRadius: isMine ? 6 : 18,
+                        borderBottomLeftRadius: isMine ? 18 : 6,
+                      }}
+                    >
+                      {message.text}
+                    </div>
+                    {message.createdAt && (
+                      <div style={{ marginTop: 2, fontSize: 10, color: muted, padding: "0 4px" }}>
+                        {formatMessageTime(message.createdAt)}
+                      </div>
+                    )}
                   </div>
                 );
               })
             )}
+            <div ref={scrollBottomRef} />
           </div>
 
           <div
@@ -6912,6 +6959,7 @@ function DatingChatScreen({
               alignItems: "center",
               gap: 10,
               padding: "12px 16px",
+              flexShrink: 0,
               background: isDark ? "rgba(255,255,255,0.08)" : "rgba(255,255,255,0.22)",
               borderTop: isDark ? "1px solid rgba(255,255,255,0.14)" : "1px solid rgba(255,255,255,0.28)",
             }}
@@ -10988,6 +11036,7 @@ function GamesScreen({
   setAppState,
   onCompleteGame,
   onClaimStepReward,
+  onOpenPaywall,
   theme,
 }: {
   completedGameIds: string[];
@@ -10996,6 +11045,8 @@ function GamesScreen({
   setAppState: React.Dispatch<React.SetStateAction<AppState>>;
   onCompleteGame: (game: Game, score: number) => void;
   onClaimStepReward: (key: string) => Promise<boolean>;
+  // Кликер с сердечком (Premium-only) уводит на paywall прямо отсюда.
+  onOpenPaywall: () => void;
   // Undefined на iOS (тема там не включена) — читается как "light".
   theme?: "light" | "dark";
 }) {
@@ -11822,15 +11873,12 @@ function handleLoveQuestionFinish() {
   );
 }
 
-if (activeGame?.id === "never-have-i-ever") {
+if (activeGame?.id === "heart-clicker") {
   return (
-    
-    <NeverHaveIEverGameScreen
-      reward={10}
-      playedGameRewardKeys={playedGameRewardKeys}
+    <HeartClickerGameScreen
+      isPremium={appState.isPremium}
       onBack={() => setActiveGameId(null)}
-      onFinish={handleLoveQuestionFinish}
-      onClaimReward={onClaimStepReward}
+      onOpenPaywall={onOpenPaywall}
       theme={theme}
     />
   );
@@ -13519,6 +13567,473 @@ return (
       </button>
   </div>
 );
+}
+
+// Кликер с сердечком — заменил "Я никогда не..." в списке игр,
+// Premium-only (см. комментарий у GAMES/heart-clicker и
+// app/api/games/heart-clicker/play). Раунд — 15 секунд тапов по
+// сердцу; кол-во тапов и очки за раунд считает и клэмпит сервер
+// (play_heart_clicker_round), клиент только анимирует и отправляет
+// сырое число тапов. Плюс внутренний лидерборд (heart_clicker_leaderboard,
+// публичный на чтение, пишется только из той же RPC) — see supabase/
+// heart_clicker_game.sql.
+function HeartClickerGameScreen({
+  isPremium,
+  onBack,
+  onOpenPaywall,
+  theme,
+}: {
+  isPremium: boolean;
+  onBack: () => void;
+  onOpenPaywall: () => void;
+  // Undefined на iOS (тема там не включена) — читается как "light".
+  theme?: "light" | "dark";
+}) {
+  const market = getMarket();
+  const t = market === "fi" ? TEXT_FI : market === "en" ? TEXT_EN : TEXT_RU;
+  const isDark = theme === "dark";
+  const ink = isDark ? "#e6d4f0" : "#1f1d3a";
+  const muted = isDark ? "#c9b3e0" : "#5a5378";
+  const accent = isDark ? "#ff9ec4" : "#ff5c8a";
+
+  const ROUND_SECONDS = 15;
+
+  type Phase = "intro" | "playing" | "result" | "leaderboard";
+  const [phase, setPhase] = useState<Phase>("intro");
+  const [taps, setTaps] = useState(0);
+  const [timeLeft, setTimeLeft] = useState(ROUND_SECONDS);
+  const [heartScale, setHeartScale] = useState(1);
+  const [bursts, setBursts] = useState<{ id: number; x: number; y: number }[]>([]);
+  const [result, setResult] = useState<{
+    pointsAwarded: number;
+    totalClickerPoints: number;
+  } | null>(null);
+  const [errorReason, setErrorReason] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState(false);
+  const [roundsInfo, setRoundsInfo] = useState<{ used: number; remaining: number } | null>(null);
+  const [leaderboard, setLeaderboard] = useState<
+    Array<{ telegram_id: number; display_name: string; photo_url: string | null; total_points: number }>
+  >([]);
+  const [leaderboardLoading, setLeaderboardLoading] = useState(false);
+
+  const tapsRef = useRef(0);
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (timerRef.current) clearInterval(timerRef.current);
+    };
+  }, []);
+
+  async function finishRound(finalTaps: number) {
+    setPhase("result");
+    setSubmitting(true);
+    setErrorReason(null);
+
+    const initData = window.Telegram?.WebApp?.initData;
+    if (!initData) {
+      setSubmitting(false);
+      setErrorReason("no-auth");
+      return;
+    }
+
+    try {
+      const response = await fetch("/api/games/heart-clicker/play", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ initData, taps: finalTaps }),
+      });
+      const data = await response.json();
+
+      if (!response.ok || !data?.ok) {
+        setErrorReason(data?.reason || "error");
+        if (data?.roundsUsedToday !== undefined) {
+          setRoundsInfo({ used: data.roundsUsedToday, remaining: data.roundsRemainingToday ?? 0 });
+        }
+      } else {
+        setResult({
+          pointsAwarded: data.pointsAwarded,
+          totalClickerPoints: data.totalClickerPoints,
+        });
+        setRoundsInfo({ used: data.roundsUsedToday, remaining: data.roundsRemainingToday });
+      }
+    } catch (error) {
+      console.error("heart clicker play error:", error);
+      setErrorReason("error");
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  function startRound() {
+    tapsRef.current = 0;
+    setTaps(0);
+    setTimeLeft(ROUND_SECONDS);
+    setResult(null);
+    setErrorReason(null);
+    setBursts([]);
+    setPhase("playing");
+
+    if (timerRef.current) clearInterval(timerRef.current);
+    timerRef.current = setInterval(() => {
+      setTimeLeft((prev) => {
+        if (prev <= 1) {
+          if (timerRef.current) clearInterval(timerRef.current);
+          finishRound(tapsRef.current);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+  }
+
+  function handleTap(e: React.MouseEvent<HTMLButtonElement>) {
+    if (phase !== "playing") return;
+    tapsRef.current += 1;
+    setTaps(tapsRef.current);
+    setHeartScale(1.18);
+    setTimeout(() => setHeartScale(1), 90);
+
+    const rect = e.currentTarget.getBoundingClientRect();
+    const id = Date.now() + Math.random();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    setBursts((prev) => [...prev, { id, x, y }]);
+    setTimeout(() => {
+      setBursts((prev) => prev.filter((b) => b.id !== id));
+    }, 650);
+  }
+
+  async function openLeaderboard() {
+    setPhase("leaderboard");
+    setLeaderboardLoading(true);
+    const { data, error } = await supabase
+      .from("heart_clicker_leaderboard")
+      .select("telegram_id, display_name, photo_url, total_points")
+      .order("total_points", { ascending: false })
+      .limit(20);
+    setLeaderboardLoading(false);
+    if (!error && data) setLeaderboard(data as typeof leaderboard);
+  }
+
+  const backLabel = t.common.back;
+  const title =
+    market === "fi" ? "Sydänklikkeri 💓" : market === "en" ? "Heart Clicker 💓" : "Кликер сердечек 💓";
+  const subtitle =
+    market === "fi"
+      ? "Napauta sydäntä niin monta kertaa kuin ehdit 15 sekunnissa."
+      : market === "en"
+        ? "Tap the heart as many times as you can in 15 seconds."
+        : "Тапай по сердцу столько раз, сколько успеешь за 15 секунд.";
+
+  if (!isPremium) {
+    return (
+      <div style={{ padding: 16, display: "grid", gap: 14 }}>
+        <div style={{ ...cardBaseStyle(), padding: 22, textAlign: "center" }}>
+          <div style={{ fontSize: 40 }}>💓</div>
+          <div style={{ marginTop: 8, fontSize: 18, fontWeight: 900, color: ink }}>
+            {title}
+          </div>
+          <div style={{ marginTop: 8, fontSize: 13.5, color: muted, lineHeight: 1.5 }}>
+            {market === "fi"
+              ? "Tämä peli on saatavilla vain Premium-käyttäjille."
+              : market === "en"
+                ? "This game is available to Premium members only."
+                : "Эта игра доступна только с Premium."}
+          </div>
+          <button
+            onClick={onOpenPaywall}
+            style={{ ...getPrimaryButtonStyle(isDark), width: "100%", marginTop: 16 }}
+          >
+            {market === "fi" ? "Avaa Premium ✨" : market === "en" ? "Unlock Premium ✨" : "Разблокировать Premium ✨"}
+          </button>
+        </div>
+
+        <button onClick={onBack} style={secondaryButtonStyle}>
+          {backLabel}
+        </button>
+      </div>
+    );
+  }
+
+  if (phase === "leaderboard") {
+    return (
+      <div style={{ padding: 16, display: "grid", gap: 14 }}>
+        <div style={{ ...cardBaseStyle(), padding: 16 }}>
+          <div style={{ fontSize: 20, fontWeight: 900, color: ink }}>
+            🏆 {market === "fi" ? "Klikkerin kärki" : market === "en" ? "Clicker leaderboard" : "Топ по кликеру"}
+          </div>
+          <div style={{ marginTop: 4, fontSize: 12.5, color: muted }}>
+            {market === "fi"
+              ? "Kaikkien aikojen pisteet sydänklikkerissä."
+              : market === "en"
+                ? "All-time points earned in Heart Clicker."
+                : "Очки за всё время в Кликере сердечек."}
+          </div>
+        </div>
+
+        <div style={{ ...cardBaseStyle(), padding: 8 }}>
+          {leaderboardLoading ? (
+            <div style={{ padding: 16, textAlign: "center", color: muted, fontSize: 13 }}>
+              {t.common.loading}
+            </div>
+          ) : leaderboard.length === 0 ? (
+            <div style={{ padding: 16, textAlign: "center", color: muted, fontSize: 13 }}>
+              {market === "fi" ? "Ei vielä tuloksia." : market === "en" ? "No scores yet." : "Пока нет результатов."}
+            </div>
+          ) : (
+            leaderboard.map((row, index) => (
+              <div
+                key={row.telegram_id}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 10,
+                  padding: "10px 8px",
+                  borderBottom:
+                    index === leaderboard.length - 1
+                      ? "none"
+                      : isDark
+                        ? "1px solid rgba(255,255,255,0.08)"
+                        : "1px solid rgba(0,0,0,0.05)",
+                }}
+              >
+                <div style={{ width: 22, textAlign: "center", fontSize: 13, fontWeight: 900, color: muted }}>
+                  {index === 0 ? "🥇" : index === 1 ? "🥈" : index === 2 ? "🥉" : index + 1}
+                </div>
+                <div
+                  style={{
+                    width: 32,
+                    height: 32,
+                    borderRadius: 999,
+                    background: "linear-gradient(135deg, #ff9ec4, #ff5c8a)",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    overflow: "hidden",
+                    flexShrink: 0,
+                    fontSize: 14,
+                  }}
+                >
+                  {row.photo_url ? (
+                    <img src={row.photo_url} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                  ) : (
+                    "💓"
+                  )}
+                </div>
+                <div style={{ flex: 1, minWidth: 0, fontSize: 13.5, fontWeight: 700, color: ink, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                  {row.display_name}
+                </div>
+                <div style={{ fontSize: 13.5, fontWeight: 900, color: accent, flexShrink: 0 }}>
+                  {row.total_points}
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+
+        <button onClick={() => setPhase("intro")} style={secondaryButtonStyle}>
+          {backLabel}
+        </button>
+      </div>
+    );
+  }
+
+  if (phase === "playing") {
+    const progress = ((ROUND_SECONDS - timeLeft) / ROUND_SECONDS) * 100;
+    return (
+      <div style={{ padding: 16, display: "grid", gap: 14, minHeight: "100vh", boxSizing: "border-box" }}>
+        <div style={{ ...cardBaseStyle(), padding: 14 }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <div style={{ fontSize: 15, fontWeight: 900, color: ink }}>
+              ⏱️ {timeLeft}s
+            </div>
+            <div style={{ fontSize: 15, fontWeight: 900, color: accent }}>
+              💓 {taps}
+            </div>
+          </div>
+          <div
+            style={{
+              marginTop: 8,
+              height: 6,
+              borderRadius: 999,
+              background: isDark ? "rgba(255,255,255,0.12)" : "rgba(0,0,0,0.08)",
+              overflow: "hidden",
+            }}
+          >
+            <div
+              style={{
+                width: `${progress}%`,
+                height: "100%",
+                background: "linear-gradient(90deg, #ff9ec4, #ff5c8a)",
+                transition: "width 1s linear",
+              }}
+            />
+          </div>
+        </div>
+
+        <div
+          style={{
+            flex: 1,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            minHeight: 320,
+          }}
+        >
+          <button
+            type="button"
+            onClick={handleTap}
+            style={{
+              position: "relative",
+              width: 220,
+              height: 220,
+              border: "none",
+              background: "none",
+              cursor: "pointer",
+              fontSize: 140,
+              lineHeight: 1,
+              transform: `scale(${heartScale})`,
+              transition: "transform 0.09s ease-out",
+              userSelect: "none",
+              WebkitUserSelect: "none",
+              filter: "drop-shadow(0 12px 30px rgba(255,92,138,0.45))",
+            }}
+          >
+            💓
+            {bursts.map((burst) => (
+              <div
+                key={burst.id}
+                style={{
+                  position: "absolute",
+                  left: burst.x,
+                  top: burst.y,
+                  fontSize: 20,
+                  fontWeight: 900,
+                  color: "#ff5c8a",
+                  pointerEvents: "none",
+                  animation: "heartClickerBurst 0.65s ease-out forwards",
+                }}
+              >
+                +2
+              </div>
+            ))}
+          </button>
+        </div>
+
+        <style>{`
+          @keyframes heartClickerBurst {
+            0% { opacity: 1; transform: translate(-50%, -50%) translateY(0) scale(0.8); }
+            100% { opacity: 0; transform: translate(-50%, -50%) translateY(-60px) scale(1.3); }
+          }
+        `}</style>
+      </div>
+    );
+  }
+
+  if (phase === "result") {
+    return (
+      <div style={{ padding: 16, display: "grid", gap: 14 }}>
+        <div style={{ ...cardBaseStyle(), padding: 22, textAlign: "center" }}>
+          {submitting ? (
+            <div style={{ color: muted, fontSize: 14 }}>{t.common.loading}</div>
+          ) : errorReason === "daily-limit-reached" ? (
+            <>
+              <div style={{ fontSize: 36 }}>⏳</div>
+              <div style={{ marginTop: 8, fontSize: 16, fontWeight: 900, color: ink }}>
+                {market === "fi"
+                  ? "Tämän päivän kierrokset käytetty"
+                  : market === "en"
+                    ? "You've used today's rounds"
+                    : "Раунды на сегодня закончились"}
+              </div>
+              <div style={{ marginTop: 6, fontSize: 13, color: muted }}>
+                {market === "fi"
+                  ? "Tule takaisin huomenna uusiin kierroksiin."
+                  : market === "en"
+                    ? "Come back tomorrow for more rounds."
+                    : "Возвращайся завтра за новыми раундами."}
+              </div>
+            </>
+          ) : errorReason ? (
+            <div style={{ color: muted, fontSize: 14 }}>
+              {market === "fi" ? "Jotain meni pieleen." : market === "en" ? "Something went wrong." : "Что-то пошло не так."}
+            </div>
+          ) : (
+            <>
+              <div style={{ fontSize: 40 }}>🎉</div>
+              <div style={{ marginTop: 8, fontSize: 15, color: muted }}>
+                {market === "fi" ? "Napautuksia" : market === "en" ? "Taps" : "Тапов"}: <b style={{ color: ink }}>{taps}</b>
+              </div>
+              <div style={{ marginTop: 10, fontSize: 26, fontWeight: 900, color: accent }}>
+                +{result?.pointsAwarded ?? 0} {t.games.pointsUnit}
+              </div>
+              {roundsInfo && (
+                <div style={{ marginTop: 10, fontSize: 12.5, color: muted }}>
+                  {market === "fi"
+                    ? `Kierroksia tänään: ${roundsInfo.used}/3`
+                    : market === "en"
+                      ? `Rounds today: ${roundsInfo.used}/3`
+                      : `Раундов сегодня: ${roundsInfo.used}/3`}
+                </div>
+              )}
+            </>
+          )}
+
+          <div style={{ display: "grid", gap: 8, marginTop: 18 }}>
+            {!submitting && errorReason !== "daily-limit-reached" && (roundsInfo?.remaining ?? 1) > 0 && (
+              <button onClick={startRound} style={{ ...getPrimaryButtonStyle(isDark), width: "100%" }}>
+                {market === "fi" ? "Pelaa uudelleen" : market === "en" ? "Play again" : "Играть ещё раз"}
+              </button>
+            )}
+            <button onClick={openLeaderboard} style={{ ...secondaryButtonStyle, width: "100%" }}>
+              🏆 {market === "fi" ? "Kärkitaulukko" : market === "en" ? "Leaderboard" : "Таблица лидеров"}
+            </button>
+            <button onClick={onBack} style={{ ...secondaryButtonStyle, width: "100%" }}>
+              {backLabel}
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // intro
+  return (
+    <div style={{ padding: 16, display: "grid", gap: 14 }}>
+      <div style={{ ...cardBaseStyle(), padding: 22, textAlign: "center" }}>
+        <div style={{ fontSize: 48 }}>💓</div>
+        <div style={{ marginTop: 8, fontSize: 20, fontWeight: 900, color: ink }}>
+          {title}
+        </div>
+        <div style={{ marginTop: 8, fontSize: 13.5, color: muted, lineHeight: 1.5 }}>
+          {subtitle}
+        </div>
+        {roundsInfo && (
+          <div style={{ marginTop: 10, fontSize: 12, color: muted }}>
+            {market === "fi"
+              ? `Kierroksia jäljellä tänään: ${roundsInfo.remaining}/3`
+              : market === "en"
+                ? `Rounds left today: ${roundsInfo.remaining}/3`
+                : `Осталось раундов сегодня: ${roundsInfo.remaining}/3`}
+          </div>
+        )}
+        <button
+          onClick={startRound}
+          style={{ ...getPrimaryButtonStyle(isDark), width: "100%", marginTop: 16 }}
+        >
+          {market === "fi" ? "Aloita ▶️" : market === "en" ? "Start ▶️" : "Начать ▶️"}
+        </button>
+        <button onClick={openLeaderboard} style={{ ...secondaryButtonStyle, width: "100%", marginTop: 10 }}>
+          🏆 {market === "fi" ? "Kärkitaulukko" : market === "en" ? "Leaderboard" : "Таблица лидеров"}
+        </button>
+      </div>
+
+      <button onClick={onBack} style={secondaryButtonStyle}>
+        {backLabel}
+      </button>
+    </div>
+  );
 }
 
 
@@ -21805,15 +22320,27 @@ function dismissPairProposalBanner(matchId: string) {
   // оформил Premium прямо из locked-превью (handleOpenDatingChat не
   // грузит сообщения не-Premium — иначе после успешной покупки и
   // возврата на dating-chat (paywallBackScreen) экран так и остался
-  // бы пустым, хотя сообщения уже реально доступны).
+  // бы пустым, хотя сообщения уже реально доступны). Плюс лёгкий
+  // поллинг, пока чат открыт — раньше сообщения перечитывались только
+  // при входе в чат и сразу после ОТПРАВКИ своего сообщения, поэтому
+  // ответ партнёра появлялся лишь после выхода и повторного захода в
+  // чат. Настоящий realtime не нужен (см. комментарий в
+  // supabase/dating.sql), 4 секунды достаточно, чтобы чат ощущался
+  // живым.
   useEffect(() => {
     if (screen !== "dating-chat" || !appState.isPremium || !activeChatMatch) return;
 
-    datingFetch("/api/dating/messages/list", { matchId: activeChatMatch.matchId }).then(
-      (result) => {
+    const matchId = activeChatMatch.matchId;
+
+    const load = () => {
+      datingFetch("/api/dating/messages/list", { matchId }).then((result) => {
         if (result?.ok) setActiveChatMessages(result.messages ?? []);
-      }
-    );
+      });
+    };
+
+    load();
+    const intervalId = setInterval(load, 4000);
+    return () => clearInterval(intervalId);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [screen, appState.isPremium, activeChatMatch?.matchId]);
 
@@ -23199,6 +23726,10 @@ showPaywall={() => {
   setAppState={setAppState}
  onCompleteGame={handleCompleteGame}
   onClaimStepReward={claimGameStepReward}
+  onOpenPaywall={() => {
+    setPaywallBackScreen("games");
+    setScreen("paywall");
+  }}
   theme={theme}
 />
 )}
