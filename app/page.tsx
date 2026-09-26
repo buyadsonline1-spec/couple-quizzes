@@ -7223,33 +7223,44 @@ function AiPsychologistChatScreen({
   return (
     <div
       style={{
-        minHeight: "100vh",
+        // Раньше minHeight: "100vh" — без жёсткого потолка flex:1 у
+        // карточки с сообщениями ничего не ограничивал, и вся колонка
+        // (шапка + тумблер + сообщения + инпут) просто растягивалась
+        // по контенту выше высоты экрана: скроллилась вся страница
+        // целиком, а не только список сообщений, и поле ввода уезжало
+        // за нижний край, требуя долистать до него. height (жёсткий
+        // потолок) + overflow hidden здесь — весь чат теперь помещается
+        // в экран, скроллится только сам список сообщений ниже.
+        height: "100dvh",
+        overflow: "hidden",
         padding: 12,
         display: "flex",
         flexDirection: "column",
-        gap: 10,
+        gap: 8,
+        boxSizing: "border-box",
       }}
     >
       <div
         style={{
           ...cardBaseStyle(),
-          padding: 14,
+          padding: "8px 12px",
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
           gap: 10,
+          flexShrink: 0,
         }}
       >
-        <div>
-          <div style={{ fontSize: 20, fontWeight: 900, color: ink }}>
+        <div style={{ minWidth: 0 }}>
+          <div style={{ fontSize: 15, fontWeight: 900, color: ink }}>
             🧠 {language === "en" ? "AI Psychologist" : "AI-психолог для пары"}
           </div>
           <div
             style={{
-              marginTop: 4,
-              fontSize: 12.5,
+              marginTop: 1,
+              fontSize: 10.5,
               color: muted,
-              lineHeight: 1.4,
+              lineHeight: 1.3,
             }}
           >
             {language === "en"
@@ -7258,7 +7269,22 @@ function AiPsychologistChatScreen({
           </div>
         </div>
 
-        <button onClick={onBack} style={secondaryButtonStyle} type="button">
+        <button
+          onClick={onBack}
+          style={{
+            ...secondaryButtonStyle,
+            // secondaryButtonStyle несёт width:"100%" (рассчитан на
+            // блочное использование) — здесь кнопка в строке рядом с
+            // заголовком, явно сбрасываем на auto, иначе она требует
+            // всю ширину строки и накладывается на текст заголовка.
+            width: "auto",
+            marginTop: 0,
+            padding: "8px 14px",
+            fontSize: 13,
+            flexShrink: 0,
+          }}
+          type="button"
+        >
           {t.common.back}
         </button>
       </div>
@@ -7268,7 +7294,7 @@ function AiPsychologistChatScreen({
         onClick={() => togglePairContext(!pairContextEnabled)}
         style={{
           ...cardBaseStyle(),
-          padding: "10px 14px",
+          padding: "7px 12px",
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
@@ -7276,16 +7302,17 @@ function AiPsychologistChatScreen({
           cursor: "pointer",
           border: "none",
           textAlign: "left",
+          flexShrink: 0,
         }}
       >
         <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontSize: 13, fontWeight: 800, color: ink }}>
+          <div style={{ fontSize: 12, fontWeight: 800, color: ink }}>
             ✨{" "}
             {language === "en"
               ? "Use our pair's data"
               : "Учитывать данные нашей пары"}
           </div>
-          <div style={{ marginTop: 2, fontSize: 11.5, color: muted }}>
+          <div style={{ marginTop: 1, fontSize: 10, color: muted, lineHeight: 1.25 }}>
             {language === "en"
               ? "Compatibility & strong/weak topics — never the partner's raw answers."
               : "Совместимость и сильные/слабые темы — без сырых ответов партнёра."}
@@ -7294,8 +7321,8 @@ function AiPsychologistChatScreen({
 
         <div
           style={{
-            width: 40,
-            height: 22,
+            width: 36,
+            height: 20,
             borderRadius: 999,
             background: pairContextEnabled
               ? primaryGradient
@@ -7311,9 +7338,9 @@ function AiPsychologistChatScreen({
             style={{
               position: "absolute",
               top: 2,
-              left: pairContextEnabled ? 20 : 2,
-              width: 18,
-              height: 18,
+              left: pairContextEnabled ? 18 : 2,
+              width: 16,
+              height: 16,
               borderRadius: 999,
               background: "#fff",
               transition: "left 0.2s ease",
@@ -7332,7 +7359,12 @@ function AiPsychologistChatScreen({
           flexDirection: "column",
           gap: 10,
           overflowY: "auto",
-          minHeight: 260,
+          // minHeight: 0, а не какое-то фиксированное число — стандартный
+          // трюк для flex-элемента с overflow: без него min-height по
+          // умолчанию равен размеру контента, и flex:1 + overflowY:auto
+          // не сжимают карточку по-настоящему: она растёт под все
+          // сообщения, а не скроллится внутри отведённого места.
+          minHeight: 0,
         }}
       >
         {loadingHistory ? (
@@ -7441,6 +7473,7 @@ function AiPsychologistChatScreen({
             fontSize: 13,
             color: isDark ? "#ffb0c8" : "#a8305a",
             background: isDark ? "rgba(120,30,60,0.35)" : "rgba(255,220,230,0.5)",
+            flexShrink: 0,
           }}
         >
           {errorText}
@@ -7453,6 +7486,7 @@ function AiPsychologistChatScreen({
             fontSize: 12,
             color: muted,
             textAlign: "center",
+            flexShrink: 0,
           }}
         >
           {language === "en"
@@ -7465,6 +7499,7 @@ function AiPsychologistChatScreen({
         style={{
           ...cardBaseStyle(),
           padding: 10,
+          flexShrink: 0,
           display: "flex",
           gap: 8,
           alignItems: "center",
