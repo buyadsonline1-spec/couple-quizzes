@@ -2605,7 +2605,7 @@ const GAMES: Game[] = [
 {
   id: "heart-clicker",
   title:
-    market === "fi" ? "Sydänklikkeri 💓" : market === "en" ? "Heart Clicker 💓" : "Кликер сердечек 💓",
+    market === "fi" ? "Klikkeri 💓" : market === "en" ? "Clicker 💓" : "Кликер 💓",
   description:
     market === "fi"
       ? "Napauta sydäntä niin monta kertaa kuin ehdit 15 sekunnissa ja kerää pisteitä. Vain Premium."
@@ -13569,6 +13569,47 @@ return (
 );
 }
 
+// Нарисованное сердце вместо emoji 💓 — по тому же принципу, что и
+// лица питомцев (PetFaceBody): свой SVG не зависит от эмоджи-набора
+// платформы и не выглядит как мультяшная иконка со звёздочками, а
+// плоский залитый градиентом силуэт со светом сверху — тот же приём
+// "объёма", что и у карточек магазина/питомца в остальном приложении.
+function ClickerHeartIcon({ size, glow = true }: { size: number; glow?: boolean }) {
+  const gradientId = "clickerHeartGradient";
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 100 90"
+      style={{
+        display: "block",
+        filter: glow
+          ? "drop-shadow(0 10px 22px rgba(255,45,95,0.45))"
+          : undefined,
+      }}
+    >
+      <defs>
+        <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="#ff8fb3" />
+          <stop offset="55%" stopColor="#ff4d79" />
+          <stop offset="100%" stopColor="#e8104a" />
+        </linearGradient>
+      </defs>
+      <path
+        d="M50 86 C22 66 4 48 4 28 C4 12 16 2 30 2 C40 2 47 8 50 15 C53 8 60 2 70 2 C84 2 96 12 96 28 C96 48 78 66 50 86 Z"
+        fill={`url(#${gradientId})`}
+      />
+      <path
+        d="M22 24 C22 15 29 9 37 9"
+        stroke="rgba(255,255,255,0.55)"
+        strokeWidth="6"
+        strokeLinecap="round"
+        fill="none"
+      />
+    </svg>
+  );
+}
+
 // Кликер с сердечком — заменил "Я никогда не..." в списке игр,
 // Premium-only (см. комментарий у GAMES/heart-clicker и
 // app/api/games/heart-clicker/play). Раунд — 15 секунд тапов по
@@ -13605,6 +13646,7 @@ function HeartClickerGameScreen({
   const [heartScale, setHeartScale] = useState(1);
   const [bursts, setBursts] = useState<{ id: number; x: number; y: number }[]>([]);
   const [result, setResult] = useState<{
+    taps: number;
     pointsAwarded: number;
     totalClickerPoints: number;
   } | null>(null);
@@ -13652,6 +13694,12 @@ function HeartClickerGameScreen({
         }
       } else {
         setResult({
+          // Сервер клэмпит тапы потолком (см. play_heart_clicker_round,
+          // v_max_taps) до подсчёта очков — показываем именно это
+          // число, а не сырой клиентский счётчик, иначе цифры не
+          // сходятся: "Тапов: 80" и "+100 очков" (50 тапов × 2) выглядят
+          // как баг, хотя это просто два разных числа.
+          taps: data.taps,
           pointsAwarded: data.pointsAwarded,
           totalClickerPoints: data.totalClickerPoints,
         });
@@ -13718,7 +13766,7 @@ function HeartClickerGameScreen({
 
   const backLabel = t.common.back;
   const title =
-    market === "fi" ? "Sydänklikkeri 💓" : market === "en" ? "Heart Clicker 💓" : "Кликер сердечек 💓";
+    market === "fi" ? "Klikkeri 💓" : market === "en" ? "Clicker 💓" : "Кликер 💓";
   const subtitle =
     market === "fi"
       ? "Napauta sydäntä niin monta kertaa kuin ehdit 15 sekunnissa."
@@ -13730,7 +13778,9 @@ function HeartClickerGameScreen({
     return (
       <div style={{ padding: 16, display: "grid", gap: 14 }}>
         <div style={{ ...cardBaseStyle(), padding: 22, textAlign: "center" }}>
-          <div style={{ fontSize: 40 }}>💓</div>
+          <div style={{ display: "flex", justifyContent: "center" }}>
+            <ClickerHeartIcon size={56} />
+          </div>
           <div style={{ marginTop: 8, fontSize: 18, fontWeight: 900, color: ink }}>
             {title}
           </div>
@@ -13818,7 +13868,7 @@ function HeartClickerGameScreen({
                   {row.photo_url ? (
                     <img src={row.photo_url} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                   ) : (
-                    "💓"
+                    <ClickerHeartIcon size={18} glow={false} />
                   )}
                 </div>
                 <div style={{ flex: 1, minWidth: 0, fontSize: 13.5, fontWeight: 700, color: ink, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
@@ -13842,20 +13892,20 @@ function HeartClickerGameScreen({
   if (phase === "playing") {
     const progress = ((ROUND_SECONDS - timeLeft) / ROUND_SECONDS) * 100;
     return (
-      <div style={{ padding: 16, display: "grid", gap: 14, minHeight: "100vh", boxSizing: "border-box" }}>
-        <div style={{ ...cardBaseStyle(), padding: 14 }}>
+      <div style={{ padding: 16, display: "flex", flexDirection: "column", gap: 12, height: "100dvh", boxSizing: "border-box", overflow: "hidden" }}>
+        <div style={{ ...cardBaseStyle(), padding: 10, flexShrink: 0 }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-            <div style={{ fontSize: 15, fontWeight: 900, color: ink }}>
+            <div style={{ fontSize: 14, fontWeight: 900, color: ink }}>
               ⏱️ {timeLeft}s
             </div>
-            <div style={{ fontSize: 15, fontWeight: 900, color: accent }}>
-              💓 {taps}
+            <div style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 14, fontWeight: 900, color: accent }}>
+              <ClickerHeartIcon size={16} glow={false} /> {taps}
             </div>
           </div>
           <div
             style={{
-              marginTop: 8,
-              height: 6,
+              marginTop: 6,
+              height: 5,
               borderRadius: 999,
               background: isDark ? "rgba(255,255,255,0.12)" : "rgba(0,0,0,0.08)",
               overflow: "hidden",
@@ -13872,13 +13922,18 @@ function HeartClickerGameScreen({
           </div>
         </div>
 
+        {/* Сердце сдвинуто ближе к верху (paddingTop, а не сплошное
+            center по всей оставшейся высоте) — раньше висело ровно
+            посередине с большим пустым пространством под ним. Мягкое
+            радиальное свечение за сердцем — по просьбе "добавить фон
+            или обводку", иначе оно терялось на плоском фоне экрана. */}
         <div
           style={{
             flex: 1,
             display: "flex",
-            alignItems: "center",
             justifyContent: "center",
-            minHeight: 320,
+            paddingTop: "6%",
+            minHeight: 0,
           }}
         >
           <button
@@ -13886,21 +13941,28 @@ function HeartClickerGameScreen({
             onClick={handleTap}
             style={{
               position: "relative",
-              width: 220,
-              height: 220,
+              width: 260,
+              height: 260,
               border: "none",
-              background: "none",
+              background:
+                "radial-gradient(circle, rgba(255,92,138,0.28) 0%, rgba(255,92,138,0.12) 45%, transparent 70%)",
+              borderRadius: "50%",
               cursor: "pointer",
-              fontSize: 140,
-              lineHeight: 1,
-              transform: `scale(${heartScale})`,
-              transition: "transform 0.09s ease-out",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
               userSelect: "none",
               WebkitUserSelect: "none",
-              filter: "drop-shadow(0 12px 30px rgba(255,92,138,0.45))",
             }}
           >
-            💓
+            <div
+              style={{
+                transform: `scale(${heartScale})`,
+                transition: "transform 0.09s ease-out",
+              }}
+            >
+              <ClickerHeartIcon size={200} />
+            </div>
             {bursts.map((burst) => (
               <div
                 key={burst.id}
@@ -13963,7 +14025,7 @@ function HeartClickerGameScreen({
             <>
               <div style={{ fontSize: 40 }}>🎉</div>
               <div style={{ marginTop: 8, fontSize: 15, color: muted }}>
-                {market === "fi" ? "Napautuksia" : market === "en" ? "Taps" : "Тапов"}: <b style={{ color: ink }}>{taps}</b>
+                {market === "fi" ? "Napautuksia" : market === "en" ? "Taps" : "Тапов"}: <b style={{ color: ink }}>{result?.taps ?? taps}</b>
               </div>
               <div style={{ marginTop: 10, fontSize: 26, fontWeight: 900, color: accent }}>
                 +{result?.pointsAwarded ?? 0} {t.games.pointsUnit}
@@ -14002,7 +14064,9 @@ function HeartClickerGameScreen({
   return (
     <div style={{ padding: 16, display: "grid", gap: 14 }}>
       <div style={{ ...cardBaseStyle(), padding: 22, textAlign: "center" }}>
-        <div style={{ fontSize: 48 }}>💓</div>
+        <div style={{ display: "flex", justifyContent: "center" }}>
+          <ClickerHeartIcon size={72} />
+        </div>
         <div style={{ marginTop: 8, fontSize: 20, fontWeight: 900, color: ink }}>
           {title}
         </div>
