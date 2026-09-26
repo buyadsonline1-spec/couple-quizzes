@@ -338,6 +338,8 @@ export const TEXT_RU = {
   noPairText:
     "Пригласи партнёра, чтобы вместе проходить опросы, тесты и игры.",
   invitePartner: "Пригласить партнёра",
+  orDivider: "или",
+  meetSomeoneButton: "Познакомиться 💘",
 
   // Предложение создать пару из мэтча в Знакомствах (см. handleProposePair).
   incomingProposalTitle: "{name} предлагает создать пару",

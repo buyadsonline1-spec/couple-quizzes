@@ -3627,6 +3627,7 @@ function PairScreen({
   onOpenCompatibilityInfo,
   onOpenLevelInfo,
   onOpenPolls,
+  onOpenDating,
   onLeavePair,
   incomingPairProposals,
   pairProposalResponding,
@@ -3649,6 +3650,10 @@ function PairScreen({
   onOpenCompatibilityInfo: () => void;
   onOpenLevelInfo: () => void;
   onOpenPolls: () => void;
+  // Пары ещё нет — рядом с "Пригласить партнёра" предлагаем второй,
+  // логически связанный путь: пойти искать пару через Знакомства,
+  // а не только звать кого-то по прямой ссылке.
+  onOpenDating: () => void;
   onLeavePair: () => void;
   // Входящие предложения "создать пару" из Знакомств — см. handleProposePair
   // в app/page.tsx. Опционально: экран переиспользуется без них там, где
@@ -3896,6 +3901,32 @@ function PairScreen({
               }}
             >
               {t.pair.invitePartner}
+            </button>
+
+            {/* Ещё нет пары — рядом с "Пригласить партнёра" (для тех, у
+                кого уже ЕСТЬ кого звать) логично предложить и путь для
+                тех, у кого пока некого — через Знакомства. */}
+            <div
+              style={{
+                marginTop: 10,
+                textAlign: "center",
+                fontSize: 12,
+                color: muted,
+                fontWeight: 700,
+              }}
+            >
+              {t.pair.orDivider}
+            </div>
+
+            <button
+              onClick={onOpenDating}
+              style={{
+                ...secondaryButtonStyle,
+                width: "100%",
+                marginTop: 10,
+              }}
+            >
+              {t.pair.meetSomeoneButton}
             </button>
           </div>
         </div>
@@ -8447,12 +8478,23 @@ function LanguageSelectScreen({
   );
 }
 
+// Несмотря на имя (оставлено, чтобы не трогать все 8 мест вызова),
+// считает дату по Хельсинки, а не по локальному времени устройства —
+// раньше было наоборот, и это ломало дневной бонус именно на iOS
+// (Capacitor): claim_daily_bonus/daily_bonus_last_claim_date на
+// сервере всегда пишутся по Хельсинки, а этот хелпер сравнивал их с
+// "сегодня" по локальной таймзоне телефона. Если тестовое устройство
+// стоит в заметно другом часовом поясе, "сегодня" по телефону и
+// "сегодня" по Хельсинки могут не совпадать по многу часов в сутки, а
+// не только на границе полуночи — тогда бонус, реально полученный
+// сегодня по Хельсинки, выглядел так, будто получен "вчера", и попап
+// вылезал заново при каждом открытии, а не раз в сутки. Затрагивает не
+// только дневной бонус, но и вопрос дня пары (getDailyPairQuestionForToday)
+// — тот же принцип "один день = один Хельсинки-день" для обоих.
 function getTodayLocalDateString() {
-  const now = new Date();
-  const year = now.getFullYear();
-  const month = String(now.getMonth() + 1).padStart(2, "0");
-  const day = String(now.getDate()).padStart(2, "0");
-  return `${year}-${month}-${day}`;
+  return new Date().toLocaleDateString("en-CA", {
+    timeZone: "Europe/Helsinki",
+  });
 }
 
 // Тот же формат, что и на сервере (см. lib/server/week-key.ts,
@@ -14262,23 +14304,13 @@ const t = market === "fi" ? TEXT_FI : market === "en" ? TEXT_EN : TEXT_RU;
 
  
 
-async function startTest(testId: string) {
-  if (!isPremium) {
-    const access = await onCheckDailyTestAccess();
-
-    if (!access) {
-      // Не удалось проверить доступ (сеть/сервер недоступен) — не
-      // открываем тест, чтобы сбой не превратился в бесплатный проход
-      // мимо лимита.
-      return;
-    }
-
-    if (!access.allowed) {
-      showPaywall();
-      return;
-    }
-  }
-
+// Раньше без Premium — 1 тест в день из 3 (onCheckDailyTestAccess ->
+// consume_daily_access), дальше paywall. По просьбе все тесты теперь
+// открыты всем без ограничения — тот же принцип, что и у "Бутылочки"/
+// "90 вопросов" (у игр лимита нет). Серверная часть
+// (consume_daily_access/RPC) не удалена — просто больше не вызывается
+// отсюда.
+function startTest(testId: string) {
   setActiveTestId(testId);
   setCurrentQuestionIndex(0);
   setAnswers([]);
@@ -24075,6 +24107,7 @@ showPaywall={() => {
     }
     setScreen(appState.profile.gender === "boy" ? "polls-boy" : "polls-girl");
   }}
+  onOpenDating={handleOpenDating}
   incomingPairProposals={incomingPairProposals}
   pairProposalResponding={pairProposalResponding}
   onRespondPairProposal={handleRespondPairProposal}
@@ -24397,7 +24430,6 @@ showPaywall={() => {
       >
         {t.paywall.featurePolls}<br />
         {t.paywall.featureGames}<br />
-        {t.paywall.featureTests}<br />
         {isCapacitorApp() ? t.paywall.featureWheelIos : t.paywall.featureWheel}<br />
         {t.paywall.featureBonusPoints}<br />
         {t.paywall.featureDesign}

@@ -332,6 +332,8 @@ export const TEXT_EN = {
   noPairText:
     "Invite your partner to take polls, tests and games together.",
   invitePartner: "Invite partner",
+  orDivider: "or",
+  meetSomeoneButton: "Meet someone 💘",
 
   // Pair proposal from a Dating match (see handleProposePair).
   incomingProposalTitle: "{name} wants to create a pair with you",

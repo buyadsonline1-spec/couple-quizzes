@@ -334,6 +334,8 @@ export const TEXT_FI = {
     noPairText:
       "Kutsu kumppanisi tekemään kyselyitä, testejä ja pelejä yhdessä.",
     invitePartner: "Kutsu kumppani",
+    orDivider: "tai",
+    meetSomeoneButton: "Tutustu jonkuun 💘",
 
     // Parin ehdotus Treffien osumasta (ks. handleProposePair).
     incomingProposalTitle: "{name} ehdottaa parin luomista",
