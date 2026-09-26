@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { validateRequestAuth } from "@/lib/server/telegram-auth";
+import { PET_ITEM_STARS } from "@/lib/server/pet-items";
 
 const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
 
@@ -46,21 +47,11 @@ const PLANS: Record<
 
 // Вещи для питомца, доступные только за Stars (не за очки) — тот же
 // принцип, что и у dating_superlike: клиент присылает только itemId,
-// цену и допустимость решает сервер. Список id должен совпадать с
-// grant_pair_pet_item (supabase/pair_pets_unlocks.sql) — иначе оплата
-// пройдёт, а выдать вещь боту будет нечего.
-const PET_ITEM_STARS: Record<string, { title: string; amount: number }> = {
-  hat_crown: { title: "Корона для питомца", amount: 40 },
-  hat_unicorn: { title: "Рог единорога для питомца", amount: 35 },
-  hat_astro: { title: "Шлем космонавта для питомца", amount: 45 },
-  acc_medal: { title: "Медаль для питомца", amount: 35 },
-  acc_monocle: { title: "Монокль для питомца", amount: 30 },
-  acc_bling: { title: "Золотая цепь для питомца", amount: 40 },
-  jacket_puffer: { title: "Пуховик для питомца", amount: 45 },
-  jacket_tux: { title: "Смокинг для питомца", amount: 55 },
-  jacket_superhero: { title: "Плащ супергероя для питомца", amount: 50 },
-  room_space: { title: "Комната «Космос» для питомца", amount: 60 },
-};
+// цену и допустимость решает сервер. Список (PET_ITEM_STARS) теперь
+// общий с Apple IAP-веткой этих же вещей (см. lib/server/pet-items.ts)
+// — id должен совпадать с grant_pair_pet_item (supabase/
+// pair_pets_unlocks.sql) — иначе оплата пройдёт, а выдать вещь боту
+// будет нечего.
 
 export async function POST(req: NextRequest) {
   try {

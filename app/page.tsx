@@ -10157,131 +10157,99 @@ function MainMenu({
         <div style={{ fontSize: 20, color: accent, flexShrink: 0 }}>→</div>
       </button>
 
-      {!isCapacitorApp() && (
-        <button
-          type="button"
-          onClick={onOpenPet}
-          style={{
-            ...cardBaseStyle(),
-            width: "100%",
-            padding: 16,
-            marginBottom: 12,
-            textAlign: "left",
-            cursor: "pointer",
-            border: "1px solid rgba(255,255,255,0.4)",
-            background: isDark
-              ? "linear-gradient(135deg, rgba(255,180,120,0.18), rgba(143,107,255,0.16))"
-              : "linear-gradient(135deg, rgba(255,180,120,0.24), rgba(143,107,255,0.16))",
-            display: "flex",
-            alignItems: "center",
-            gap: 12,
-          }}
-        >
-          <div style={{ fontSize: 30, flexShrink: 0 }}>🐾</div>
+      <button
+        type="button"
+        onClick={onOpenPet}
+        style={{
+          ...cardBaseStyle(),
+          width: "100%",
+          padding: 16,
+          marginBottom: 12,
+          textAlign: "left",
+          cursor: "pointer",
+          border: "1px solid rgba(255,255,255,0.4)",
+          background: isDark
+            ? "linear-gradient(135deg, rgba(255,180,120,0.18), rgba(143,107,255,0.16))"
+            : "linear-gradient(135deg, rgba(255,180,120,0.24), rgba(143,107,255,0.16))",
+          display: "flex",
+          alignItems: "center",
+          gap: 12,
+        }}
+      >
+        <div style={{ fontSize: 30, flexShrink: 0 }}>🐾</div>
 
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ fontSize: 15, fontWeight: 900, color: ink }}>
-              {getMarket() !== "ru" ? "Your pet" : "Ваш питомец"}
-            </div>
-            <div
-              style={{
-                marginTop: 2,
-                fontSize: 12.5,
-                color: muted,
-                lineHeight: 1.35,
-              }}
-            >
-              {hasPair
-                ? getMarket() !== "ru"
-                  ? "Grows together with your progress"
-                  : "Растёт вместе с вашим прогрессом"
-                : getMarket() !== "ru"
-                  ? "Preview — pair up to raise it for real"
-                  : "Демо — заведите пару, чтобы растить по-настоящему"}
-            </div>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ fontSize: 15, fontWeight: 900, color: ink }}>
+            {getMarket() !== "ru" ? "Your pet" : "Ваш питомец"}
           </div>
+          <div
+            style={{
+              marginTop: 2,
+              fontSize: 12.5,
+              color: muted,
+              lineHeight: 1.35,
+            }}
+          >
+            {hasPair
+              ? getMarket() !== "ru"
+                ? "Grows together with your progress"
+                : "Растёт вместе с вашим прогрессом"
+              : getMarket() !== "ru"
+                ? "Preview — pair up to raise it for real"
+                : "Демо — заведите пару, чтобы растить по-настоящему"}
+          </div>
+        </div>
 
-          <div style={{ fontSize: 20, color: accent, flexShrink: 0 }}>→</div>
-        </button>
-      )}
+        <div style={{ fontSize: 20, color: accent, flexShrink: 0 }}>→</div>
+      </button>
 
-      {isCapacitorApp() ? (
-        // iOS-сборка — сетка ровно как была на момент отправки на
-        // проверку Apple, без изменений (Знакомства ей не видны и так,
-        // отдельная новая сетка ниже — только для Telegram).
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
-            gap: 10,
-          }}
-        >
-          <MenuButton label={t.menu.polls}
-    emoji="💌"
-    onClick={() => {
-      if (!appState.profile.gender) {
-        onNavigate("gender-select");
-        return;
+      {
+        // Опросы/Тесты, Игры, Пара/Профиль (и Знакомства в Telegram) —
+        // во нижнем баре (см. BottomNavBar), сетка ссылок им не нужна.
+        // Раньше эта сетка была общей веткой для обеих платформ, а iOS
+        // получал отдельную старую полную сетку (Знакомства ей и так не
+        // видны) — это было временной заморозкой на время ревью Apple,
+        // не платформенным ограничением, поэтому теперь одна и та же
+        // разметка для Telegram и iOS. Тут остаются только карточки, для
+        // которых нет отдельной вкладки: вопрос дня, рулетка призов, топ
+        // игроков.
       }
-
-      onNavigate(appState.profile.gender === "boy" ? "polls-boy" : "polls-girl");
-    }}
-  />
-          <MenuButton label={t.menu.games} emoji="🎮" onClick={() => onNavigate("games")} />
-          <MenuButton label={t.menu.tests} emoji="🧠" onClick={() => onNavigate("tests")} />
-          <MenuButton label={t.menu.rewards} emoji="🎁" onClick={() => onNavigate("rewards")} />
-          <MenuButton label={t.menu.pair} emoji="💕" onClick={() => onNavigate("pair")} />
-          <MenuButton label={t.menu.topPlayers} emoji="🏆" onClick={() => onNavigate("top")} />
-
-          <div style={{ gridColumn: "1 / -1" }}>
-            <MenuButton label={t.menu.profile}
-              emoji="👤"
-              onClick={() => onNavigate("profile")}
-            />
-          </div>
-        </div>
-      ) : (
-        // Telegram — Опросы/Тесты, Игры, Пара/Профиль и Знакомства
-        // теперь во нижнем баре (см. BottomNavBar), сетка ссылок им
-        // больше не нужна. Тут остаются только карточки, для которых
-        // нет отдельной вкладки: вопрос дня, рулетка призов, топ игроков.
-        <div style={{ display: "grid", gap: 10 }}>
-          {hasPair && (
-            <button
-              type="button"
-              onClick={() => onNavigate("daily-pair-question")}
-              style={{
-                ...cardBaseStyle(),
-                padding: 16,
-                border: "none",
-                display: "flex",
-                alignItems: "center",
-                gap: 12,
-                cursor: "pointer",
-                textAlign: "left",
-                width: "100%",
-                background: "rgba(255,255,255,0.24)",
-              }}
-            >
-              <div style={{ fontSize: 24, flexShrink: 0 }}>🔥</div>
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontSize: 14, fontWeight: 900, color: ink }}>
-                  {t.pair.dailyQuestion}
-                </div>
-                <div style={{ marginTop: 2, fontSize: 12, color: muted }}>
-                  {t.pair.streakDaysLabel}: {appState.dailyPairStreak?.current || 0} {t.pair.streakDaysWord}
-                </div>
+      <div style={{ display: "grid", gap: 10 }}>
+        {hasPair && (
+          <button
+            type="button"
+            onClick={() => onNavigate("daily-pair-question")}
+            style={{
+              ...cardBaseStyle(),
+              padding: 16,
+              border: "none",
+              display: "flex",
+              alignItems: "center",
+              gap: 12,
+              cursor: "pointer",
+              textAlign: "left",
+              width: "100%",
+              background: "rgba(255,255,255,0.24)",
+            }}
+          >
+            <div style={{ fontSize: 24, flexShrink: 0 }}>🔥</div>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ fontSize: 14, fontWeight: 900, color: ink }}>
+                {t.pair.dailyQuestion}
               </div>
-              <div style={{ fontSize: 18, color: accent, flexShrink: 0 }}>→</div>
-            </button>
-          )}
+              <div style={{ marginTop: 2, fontSize: 12, color: muted }}>
+                {t.pair.streakDaysLabel}: {appState.dailyPairStreak?.current || 0} {t.pair.streakDaysWord}
+              </div>
+            </div>
+            <div style={{ fontSize: 18, color: accent, flexShrink: 0 }}>→</div>
+          </button>
+        )}
 
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
-            <MenuButton label={t.menu.rewards} emoji="🎡" onClick={() => onNavigate("rewards")} theme={theme} />
-            <MenuButton label={t.menu.topPlayers} emoji="🏆" onClick={() => onNavigate("top")} theme={theme} />
-          </div>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+          <MenuButton label={t.menu.rewards} emoji="🎡" onClick={() => onNavigate("rewards")} theme={theme} />
+          <MenuButton label={t.menu.topPlayers} emoji="🏆" onClick={() => onNavigate("top")} theme={theme} />
         </div>
-      )}
+      </div>
     </div>
   );
 }
@@ -10329,11 +10297,19 @@ function BottomNavBar({
   theme?: "light" | "dark";
   t: any;
 }) {
+  // Знакомства покупают суперлайк/буст только через Telegram Stars
+  // (см. openDatingStarsInvoice) — на iOS платить так нельзя (Apple
+  // Guideline 3.1.1 требует In-App Purchase), а нормальный Apple IAP
+  // для этих покупок ещё не сделан. Поэтому вкладка скрыта именно на
+  // Capacitor — в отличие от нижнего бара и тёмной темы в целом, это
+  // не "заморозка на время ревью", а настоящее ограничение платформы.
   const tabs: Array<{ id: BottomNavTabId; icon: string; label: string }> = [
     { id: "menu", icon: "🏠", label: t.menu.home },
     { id: "polls-tests-menu", icon: "💌", label: t.menu.polls },
     { id: "games", icon: "🎮", label: t.menu.games },
-    { id: "dating-swipe", icon: "💘", label: t.dating.swipeTitle },
+    ...(isCapacitorApp()
+      ? []
+      : [{ id: "dating-swipe" as const, icon: "💘", label: t.dating.swipeTitle }]),
     { id: "pair-profile-menu", icon: "🫂", label: t.menu.pair },
   ];
 
@@ -17976,9 +17952,10 @@ function PetScreen({
   function renderShopRow(slot: PetItemSlot) {
     // Порядок ряда — по возрастанию "стоимости": сначала по-настоящему
     // бесплатные (только за уровень), потом за игровые очки (дешевле →
-    // дороже), и только в конце — за Telegram Stars (реальные деньги).
-    // Раньше был только один переход (очки → Stars), бесплатные вещи
-    // могли оказаться где угодно в середине ряда.
+    // дороже), и только в конце — за реальные деньги (Telegram Stars
+    // или, на iOS, Apple IAP — см. handleBuyPetItemWithApple). Раньше
+    // был только один переход (очки → Stars), бесплатные вещи могли
+    // оказаться где угодно в середине ряда.
     const items = PET_SHOP_ITEMS.filter((item) => item.slot === slot).sort(
       (a, b) => petItemTier(a) - petItemTier(b) || a.price - b.price
     );
@@ -21039,14 +21016,54 @@ async function handleEquipPetItem(slot: PetItemSlot, itemId: string | null) {
   }
 }
 
-// Вещи за Stars (hat_crown/acc_medal/room_space) не списывают
-// solo_points вообще — их выдаёт bot.ts (successful_payment →
-// grant_pair_pet_item) сразу после реальной оплаты. Здесь только
-// открываем инвойс и, если он оплачен, перечитываем состояние
-// питомца — как и остальные Stars-покупки в приложении (см.
-// openDatingStarsInvoice), без ветки Apple IAP: питомец сейчас
-// доступен только в Telegram-версии.
+// Вещи за реальные деньги (hat_crown/acc_medal/room_space и т.п.) не
+// списывают solo_points вообще — выдаёт их либо bot.ts
+// (successful_payment → grant_pair_pet_item, Telegram Stars), либо
+// apple-iap-verify-pet-item (Apple IAP, standalone iOS) — тот же
+// принцип, что и у Premium (handleBuyPremium): один способ оплаты для
+// Telegram, другой для iOS, оба ведут к одной и той же
+// grant_pair_pet_item на сервере.
 async function handleBuyPetItemWithStars(item: PetShopItem): Promise<{ ok: boolean }> {
+  if (isCapacitorApp()) {
+    try {
+      const { ApplePurchase, APPLE_PET_ITEM_PRODUCT_ID } = await import(
+        "@/lib/applePurchase"
+      );
+
+      const purchaseResult = await ApplePurchase.purchase({
+        productId: APPLE_PET_ITEM_PRODUCT_ID,
+      });
+
+      const { data: sessionData } = await supabase.auth.getSession();
+      const supabaseAccessToken = sessionData.session?.access_token;
+
+      if (!supabaseAccessToken) {
+        throw new Error(t.errors.noActiveSession);
+      }
+
+      const verifyRes = await fetch("/api/payments/apple-iap-verify-pet-item", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          supabaseAccessToken,
+          signedTransaction: purchaseResult.jwsRepresentation,
+          itemId: item.id,
+        }),
+      });
+      const verifyData = await verifyRes.json();
+
+      if (!verifyRes.ok || !verifyData?.ok) {
+        return { ok: false };
+      }
+
+      await handleOpenPet();
+      return { ok: true };
+    } catch (error) {
+      console.error("Apple pet item purchase error:", error);
+      return { ok: false };
+    }
+  }
+
   const paid = await openDatingStarsInvoice("pet_item", { itemId: item.id });
   if (!paid) return { ok: false };
 
@@ -22854,14 +22871,18 @@ if (finishedAllTests && !appState.completionBonusesClaimed.tests) {
 
   if (!mounted) return null;
 
-  // Нижний бар — только Telegram (см. комментарий у BottomNavBar) и
-  // только на "корневых" экранах разделов.
+  // Нижний бар — на "корневых" экранах разделов, для обеих платформ.
+  // Раньше был только для Telegram ("iOS-сборка на повторном ревью
+  // Apple, её экран не трогаем") — по факту это была временная
+  // заморозка на время ревью, а не постоянное ограничение платформы
+  // (в отличие, например, от Знакомств в BottomNavBar выше, которые
+  // скрыты на iOS по реальной причине — Stars-покупки там нельзя).
   const bottomNavTab = bottomNavActiveTab(screen);
-  const showBottomNav = !isCapacitorApp() && bottomNavTab !== null;
+  const showBottomNav = bottomNavTab !== null;
 
-  // Тёмная тема — тоже только Telegram, та же причина, что и у бара
-  // (iOS-сборка сейчас на повторном ревью Apple, её экран не трогаем).
-  const isDarkTheme = !isCapacitorApp() && theme === "dark";
+  // Тёмная тема — та же история: раньше отключена только на время
+  // ревью, ничего платформенно-специфичного в ней нет.
+  const isDarkTheme = theme === "dark";
 
   return (
     <main
@@ -22986,7 +23007,7 @@ if (finishedAllTests && !appState.completionBonusesClaimed.tests) {
       : "gender-select"
   )
 }
-  theme={isCapacitorApp() ? undefined : theme}
+  theme={theme}
   />
 )}
 
@@ -23052,7 +23073,7 @@ if (finishedAllTests && !appState.completionBonusesClaimed.tests) {
       }));
       setScreen("menu");
     }}
-    theme={isCapacitorApp() ? undefined : theme}
+    theme={theme}
   />
 )}
 
@@ -23065,8 +23086,8 @@ if (finishedAllTests && !appState.completionBonusesClaimed.tests) {
     appState={appState}
     onOpenDating={handleOpenDating}
     onOpenPet={handleOpenPet}
-    theme={isCapacitorApp() ? undefined : theme}
-    onToggleTheme={isCapacitorApp() ? undefined : toggleTheme}
+    theme={theme}
+    onToggleTheme={toggleTheme}
    onNavigate={(next) => {
   // Раздел открывается всегда — сам paywall (если нужен) показывает
   // конкретный экран (PollsScreen/TestsScreen), а не общий счётчик.
@@ -23094,7 +23115,7 @@ showPaywall={() => {
   setPaywallBackScreen(screen);
   setScreen("paywall");
 }}
-    theme={isCapacitorApp() ? undefined : theme}
+    theme={theme}
   />
 )}
 
@@ -23110,7 +23131,7 @@ showPaywall={() => {
       setPaywallBackScreen("menu");
       setScreen("paywall");
     }}
-    theme={isCapacitorApp() ? undefined : theme}
+    theme={theme}
   />
 )}
 
@@ -23122,7 +23143,7 @@ showPaywall={() => {
   setAppState={setAppState}
  onCompleteGame={handleCompleteGame}
   onClaimStepReward={claimGameStepReward}
-  theme={isCapacitorApp() ? undefined : theme}
+  theme={theme}
 />
 )}
 
@@ -23138,7 +23159,7 @@ showPaywall={() => {
       setScreen("paywall");
     }}
     onCheckDailyTestAccess={consumeDailyTestAccess}
-    theme={isCapacitorApp() ? undefined : theme}
+    theme={theme}
   />
 )}
 
@@ -23151,7 +23172,7 @@ showPaywall={() => {
             onRewardsStateLoaded={(wonRewards) =>
               setAppState((prev) => ({ ...prev, wonRewards }))
             }
-            theme={isCapacitorApp() ? undefined : theme}
+            theme={theme}
           />
         )}
 
@@ -23179,7 +23200,7 @@ showPaywall={() => {
   refreshing={topRefreshing}
 
     onBack={() => setScreen("menu")}
-    theme={isCapacitorApp() ? undefined : theme}
+    theme={theme}
     t={t}
   />
 )}
@@ -23201,8 +23222,8 @@ showPaywall={() => {
   onDisplayNameSaved={(name) =>
     setUser((prev) => (prev ? { ...prev, first_name: name, last_name: "" } : prev))
   }
-  theme={isCapacitorApp() ? undefined : theme}
-  onToggleTheme={isCapacitorApp() ? undefined : toggleTheme}
+  theme={theme}
+  onToggleTheme={toggleTheme}
 />
 
 )}
@@ -23210,7 +23231,7 @@ showPaywall={() => {
 {screen === "freePremium" && (
   <FreePremiumScreen
     onBack={() => setScreen("profile")}
-    theme={isCapacitorApp() ? undefined : theme}
+    theme={theme}
   />
 )}
 
@@ -23220,7 +23241,7 @@ showPaywall={() => {
     user={user}
     appState={appState}
     onBack={() => setScreen("profile")}
-    theme={isCapacitorApp() ? undefined : theme}
+    theme={theme}
   />
 )}
 
@@ -23251,7 +23272,7 @@ showPaywall={() => {
   incomingPairProposals={incomingPairProposals}
   pairProposalResponding={pairProposalResponding}
   onRespondPairProposal={handleRespondPairProposal}
-  theme={isCapacitorApp() ? undefined : theme}
+  theme={theme}
 />
 )}
 
@@ -23261,7 +23282,7 @@ showPaywall={() => {
     onBack={() => setScreen("pair")}
     onCreateInvite={handleCreateInvite}
     onJoinByCode={handleJoinByCode}
-    theme={isCapacitorApp() ? undefined : theme}
+    theme={theme}
   />
 )}
 
@@ -23274,7 +23295,7 @@ showPaywall={() => {
     setAppState={setAppState}
     onBack={() => setScreen("pair")}
     onOpenStreakInfo={() => setScreen("pair-streak-info")}
-    theme={isCapacitorApp() ? undefined : theme}
+    theme={theme}
   />
 )}
 
@@ -23282,14 +23303,14 @@ showPaywall={() => {
   <PairStreakInfoScreen
     appState={appState}
     onBack={() => setScreen("daily-pair-question")}
-    theme={isCapacitorApp() ? undefined : theme}
+    theme={theme}
   />
 )}
 
 {screen === "ai-psychologist-chat" && (
   <AiPsychologistChatScreen
     onBack={() => setScreen("menu")}
-    theme={isCapacitorApp() ? undefined : theme}
+    theme={theme}
   />
 )}
 
@@ -23304,7 +23325,7 @@ showPaywall={() => {
       }
       setScreen(appState.profile.gender === "boy" ? "polls-boy" : "polls-girl");
     }}
-    theme={isCapacitorApp() ? undefined : theme}
+    theme={theme}
   />
 )}
 
@@ -23312,7 +23333,7 @@ showPaywall={() => {
   <PairLevelInfoScreen
     pairLevel={getPairLevelInfo(animatedPairPoints)}
     onBack={() => setScreen("pair")}
-    theme={isCapacitorApp() ? undefined : theme}
+    theme={theme}
   />
 )}
 
@@ -23337,7 +23358,7 @@ showPaywall={() => {
     onEquipItem={handleEquipPetItem}
     onBack={() => setScreen("menu")}
     onGoToPair={() => setScreen("pair")}
-    theme={isCapacitorApp() ? undefined : theme}
+    theme={theme}
   />
 )}
 
@@ -23345,7 +23366,7 @@ showPaywall={() => {
   <DatingIntroScreen
     t={t}
     onStart={() => setScreen("dating-profile")}
-    theme={isCapacitorApp() ? undefined : theme}
+    theme={theme}
   />
 )}
 
@@ -23364,7 +23385,7 @@ showPaywall={() => {
     onBack={() => setScreen(datingProfile ? "dating-swipe" : "dating-intro")}
     onSave={handleSaveDatingProfile}
     onUploadPhoto={handleUploadDatingPhoto}
-    theme={isCapacitorApp() ? undefined : theme}
+    theme={theme}
   />
 )}
 
@@ -23393,7 +23414,7 @@ showPaywall={() => {
       setScreen("dating-boost");
     }}
     onSuperlike={handleSuperlike}
-    theme={isCapacitorApp() ? undefined : theme}
+    theme={theme}
   />
 )}
 
@@ -23408,7 +23429,7 @@ showPaywall={() => {
     onBuy={handleBuyBoost}
     onClaimFree={handleClaimFreeBoost}
     onBack={() => setScreen("dating-swipe")}
-    theme={isCapacitorApp() ? undefined : theme}
+    theme={theme}
   />
 )}
 
@@ -23433,7 +23454,7 @@ showPaywall={() => {
     emptyTitle={t.dating.noLikesTitle}
     emptyText={t.dating.noLikesText}
     onBack={() => setScreen("dating-swipe")}
-    theme={isCapacitorApp() ? undefined : theme}
+    theme={theme}
   />
 )}
 
@@ -23444,7 +23465,7 @@ showPaywall={() => {
     onOpenChat={handleOpenDatingChat}
     onOpenSwipe={() => setScreen("dating-swipe")}
     onBack={() => setScreen("dating-swipe")}
-    theme={isCapacitorApp() ? undefined : theme}
+    theme={theme}
   />
 )}
 
@@ -23469,14 +23490,14 @@ showPaywall={() => {
     pairProposalSending={pairProposalSending}
     onProposePair={handleProposePair}
     onDismissPairProposal={() => dismissPairProposalBanner(activeChatMatch.matchId)}
-    theme={isCapacitorApp() ? undefined : theme}
+    theme={theme}
   />
 )}
 
 {screen === "polls-tests-menu" && (
   <MenuChooserScreen
     t={t}
-    theme={isCapacitorApp() ? undefined : theme}
+    theme={theme}
     title={t.menu.pollsAndTests}
     subtitle={t.menu.pollsAndTestsSubtitle}
     options={[
@@ -23505,7 +23526,7 @@ showPaywall={() => {
 {screen === "pair-profile-menu" && (
   <MenuChooserScreen
     t={t}
-    theme={isCapacitorApp() ? undefined : theme}
+    theme={theme}
     title={t.menu.pairAndProfile}
     subtitle={t.menu.pairAndProfileSubtitle}
     options={[

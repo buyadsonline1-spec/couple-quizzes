@@ -27,3 +27,13 @@ export const ApplePurchase = registerPlugin<ApplePurchasePlugin>(
 // тем, что будет создано в App Store Connect.
 export const APPLE_PREMIUM_MONTH_PRODUCT_ID =
   "com.couplequizzes.app.premium_month2";
+
+// Один товар на ВСЕ платные (Stars на Telegram) вещи для питомца —
+// какую именно вещь выдать, решает itemId, отдельно проверенный
+// сервером (см. app/api/payments/apple-iap-verify-pet-item и
+// lib/server/pet-items.ts), а не отдельный Apple-продукт на каждую
+// вещь. Должен быть создан в App Store Connect как ПОТРЕБЛЯЕМЫЙ
+// (Consumable) товар — иначе повторная покупка второй вещи для
+// питомца не пройдёт (StoreKit посчитает первую покупку уже
+// "владеемой" и не даст купить снова).
+export const APPLE_PET_ITEM_PRODUCT_ID = "com.couplequizzes.app.pet_item";
