@@ -9208,6 +9208,19 @@ function AuthScreen() {
         const { data, error: authError } = await supabase.auth.signUp({
           email,
           password,
+          options: {
+            // Без этого ссылка в письме ведёт на Site URL проекта
+            // Supabase (обычно корень веб-версии приложения) — человек
+            // открывает полноценный экран "Старт", не понимает, что это
+            // и подтвердилось ли вообще что-то, и не знает, что нужно
+            // вернуться в приложение. Отдельная страница ниже — только
+            // сообщение "всё подтверждено, вернись в приложение".
+            // Redirect URL нужно ОДИН РАЗ добавить в Supabase Dashboard
+            // → Authentication → URL Configuration → Redirect URLs,
+            // иначе Supabase проигнорирует это поле и всё равно уйдёт
+            // на Site URL.
+            emailRedirectTo: `${window.location.origin}/auth/confirmed?lang=${market}`,
+          },
         });
 
         if (authError) {
@@ -21908,6 +21921,50 @@ try {
 } catch (error) {
   console.error("bootstrap request error:", error);
   return;
+}
+
+// Попап дневного бонуса решался ВЫШЕ (setShowDailyBonus и т.д.)
+// только по localStorage, до того, как у нас появился initData для
+// авторизованного запроса — на iOS (Capacitor, живой URL в WKWebView)
+// каждая переустановка тестового билда стирает localStorage, и попап
+// оптимистично показывался снова, хотя claim_daily_bonus на сервере
+// уже честно отмечен сегодняшним числом. Здесь подтягиваем реальное
+// состояние с сервера и, если бонус уже забран сегодня, тут же прячем
+// уже успевший показаться попап и чиним appState, чтобы дальше клиент
+// снова был в согласии с сервером (см. app/api/rewards/daily-bonus-state).
+try {
+  const dailyBonusStateResponse = await fetch(
+    "/api/rewards/daily-bonus-state",
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ initData }),
+    }
+  );
+  const dailyBonusState = await dailyBonusStateResponse.json();
+
+  if (dailyBonusStateResponse.ok && dailyBonusState?.ok) {
+    const serverLastClaimDate: string | null = dailyBonusState.lastClaimDate;
+    const serverStreakDay: number = dailyBonusState.streakDay ?? 0;
+    const serverAlreadyClaimed = hasClaimedToday(serverLastClaimDate);
+    const serverNextDay = getNextStreakDay(serverLastClaimDate, serverStreakDay);
+
+    setAppState((prev) => ({
+      ...prev,
+      dailyBonus: {
+        ...prev.dailyBonus,
+        streakDay: serverStreakDay,
+        lastClaimDate: serverLastClaimDate,
+      },
+    }));
+    setClaimableDay(serverNextDay);
+    setBonusClaimAvailable(!serverAlreadyClaimed);
+    if (serverAlreadyClaimed) {
+      setShowDailyBonus(false);
+    }
+  }
+} catch (error) {
+  console.error("daily bonus state request error:", error);
 }
 
 // В Capacitor-сборке до этого момента telegramId был временным
