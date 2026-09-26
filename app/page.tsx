@@ -17952,13 +17952,18 @@ function PetScreen({
   function renderShopRow(slot: PetItemSlot) {
     // Порядок ряда — по возрастанию "стоимости": сначала по-настоящему
     // бесплатные (только за уровень), потом за игровые очки (дешевле →
-    // дороже), и только в конце — за реальные деньги (Telegram Stars
-    // или, на iOS, Apple IAP — см. handleBuyPetItemWithApple). Раньше
-    // был только один переход (очки → Stars), бесплатные вещи могли
-    // оказаться где угодно в середине ряда.
-    const items = PET_SHOP_ITEMS.filter((item) => item.slot === slot).sort(
-      (a, b) => petItemTier(a) - petItemTier(b) || a.price - b.price
-    );
+    // дороже), и только в конце — за Telegram Stars (реальные деньги).
+    // Раньше был только один переход (очки → Stars), бесплатные вещи
+    // могли оказаться где угодно в середине ряда.
+    //
+    // На iOS Stars-вещи временно скрыты по просьбе пользователя — код
+    // Apple IAP для них уже готов (handleBuyPetItemWithStars,
+    // apple-iap-verify-pet-item), но товар com.couplequizzes.app.pet_item
+    // ещё не создан в App Store Connect. Когда будет готов — эту
+    // строку достаточно вернуть к `item.slot === slot`.
+    const items = PET_SHOP_ITEMS.filter(
+      (item) => item.slot === slot && (!isCapacitorApp() || !item.priceStars)
+    ).sort((a, b) => petItemTier(a) - petItemTier(b) || a.price - b.price);
     return (
       <div
         style={{
