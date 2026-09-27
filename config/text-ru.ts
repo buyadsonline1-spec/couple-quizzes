@@ -520,6 +520,10 @@ export const TEXT_RU = {
     noPrizes: "Пока призов нет",
     recentPrizes: "Выиграно призов",
     totalPoints: "Всего очков",
+    portraitTitle: "Психологический портрет",
+    portraitSubtitle: "Из результатов твоих тестов — те же данные используются для подбора анкет в Знакомствах",
+    portraitCta: "Пройти оставшиеся тесты",
+    portraitNotDoneYet: "Ещё не пройден",
   },
 
   notifications: {

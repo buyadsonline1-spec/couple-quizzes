@@ -101,6 +101,7 @@ type Screen =
   | "pair-invite"
   | "top"
   | "profile"
+  | "account-settings"
   | "gender-select"
   | "daily-pair-question"
   | "pair-streak-info"
@@ -10017,7 +10018,7 @@ function MainMenu({
             </button>
           )}
           <button
-            onClick={() => onNavigate("profile")}
+            onClick={() => onNavigate("account-settings")}
             aria-label={t.account.settingsTitle}
             style={{
               flexShrink: 0,
@@ -14264,27 +14265,11 @@ function TestsScreen({
   completedTestIds,
   onBack,
   onCompleteTest,
-  pair,
-  isPremium,
-  showPaywall,
-  onCheckDailyTestAccess,
   theme,
 }: {
   completedTestIds: string[];
   onBack: () => void;
   onCompleteTest: (test: TestDefinition, answers: number[]) => Promise<void>;
-
-  pair: PairState;
-  // См. комментарий в PollsScreen — pair.isPremium читает несуществующую
-  // колонку и всегда false, настоящий флаг — appState.isPremium.
-  isPremium: boolean;
-  showPaywall: () => void;
-  // Персональный дневной лимит теста — сервер сам знает premium-статус
-  // и атомарно списывает попытку. См. consumeDailyTestAccess.
-  onCheckDailyTestAccess: () => Promise<{
-    allowed: boolean;
-    isPremium: boolean;
-  } | null>;
   // Undefined на iOS (тема там не включена) — читается как "light".
   theme?: "light" | "dark";
 }) {
@@ -19262,51 +19247,35 @@ function PetScreen({
   );
 }
 
-function ProfileAndStatsScreen({
+// Настройки аккаунта — раньше жили внутри ProfileAndStatsScreen одной
+// длинной страницей вместе с личностью/статистикой; по просьбе
+// разделены: этот экран — только управление (имя/язык/пол/тема,
+// пригласить друзей, удаление аккаунта), ProfileAndStatsScreen ниже —
+// личность, психологический портрет и статистика. Язык и тема — общий
+// паттерн "заголовок + кнопка с текущим значением, тап открывает
+// список" вместо трёх кнопок-пилюль подряд; пол по-прежнему ведёт на
+// отдельный экран gender-select (там реальный выбор, инлайновый список
+// тут не нужен), но оформлен тем же рядом для единообразия.
+function AccountSettingsScreen({
   user,
-  points,
-  stats,
-  bonusState,
-  wonRewards,
- pairPollAnswers,
-  referrals,
-  isPremium,
   currentGender,
-  onBack,
   onNavigate,
+  onBack,
   onDisplayNameSaved,
   theme,
   onToggleTheme,
 }: {
-
-
   user: TgUser | null;
-  points: number;
-  stats: AppStats;
-  bonusState: DailyBonusState;
-  wonRewards: WonReward[];
-    onNavigate: (screen: Screen) => void;
-  pairPollAnswers: Record<string, number[]>;
-
-  referrals: {
-    invitedUsers: string[];
-    totalReward: number;
-
-  };
-  isPremium: boolean;
   currentGender: "boy" | "girl" | null;
+  onNavigate: (screen: Screen) => void;
   onBack: () => void;
   onDisplayNameSaved?: (name: string) => void;
-  // Тёмная тема — Telegram-only (см. toggleTheme в Page()), поэтому
-  // опционально: на iOS эти пропы просто не передаются и строка ниже
-  // не рисуется.
+  // Undefined на iOS (тема там не включена) — читается как "light".
   theme?: "light" | "dark";
   onToggleTheme?: () => void;
 }) {
-
-
   const market = getMarket();
-const t = market === "fi" ? TEXT_FI : market === "en" ? TEXT_EN : TEXT_RU;
+  const t = market === "fi" ? TEXT_FI : market === "en" ? TEXT_EN : TEXT_RU;
   const isDark = theme === "dark";
   const ink = isDark ? "#e6d4f0" : "#1f1d3a";
   const muted = isDark ? "#c9b3e0" : "#5a5378";
@@ -19315,17 +19284,16 @@ const t = market === "fi" ? TEXT_FI : market === "en" ? TEXT_EN : TEXT_RU;
     [user?.first_name, user?.last_name].filter(Boolean).join(" ") ||
     "Пользователь";
 
- const pairStats = calculatePairStats(pairPollAnswers);
+  const [nickname, setNickname] = useState(fullName === "Пользователь" ? "" : fullName);
+  const [savingNickname, setSavingNickname] = useState(false);
+  const [nicknameMessage, setNicknameMessage] = useState<string | null>(null);
+  const [openDropdown, setOpenDropdown] = useState<"language" | "theme" | null>(null);
 
   // Apple Guideline 5.1.1(v) — apps with account creation must offer
   // in-app account deletion. Only the Capacitor build has a real
   // Supabase Auth account to delete; Telegram users never see this.
   const [confirmingDelete, setConfirmingDelete] = useState(false);
   const [deletingAccount, setDeletingAccount] = useState(false);
-
-  const [nickname, setNickname] = useState(fullName === "Пользователь" ? "" : fullName);
-  const [savingNickname, setSavingNickname] = useState(false);
-  const [nicknameMessage, setNicknameMessage] = useState<string | null>(null);
 
   async function handleSaveNickname() {
     const initData = window.Telegram?.WebApp?.initData;
@@ -19395,6 +19363,455 @@ const t = market === "fi" ? TEXT_FI : market === "en" ? TEXT_EN : TEXT_RU;
     }
   }
 
+  // Единый ряд "заголовок слева, кнопка со значением справа" — тот же
+  // визуальный язык, что и остальные карточки (cardBaseStyle), просто
+  // без обёртки-карточки, потому что рядов несколько подряд внутри
+  // одной карточки "Настройки аккаунта".
+  function settingRow(
+    label: string,
+    valueLabel: string,
+    onClick: () => void,
+    isOpen?: boolean
+  ) {
+    return (
+      <button
+        type="button"
+        onClick={onClick}
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          width: "100%",
+          padding: "10px 0",
+          border: "none",
+          borderBottom: isDark ? "1px solid rgba(255,255,255,0.08)" : "1px solid rgba(0,0,0,0.06)",
+          background: "none",
+          cursor: "pointer",
+          textAlign: "left",
+        }}
+      >
+        <span style={{ fontSize: 13, fontWeight: 800, color: ink }}>{label}</span>
+        <span
+          style={{
+            display: "inline-flex",
+            alignItems: "center",
+            gap: 5,
+            padding: "6px 12px",
+            borderRadius: 999,
+            fontSize: 12,
+            fontWeight: 800,
+            color: isOpen ? "#fff" : ink,
+            background: isOpen
+              ? isDark
+                ? "linear-gradient(135deg, #5f3dc4, #a3407e)"
+                : "linear-gradient(135deg, #8f6bff, #ff76ba)"
+              : isDark
+                ? "rgba(255,255,255,0.16)"
+                : "rgba(255,255,255,0.4)",
+          }}
+        >
+          {valueLabel}
+          <span style={{ fontSize: 9, opacity: 0.85 }}>{isOpen ? "︿" : "⌄"}</span>
+        </span>
+      </button>
+    );
+  }
+
+  function optionItem(label: string, selected: boolean, onClick: () => void) {
+    return (
+      <button
+        type="button"
+        onClick={onClick}
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          width: "100%",
+          padding: "10px 14px",
+          border: "none",
+          borderBottom: isDark ? "1px solid rgba(255,255,255,0.06)" : "1px solid rgba(0,0,0,0.05)",
+          background: selected
+            ? isDark
+              ? "rgba(255,255,255,0.08)"
+              : "rgba(255,255,255,0.5)"
+            : "none",
+          color: selected ? ink : muted,
+          fontSize: 12.5,
+          fontWeight: 700,
+          cursor: "pointer",
+          textAlign: "left",
+        }}
+      >
+        {label}
+        {selected && <span style={{ color: accent, fontWeight: 900 }}>✓</span>}
+      </button>
+    );
+  }
+
+  const languageLabel = market === "ru" ? "Русский" : market === "en" ? "English" : "Suomi";
+  const themeLabel = theme === "dark" ? `🌙 ${t.account.themeDark}` : `☀️ ${t.account.themeLight}`;
+  const genderLabel =
+    currentGender === "boy" ? t.genderSelect.boy : currentGender === "girl" ? t.genderSelect.girl : "—";
+
+  return (
+    <div style={{ padding: 16, display: "grid", gap: 14 }}>
+      <div style={{ fontSize: 24, fontWeight: 900, color: ink }}>
+        {t.account.settingsTitle}
+      </div>
+
+      <div style={{ ...cardBaseStyle(), padding: 18 }}>
+        <div style={{ fontSize: 12.5, fontWeight: 800, color: muted, marginBottom: 6 }}>
+          {t.account.nicknameLabel}
+        </div>
+        <div style={{ display: "flex", gap: 8 }}>
+          <input
+            value={nickname}
+            onChange={(e) => setNickname(e.target.value)}
+            placeholder={t.account.nicknamePlaceholder}
+            maxLength={60}
+            style={{
+              flex: 1,
+              border: "1px solid rgba(255,255,255,0.5)",
+              borderRadius: 14,
+              background: "rgba(255,255,255,0.55)",
+              padding: "12px 14px",
+              fontSize: 14,
+              color: ink,
+            }}
+          />
+          <button
+            onClick={handleSaveNickname}
+            disabled={savingNickname}
+            style={{
+              ...getPrimaryButtonStyle(isDark),
+              padding: "12px 18px",
+              opacity: savingNickname ? 0.7 : 1,
+            }}
+          >
+            {savingNickname ? t.account.nicknameSaving : t.account.nicknameSaveButton}
+          </button>
+        </div>
+        {nicknameMessage && (
+          <div style={{ marginTop: 6, fontSize: 12, color: muted }}>{nicknameMessage}</div>
+        )}
+
+        <div style={{ marginTop: 14 }}>
+          {settingRow(
+            t.account.languageLabel,
+            languageLabel,
+            () => setOpenDropdown(openDropdown === "language" ? null : "language"),
+            openDropdown === "language"
+          )}
+          {openDropdown === "language" && (
+            <div style={{ borderRadius: 12, overflow: "hidden", background: isDark ? "rgba(0,0,0,0.18)" : "rgba(0,0,0,0.05)" }}>
+              {optionItem("Русский", market === "ru", () => handleChangeLanguage("ru"))}
+              {optionItem("English", market === "en", () => handleChangeLanguage("en"))}
+              {optionItem("Suomi", market === "fi", () => handleChangeLanguage("fi"))}
+            </div>
+          )}
+
+          {settingRow(t.account.genderLabel, genderLabel, () => onNavigate("gender-select"))}
+
+          {onToggleTheme && (
+            <>
+              {settingRow(
+                t.account.themeLabel,
+                themeLabel,
+                () => setOpenDropdown(openDropdown === "theme" ? null : "theme"),
+                openDropdown === "theme"
+              )}
+              {openDropdown === "theme" && (
+                <div style={{ borderRadius: 12, overflow: "hidden", background: isDark ? "rgba(0,0,0,0.18)" : "rgba(0,0,0,0.05)" }}>
+                  {optionItem(`☀️ ${t.account.themeLight}`, theme !== "dark", () => {
+                    if (theme === "dark") onToggleTheme();
+                    setOpenDropdown(null);
+                  })}
+                  {optionItem(`🌙 ${t.account.themeDark}`, theme === "dark", () => {
+                    if (theme !== "dark") onToggleTheme();
+                    setOpenDropdown(null);
+                  })}
+                </div>
+              )}
+            </>
+          )}
+        </div>
+      </div>
+
+      <div style={{ ...cardBaseStyle(), padding: 18 }}>
+        <div style={{ fontSize: 22, fontWeight: 900, color: ink }}>
+          {t.referrals.title} 👥
+        </div>
+        <div style={{ marginTop: 8, color: muted, fontSize: 14, lineHeight: 1.45 }}>
+          {t.referrals.cardText}
+        </div>
+        <button
+          onClick={() => onNavigate("referrals")}
+          style={{ ...getPrimaryButtonStyle(isDark), width: "100%", marginTop: 12 }}
+        >
+          {t.referrals.inviteButton}
+        </button>
+      </div>
+
+      {isCapacitorApp() && (
+        <div style={{ ...cardBaseStyle(), padding: 18 }}>
+          <div style={{ fontSize: 16, fontWeight: 900, color: isDark ? "#ff8a80" : "#8a2f2f" }}>
+            {t.account.deleteAccountTitle}
+          </div>
+          <div style={{ marginTop: 6, color: muted, fontSize: 13, lineHeight: 1.45 }}>
+            {t.account.deleteAccountText}
+          </div>
+
+          {confirmingDelete ? (
+            <div style={{ display: "grid", gap: 8, marginTop: 12 }}>
+              <div style={{ fontSize: 13, fontWeight: 800, color: isDark ? "#ff8a80" : "#8a2f2f" }}>
+                {t.account.deleteAccountConfirmText}
+              </div>
+              <button
+                onClick={handleDeleteAccount}
+                disabled={deletingAccount}
+                style={{
+                  border: "none",
+                  borderRadius: 16,
+                  padding: "12px 16px",
+                  background: isDark ? "#a8362f" : "#c1352f",
+                  color: "#fff",
+                  fontWeight: 800,
+                  fontSize: 14,
+                  cursor: deletingAccount ? "default" : "pointer",
+                  opacity: deletingAccount ? 0.7 : 1,
+                }}
+              >
+                {deletingAccount ? t.common.loading : t.account.deleteAccountConfirmButton}
+              </button>
+              <button
+                onClick={() => setConfirmingDelete(false)}
+                disabled={deletingAccount}
+                style={secondaryButtonStyle}
+              >
+                {t.account.deleteAccountCancelButton}
+              </button>
+            </div>
+          ) : (
+            <button
+              onClick={() => setConfirmingDelete(true)}
+              style={{
+                border: isDark ? "1px solid rgba(255,138,128,0.4)" : "1px solid rgba(193,53,47,0.35)",
+                borderRadius: 16,
+                padding: "12px 16px",
+                background: isDark ? "rgba(255,138,128,0.12)" : "rgba(193,53,47,0.08)",
+                color: isDark ? "#ff8a80" : "#8a2f2f",
+                fontWeight: 800,
+                fontSize: 14,
+                cursor: "pointer",
+                marginTop: 12,
+                width: "100%",
+              }}
+            >
+              {t.account.deleteAccountButton}
+            </button>
+          )}
+        </div>
+      )}
+
+      <button onClick={onBack} style={{ ...secondaryButtonStyle, width: "100%" }}>
+        {t.common.back}
+      </button>
+    </div>
+  );
+}
+
+// Раньше показывал только чек-лист "пройден/не пройден" из
+// completedTestIds — по фидбеку это было "непонятно и бедно": ответы
+// тестов реально сохраняются (test_submissions) и уже используются
+// для тегов и подбора анкет в Знакомствах (app/api/test/submit,
+// lib/server/dating-compatibility.ts) — просто это нигде не было
+// видно самому пользователю. Теперь тянет ту же самую готовую
+// buildPersonalitySummary() через /api/profile/portrait и показывает
+// настоящий результат (тип языка любви, уровень доверия, сильную
+// сторону), а не факт прохождения.
+function PsychologicalPortraitCard({
+  completedTestIds,
+  onNavigate,
+  theme,
+  t,
+}: {
+  completedTestIds: string[];
+  onNavigate: (screen: Screen) => void;
+  // Undefined на iOS (тема там не включена) — читается как "light".
+  theme?: "light" | "dark";
+  t: any;
+}) {
+  const market = getMarket();
+  const isDark = theme === "dark";
+  const ink = isDark ? "#e6d4f0" : "#1f1d3a";
+  const muted = isDark ? "#c9b3e0" : "#5a5378";
+  const accent = isDark ? "#e0b3ff" : "#6b46ff";
+
+  const [summary, setSummary] = useState<{
+    trustLevel?: string;
+    loveLanguage?: string;
+    topStrength?: string;
+  } | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const initData = window.Telegram?.WebApp?.initData;
+    if (!initData) {
+      setLoading(false);
+      return;
+    }
+
+    fetch("/api/profile/portrait", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ initData, market }),
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        if (data?.ok) setSummary(data.summary);
+      })
+      .catch((error) => console.error("profile portrait fetch error:", error))
+      .finally(() => setLoading(false));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const rows: Array<{ testId: string; icon: string; title: string; resultLabel?: string }> = [
+    {
+      testId: "trust-level",
+      icon: "🤝",
+      title: TESTS.find((test) => test.id === "trust-level")?.title ?? "",
+      resultLabel: summary?.trustLevel,
+    },
+    {
+      testId: "love-language",
+      icon: "💛",
+      title: TESTS.find((test) => test.id === "love-language")?.title ?? "",
+      resultLabel: summary?.loveLanguage,
+    },
+    {
+      testId: "personality-strengths",
+      icon: "💪",
+      title: TESTS.find((test) => test.id === "personality-strengths")?.title ?? "",
+      resultLabel: summary?.topStrength,
+    },
+  ];
+
+  const anyIncomplete = TESTS.some((test) => !completedTestIds.includes(test.id));
+
+  return (
+    <div style={{ ...cardBaseStyle(), padding: 18 }}>
+      <div style={{ fontSize: 18, fontWeight: 900, color: ink }}>
+        🧠 {t.profile.portraitTitle}
+      </div>
+      <div style={{ marginTop: 4, color: muted, fontSize: 12.5, lineHeight: 1.4 }}>
+        {t.profile.portraitSubtitle}
+      </div>
+
+      <div style={{ display: "grid", gap: 8, marginTop: 14 }}>
+        {rows.map((row) => {
+          const done = completedTestIds.includes(row.testId);
+          const rowStyle: CSSProperties = {
+            display: "flex",
+            alignItems: "center",
+            gap: 10,
+            width: "100%",
+            padding: "10px 12px",
+            borderRadius: 14,
+            border: "none",
+            textAlign: "left",
+            background: isDark ? "rgba(255,255,255,0.06)" : "rgba(255,255,255,0.35)",
+            cursor: done ? "default" : "pointer",
+          };
+          const content = (
+            <>
+              <div style={{ fontSize: 20, flexShrink: 0 }}>{row.icon}</div>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontSize: 11, fontWeight: 700, color: muted }}>{row.title}</div>
+                <div
+                  style={{
+                    fontSize: 13.5,
+                    fontWeight: 800,
+                    color: done ? ink : muted,
+                    marginTop: 1,
+                  }}
+                >
+                  {loading
+                    ? "…"
+                    : done && row.resultLabel
+                      ? row.resultLabel
+                      : t.profile.portraitNotDoneYet}
+                </div>
+              </div>
+              {!done && <span style={{ fontSize: 16, color: accent, flexShrink: 0 }}>→</span>}
+            </>
+          );
+
+          return done ? (
+            <div key={row.testId} style={rowStyle}>
+              {content}
+            </div>
+          ) : (
+            <button key={row.testId} type="button" onClick={() => onNavigate("tests")} style={rowStyle}>
+              {content}
+            </button>
+          );
+        })}
+      </div>
+
+      {anyIncomplete && (
+        <button
+          onClick={() => onNavigate("tests")}
+          style={{ ...getPrimaryButtonStyle(isDark), width: "100%", marginTop: 14 }}
+        >
+          {t.profile.portraitCta}
+        </button>
+      )}
+    </div>
+  );
+}
+
+function ProfileAndStatsScreen({
+  user,
+  points,
+  stats,
+  bonusState,
+  wonRewards,
+ pairPollAnswers,
+  completedTestIds,
+  isPremium,
+  onBack,
+  onNavigate,
+  theme,
+}: {
+
+
+  user: TgUser | null;
+  points: number;
+  stats: AppStats;
+  bonusState: DailyBonusState;
+  wonRewards: WonReward[];
+    onNavigate: (screen: Screen) => void;
+  pairPollAnswers: Record<string, number[]>;
+  // Психологический портрет — прогресс по тестам (см. TESTS ниже).
+  completedTestIds: string[];
+  isPremium: boolean;
+  onBack: () => void;
+  // Undefined на iOS (тема там не включена) — читается как "light".
+  theme?: "light" | "dark";
+}) {
+
+
+  const market = getMarket();
+const t = market === "fi" ? TEXT_FI : market === "en" ? TEXT_EN : TEXT_RU;
+  const isDark = theme === "dark";
+  const ink = isDark ? "#e6d4f0" : "#1f1d3a";
+  const muted = isDark ? "#c9b3e0" : "#5a5378";
+  const accent = isDark ? "#e0b3ff" : "#6b46ff";
+  const fullName =
+    [user?.first_name, user?.last_name].filter(Boolean).join(" ") ||
+    "Пользователь";
+
+ const pairStats = calculatePairStats(pairPollAnswers);
 
   return (
     <div style={{ padding: 16, display: "grid", gap: 14 }}>
@@ -19509,270 +19926,43 @@ const t = market === "fi" ? TEXT_FI : market === "en" ? TEXT_EN : TEXT_RU;
         </div>
       </div>
 
-      {/* Временно скрыто по просьбе Артёма — решим завтра, возвращать
-          просто убрав false. */}
-      {false && (
-        <div style={{ ...cardBaseStyle(), padding: 18 }}>
-          <div style={{ fontSize: 22, fontWeight: 900, color: ink }}>
-            {t.profile.stats}
-          </div>
-          <div style={{ display: "grid", gap: 10, marginTop: 14 }}>
-            <StatRow label={t.profile.pollsCompleted} value={stats.pollsCompleted} />
-            <StatRow label={t.profile.recentPrizes} value={stats.rewardsRedeemed} />
-            <StatRow label={t.profile.totalPoints} value={points} />
-          </div>
-        </div>
-      )}
-
-<div style={{ ...cardBaseStyle(), padding: 18 }}>
-  <div style={{ fontSize: 18, fontWeight: 900, color: ink, marginBottom: 14 }}>
-    {t.account.settingsTitle}
-  </div>
-
-  <div style={{ display: "grid", gap: 16 }}>
-    <div>
-      <div style={{ fontSize: 12.5, fontWeight: 800, color: muted, marginBottom: 6 }}>
-        {t.account.nicknameLabel}
-      </div>
-      <div style={{ display: "flex", gap: 8 }}>
-        <input
-          value={nickname}
-          onChange={(e) => setNickname(e.target.value)}
-          placeholder={t.account.nicknamePlaceholder}
-          maxLength={60}
-          style={{
-            flex: 1,
-            border: "1px solid rgba(255,255,255,0.5)",
-            borderRadius: 14,
-            background: "rgba(255,255,255,0.55)",
-            padding: "12px 14px",
-            fontSize: 14,
-            color: ink,
-          }}
-        />
-        <button
-          onClick={handleSaveNickname}
-          disabled={savingNickname}
-          style={{
-            ...getPrimaryButtonStyle(isDark),
-            padding: "12px 18px",
-            opacity: savingNickname ? 0.7 : 1,
-          }}
-        >
-          {savingNickname ? t.account.nicknameSaving : t.account.nicknameSaveButton}
-        </button>
-      </div>
-      {nicknameMessage && (
-        <div style={{ marginTop: 6, fontSize: 12, color: muted }}>{nicknameMessage}</div>
-      )}
-    </div>
-
-    <div>
-      <div style={{ fontSize: 12.5, fontWeight: 800, color: muted, marginBottom: 6 }}>
-        {t.account.languageLabel}
-      </div>
-      <div style={{ display: "flex", gap: 8 }}>
-        {(["ru", "en", "fi"] as const).map((lang) => (
-          <button
-            key={lang}
-            onClick={() => handleChangeLanguage(lang)}
-            style={{
-              flex: 1,
-              padding: "10px 8px",
-              borderRadius: 13,
-              border: "none",
-              fontSize: 13,
-              fontWeight: 800,
-              cursor: "pointer",
-              background:
-                market === lang
-                  ? "linear-gradient(135deg, #8f6bff, #ff76ba)"
-                  : "rgba(255,255,255,0.4)",
-              color: market === lang ? "#fff" : isDark ? "#e5d6f5" : "#393253",
-            }}
-          >
-            {lang === "ru" ? "Русский" : lang === "en" ? "English" : "Suomi"}
-          </button>
-        ))}
-      </div>
-    </div>
-
-    <div>
-      <div style={{ fontSize: 12.5, fontWeight: 800, color: muted, marginBottom: 6 }}>
-        {t.account.genderLabel}
-      </div>
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-        <div style={{ fontSize: 14, fontWeight: 800, color: ink }}>
-          {currentGender === "boy"
-            ? t.genderSelect.boy
-            : currentGender === "girl"
-            ? t.genderSelect.girl
-            : "—"}
-        </div>
-        <button
-          onClick={() => onNavigate("gender-select")}
-          style={{
-            border: "1px solid rgba(143,107,255,0.35)",
-            borderRadius: 12,
-            padding: "8px 14px",
-            background: "rgba(255,255,255,0.4)",
-            color: accent,
-            fontWeight: 800,
-            fontSize: 12.5,
-            cursor: "pointer",
-          }}
-        >
-          {t.account.changeGenderButton}
-        </button>
-      </div>
-    </div>
-
-    {onToggleTheme && (
-      <div>
-        <div style={{ fontSize: 12.5, fontWeight: 800, color: muted, marginBottom: 6 }}>
-          {t.account.themeLabel}
-        </div>
-        <div style={{ display: "flex", gap: 8 }}>
-          <button
-            onClick={() => theme === "dark" && onToggleTheme()}
-            style={{
-              flex: 1,
-              padding: "10px 8px",
-              borderRadius: 13,
-              border: "none",
-              fontSize: 13,
-              fontWeight: 800,
-              cursor: "pointer",
-              background:
-                theme !== "dark"
-                  ? "linear-gradient(135deg, #8f6bff, #ff76ba)"
-                  : "rgba(255,255,255,0.4)",
-              color: theme !== "dark" ? "#fff" : "#e5d6f5",
-            }}
-          >
-            ☀️ {t.account.themeLight}
-          </button>
-          <button
-            onClick={() => theme !== "dark" && onToggleTheme()}
-            style={{
-              flex: 1,
-              padding: "10px 8px",
-              borderRadius: 13,
-              border: "none",
-              fontSize: 13,
-              fontWeight: 800,
-              cursor: "pointer",
-              background:
-                theme === "dark"
-                  ? "linear-gradient(135deg, #8f6bff, #ff76ba)"
-                  : "rgba(255,255,255,0.4)",
-              color: theme === "dark" ? "#fff" : "#393253",
-            }}
-          >
-            🌙 {t.account.themeDark}
-          </button>
-        </div>
-      </div>
-    )}
-  </div>
-</div>
-
       <div style={{ ...cardBaseStyle(), padding: 18 }}>
-  <div style={{ fontSize: 22, fontWeight: 900, color: ink }}>
-    {t.referrals.title} 👥
-  </div>
-
-  <div
-    style={{
-      marginTop: 8,
-      color: muted,
-      fontSize: 14,
-      lineHeight: 1.45,
-    }}
-  >
-    {t.referrals.cardText}
-  </div>
-
-
-
-  <button
-  onClick={() => onNavigate("referrals")}
-  style={{ ...getPrimaryButtonStyle(isDark), width: "100%", marginTop: 12 }}
->
-  {t.referrals.inviteButton}
-</button>
-
-</div>
-
-{isCapacitorApp() && (
-  <div style={{ ...cardBaseStyle(), padding: 18 }}>
-    <div style={{ fontSize: 16, fontWeight: 900, color: "#8a2f2f" }}>
-      {t.account.deleteAccountTitle}
-    </div>
-    <div
-      style={{
-        marginTop: 6,
-        color: muted,
-        fontSize: 13,
-        lineHeight: 1.45,
-      }}
-    >
-      {t.account.deleteAccountText}
-    </div>
-
-    {confirmingDelete ? (
-      <div style={{ display: "grid", gap: 8, marginTop: 12 }}>
-        <div style={{ fontSize: 13, fontWeight: 800, color: "#8a2f2f" }}>
-          {t.account.deleteAccountConfirmText}
+        <div style={{ fontSize: 22, fontWeight: 900, color: ink }}>
+          {t.profile.stats}
         </div>
-        <button
-          onClick={handleDeleteAccount}
-          disabled={deletingAccount}
-          style={{
-            border: "none",
-            borderRadius: 16,
-            padding: "12px 16px",
-            background: "#c1352f",
-            color: "#fff",
-            fontWeight: 800,
-            fontSize: 14,
-            cursor: deletingAccount ? "default" : "pointer",
-            opacity: deletingAccount ? 0.7 : 1,
-          }}
-        >
-          {deletingAccount
-            ? t.common.loading
-            : t.account.deleteAccountConfirmButton}
-        </button>
-        <button
-          onClick={() => setConfirmingDelete(false)}
-          disabled={deletingAccount}
-          style={secondaryButtonStyle}
-        >
-          {t.account.deleteAccountCancelButton}
-        </button>
+        <div style={{ display: "grid", gap: 10, marginTop: 14 }}>
+          <StatRow label={t.profile.pollsCompleted} value={stats.pollsCompleted} />
+          <StatRow label={t.profile.recentPrizes} value={stats.rewardsRedeemed} />
+          <StatRow label={t.profile.totalPoints} value={points} />
+        </div>
       </div>
-    ) : (
+
+      <PsychologicalPortraitCard
+        completedTestIds={completedTestIds}
+        onNavigate={onNavigate}
+        theme={theme}
+        t={t}
+      />
+
       <button
-        onClick={() => setConfirmingDelete(true)}
+        onClick={() => onNavigate("account-settings")}
         style={{
-          border: "1px solid rgba(193,53,47,0.35)",
-          borderRadius: 16,
-          padding: "12px 16px",
-          background: "rgba(193,53,47,0.08)",
-          color: "#8a2f2f",
-          fontWeight: 800,
-          fontSize: 14,
-          cursor: "pointer",
-          marginTop: 12,
+          ...cardBaseStyle(),
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
           width: "100%",
+          padding: "16px 18px",
+          border: "none",
+          cursor: "pointer",
+          textAlign: "left",
         }}
       >
-        {t.account.deleteAccountButton}
+        <span style={{ fontSize: 15, fontWeight: 800, color: ink }}>
+          ⚙️ {t.account.settingsTitle}
+        </span>
+        <span style={{ fontSize: 18, color: accent }}>→</span>
       </button>
-    )}
-  </div>
-)}
 
 <button
   onClick={onBack}
@@ -22121,7 +22311,7 @@ async function handleDatingSwipe(candidate: DatingCandidate, action: "like" | "p
   if (!result?.ok) {
     if (result?.reason === "daily-limit-reached") {
       setDatingSwipesRemaining(0);
-      setPaywallBackScreen("dating-swipe");
+      setPaywallBackScreen(screen);
       setScreen("paywall");
     }
     return;
@@ -22551,6 +22741,27 @@ function dismissPairProposalBanner(matchId: string) {
   // (⚙️ в MainMenu) пользователь после "Назад" неожиданно попадал в
   // "Пара", а не туда, откуда на самом деле зашёл.
   const [profileBackScreen, setProfileBackScreen] = useState<Screen>("menu");
+  // Тот же принцип для "account-settings" (Профиль теперь отдельно от
+  // Настроек) — шестерёнка в MainMenu ведёт сюда напрямую (вернуться на
+  // "menu"), а из самого "Профиля" по кнопке "⚙️ Настройки" — вернуться
+  // обратно в "profile".
+  const [settingsBackScreen, setSettingsBackScreen] = useState<Screen>("menu");
+  // Тот же принцип для polls-boy/polls-girl — открыть опросы можно не
+  // только из "polls-tests-menu" (вкладка нижнего бара), но и из
+  // PairScreen/PairCompatibilityInfoScreen ("Пройти опрос"); раньше
+  // "Назад" там был жёстко зашит на "polls-tests-menu".
+  const [pollsBackScreen, setPollsBackScreen] = useState<Screen>("polls-tests-menu");
+  // Тот же принцип для "tests" — теперь сюда можно попасть ещё и из
+  // психологического портрета в Профиле ("Пройти оставшиеся тесты" /
+  // клик по непройденному тесту), а не только из "polls-tests-menu".
+  const [testsBackScreen, setTestsBackScreen] = useState<Screen>("polls-tests-menu");
+  // Тот же принцип для "gender-select" — раньше выбор пола ВСЕГДА вёл
+  // на "menu", даже если человек попал сюда не при первом запуске, а
+  // например поменял пол из Настроек аккаунта (после выбора его
+  // выкидывало на главный экран вместо возврата в Настройки) или
+  // попытался открыть Опросы без указанного пола. По умолчанию —
+  // "menu" (для самого первого запуска, см. WelcomeScreen/language-select).
+  const [genderSelectBackScreen, setGenderSelectBackScreen] = useState<Screen>("menu");
 
   // Догружает сообщения, если пользователь открыл чат ДО того, как
   // оформил Premium прямо из locked-превью (handleOpenDatingChat не
@@ -23905,7 +24116,7 @@ if (finishedAllTests && !appState.completionBonusesClaimed.tests) {
           gender,
         },
       }));
-      setScreen("menu");
+      setScreen(genderSelectBackScreen);
     }}
     theme={theme}
   />
@@ -23928,6 +24139,9 @@ if (finishedAllTests && !appState.completionBonusesClaimed.tests) {
   if (next === "profile") {
     setProfileBackScreen("menu");
   }
+  if (next === "account-settings") {
+    setSettingsBackScreen("menu");
+  }
   setScreen(next);
 }}
   />
@@ -23941,7 +24155,7 @@ if (finishedAllTests && !appState.completionBonusesClaimed.tests) {
   <PollsScreen
     genderFilter="boy"
     completedPollIds={appState.completedPollIds}
-     onBack={() => setScreen("polls-tests-menu")}
+     onBack={() => setScreen(pollsBackScreen)}
     onCompletePoll={handleCompletePoll}
     pair={appState.pair}
     isPremium={appState.isPremium}
@@ -23957,12 +24171,12 @@ showPaywall={() => {
   <PollsScreen
     genderFilter="girl"
     completedPollIds={appState.completedPollIds}
-    onBack={() => setScreen("polls-tests-menu")}
+    onBack={() => setScreen(pollsBackScreen)}
     onCompletePoll={handleCompletePoll}
     pair={appState.pair}
     isPremium={appState.isPremium}
     showPaywall={() => {
-      setPaywallBackScreen("menu");
+      setPaywallBackScreen(screen);
       setScreen("paywall");
     }}
     theme={theme}
@@ -23988,15 +24202,8 @@ showPaywall={() => {
              {screen === "tests" && (
   <TestsScreen
     completedTestIds={appState.completedTestIds}
-    onBack={() => setScreen("polls-tests-menu")}
+    onBack={() => setScreen(testsBackScreen)}
     onCompleteTest={handleCompleteTest}
-    pair={appState.pair}
-    isPremium={appState.isPremium}
-    showPaywall={() => {
-      setPaywallBackScreen("menu");
-      setScreen("paywall");
-    }}
-    onCheckDailyTestAccess={consumeDailyTestAccess}
     theme={theme}
   />
 )}
@@ -24052,18 +24259,43 @@ showPaywall={() => {
   bonusState={appState.dailyBonus}
   wonRewards={appState.wonRewards}
   pairPollAnswers={appState.pairPollAnswers}
-  referrals={appState.referrals}
+  completedTestIds={appState.completedTestIds}
   isPremium={appState.isPremium}
-  currentGender={appState.profile.gender}
-  onNavigate={setScreen}
+  onNavigate={(next) => {
+    if (next === "account-settings") {
+      setSettingsBackScreen("profile");
+    }
+    if (next === "tests") {
+      setTestsBackScreen("profile");
+    }
+    if (next === "paywall") {
+      setPaywallBackScreen("profile");
+    }
+    setScreen(next);
+  }}
   onBack={() => setScreen(profileBackScreen)}
-  onDisplayNameSaved={(name) =>
-    setUser((prev) => (prev ? { ...prev, first_name: name, last_name: "" } : prev))
-  }
   theme={theme}
-  onToggleTheme={toggleTheme}
 />
 
+)}
+
+{screen === "account-settings" && (
+  <AccountSettingsScreen
+    user={user}
+    currentGender={appState.profile.gender}
+    onNavigate={(next) => {
+      if (next === "gender-select") {
+        setGenderSelectBackScreen("account-settings");
+      }
+      setScreen(next);
+    }}
+    onBack={() => setScreen(settingsBackScreen)}
+    onDisplayNameSaved={(name) =>
+      setUser((prev) => (prev ? { ...prev, first_name: name, last_name: "" } : prev))
+    }
+    theme={theme}
+    onToggleTheme={toggleTheme}
+  />
 )}
 
 {screen === "freePremium" && (
@@ -24101,7 +24333,9 @@ showPaywall={() => {
   onOpenPolls={() => {
     // "polls" как единого экрана не существует — как и в MainMenu,
     // опросы разделены на polls-boy/polls-girl по полу профиля.
+    setPollsBackScreen("pair");
     if (!appState.profile.gender) {
+      setGenderSelectBackScreen("pair");
       setScreen("gender-select");
       return;
     }
@@ -24158,7 +24392,9 @@ showPaywall={() => {
     appState={appState}
     onBack={() => setScreen("pair")}
     onOpenPolls={() => {
+      setPollsBackScreen("pair-compatibility-info");
       if (!appState.profile.gender) {
+        setGenderSelectBackScreen("pair-compatibility-info");
         setScreen("gender-select");
         return;
       }
@@ -24347,7 +24583,9 @@ showPaywall={() => {
         description: t.menu.pollsDesc,
         emoji: "💌",
         onClick: () => {
+          setPollsBackScreen("polls-tests-menu");
           if (!appState.profile.gender) {
+            setGenderSelectBackScreen("polls-tests-menu");
             setScreen("gender-select");
             return;
           }
@@ -24358,7 +24596,10 @@ showPaywall={() => {
         label: t.menu.tests,
         description: t.menu.testsDesc,
         emoji: "🧠",
-        onClick: () => setScreen("tests"),
+        onClick: () => {
+          setTestsBackScreen("polls-tests-menu");
+          setScreen("tests");
+        },
       },
     ]}
   />
@@ -24470,7 +24711,7 @@ showPaywall={() => {
       <button
   onClick={() => {
     setShowPaymentChoice(false);
-    setScreen("menu");
+    setScreen(paywallBackScreen || "menu");
   }}
   style={{
     ...secondaryButtonStyle,

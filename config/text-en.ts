@@ -506,6 +506,10 @@ export const TEXT_EN = {
     noPrizes: "No prizes yet",
     recentPrizes: "Prizes won",
     totalPoints: "Total points",
+    portraitTitle: "Relationship Portrait",
+    portraitSubtitle: "From your test results — the same data used to match profiles in Dating",
+    portraitCta: "Take the remaining tests",
+    portraitNotDoneYet: "Not taken yet",
   },
 
   notifications: {

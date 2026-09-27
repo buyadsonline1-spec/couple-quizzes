@@ -511,6 +511,10 @@ export const TEXT_FI = {
     noPrizes: "Ei vielä palkintoja",
     recentPrizes: "Voitetut palkinnot",
     totalPoints: "Pisteitä yhteensä",
+    portraitTitle: "Parisuhdeprofiili",
+    portraitSubtitle: "Testiesi tuloksista — samoja tietoja käytetään Treffien profiilien sovittamiseen",
+    portraitCta: "Tee loput testit",
+    portraitNotDoneYet: "Ei vielä tehty",
   },
 
   notifications: {
