@@ -106,3 +106,35 @@ export function installCapacitorTelegramShim() {
 export function hasSupabaseSession(): Promise<boolean> {
   return supabase.auth.getSession().then(({ data }) => Boolean(data.session));
 }
+
+// window.Telegram.WebApp.initData читается синхронно в ~25 местах
+// app/page.tsx (см. комментарий выше) — в реальном Telegram это
+// безопасно, initData там доступен сразу. В Capacitor-шиме он
+// заполняется АСИНХРОННО через onAuthStateChange выше, и только
+// самый первый bootstrap-эффект явно дожидается hasSupabaseSession()
+// перед первым чтением. Любое другое место (начисление очков за
+// тест/опрос/игру, дневной бонус, психологический портрет), которое
+// читает initData синхронно сразу после того, как экран стал
+// доступен, рискует поймать окно до того, как onAuthStateChange
+// успел выполниться — тогда initData ещё undefined, запрос тихо не
+// уходит, и на iOS выглядит как "не считаются очки"/"не засчитан
+// тест"/бонус срабатывает каждый раз (см. соответствующие вызовы в
+// app/page.tsx). getInitDataAsync — тот же принцип, что и в
+// bootstrap, но переиспользуемый: в Telegram это просто синхронное
+// чтение (никакого поведенческого изменения), в Capacitor сначала
+// дожидается восстановления сессии и, на случай если
+// onAuthStateChange ещё не успел отработать к этому моменту, один
+// раз повторяет чтение спустя короткую паузу.
+export async function getInitDataAsync(): Promise<string | undefined> {
+  if (!isCapacitorApp()) {
+    return window.Telegram?.WebApp?.initData;
+  }
+
+  await hasSupabaseSession();
+
+  const initData = window.Telegram?.WebApp?.initData;
+  if (initData) return initData;
+
+  await new Promise((resolve) => setTimeout(resolve, 400));
+  return window.Telegram?.WebApp?.initData;
+}

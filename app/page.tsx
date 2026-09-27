@@ -20,6 +20,7 @@ import {
   installCapacitorTelegramShim,
   hasSupabaseSession,
   setSyntheticTelegramId,
+  getInitDataAsync,
 } from "@/lib/platform";
 import confetti from "canvas-confetti";
 import { TEXT_RU } from "@/config/text-ru";
@@ -7114,7 +7115,7 @@ function AiPsychologistChatScreen({
 
   useEffect(() => {
     async function loadState() {
-      const initData = window.Telegram?.WebApp?.initData;
+      const initData = await getInitDataAsync();
 
       if (!initData) {
         setLoadingHistory(false);
@@ -7165,7 +7166,7 @@ function AiPsychologistChatScreen({
   async function ensureConversation(): Promise<string | null> {
     if (conversationId) return conversationId;
 
-    const initData = window.Telegram?.WebApp?.initData;
+    const initData = await getInitDataAsync();
     if (!initData) return null;
 
     try {
@@ -7192,7 +7193,7 @@ function AiPsychologistChatScreen({
     const trimmed = text.trim();
     if (!trimmed || sending) return;
 
-    const initData = window.Telegram?.WebApp?.initData;
+    const initData = await getInitDataAsync();
     if (!initData) {
       setErrorText(
         language === "en"
@@ -7294,7 +7295,7 @@ function AiPsychologistChatScreen({
     // переключаем на сервере отдельным вызовом.
     if (!conversationId) return;
 
-    const initData = window.Telegram?.WebApp?.initData;
+    const initData = await getInitDataAsync();
     if (!initData) return;
 
     try {
@@ -7758,7 +7759,7 @@ const t = market === "fi" ? TEXT_FI : market === "en" ? TEXT_EN : TEXT_RU;
       return;
     }
 
-    const initData = window.Telegram?.WebApp?.initData;
+    const initData = await getInitDataAsync();
 
     if (!initData) {
       alert(t.errors.telegramUserNotConfirmed);
@@ -13722,22 +13723,25 @@ function HeartClickerGameScreen({
   // "Начать" и узнавал об ограничении только после честного раунда
   // тапов.
   useEffect(() => {
-    const initData = window.Telegram?.WebApp?.initData;
-    if (!initData) return;
+    (async () => {
+      const initData = await getInitDataAsync();
+      if (!initData) return;
 
-    fetch("/api/games/heart-clicker/state", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ initData }),
-    })
-      .then((response) => response.json())
-      .then((data) => {
+      try {
+        const response = await fetch("/api/games/heart-clicker/state", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ initData }),
+        });
+        const data = await response.json();
         if (data?.ok) {
           setRoundsInfo({ used: data.roundsUsedToday, remaining: data.roundsRemainingToday });
           setTotalRoundsPlayed(data.totalRoundsPlayed ?? 0);
         }
-      })
-      .catch((error) => console.error("heart clicker state error:", error));
+      } catch (error) {
+        console.error("heart clicker state error:", error);
+      }
+    })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -13746,7 +13750,7 @@ function HeartClickerGameScreen({
     setSubmitting(true);
     setErrorReason(null);
 
-    const initData = window.Telegram?.WebApp?.initData;
+    const initData = await getInitDataAsync();
     if (!initData) {
       setSubmitting(false);
       setErrorReason("no-auth");
@@ -14361,8 +14365,7 @@ function selectOption(optionIndex: number) {
   actionType: "poll" | "test"
 ) {
   try {
-    const initData =
-      window.Telegram?.WebApp?.initData;
+    const initData = await getInitDataAsync();
 
     if (!initData) {
       console.error(
@@ -14687,7 +14690,7 @@ async function loadRewardsState(): Promise<{
   wonRewards: WonReward[];
   spinsInfo: { used: number; remaining: number; bonusCredits: number };
 } | null> {
-  const initData = window.Telegram?.WebApp?.initData;
+  const initData = await getInitDataAsync();
 
   if (!initData) {
     console.error("loadRewardsState: Telegram initData отсутствует");
@@ -16523,7 +16526,7 @@ function FreePremiumScreen({
   onClick={async () => {
     // telegramId сервер теперь достаёт сам из подписанного initData —
     // раньше принимался прямо из тела запроса без проверки.
-    const initData = window.Telegram?.WebApp?.initData;
+    const initData = await getInitDataAsync();
 
     if (!initData) {
       alert(t.errors.telegramNotDetected);
@@ -19296,7 +19299,7 @@ function AccountSettingsScreen({
   const [deletingAccount, setDeletingAccount] = useState(false);
 
   async function handleSaveNickname() {
-    const initData = window.Telegram?.WebApp?.initData;
+    const initData = await getInitDataAsync();
     if (!initData || !nickname.trim()) return;
 
     setSavingNickname(true);
@@ -19655,23 +19658,33 @@ function PsychologicalPortraitCard({
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const initData = window.Telegram?.WebApp?.initData;
-    if (!initData) {
-      setLoading(false);
-      return;
-    }
+    let cancelled = false;
 
-    fetch("/api/profile/portrait", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ initData, market }),
-    })
-      .then((response) => response.json())
-      .then((data) => {
-        if (data?.ok) setSummary(data.summary);
-      })
-      .catch((error) => console.error("profile portrait fetch error:", error))
-      .finally(() => setLoading(false));
+    (async () => {
+      const initData = await getInitDataAsync();
+      if (!initData) {
+        if (!cancelled) setLoading(false);
+        return;
+      }
+
+      try {
+        const response = await fetch("/api/profile/portrait", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ initData, market }),
+        });
+        const data = await response.json();
+        if (!cancelled && data?.ok) setSummary(data.summary);
+      } catch (error) {
+        console.error("profile portrait fetch error:", error);
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -20051,7 +20064,7 @@ async function upsertTelegramProfile(user: TgUser): Promise<{
 } | null> {
   if (!user.id) return null;
 
-  const initData = window.Telegram?.WebApp?.initData;
+  const initData = await getInitDataAsync();
 
   if (!initData) {
     console.error("upsertTelegramProfile: Telegram initData отсутствует");
@@ -20096,7 +20109,7 @@ async function completeGiveawayAction(
   actionType: "poll" | "test"
 ): Promise<GiveawayActionResult> {
   try {
-    const initData = window.Telegram?.WebApp?.initData;
+    const initData = await getInitDataAsync();
 
     if (!initData) {
       return {
@@ -20232,7 +20245,7 @@ const EMPTY_PAIR_STATE: PairState = {
 // все существующие call sites (после начисления очков и т.п.)
 // продолжают работать без изменений.
 async function loadPairStateForUser(telegramId: number): Promise<PairState> {
-  const initData = window.Telegram?.WebApp?.initData;
+  const initData = await getInitDataAsync();
 
   if (!initData) {
     console.error("loadPairStateForUser: Telegram initData отсутствует");
@@ -20282,7 +20295,7 @@ async function awardActivityPoints(params: {
 }): Promise<ActivityAwardResult | null> {
   const { activityType, id } = params;
 
-  const initData = window.Telegram?.WebApp?.initData;
+  const initData = await getInitDataAsync();
 
   if (!initData) {
     console.error(
@@ -20357,7 +20370,7 @@ async function consumeDailyTestAccess(): Promise<{
   allowed: boolean;
   isPremium: boolean;
 } | null> {
-  const initData = window.Telegram?.WebApp?.initData;
+  const initData = await getInitDataAsync();
 
   if (!initData) {
     console.error("consumeDailyTestAccess: Telegram initData отсутствует");
@@ -20401,7 +20414,7 @@ async function savePollSubmission(params: {
 }): Promise<Record<string, number[]> | null> {
   const { pollId, answers } = params;
 
-  const initData = window.Telegram?.WebApp?.initData;
+  const initData = await getInitDataAsync();
 
   if (!initData) {
     console.error("savePollSubmission: Telegram initData отсутствует");
@@ -20442,7 +20455,7 @@ async function loadDailyPairState(): Promise<{
     girlAnswerIndex: number | null;
   }>;
 }> {
-  const initData = window.Telegram?.WebApp?.initData;
+  const initData = await getInitDataAsync();
 
   if (!initData) {
     console.error("loadDailyPairState: Telegram initData отсутствует");
@@ -20538,7 +20551,7 @@ function calculateDailyPairStreak(
 async function loadPairPollAnswersForCurrentUser(): Promise<
   Record<string, number[]>
 > {
-  const initData = window.Telegram?.WebApp?.initData;
+  const initData = await getInitDataAsync();
 
   if (!initData) {
     console.error("loadPairPollAnswersForCurrentUser: initData отсутствует");
@@ -20625,7 +20638,7 @@ async function joinPairByInviteCode(
   inviteCode: string
 ): Promise<PairState | null> {
   const currentTelegramId = Number(telegramId);
-  const initData = window.Telegram?.WebApp?.initData;
+  const initData = await getInitDataAsync();
 
   if (!initData) {
     console.error("joinPairByInviteCode: Telegram initData отсутствует");
@@ -20746,7 +20759,7 @@ async function claimWeeklyPairTopReward(): Promise<{
   pairWeeklyPoints?: number;
   weeklyTopRewardClaimedWeek?: string;
 } | null> {
-  const initData = window.Telegram?.WebApp?.initData;
+  const initData = await getInitDataAsync();
 
   if (!initData) {
     console.error(
@@ -20803,7 +20816,7 @@ async function claimWeeklyPairTopReward(): Promise<{
 // всех). Теперь только через сервер, который сам берёт telegramId из
 // validated initData, а не из параметра функции.
 async function loadReferralStats(_telegramId: number) {
-  const initData = window.Telegram?.WebApp?.initData;
+  const initData = await getInitDataAsync();
 
   if (!initData) {
     console.error("loadReferralStats: Telegram initData отсутствует");
@@ -21172,34 +21185,23 @@ useEffect(() => {
 }, []);
 
 
-const handleSelectGender = (gender: "boy" | "girl") => {
-  setAppState((prev) => ({
-    ...prev,
-    profile: {
-      ...prev.profile,
-      gender,
-    },
-  }));
+// Раньше пол сохранялся только в localStorage — на iOS каждая
+// переустановка тестового билда стирала его, и экран выбора пола
+// всплывал заново при каждом запуске (см. supabase/
+// profile_gender_persist.sql). Сохраняем на сервере тоже; ошибку
+// здесь намеренно не показываем пользователю — экран уже переключён
+// локально, а bootstrap при следующем запуске просто попробует снова
+// получить пустой gender и спросит ещё раз, не более того.
+async function persistGenderSelection(gender: "boy" | "girl") {
+  const initData = await getInitDataAsync();
+  if (!initData) return;
 
-  setScreen("menu");
-
-  // Раньше пол сохранялся только в localStorage — на iOS каждая
-  // переустановка тестового билда стирала его, и экран выбора пола
-  // всплывал заново при каждом запуске (см. supabase/
-  // profile_gender_persist.sql). Сохраняем на сервере тоже; ошибку
-  // здесь намеренно не показываем пользователю — экран уже переключён
-  // на "menu" локально, а bootstrap при следующем запуске просто
-  // попробует снова получить пустой gender и спросит ещё раз, не более
-  // того.
-  const initData = window.Telegram?.WebApp?.initData;
-  if (initData) {
-    fetch("/api/profile/update-gender", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ initData, gender }),
-    }).catch((error) => console.error("update-gender error:", error));
-  }
-};
+  fetch("/api/profile/update-gender", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ initData, gender }),
+  }).catch((error) => console.error("update-gender error:", error));
+}
 
 
 
@@ -21833,7 +21835,7 @@ const syncWeeklyUserLeaderboard = async (
 
 
 const handleLeavePair = async () => {
-  const initData = window.Telegram?.WebApp?.initData;
+  const initData = await getInitDataAsync();
 
   if (!initData) {
     alert(t.errors.telegramUserNotConfirmed);
@@ -21867,7 +21869,7 @@ const handleLeavePair = async () => {
 // ---- Питомец ----
 
 async function petFetch(path: string, body: Record<string, unknown> = {}) {
-  const initData = window.Telegram?.WebApp?.initData;
+  const initData = await getInitDataAsync();
   if (!initData) return null;
 
   try {
@@ -22060,7 +22062,7 @@ async function handleBuyPetItemWithStars(item: PetShopItem): Promise<{ ok: boole
 // ---- Знакомства ----
 
 async function datingFetch(path: string, body: Record<string, unknown> = {}) {
-  const initData = window.Telegram?.WebApp?.initData;
+  const initData = await getInitDataAsync();
   if (!initData) return null;
 
   try {
@@ -22274,7 +22276,7 @@ async function handleSaveDatingProfile(profile: {
 }
 
 async function handleUploadDatingPhoto(file: File): Promise<string | null> {
-  const initData = window.Telegram?.WebApp?.initData;
+  const initData = await getInitDataAsync();
   if (!initData) return null;
 
   try {
@@ -22530,7 +22532,7 @@ const handleCreateInvite = async () => {
   // Math.random() на клиенте; created_by_telegram_id/partner_1_telegram_id
   // сервер берёт из подписанного initData, не из тела запроса — иначе
   // пару можно было создать "от имени" произвольного telegram_id.
-  const initData = window.Telegram?.WebApp?.initData;
+  const initData = await getInitDataAsync();
 
   if (!initData) {
     alert(t.errors.telegramUserNotConfirmed);
@@ -22943,7 +22945,7 @@ setUser(currentUser);
 // premium-статус, парные ответы опросов, вопрос дня) — теперь один
 // авторизованный POST /api/bootstrap отдаёт всё сразу. См.
 // lib/server/pair-state.ts / lib/server/reads.ts на сервере.
-const initData = window.Telegram?.WebApp?.initData;
+const initData = await getInitDataAsync();
 
 if (!initData) {
   console.error("bootstrap: Telegram initData отсутствует");
@@ -23159,7 +23161,7 @@ const refreshTopLeaderboard = async () => {
      * 1. Получаем свежие личные очки (через /api/profile/state —
      * раньше был прямой supabase.from("profiles").select(...))
      */
-    const initDataForProfile = window.Telegram?.WebApp?.initData;
+    const initDataForProfile = await getInitDataAsync();
     let freshProfile: {
       solo_points: number;
       solo_weekly_points: number;
@@ -23356,7 +23358,7 @@ const handleClaimBonus = async () => {
   // День серии и сумма теперь определяются сервером (profiles.daily_bonus_*
   // в БД) — claimableDay остаётся только локальным UI-предположением для
   // отображения ДО ответа сервера, реальный streakDay берём из ответа.
-  const initData = window.Telegram?.WebApp?.initData;
+  const initData = await getInitDataAsync();
 
   if (!initData) {
     console.error(
@@ -23448,7 +23450,7 @@ async function completeGiveawayAction(
   tickets?: number;
   message?: string;
 }> {
-  const initData = window.Telegram?.WebApp?.initData;
+  const initData = await getInitDataAsync();
 
   if (!initData) {
     console.error("Telegram initData отсутствует");
@@ -23689,7 +23691,7 @@ if (finishedAllPolls && !appState.completionBonusesClaimed.polls) {
   // навсегда. Сохраняем сырые ответы (не готовый текст результата —
   // его всегда можно пересчитать); не блокируем основной флоу очков,
   // если запрос не удался.
-  const initDataForTest = window.Telegram?.WebApp?.initData;
+  const initDataForTest = await getInitDataAsync();
   if (initDataForTest && testAnswers.length > 0) {
     fetch("/api/test/submit", {
       method: "POST",
@@ -23834,7 +23836,7 @@ if (finishedAllTests && !appState.completionBonusesClaimed.tests) {
     return null;
   }
 
-  const initData = window.Telegram?.WebApp?.initData;
+  const initData = await getInitDataAsync();
 
   if (!initData) {
     console.error("handleSpinReward: Telegram initData отсутствует");
@@ -24117,6 +24119,7 @@ if (finishedAllTests && !appState.completionBonusesClaimed.tests) {
         },
       }));
       setScreen(genderSelectBackScreen);
+      persistGenderSelection(gender);
     }}
     theme={theme}
   />
