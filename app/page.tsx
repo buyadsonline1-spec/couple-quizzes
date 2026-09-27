@@ -19926,6 +19926,13 @@ const t = market === "fi" ? TEXT_FI : market === "en" ? TEXT_EN : TEXT_RU;
         </div>
       </div>
 
+      <PsychologicalPortraitCard
+        completedTestIds={completedTestIds}
+        onNavigate={onNavigate}
+        theme={theme}
+        t={t}
+      />
+
       <div style={{ ...cardBaseStyle(), padding: 18 }}>
         <div style={{ fontSize: 22, fontWeight: 900, color: ink }}>
           {t.profile.stats}
@@ -19936,13 +19943,6 @@ const t = market === "fi" ? TEXT_FI : market === "en" ? TEXT_EN : TEXT_RU;
           <StatRow label={t.profile.totalPoints} value={points} />
         </div>
       </div>
-
-      <PsychologicalPortraitCard
-        completedTestIds={completedTestIds}
-        onNavigate={onNavigate}
-        theme={theme}
-        t={t}
-      />
 
       <button
         onClick={() => onNavigate("account-settings")}
