@@ -25,13 +25,29 @@ export async function POST(request: NextRequest) {
 
     const startParam = validation.startParam ?? "";
 
-    if (!startParam.startsWith("ref_")) {
+    // Автоматический путь (Telegram): referrerTelegramId идёт из
+    // криптографически подписанного start_param, подделать нельзя.
+    // Запасной путь (в первую очередь iOS, где start_param в принципе
+    // не существует — см. комментарий у TelegramInitDataValidation.
+    // startParam) — приглашённый вручную вводит код друга (см. ручной
+    // ввод в ReferralsScreen). "Код" — это просто telegram_id
+    // реферера (может быть отрицательным синтетическим id для
+    // iOS-пользователя, см. bootstrap_profile_from_auth), поэтому
+    // здесь разрешаем любой ненулевой safe integer, а не только > 0.
+    const manualCode =
+      typeof body.referrerCode === "string" ? body.referrerCode.trim() : "";
+
+    let referrerTelegramId: number;
+
+    if (startParam.startsWith("ref_")) {
+      referrerTelegramId = Number(startParam.replace("ref_", ""));
+    } else if (manualCode) {
+      referrerTelegramId = Number(manualCode);
+    } else {
       return NextResponse.json({ ok: false, reason: "no-referral" });
     }
 
-    const referrerTelegramId = Number(startParam.replace("ref_", ""));
-
-    if (!Number.isSafeInteger(referrerTelegramId) || referrerTelegramId <= 0) {
+    if (!Number.isSafeInteger(referrerTelegramId) || referrerTelegramId === 0) {
       return NextResponse.json({ ok: false, reason: "invalid-referrer" });
     }
 

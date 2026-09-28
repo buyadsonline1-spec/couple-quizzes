@@ -173,6 +173,13 @@ type WonReward = {
 type AppState = {
   points: number;
   soloPoints: number;
+  // Очки за всё время — в отличие от soloPoints/points (текущий,
+  // тратимый баланс — например, на вещи для питомца), эта цифра
+  // только растёт. Ведётся сервером (см. supabase/
+  // lifetime_points_stat.sql), обновляется здесь при каждом /api/
+  // bootstrap (открытие приложения) — в течение сессии живьём не
+  // тикает, только при следующем заходе.
+  soloPointsLifetime: number;
   soloWeeklyPoints: number;
   isPremium: boolean;
 
@@ -2610,10 +2617,10 @@ const GAMES: Game[] = [
     market === "fi" ? "Klikkeri" : market === "en" ? "Clicker" : "Кликер",
   description:
     market === "fi"
-      ? "Napauta sydäntä niin monta kertaa kuin ehdit 15 sekunnissa ja kerää pisteitä. Yksi ilmainen kierros, loput Premiumilla."
+      ? "Napauta sydäntä niin monta kertaa kuin ehdit 15 sekunnissa ja kerää kolikoita. Yksi ilmainen kierros, loput Premiumilla."
       : market === "en"
-        ? "Tap the heart as many times as you can in 15 seconds and earn points. One free round, the rest with Premium."
-        : "Тапай по сердцу столько раз, сколько успеешь за 15 секунд, и получай очки. Один раунд бесплатно, дальше — с Premium.",
+        ? "Tap the heart as many times as you can in 15 seconds and earn coins. One free round, the rest with Premium."
+        : "Тапай по сердцу столько раз, сколько успеешь за 15 секунд, и получай монеты. Один раунд бесплатно, дальше — с Premium.",
   reward: 0,
   questions: [],
 },
@@ -3366,6 +3373,7 @@ const WHEEL_COLORS = [
 const DEFAULT_STATE: AppState = {
   points: 0,
   soloPoints: 0,
+  soloPointsLifetime: 0,
   soloWeeklyPoints: 0,
   isPremium: false,
 
@@ -4599,9 +4607,17 @@ const REWARD_CATEGORIES =
   const [showJoinInput, setShowJoinInput] = useState(false);
  
 
-  const inviteLink = pair.inviteCode
-    ? `https://t.me/couple_quizzes_bot?startapp=invite_${pair.inviteCode}`
-    : "";
+  // На iOS (Capacitor) t.me-ссылка ни на что не годится — у
+  // стандэлон-приложения нет Telegram start_param, чтобы её вообще
+  // мог открыть. Там делимся просто самим кодом (pair.inviteCode) —
+  // партнёр вводит его вручную ниже (joinCode/onJoinByCode), это уже
+  // работает одинаково на обеих платформах.
+  const isTelegramShare = !isCapacitorApp();
+  const inviteLink =
+    isTelegramShare && pair.inviteCode
+      ? `https://t.me/couple_quizzes_bot?startapp=invite_${pair.inviteCode}`
+      : "";
+  const shareValue = isTelegramShare ? inviteLink : pair.inviteCode ?? "";
 
   async function handleCreateInviteClick() {
     try {
@@ -4630,29 +4646,48 @@ const REWARD_CATEGORIES =
   }
 
   async function handleCopyLink() {
-    if (!inviteLink) {
+    if (!shareValue) {
       alert(t.pair.invite.createFirstAlert);
       return;
     }
 
     try {
-      await navigator.clipboard.writeText(inviteLink);
-      alert(t.pair.invite.linkCopiedAlert);
+      await navigator.clipboard.writeText(
+        isTelegramShare ? shareValue : `${t.pair.invite.codeShareIntro}\n\n${shareValue}`
+      );
+      alert(isTelegramShare ? t.pair.invite.linkCopiedAlert : t.pair.invite.codeCopiedAlert);
     } catch {
       alert(t.pair.invite.copyFailedAlert);
     }
   }
 
-  function handleShareLink() {
-    if (!inviteLink) {
+  async function handleShareLink() {
+    if (!shareValue) {
       alert(t.pair.invite.createFirstAlert);
       return;
     }
 
-    window.open(
-      `https://t.me/share/url?url=${encodeURIComponent(inviteLink)}`,
-      "_blank"
-    );
+    if (isTelegramShare) {
+      window.open(
+        `https://t.me/share/url?url=${encodeURIComponent(shareValue)}`,
+        "_blank"
+      );
+      return;
+    }
+
+    const shareText = `${t.pair.invite.codeShareIntro}\n\n${shareValue}`;
+
+    if (navigator.share) {
+      try {
+        await navigator.share({ text: shareText });
+        return;
+      } catch {
+        return;
+      }
+    }
+
+    navigator.clipboard?.writeText(shareText);
+    alert(t.pair.invite.codeCopiedAlert);
   }
 
   return (
@@ -4715,7 +4750,7 @@ const REWARD_CATEGORIES =
               color: ink,
             }}
           >
-            {t.pair.invite.linkTitle}
+            {isTelegramShare ? t.pair.invite.linkTitle : t.pair.invite.linkTitleCode}
           </div>
 
           <div
@@ -4725,13 +4760,14 @@ const REWARD_CATEGORIES =
               borderRadius: 16,
               background: "rgba(255,255,255,0.24)",
               color: ink,
-              textAlign: "left",
-              fontSize: 14,
+              textAlign: isTelegramShare ? "left" : "center",
+              fontSize: isTelegramShare ? 14 : 22,
+              fontWeight: isTelegramShare ? 400 : 900,
               lineHeight: 1.45,
               wordBreak: "break-all",
             }}
           >
-            {inviteLink}
+            {shareValue}
           </div>
 
           <div
@@ -4764,7 +4800,7 @@ const REWARD_CATEGORIES =
                 padding: "14px 16px",
               }}
             >
-              {t.pair.invite.shareLink}
+              {isTelegramShare ? t.pair.invite.shareLink : t.pair.invite.shareCode}
             </button>
           </div>
         </div>
@@ -7860,12 +7896,12 @@ const t = market === "fi" ? TEXT_FI : market === "en" ? TEXT_EN : TEXT_RU;
 
         if (streakBonus > 0 && matchBonus > 0 && newMilestone) {
           alert(
-            `🔥 Серия ${newMilestone} дней!\n+${streakBonus} очков\n💘 Совпадение ответов!\n+${matchBonus} очков`
+            `🔥 Серия ${newMilestone} дней!\n+${streakBonus} монет\n💘 Совпадение ответов!\n+${matchBonus} монет`
           );
         } else if (streakBonus > 0 && newMilestone) {
-          alert(`🔥 Серия ${newMilestone} дней!\n+${streakBonus} очков`);
+          alert(`🔥 Серия ${newMilestone} дней!\n+${streakBonus} монет`);
         } else if (matchBonus > 0) {
-          alert(`💘 Вы совпали!\n+${matchBonus} очков`);
+          alert(`💘 Вы совпали!\n+${matchBonus} монет`);
         }
       }
     } finally {
@@ -8136,7 +8172,7 @@ const t = market === "fi" ? TEXT_FI : market === "en" ? TEXT_EN : TEXT_RU;
       color: "#6b46ff",
     }}
   >
-    +{DAILY_PAIR_MATCH_BONUS} очков паре
+    +{DAILY_PAIR_MATCH_BONUS} монет паре
   </div>
 )}
 
@@ -8209,7 +8245,7 @@ const t = market === "fi" ? TEXT_FI : market === "en" ? TEXT_EN : TEXT_RU;
     color: "#6b46ff",
   }}
 >
-  +{getStreakBonus(appState.dailyPairStreak.current)} очков
+  +{getStreakBonus(appState.dailyPairStreak.current)} монет
 </div>
           </div>
         )}
@@ -8592,23 +8628,6 @@ function getPairDisplayTitle(user: TgUser | null, pair: PairState) {
   return `${me} + ${partner}`;
 }
 
-function getReferralLink(user: TgUser | null) {
-  if (!user?.id) return "";
-  return `https://t.me/couple_quizzes_bot?startapp=ref_${user.id}`;
-}
-
-function shareReferralLink(user: TgUser | null) {
-  if (!user?.id) return;
-
-  const link = getReferralLink(user);
-  const text = "Заходи в Couple Quizzes 💖 Проходи опросы, играй и получай очки вместе со мной!";
-
-  window.open(
-    `https://t.me/share/url?url=${encodeURIComponent(link)}&text=${encodeURIComponent(text)}`,
-    "_blank"
-  );
-}
-
 function CompletionBonusModal({
   title,
   points,
@@ -8914,6 +8933,13 @@ function loadState(): AppState {
     parsed.soloPoints ??
     parsed.points ??
     DEFAULT_STATE.soloPoints,
+
+  // Всегда перезатирается свежим значением с сервера при следующем
+  // /api/bootstrap — localStorage тут только временная заглушка на
+  // время до первого ответа сервера.
+  soloPointsLifetime:
+    parsed.soloPointsLifetime ??
+    DEFAULT_STATE.soloPointsLifetime,
 
   soloWeeklyPoints:
     parsed.soloWeeklyPoints ??
@@ -10243,7 +10269,7 @@ function MainMenu({
       whiteSpace: "nowrap",
     }}
   >
-    ⭐ {points}
+    🪙 {points}
   </div>
 </div>
   </div>
@@ -10947,18 +10973,18 @@ async function handleFinish() {
             <>
               Suoritit kyselyn{" "}
               <b>{activePoll.titleEn ?? activePoll.title}</b> ja ansaitsit{" "}
-              <b>+{activePoll.reward} pistettä</b>.
+              <b>+{activePoll.reward} kolikkoa</b>.
             </>
           ) : market === "en" ? (
             <>
               You completed the poll{" "}
               <b>{activePoll.titleEn ?? activePoll.title}</b> and earned{" "}
-              <b>+{activePoll.reward} points</b>.
+              <b>+{activePoll.reward} coins</b>.
             </>
           ) : (
             <>
               Ты завершил опрос <b>{activePoll.title}</b> и получаешь{" "}
-              <b>+{activePoll.reward} очков</b>.
+              <b>+{activePoll.reward} монет</b>.
             </>
           )}
         </div>
@@ -10967,7 +10993,7 @@ async function handleFinish() {
           onClick={handleFinish}
           style={{ ...getPrimaryButtonStyle(isDark), width: "100%", marginTop: 14 }}
         >
-          {market === "fi" ? "Kerää pisteet" : market === "en" ? "Claim points" : "Забрать очки"}
+          {market === "fi" ? "Kerää kolikot" : market === "en" ? "Claim coins" : "Забрать монеты"}
         </button>
       </div>
     </div>
@@ -13443,10 +13469,10 @@ return (
         }}
       >
         {market === "fi"
-          ? `Palkkio kortilta: +${reward} pistettä`
+          ? `Palkkio kortilta: +${reward} kolikkoa`
           : market === "en"
-            ? `Reward per card: +${reward} points`
-            : `Награда за карточку: +${reward} очков`}
+            ? `Reward per card: +${reward} coins`
+            : `Награда за карточку: +${reward} монет`}
       </div>
     </div>
 
@@ -13907,10 +13933,10 @@ function HeartClickerGameScreen({
           </div>
           <div style={{ marginTop: 4, fontSize: 12.5, color: muted }}>
             {market === "fi"
-              ? "Kaikkien aikojen pisteet sydänklikkerissä."
+              ? "Kaikkien aikojen kolikot sydänklikkerissä."
               : market === "en"
-                ? "All-time points earned in Heart Clicker."
-                : "Очки за всё время в Кликере сердечек."}
+                ? "All-time coins earned in Heart Clicker."
+                : "Монеты за всё время в Кликере сердечек."}
           </div>
         </div>
 
@@ -14583,15 +14609,15 @@ if (!activeTestId) {
             }}
           >
             {market !== "ru"
-              ? `Reward for the test: +${activeTest.reward} points`
-              : `Награда за тест: +${activeTest.reward} очков`}
+              ? `Reward for the test: +${activeTest.reward} coins`
+              : `Награда за тест: +${activeTest.reward} монет`}
           </div>
 
           <button
             onClick={handleFinish}
             style={{ ...getPrimaryButtonStyle(isDark), width: "100%", marginTop: 16 }}
           >
-            {market === "fi" ? "Kerää pisteet" : market === "en" ? "Claim points" : "Забрать очки"}
+            {market === "fi" ? "Kerää kolikot" : market === "en" ? "Claim coins" : "Забрать монеты"}
           </button>
         </div>
       </div>
@@ -16037,7 +16063,7 @@ function TopPlayersScreen({
                             whiteSpace: "nowrap",
                           }}
                         >
-                          ⭐ {userRow.total_points}
+                          🪙 {userRow.total_points}
                         </div>
                       </div>
                     );
@@ -16235,7 +16261,7 @@ function TopPlayersScreen({
                             whiteSpace: "nowrap",
                           }}
                         >
-                          ⭐ {pairRow.total_points}
+                          🪙 {pairRow.total_points}
                         </div>
                       </div>
                     );
@@ -16613,28 +16639,95 @@ function ReferralsScreen({
   const muted = isDark ? "#c9b3e0" : "#5f5a7a";
   const label = isDark ? "#b8a3d0" : "#7b7698";
   const accent = isDark ? "#e0b3ff" : "#6b46ff";
-  const inviteLink = user?.id
-    ? `https://t.me/${window.Telegram?.WebApp ? "couple_quizzes_bot" : "couple_quizzes_bot"}?startapp=ref_${user.id}`
-    : "";
 
-  const handleInvite = () => {
+  // На iOS (Capacitor) t.me-ссылка бесполезна — у стандэлон-приложения
+  // нет своего deep link'а, по которому его можно было бы так открыть
+  // (start_param — механика именно Telegram Mini App, см. комментарий
+  // у TelegramInitDataValidation.startParam). Там делимся просто
+  // числовым кодом (= telegram_id, может быть отрицательным
+  // синтетическим id) — друг вводит его вручную ниже, через
+  // /api/referral/claim с referrerCode (см. claimReferralCodeManually).
+  const myCode = user?.id != null ? String(user.id) : "";
+  const isTelegramShare = !isCapacitorApp();
+  const inviteLink =
+    isTelegramShare && user?.id
+      ? `https://t.me/couple_quizzes_bot?startapp=ref_${user.id}`
+      : "";
+
+  const [friendCode, setFriendCode] = useState("");
+  const [claimingCode, setClaimingCode] = useState(false);
+
+  const handleInvite = async () => {
     if (!user?.id) return;
 
-    const text =
-      `💖 Присоединяйся к Couple Quizzes!\n\n` +
-      `Проходите тесты, опросы и игры для пары вместе.\n\n` +
-      `Вот моя ссылка-приглашение:\n${inviteLink}`;
+    if (isTelegramShare) {
+      const text =
+        `💖 Присоединяйся к Couple Quizzes!\n\n` +
+        `Проходите тесты, опросы и игры для пары вместе.\n\n` +
+        `Вот моя ссылка-приглашение:\n${inviteLink}`;
 
-    if (window.Telegram?.WebApp?.openTelegramLink) {
-      window.Telegram.WebApp.openTelegramLink(
-        `https://t.me/share/url?url=${encodeURIComponent(inviteLink)}&text=${encodeURIComponent(text)}`
-      );
+      if (window.Telegram?.WebApp?.openTelegramLink) {
+        window.Telegram.WebApp.openTelegramLink(
+          `https://t.me/share/url?url=${encodeURIComponent(inviteLink)}&text=${encodeURIComponent(text)}`
+        );
+        return;
+      }
+
+      navigator.clipboard?.writeText(inviteLink);
+      alert("Ссылка приглашения скопирована");
       return;
     }
 
-    navigator.clipboard?.writeText(inviteLink);
-    alert("Ссылка приглашения скопирована");
+    const shareText = `${t.referrals.shareCodeIntro}\n\n${myCode}`;
+
+    if (navigator.share) {
+      try {
+        await navigator.share({ text: shareText });
+        return;
+      } catch {
+        // Пользователь закрыл системный share sheet — не ошибка,
+        // просто ничего не делаем дальше.
+        return;
+      }
+    }
+
+    navigator.clipboard?.writeText(shareText);
+    alert(t.referrals.codeCopiedAlert);
   };
+
+  async function handleSubmitFriendCode() {
+    const code = friendCode.trim();
+    if (!code) {
+      alert(t.referrals.friendCodeEmptyAlert);
+      return;
+    }
+
+    setClaimingCode(true);
+    try {
+      const result = await claimReferralCodeManually(code);
+
+      if (result.ok) {
+        alert(t.referrals.friendCodeSuccessAlert);
+        setFriendCode("");
+        return;
+      }
+
+      if (result.reason === "self-referral") {
+        alert(t.referrals.friendCodeSelfAlert);
+      } else if (result.reason === "already-claimed") {
+        alert(t.referrals.friendCodeAlreadyAlert);
+      } else if (
+        result.reason === "invalid-referrer" ||
+        result.reason === "referrer-profile-not-found"
+      ) {
+        alert(t.referrals.friendCodeInvalidAlert);
+      } else {
+        alert(t.referrals.friendCodeErrorAlert);
+      }
+    } finally {
+      setClaimingCode(false);
+    }
+  }
 
 return (
   <div style={{ padding: 16 }}>
@@ -16685,7 +16778,7 @@ return (
 
         <div style={{ marginTop: 16 }}>
           <div style={{ fontSize: 13, color: label, fontWeight: 700, marginBottom: 8 }}>
-            {t.referrals.yourLink}
+            {isTelegramShare ? t.referrals.yourLink : t.referrals.yourCode}
           </div>
 
           <div
@@ -16693,13 +16786,15 @@ return (
               background: isDark ? "rgba(255,255,255,0.12)" : "#f6f3ff",
               borderRadius: 16,
               padding: 12,
-              fontSize: 13,
+              fontSize: isTelegramShare ? 13 : 20,
+              fontWeight: isTelegramShare ? 400 : 900,
               lineHeight: 1.45,
               color: ink,
               wordBreak: "break-word",
+              textAlign: isTelegramShare ? "left" : "center",
             }}
           >
-            {inviteLink || t.referrals.linkLoadingFallback}
+            {(isTelegramShare ? inviteLink : myCode) || t.referrals.linkLoadingFallback}
           </div>
         </div>
 
@@ -16709,6 +16804,43 @@ return (
         >
           {t.referrals.inviteButton}
         </button>
+      </div>
+
+      <div style={{ ...cardBaseStyle(), padding: 18, marginTop: 14 }}>
+        <div style={{ fontSize: 16, fontWeight: 900, color: ink }}>
+          {t.referrals.friendCodeTitle}
+        </div>
+
+        <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
+          <input
+            value={friendCode}
+            onChange={(e) => setFriendCode(e.target.value)}
+            placeholder={t.referrals.friendCodePlaceholder}
+            style={{
+              flex: 1,
+              minWidth: 0,
+              padding: "12px 14px",
+              borderRadius: 14,
+              border: isDark ? "1px solid rgba(255,255,255,0.2)" : "1px solid rgba(107,70,255,0.2)",
+              background: isDark ? "rgba(255,255,255,0.08)" : "#fff",
+              color: ink,
+              fontSize: 15,
+              fontWeight: 700,
+            }}
+          />
+          <button
+            onClick={handleSubmitFriendCode}
+            disabled={claimingCode}
+            style={{
+              ...getPrimaryButtonStyle(isDark),
+              padding: "0 18px",
+              opacity: claimingCode ? 0.6 : 1,
+              cursor: claimingCode ? "not-allowed" : "pointer",
+            }}
+          >
+            {t.referrals.friendCodeButton}
+          </button>
+        </div>
       </div>
 
      <button
@@ -16921,7 +17053,7 @@ function petItemTier(item: PetShopItem): 0 | 1 | 2 {
 
 const PET_ITEM_TIER_BADGE: Record<0 | 1 | 2, string> = {
   0: "🎁",
-  1: "⭐",
+  1: "🪙",
   2: "🌟",
 };
 
@@ -17198,14 +17330,14 @@ const PET_JACKET_ANCHOR_OVERRIDES: PetItemAnchorOverrides = {
 const PET_HAT_BBOX: Record<string, [number, number, number, number]> = {
   hat_top: [67, 3, 66, 51],
   hat_cap: [47, 5, 106, 58],
-  hat_crown: [57, -1, 86, 48],
+  hat_crown: [57, 15, 86, 48],
   hat_beanie: [57, -4, 86, 61],
-  hat_flower: [60, 10, 86, 48],
+  hat_flower: [60, 26, 86, 48],
   hat_party: [69, -6, 62, 55],
   hat_wizard: [66, -6, 68, 64],
-  hat_bandana: [58, 6, 98, 52],
+  hat_bandana: [58, 36, 98, 52],
   hat_cowboy: [52, 10, 96, 42],
-  hat_unicorn: [60, -14, 80, 66],
+  hat_unicorn: [60, 16, 80, 66],
   hat_astro: [58, 4, 84, 54],
 };
 
@@ -17466,10 +17598,14 @@ function PetHatOverlay({ hat }: { hat: string }) {
   if (hat === "hat_crown") {
     return (
       <g>
-        <path d="M60,44 L72,10 L88,32 L100,6 L112,32 L128,10 L140,44 Z" fill="#ffd54f" stroke="#e0a900" strokeWidth="2" />
-        <circle cx="72" cy="10" r="4" fill="#ff6ec7" />
-        <circle cx="100" cy="6" r="4.5" fill="#5ddcff" />
-        <circle cx="128" cy="10" r="4" fill="#ff6ec7" />
+        {/* +16 по Y относительно исходной разметки — зубцы короны
+            заканчивались выше, чем сплошные поля у шапок вроде hat_wizard/
+            hat_cap, и на голове коровы (единственный вид, реально
+            рисующий этот SVG-фолбэк) читались как парящие над ней. */}
+        <path d="M60,60 L72,26 L88,48 L100,22 L112,48 L128,26 L140,60 Z" fill="#ffd54f" stroke="#e0a900" strokeWidth="2" />
+        <circle cx="72" cy="26" r="4" fill="#ff6ec7" />
+        <circle cx="100" cy="22" r="4.5" fill="#5ddcff" />
+        <circle cx="128" cy="26" r="4" fill="#ff6ec7" />
       </g>
     );
   }
@@ -17485,13 +17621,14 @@ function PetHatOverlay({ hat }: { hat: string }) {
   if (hat === "hat_flower") {
     return (
       <g>
+        {/* +16 по Y — та же причина, что и у hat_crown выше. */}
         {[0, 1, 2, 3, 4].map((i) => {
           const angle = (i / 5) * Math.PI * 2;
           const cx = 100 + Math.cos(angle) * 34;
-          const cy = 34 + Math.sin(angle) * 12;
+          const cy = 50 + Math.sin(angle) * 12;
           return <circle key={i} cx={cx} cy={cy} r="9" fill={["#ff8fc4", "#ffd54f", "#8f6bff", "#5ddcff", "#ff9e6d"][i]} />;
         })}
-        <circle cx="100" cy="34" r="6" fill="#fff6e8" />
+        <circle cx="100" cy="50" r="6" fill="#fff6e8" />
       </g>
     );
   }
@@ -17519,11 +17656,17 @@ function PetHatOverlay({ hat }: { hat: string }) {
   if (hat === "hat_bandana") {
     return (
       <g>
-        <path d="M60,44 Q100,8 140,44 L138,50 Q100,18 62,50 Z" fill="#d64545" />
-        <circle cx="78" cy="28" r="2.5" fill="#fff" />
-        <circle cx="98" cy="20" r="2.5" fill="#fff" />
-        <circle cx="118" cy="28" r="2.5" fill="#fff" />
-        <path d="M138,48 L154,40 L148,56 Z" fill="#c23f3f" />
+        {/* Тонкий ободок-повязка (в отличие от объёмных шляп с полями)
+            без нахлёста на голову читался как оторванный от неё
+            "парящий" элемент — у коровы (единственный вид, реально
+            рисующий этот SVG-фолбэк, см. PET_PHOTO_SRC) голова ниже, чем
+            подразумевала исходная разметка. Сдвинуто на +12 по Y, чтобы
+            нижний край повязки заходил на макушку, а не висел над ней. */}
+        <path d="M60,74 Q100,38 140,74 L138,80 Q100,48 62,80 Z" fill="#d64545" />
+        <circle cx="78" cy="58" r="2.5" fill="#fff" />
+        <circle cx="98" cy="50" r="2.5" fill="#fff" />
+        <circle cx="118" cy="58" r="2.5" fill="#fff" />
+        <path d="M138,78 L154,70 L148,86 Z" fill="#c23f3f" />
       </g>
     );
   }
@@ -17540,16 +17683,19 @@ function PetHatOverlay({ hat }: { hat: string }) {
     return (
       <g>
         {/* Ободок светлый (белый/розовый) — на светлом мехе (собака,
-            кролик) сливался в почти невидимую линию без явной обводки. */}
+            кролик) сливался в почти невидимую линию без явной обводки.
+            Сдвинуто на +12 по Y вместе с рогом — та же причина, что и у
+            hat_bandana выше (иначе тонкий ободок "парит" над головой
+            коровы, единственного вида, реально рисующего этот фолбэк). */}
         <path
-          d="M62,42 Q100,20 138,42 L136,50 Q100,32 64,50 Z"
+          d="M62,72 Q100,50 138,72 L136,80 Q100,62 64,80 Z"
           fill="#ffe6f3"
           stroke="#ff8fc4"
           strokeWidth="2"
         />
-        <path d="M96,18 L104,18 L102,-8 Q100,-14 98,-8 Z" fill="#ffd54f" stroke="#e0a900" strokeWidth="1.5" />
-        <circle cx="80" cy="34" r="4" fill="#ff8fc4" />
-        <circle cx="118" cy="36" r="4" fill="#5ddcff" />
+        <path d="M96,48 L104,48 L102,22 Q100,16 98,22 Z" fill="#ffd54f" stroke="#e0a900" strokeWidth="1.5" />
+        <circle cx="80" cy="64" r="4" fill="#ff8fc4" />
+        <circle cx="118" cy="66" r="4" fill="#5ddcff" />
       </g>
     );
   }
@@ -18605,7 +18751,7 @@ function PetScreen({
   // без скролла. 220px — компромисс между тем и другим (свёрнутые по
   // умолчанию секции магазина освобождают достаточно места, чтобы
   // питомца можно было чуть увеличить обратно).
-  const ringSize = 220;
+  const ringSize = 248;
   const ringStroke = 9;
   const ringRadius = (ringSize - ringStroke) / 2;
   const ringCircumference = 2 * Math.PI * ringRadius;
@@ -18659,7 +18805,7 @@ function PetScreen({
           : `🔒 Ур. ${requirement.required}`;
     }
     if (requirement.kind === "pairPoints") {
-      return `🔒 ${requirement.required}⭐`;
+      return `🔒 ${requirement.required}🪙`;
     }
     return market === "fi"
       ? `🔒 ${requirement.required} pv putki`
@@ -18695,10 +18841,10 @@ function PetScreen({
       setShopError(
         reason === "insufficient-points"
           ? market === "fi"
-            ? "Ei tarpeeksi pisteitä."
+            ? "Ei tarpeeksi kolikoita."
             : market === "en"
-              ? "Not enough points."
-              : "Недостаточно очков."
+              ? "Not enough coins."
+              : "Недостаточно монет."
           : market === "fi"
             ? "Jotain meni pieleen."
             : market === "en"
@@ -18869,7 +19015,7 @@ function PetScreen({
                             : market === "en"
                               ? "Free"
                               : "Бесплатно"
-                          : `⭐ ${item.price}`}
+                          : `🪙 ${item.price}`}
               </div>
             </button>
           );
@@ -19237,10 +19383,10 @@ function PetScreen({
 
       <div style={{ fontSize: 11, color: muted, textAlign: "center" }}>
         {market === "fi"
-          ? `Sinun pisteesi: ⭐ ${soloPoints}`
+          ? `Sinun kolikkosi: 🪙 ${soloPoints}`
           : market === "en"
-            ? `Your points: ⭐ ${soloPoints}`
-            : `Твои очки: ⭐ ${soloPoints}`}
+            ? `Your coins: 🪙 ${soloPoints}`
+            : `Твои монеты: 🪙 ${soloPoints}`}
       </div>
 
       <button onClick={onBack} style={secondaryButtonStyle}>
@@ -19786,6 +19932,7 @@ function PsychologicalPortraitCard({
 function ProfileAndStatsScreen({
   user,
   points,
+  soloPointsLifetime,
   stats,
   bonusState,
   wonRewards,
@@ -19800,6 +19947,7 @@ function ProfileAndStatsScreen({
 
   user: TgUser | null;
   points: number;
+  soloPointsLifetime: number;
   stats: AppStats;
   bonusState: DailyBonusState;
   wonRewards: WonReward[];
@@ -19933,7 +20081,7 @@ const t = market === "fi" ? TEXT_FI : market === "en" ? TEXT_EN : TEXT_RU;
                 color: ink,
               }}
             >
-              ⭐ {points} очков
+              🪙 {points} монет
             </div>
           </div>
         </div>
@@ -19953,7 +20101,12 @@ const t = market === "fi" ? TEXT_FI : market === "en" ? TEXT_EN : TEXT_RU;
         <div style={{ display: "grid", gap: 10, marginTop: 14 }}>
           <StatRow label={t.profile.pollsCompleted} value={stats.pollsCompleted} />
           <StatRow label={t.profile.recentPrizes} value={stats.rewardsRedeemed} />
-          <StatRow label={t.profile.totalPoints} value={points} />
+          {/* "Всего очков" — очки за ВСЁ ВРЕМЯ (soloPointsLifetime), а
+              не текущий тратимый баланс (points/soloPoints, который
+              уменьшается при покупках, например вещей для питомца) —
+              см. supabase/lifetime_points_stat.sql. */}
+          <StatRow label={t.profile.totalPoints} value={soloPointsLifetime} />
+          <StatRow label={t.profile.currentBalance} value={points} />
         </div>
       </div>
 
@@ -20734,6 +20887,42 @@ async function claimReferralReward(initData: string) {
         data.soloWeeklyPoints ?? 0
       ),
   };
+}
+
+// Ручной ввод кода друга — нужен там, где нет Telegram start_param
+// (главным образом iOS, но работает на любой платформе как запасной
+// путь). Награду получает РЕФЕРЕР (тот, чей код ввели), не тот, кто
+// вводит — так же, как в автоматическом флоу через start_param, см.
+// claimReferralReward выше. /api/referral/claim сам защищён от
+// самоприглашения и повторного начисления одному и тому же
+// приглашённому (см. supabase/referrals_lockdown_and_fix.sql).
+async function claimReferralCodeManually(
+  code: string
+): Promise<{ ok: boolean; reason?: string }> {
+  const initData = await getInitDataAsync();
+
+  if (!initData) {
+    return { ok: false, reason: "no-auth" };
+  }
+
+  try {
+    const response = await fetch("/api/referral/claim", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ initData, referrerCode: code }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok || !data?.ok) {
+      return { ok: false, reason: data?.reason ?? "request-error" };
+    }
+
+    return { ok: true };
+  } catch (error) {
+    console.error("claimReferralCodeManually request error:", error);
+    return { ok: false, reason: "request-error" };
+  }
 }
 
 
@@ -23043,6 +23232,9 @@ if (bootstrapData.profile?.displayNameCustom && bootstrapData.profile?.firstName
 }
 
 const soloPointsFromDb = Number(bootstrapData.profile?.soloPoints ?? 0);
+const soloPointsLifetimeFromDb = Number(
+  bootstrapData.profile?.soloPointsLifetime ?? 0
+);
 const soloWeeklyPointsFromDb = Number(
   bootstrapData.profile?.soloWeeklyPoints ?? 0
 );
@@ -23053,6 +23245,7 @@ setAppState((prev) => ({
   isPremium: Boolean(bootstrapData.isPremium),
 
   soloPoints: soloPointsFromDb,
+  soloPointsLifetime: soloPointsLifetimeFromDb,
   soloWeeklyPoints: soloWeeklyPointsFromDb,
 
   // Пока points используется старым UI как личный баланс.
@@ -23060,7 +23253,7 @@ setAppState((prev) => ({
 }));
 
 // profile.gender раньше жил только в localStorage — если сервер уже
-// знает пол (сохранён через handleSelectGender при первом выборе),
+// знает пол (сохранён через persistGenderSelection при первом выборе),
 // он тут авторитетный источник. Это же чинит повторный экран выбора
 // пола при каждом запуске на iOS, где переустановка тестового билда
 // стирает localStorage: локально пол выглядит "не выбран", хотя
@@ -24258,6 +24451,7 @@ showPaywall={() => {
       <ProfileAndStatsScreen
   user={user}
   points={appState.points}
+  soloPointsLifetime={appState.soloPointsLifetime}
   stats={appState.stats}
   bonusState={appState.dailyBonus}
   wonRewards={appState.wonRewards}

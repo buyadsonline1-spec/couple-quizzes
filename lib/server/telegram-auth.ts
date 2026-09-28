@@ -32,6 +32,7 @@ export type TelegramInitDataValidation = {
   // отсюда вместо повторного RPC-вызова (bootstrap_profile отклоняет
   // синтетический отрицательный telegramId).
   soloPoints?: number;
+  soloPointsLifetime?: number;
   soloWeeklyPoints?: number;
   soloWeeklyPointsWeek?: string | null;
   displayNameCustom?: boolean;
@@ -213,6 +214,7 @@ async function validateSupabaseAuthToken(
           : null,
       authMethod: "supabase",
       soloPoints: Number(bootstrapData.soloPoints ?? 0),
+      soloPointsLifetime: Number(bootstrapData.soloPointsLifetime ?? 0),
       soloWeeklyPoints: Number(bootstrapData.soloWeeklyPoints ?? 0),
       soloWeeklyPointsWeek: bootstrapData.soloWeeklyPointsWeek ?? null,
       displayNameCustom: Boolean(bootstrapData.displayNameCustom),

@@ -2,6 +2,7 @@ import { supabaseAdmin } from "@/lib/server/supabase-admin";
 
 export type SoloProfilePayload = {
   soloPoints: number;
+  soloPointsLifetime: number;
   soloWeeklyPoints: number;
   soloWeeklyPointsWeek: string | null;
 };
@@ -11,16 +12,17 @@ export async function loadSoloProfileForTelegramId(
 ): Promise<SoloProfilePayload> {
   const { data, error } = await supabaseAdmin
     .from("profiles")
-    .select("solo_points, solo_weekly_points, solo_weekly_points_week")
+    .select("solo_points, solo_points_lifetime, solo_weekly_points, solo_weekly_points_week")
     .eq("telegram_id", telegramId)
     .maybeSingle();
 
   if (error || !data) {
-    return { soloPoints: 0, soloWeeklyPoints: 0, soloWeeklyPointsWeek: null };
+    return { soloPoints: 0, soloPointsLifetime: 0, soloWeeklyPoints: 0, soloWeeklyPointsWeek: null };
   }
 
   return {
     soloPoints: Number(data.solo_points ?? 0),
+    soloPointsLifetime: Number(data.solo_points_lifetime ?? 0),
     soloWeeklyPoints: Number(data.solo_weekly_points ?? 0),
     soloWeeklyPointsWeek: data.solo_weekly_points_week ?? null,
   };

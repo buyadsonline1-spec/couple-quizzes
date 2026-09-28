@@ -46,6 +46,7 @@ export async function POST(request: NextRequest) {
     // <= 0, а тут синтетический отрицательный id).
     let profileData: {
       soloPoints?: number;
+      soloPointsLifetime?: number;
       soloWeeklyPoints?: number;
       soloWeeklyPointsWeek?: string | null;
       firstName?: string | null;
@@ -60,6 +61,7 @@ export async function POST(request: NextRequest) {
       // кастомный ник) для standalone iOS-аккаунтов.
       profileData = {
         soloPoints: validation.soloPoints,
+        soloPointsLifetime: validation.soloPointsLifetime,
         soloWeeklyPoints: validation.soloWeeklyPoints,
         soloWeeklyPointsWeek: validation.soloWeeklyPointsWeek,
         firstName: validation.dbFirstName,
@@ -129,6 +131,7 @@ export async function POST(request: NextRequest) {
       profile: {
         telegramId,
         soloPoints: Number(profileData.soloPoints ?? 0),
+        soloPointsLifetime: Number(profileData.soloPointsLifetime ?? 0),
         soloWeeklyPoints: Number(profileData.soloWeeklyPoints ?? 0),
         soloWeeklyPointsWeek: profileData.soloWeeklyPointsWeek ?? null,
         firstName: profileData.firstName ?? null,

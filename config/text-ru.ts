@@ -141,7 +141,7 @@ export const TEXT_RU = {
   polls: "Опросы",
   games: "Игры",
   tests: "Тесты",
-  rewards: "Очки и призы",
+  rewards: "Монеты и призы",
   pair: "Пара",
   top: "Топ игроков",
   topPlayers: "Топ игроков",
@@ -182,7 +182,7 @@ export const TEXT_RU = {
     toNextLevel: "До следующего уровня",
     noPairGreeting: "Привет, {name}! 👋",
     noPairText: "Создай пару с партнёром, чтобы вместе проходить тесты, опросы и получать бонусы",
-    yourPoints: "Ваши очки",
+    yourPoints: "Ваши монеты",
     newbies: "Новички",
     maxLevelReached: "Максимальный уровень",
   },
@@ -214,7 +214,7 @@ export const TEXT_RU = {
     claimed: "Получено",
     available: "Доступно",
     soon: "Скоро",
-    pointsWord: "очков",
+    pointsWord: "монет",
   },
 
   polls: {
@@ -236,7 +236,7 @@ export const TEXT_RU = {
 
   games: {
     title: "Игры",
-    subtitle: "Играй и зарабатывай очки",
+    subtitle: "Играй и зарабатывай монеты",
     empty: "Игры пока недоступны",
     completed: "Пройдено",
     reward: "Награда",
@@ -260,20 +260,20 @@ export const TEXT_RU = {
     correctAnswersLabel: "Правильных ответов:",
     resultLabel: "Результат:",
     rewardLabel: "Награда:",
-    claimPoints: "Забрать очки",
+    claimPoints: "Забрать монеты",
     questionProgress: "Вопрос {current} из {total}",
     nextButton: "Дальше",
     exitGame: "Выйти из игры",
-    pointsUnit: "очков",
+    pointsUnit: "монет",
   },
 
   rewards: {
-    title: "Очки и призы",
-    subtitle: "Обменивайте очки на призы",
+    title: "Монеты и призы",
+    subtitle: "Обменивайте монеты на призы",
     wheel: "Колесо призов",
     prizes: "Призы",
     spin: "Крутить колесо",
-    notEnoughPoints: "Недостаточно очков",
+    notEnoughPoints: "Недостаточно монет",
     yourBalance: "Ваш баланс",
 
     wheelScreen: {
@@ -281,26 +281,26 @@ export const TEXT_RU = {
       // iOS-вариант этого экрана без визуала колеса (Apple не пропускает
       // simulated gambling с индивидуальных аккаунтов разработчика) —
       // тот же бонус, но подан как открытие подарка, а не как рулетка.
-      iosTitle: "Подарки за очки",
+      iosTitle: "Подарки за монеты",
       iosCostPrefix: "Одно открытие стоит",
       iosOpenButtonPrefix: "Открыть за",
       iosOpenButtonFreeLabel: "Открыть бесплатно",
       iosOpeningLabel: "Открываем...",
       iosFreeSpinsLabel: " · бесплатных открытий:",
       bonusSegmentLabel: "Бонус",
-      pointsLabel: "⭐ Очков:",
+      pointsLabel: "🪙 Монет:",
       todayLabel: "Сегодня:",
       freeSpinsLabel: " · бесплатных прокрутов:",
       spinFailedMessage: "Не удалось прокрутить колесо. Попробуй ещё раз.",
       spinningLabel: "Крутим...",
       spinButtonPrefix: "Крутить за",
       spinButtonFreeLabel: "Бесплатный прокрут",
-      bonusPointsMessage: "Бонус: +{value} очков!",
+      bonusPointsMessage: "Бонус: +{value} монет!",
       bonusSpinMessage:
         "Бонус: +1 бесплатный прокрут! Следующее вращение будет бесплатным и не потратит дневной лимит.",
       prizeWonMessage: "Тебе выпал приз: {title} ({categoryTitle})",
       wonRewardsTitle: "Выпавшие призы",
-      emptyPrizesText: "Пока здесь пусто. Заработай очки и крутанни колесо.",
+      emptyPrizesText: "Пока здесь пусто. Заработай монеты и крутанни колесо.",
       categoryLabel: "Категория:",
       collapsePrizes: "Свернуть призы",
       showAllPrizes: "Показать все призы",
@@ -308,10 +308,10 @@ export const TEXT_RU = {
       wonPrizeText: "Вы выиграли приз 🎁 Напишите менеджеру, чтобы получить его",
       claimPrizeButton: "Забрать приз 🎁",
       managerMessageTemplate: "Здравствуйте! Я выиграл приз: {title} 🎁",
-      // Бонусы (очки/прокрут) начисляются автоматически — этот текст/
+      // Бонусы (монеты/прокрут) начисляются автоматически — этот текст/
       // кнопка показываются вместо wonPrizeText/claimPrizeButton, чтобы
       // не звать писать менеджеру за тем, что уже само зачислилось.
-      bonusPointsClaimedText: "Очки уже зачислены на баланс — можно сразу тратить и крутить ещё раз!",
+      bonusPointsClaimedText: "Монеты уже зачислены на баланс — можно сразу тратить и крутить ещё раз!",
       bonusSpinClaimedText: "Бесплатный прокрут уже в вашем банке — используйте его в любое время.",
       bonusContinueButton: "Ура, отлично! 🎉",
     },
@@ -319,7 +319,7 @@ export const TEXT_RU = {
 
  pair: {
     leavePairButton: "Расстаться с парой",
-    leavePairConfirmText: "Точно расстаться с парой? Это отменит связь с партнёром, но не удалит очки и историю.",
+    leavePairConfirmText: "Точно расстаться с парой? Это отменит связь с партнёром, но не удалит монеты и историю.",
     leavePairConfirmButton: "Да, расстаться",
     leavePairCancelButton: "Отмена",
   title: "Пара",
@@ -327,7 +327,7 @@ export const TEXT_RU = {
   subtitle: "Ваш прогресс как пары",
   level: "Уровень",
   compatibility: "Совместимость",
-  totalPoints: "Всего очков пары",
+  totalPoints: "Всего монет пары",
   nextLevel: "До следующего уровня",
   noPairYet: "Пара еще не подключена",
 
@@ -414,6 +414,11 @@ export const TEXT_RU = {
     codePlaceholder: "Например: AB12CD",
     joining: "Подключаем...",
     join: "Подключиться",
+    linkTitleCode: "Код приглашения",
+    codeShareIntro:
+      "Присоединяйся ко мне в Couple Quizzes! Введи мой код приглашения в приложении:",
+    codeCopiedAlert: "Код скопирован",
+    shareCode: "Поделиться кодом",
   },
 
   streakInfoScreen: {
@@ -425,7 +430,7 @@ export const TEXT_RU = {
     maxReached: "Максимальный рубеж достигнут 👑",
     milestonesTitle: "Рубежи серии",
     milestonesDesc:
-      "Чем длиннее серия, тем больше бонусных очков получает ваша пара.",
+      "Чем длиннее серия, тем больше бонусных монет получает ваша пара.",
     reached: "получено",
     next: "следующий",
     daysInARow: "дней подряд",
@@ -437,26 +442,39 @@ export const TEXT_RU = {
     title: "Пригласить друзей",
     programTitle: "Твоя реферальная программа",
     subtitle:
-      "Приглашай друзей в Couple Quizzes и получай +200 очков за каждого нового пользователя, который зашел по твоей ссылке.",
+      "Приглашай друзей в Couple Quizzes и получай +200 монет за каждого нового пользователя, который зашел по твоей ссылке.",
     invitedFriends: "Приглашено друзей",
-    earnedPoints: "Заработано очков",
+    earnedPoints: "Заработано монет",
     yourLink: "Твоя ссылка",
     inviteButton: "Пригласить друзей",
     cardText:
-      "Получай +200 очков за каждого друга, который откроет приложение по твоей ссылке.",
+      "Получай +200 монет за каждого друга, который откроет приложение по твоей ссылке.",
     linkLoadingFallback: "Ссылка появится после загрузки профиля",
+    yourCode: "Твой код",
+    shareCodeIntro:
+      "Присоединяйся ко мне в Couple Quizzes! Введи мой код в приложении, в разделе «Пригласить друзей»:",
+    codeCopiedAlert: "Код скопирован",
+    friendCodeTitle: "Есть код от друга?",
+    friendCodePlaceholder: "Код друга",
+    friendCodeButton: "Отправить",
+    friendCodeEmptyAlert: "Введите код",
+    friendCodeSuccessAlert: "Готово! Ваш друг получит бонус 🎉",
+    friendCodeSelfAlert: "Нельзя ввести свой собственный код",
+    friendCodeAlreadyAlert: "Вы уже использовали код приглашения раньше",
+    friendCodeInvalidAlert: "Такой код не найден",
+    friendCodeErrorAlert: "Не удалось отправить код, попробуйте позже",
   },
 
   top: {
     title: "Топ игроков",
     subtitle: "Лучшие пары этого рейтинга",
     place: "Место",
-    points: "Очки",
+    points: "Монеты",
     empty: "Рейтинг пока пуст",
     leaderboard: "Рейтинг",
     leadersOfWeek: "Лидеры недели",
     weeklyReward: "Награда недели",
-    topPairsReward: "Пары из топа получают +500 очков",
+    topPairsReward: "Пары из топа получают +500 монет",
     weeklyRewardHint:
       "Награда появляется только после завершения недели и только для пар из топ-3 прошлой недели",
 
@@ -464,7 +482,7 @@ export const TEXT_RU = {
       soloSubtitle:
         "Соревнуйся с другими игроками и поднимайся в личном рейтинге.",
       pairSubtitle:
-        "Зарабатывайте очки вместе и поднимайте вашу пару в рейтинге.",
+        "Зарабатывайте монеты вместе и поднимайте вашу пару в рейтинге.",
       refresh: "Обновить",
       soloTabLabel: "👤 Сольный топ",
       pairTabLabel: "💕 Парный топ",
@@ -474,7 +492,7 @@ export const TEXT_RU = {
       soloEmpty:
         "В сольном рейтинге пока никого нет. Пройди первый тест, опрос или игру!",
       pairEmpty:
-        "В парном рейтинге пока никого нет. Подключи партнёра и начните зарабатывать очки вместе!",
+        "В парном рейтинге пока никого нет. Подключи партнёра и начните зарабатывать монеты вместе!",
       youSuffix: " (Вы)",
       leaderOfWeek: "Лидер недели",
       placeTemplate: "Место #{place}",
@@ -482,16 +500,16 @@ export const TEXT_RU = {
       showTop10: "Показать топ-10",
       yourPlaceTitle: "👤 Твоё место",
       yourPlaceText:
-        "Ты занимаешь {place}-е место и заработал {points} очков за текущую неделю.",
+        "Ты занимаешь {place}-е место и заработал {points} монет за текущую неделю.",
       yourPlaceEmptyText:
-        "Ты пока не участвуешь в сольном рейтинге. Заработай первые очки!",
+        "Ты пока не участвуешь в сольном рейтинге. Заработай первые монеты!",
       yourPairPlaceTitle: "💕 Место вашей пары",
       pairNeedsPartnerText:
         "Сначала подключи партнёра, чтобы участвовать в парном рейтинге.",
       yourPairPlaceText:
-        "Ваша пара занимает {place}-е место и заработала {points} очков за текущую неделю.",
+        "Ваша пара занимает {place}-е место и заработала {points} монет за текущую неделю.",
       pairNoRankYetText:
-        "Ваша пара пока не появилась в рейтинге. Заработайте первые совместные очки!",
+        "Ваша пара пока не появилась в рейтинге. Заработайте первые совместные монеты!",
       weeklyRewardTitle: "🎁 Награда недели",
       soloRewardComingSoon:
         "Награды сольного рейтинга скоро появятся. Сейчас можно соревноваться за место в топе.",
@@ -503,7 +521,7 @@ export const TEXT_RU = {
         "Ваша пара вошла в топ-3 прошлой недели! Можно забрать награду 🎉",
       rewardOnlyTopThreeText:
         "Награда доступна только парам из топ-3 по итогам прошлой недели.",
-      claimRewardButton: "Забрать +500 очков",
+      claimRewardButton: "Забрать +500 монет",
     },
   },
 
@@ -516,10 +534,11 @@ export const TEXT_RU = {
     testsCompleted: "Тестов пройдено",
     gamesPlayed: "Игр сыграно",
     currentBonusDay: "Текущий день бонуса",
-    bonusPoints: "Очков из бонусов",
+    bonusPoints: "Монет из бонусов",
     noPrizes: "Пока призов нет",
     recentPrizes: "Выиграно призов",
-    totalPoints: "Всего очков",
+    totalPoints: "Всего монет",
+    currentBalance: "Текущий баланс",
     portraitTitle: "Психологический портрет",
     portraitSubtitle: "Из результатов твоих тестов — те же данные используются для подбора анкет в Знакомствах",
     portraitCta: "Пройти оставшиеся тесты",
@@ -541,17 +560,17 @@ export const TEXT_RU = {
     pairRequiredAlert: "Сначала нужно подключить пару",
     alreadyAnsweredAlert: "Ты уже ответил(а) на вопрос дня",
     answerLockedAlert: "Ответ на сегодня уже сохранён и его нельзя изменить",
-    streakAlert: "🔥 Серия {days} дней!\n+{points} очков",
-    matchAlert: "💘 Вы совпали!\n+{points} очков",
+    streakAlert: "🔥 Серия {days} дней!\n+{points} монет",
+    matchAlert: "💘 Вы совпали!\n+{points} монет",
     streakAndMatchAlert:
-      "🔥 Серия {days} дней!\n+{streakPoints} очков\n💘 Совпадение ответов!\n+{matchPoints} очков",
+      "🔥 Серия {days} дней!\n+{streakPoints} монет\n💘 Совпадение ответов!\n+{matchPoints} монет",
     answeredWord: "ответил(а)",
     notAnsweredWord: "ещё не ответил(а)",
     sameAnswerHint: "Вы выбрали один и тот же вариант",
     differentAnswerHint: "Ваши ответы отличаются — обсудите это 💬",
     matchedTitle: "💘 Совпадение!",
     differentTitle: "✨ Разные ответы",
-    pairPointsSuffix: "очков паре",
+    pairPointsSuffix: "монет паре",
     milestoneReached: "Рубеж достигнут!",
     streakDaysInARow: "Вы отвечаете вместе уже {days} дней подряд 💞",
     historyTitle: "История",
@@ -570,7 +589,7 @@ export const TEXT_RU = {
     // iOS-формулировка того же пункта — без слова "рулетка" (см. фикс
     // rewards.wheelScreen.iosTitle для той же причины).
     featureWheelIos: "🎁 Бонусы и подарки",
-    featureBonusPoints: "🎁 +500 очков",
+    featureBonusPoints: "🎁 +500 монет",
     featureDesign: "🎨 Специальный дизайн",
     unlockButton: "Разблокировать Premium",
     choosePaymentSubtitle: "Выбери удобный способ оплаты",
@@ -591,7 +610,7 @@ export const TEXT_RU = {
     testsWord: " тесты",
     sectionWord: " раздел",
     suffix: " и получаешь бонус!",
-    pairPointsLabel: "очков пары",
+    pairPointsLabel: "монет пары",
     claimRewardButton: "Забрать награду",
   },
 
@@ -606,7 +625,7 @@ export const TEXT_RU = {
     pairCreateInviteFailedPrefix: "Не удалось создать приглашение:",
     pairCreateInviteFailed: "Не удалось создать приглашение",
     wheelSpinFailed: "Не удалось прокрутить колесо, попробуй ещё раз",
-    wheelInsufficientPoints: "Недостаточно очков для вращения колеса.",
+    wheelInsufficientPoints: "Недостаточно монет для вращения колеса.",
     wheelDailyLimitReached: "Сегодня лимит вращений исчерпан (3 в день).",
     pairRequiredForSpin: "Сначала нужно создать пару",
     bonusAlreadyClaimedToday: "Бонус на сегодня уже забран — приходи завтра 💫",
