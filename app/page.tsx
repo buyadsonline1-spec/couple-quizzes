@@ -333,7 +333,7 @@ type LoveQuestion = {
   textFi: string;
 };
 
-type TestKind = "scale" | "love-language" | "personality";
+type TestKind = "scale" | "love-language" | "personality" | "green-flag";
 
 type TestQuestion = {
   id: string;
@@ -1299,6 +1299,318 @@ const TESTS: TestDefinition[] = [
           "Rauhallinen ja viisas ihminen",
           "Kirkas energianlähde",
         ],
+      },
+    ],
+  },
+  {
+    id: "green-red-flag-men",
+    title:
+      market === "fi"
+        ? "Vihreä lippu vai punainen lippu? (Miehille)"
+        : market === "ru"
+        ? "Зелёный флаг или красный флаг? (для мужчин)"
+        : "Green Flag or Red Flag? (For Men)",
+    titleRu: "Зелёный флаг или красный флаг? (для мужчин)",
+    titleEn: "Green Flag or Red Flag? (For Men)",
+    titleFi: "Vihreä lippu vai punainen lippu? (Miehille)",
+    description:
+      market === "fi"
+        ? "Rehellinen testi siitä, millaista käytöstä tuot suhteeseen — luottamusta rakentavaa vai sitä murentavaa."
+        : market === "ru"
+        ? "Честный тест о том, какое поведение ты приносишь в отношения — то, что создаёт доверие, или то, что его разрушает."
+        : "An honest test about what you bring to a relationship — behavior that builds trust, or behavior that breaks it.",
+    descriptionRu:
+      "Честный тест о том, какое поведение ты приносишь в отношения — то, что создаёт доверие, или то, что его разрушает.",
+    descriptionEn:
+      "An honest test about what you bring to a relationship — behavior that builds trust, or behavior that breaks it.",
+    descriptionFi:
+      "Rehellinen testi siitä, millaista käytöstä tuot suhteeseen — luottamusta rakentavaa vai sitä murentavaa.",
+    reward: TEST_REWARD,
+    kind: "green-flag",
+    questions: [
+      {
+        id: "gm1",
+        text:
+          market === "fi"
+            ? "Pidän lupaukseni, jotka annan kumppanilleni."
+            : market === "ru"
+            ? "Я держу обещания, которые даю партнёрше."
+            : "I keep the promises I make to my partner.",
+        textRu: "Я держу обещания, которые даю партнёрше.",
+        textEn: "I keep the promises I make to my partner.",
+        textFi: "Pidän lupaukseni, jotka annan kumppanilleni.",
+        options: market === "fi" ? SCALE_OPTIONS_FI : market === "ru" ? SCALE_OPTIONS_RU : SCALE_OPTIONS_EN,
+        optionsRu: SCALE_OPTIONS_RU,
+        optionsEn: SCALE_OPTIONS_EN,
+        optionsFi: SCALE_OPTIONS_FI,
+      },
+      {
+        id: "gm2",
+        text:
+          market === "fi"
+            ? "Puhun tunteistani ääneen sen sijaan, että vetäytyisin."
+            : market === "ru"
+            ? "Я говорю о своих чувствах вслух, а не ухожу в молчание."
+            : "I talk about my feelings out loud instead of shutting down.",
+        textRu: "Я говорю о своих чувствах вслух, а не ухожу в молчание.",
+        textEn: "I talk about my feelings out loud instead of shutting down.",
+        textFi: "Puhun tunteistani ääneen sen sijaan, että vetäytyisin.",
+        options: market === "fi" ? SCALE_OPTIONS_FI : market === "ru" ? SCALE_OPTIONS_RU : SCALE_OPTIONS_EN,
+        optionsRu: SCALE_OPTIONS_RU,
+        optionsEn: SCALE_OPTIONS_EN,
+        optionsFi: SCALE_OPTIONS_FI,
+      },
+      {
+        id: "gm3",
+        text:
+          market === "fi"
+            ? "Iloitsen kumppanini onnistumisista sen sijaan, että kadehtisin niitä."
+            : market === "ru"
+            ? "Я радуюсь успехам партнёрши, а не ревную к ним."
+            : "I feel happy about my partner's successes instead of jealous.",
+        textRu: "Я радуюсь успехам партнёрши, а не ревную к ним.",
+        textEn: "I feel happy about my partner's successes instead of jealous.",
+        textFi: "Iloitsen kumppanini onnistumisista sen sijaan, että kadehtisin niitä.",
+        options: market === "fi" ? SCALE_OPTIONS_FI : market === "ru" ? SCALE_OPTIONS_RU : SCALE_OPTIONS_EN,
+        optionsRu: SCALE_OPTIONS_RU,
+        optionsEn: SCALE_OPTIONS_EN,
+        optionsFi: SCALE_OPTIONS_FI,
+      },
+      {
+        id: "gm4",
+        text:
+          market === "fi"
+            ? "Myönnän ensimmäisenä, jos olen väärässä, ja pyydän anteeksi."
+            : market === "ru"
+            ? "Я первым признаю, если был неправ, и извиняюсь."
+            : "I'm the first to admit when I'm wrong and apologize.",
+        textRu: "Я первым признаю, если был неправ, и извиняюсь.",
+        textEn: "I'm the first to admit when I'm wrong and apologize.",
+        textFi: "Myönnän ensimmäisenä, jos olen väärässä, ja pyydän anteeksi.",
+        options: market === "fi" ? SCALE_OPTIONS_FI : market === "ru" ? SCALE_OPTIONS_RU : SCALE_OPTIONS_EN,
+        optionsRu: SCALE_OPTIONS_RU,
+        optionsEn: SCALE_OPTIONS_EN,
+        optionsFi: SCALE_OPTIONS_FI,
+      },
+      {
+        id: "gm5",
+        text:
+          market === "fi"
+            ? "Kunnioitan kumppanini henkilökohtaista tilaa ja aikaa ystävien kanssa."
+            : market === "ru"
+            ? "Я уважаю личное пространство и время партнёрши с друзьями."
+            : "I respect my partner's personal space and time with friends.",
+        textRu: "Я уважаю личное пространство и время партнёрши с друзьями.",
+        textEn: "I respect my partner's personal space and time with friends.",
+        textFi: "Kunnioitan kumppanini henkilökohtaista tilaa ja aikaa ystävien kanssa.",
+        options: market === "fi" ? SCALE_OPTIONS_FI : market === "ru" ? SCALE_OPTIONS_RU : SCALE_OPTIONS_EN,
+        optionsRu: SCALE_OPTIONS_RU,
+        optionsEn: SCALE_OPTIONS_EN,
+        optionsFi: SCALE_OPTIONS_FI,
+      },
+      {
+        id: "gm6",
+        text:
+          market === "fi"
+            ? "Olen rehellinen kumppanilleni rahasta ja kuluista."
+            : market === "ru"
+            ? "Я честен с партнёршей по поводу денег и трат."
+            : "I'm honest with my partner about money and spending.",
+        textRu: "Я честен с партнёршей по поводу денег и трат.",
+        textEn: "I'm honest with my partner about money and spending.",
+        textFi: "Olen rehellinen kumppanilleni rahasta ja kuluista.",
+        options: market === "fi" ? SCALE_OPTIONS_FI : market === "ru" ? SCALE_OPTIONS_RU : SCALE_OPTIONS_EN,
+        optionsRu: SCALE_OPTIONS_RU,
+        optionsEn: SCALE_OPTIONS_EN,
+        optionsFi: SCALE_OPTIONS_FI,
+      },
+      {
+        id: "gm7",
+        text:
+          market === "fi"
+            ? "Kuuntelen kumppaniani loppuun keskeyttämättä."
+            : market === "ru"
+            ? "Я дослушиваю партнёршу до конца, не перебивая."
+            : "I let my partner finish speaking without interrupting.",
+        textRu: "Я дослушиваю партнёршу до конца, не перебивая.",
+        textEn: "I let my partner finish speaking without interrupting.",
+        textFi: "Kuuntelen kumppaniani loppuun keskeyttämättä.",
+        options: market === "fi" ? SCALE_OPTIONS_FI : market === "ru" ? SCALE_OPTIONS_RU : SCALE_OPTIONS_EN,
+        optionsRu: SCALE_OPTIONS_RU,
+        optionsEn: SCALE_OPTIONS_EN,
+        optionsFi: SCALE_OPTIONS_FI,
+      },
+      {
+        id: "gm8",
+        text:
+          market === "fi"
+            ? "Otan osan kotitöistä hoitaakseni ilman muistutuksia."
+            : market === "ru"
+            ? "Я беру на себя часть бытовых дел без напоминаний."
+            : "I take on household tasks without being reminded.",
+        textRu: "Я беру на себя часть бытовых дел без напоминаний.",
+        textEn: "I take on household tasks without being reminded.",
+        textFi: "Otan osan kotitöistä hoitaakseni ilman muistutuksia.",
+        options: market === "fi" ? SCALE_OPTIONS_FI : market === "ru" ? SCALE_OPTIONS_RU : SCALE_OPTIONS_EN,
+        optionsRu: SCALE_OPTIONS_RU,
+        optionsEn: SCALE_OPTIONS_EN,
+        optionsFi: SCALE_OPTIONS_FI,
+      },
+    ],
+  },
+  {
+    id: "green-red-flag-women",
+    title:
+      market === "fi"
+        ? "Vihreä lippu vai punainen lippu? (Naisille)"
+        : market === "ru"
+        ? "Зелёный флаг или красный флаг? (для женщин)"
+        : "Green Flag or Red Flag? (For Women)",
+    titleRu: "Зелёный флаг или красный флаг? (для женщин)",
+    titleEn: "Green Flag or Red Flag? (For Women)",
+    titleFi: "Vihreä lippu vai punainen lippu? (Naisille)",
+    description:
+      market === "fi"
+        ? "Rehellinen testi siitä, millaista käytöstä tuot suhteeseen — luottamusta rakentavaa vai sitä murentavaa."
+        : market === "ru"
+        ? "Честный тест о том, какое поведение ты приносишь в отношения — то, что создаёт доверие, или то, что его разрушает."
+        : "An honest test about what you bring to a relationship — behavior that builds trust, or behavior that breaks it.",
+    descriptionRu:
+      "Честный тест о том, какое поведение ты приносишь в отношения — то, что создаёт доверие, или то, что его разрушает.",
+    descriptionEn:
+      "An honest test about what you bring to a relationship — behavior that builds trust, or behavior that breaks it.",
+    descriptionFi:
+      "Rehellinen testi siitä, millaista käytöstä tuot suhteeseen — luottamusta rakentavaa vai sitä murentavaa.",
+    reward: TEST_REWARD,
+    kind: "green-flag",
+    questions: [
+      {
+        id: "gw1",
+        text:
+          market === "fi"
+            ? "Sanon suoraan, mikä minua huolestuttaa, sen sijaan että odottaisin kumppanini arvaavan."
+            : market === "ru"
+            ? "Я говорю прямо о том, что меня беспокоит, а не жду, что партнёр догадается."
+            : "I say directly what's bothering me instead of expecting my partner to guess.",
+        textRu: "Я говорю прямо о том, что меня беспокоит, а не жду, что партнёр догадается.",
+        textEn: "I say directly what's bothering me instead of expecting my partner to guess.",
+        textFi: "Sanon suoraan, mikä minua huolestuttaa, sen sijaan että odottaisin kumppanini arvaavan.",
+        options: market === "fi" ? SCALE_OPTIONS_FI : market === "ru" ? SCALE_OPTIONS_RU : SCALE_OPTIONS_EN,
+        optionsRu: SCALE_OPTIONS_RU,
+        optionsEn: SCALE_OPTIONS_EN,
+        optionsFi: SCALE_OPTIONS_FI,
+      },
+      {
+        id: "gw2",
+        text:
+          market === "fi"
+            ? "Tuen kumppanini tavoitteita sen sijaan, että kilpailisin hänen kanssaan."
+            : market === "ru"
+            ? "Я поддерживаю цели партнёра, а не соревнуюсь с ним."
+            : "I support my partner's goals instead of competing with him.",
+        textRu: "Я поддерживаю цели партнёра, а не соревнуюсь с ним.",
+        textEn: "I support my partner's goals instead of competing with him.",
+        textFi: "Tuen kumppanini tavoitteita sen sijaan, että kilpailisin hänen kanssaan.",
+        options: market === "fi" ? SCALE_OPTIONS_FI : market === "ru" ? SCALE_OPTIONS_RU : SCALE_OPTIONS_EN,
+        optionsRu: SCALE_OPTIONS_RU,
+        optionsEn: SCALE_OPTIONS_EN,
+        optionsFi: SCALE_OPTIONS_FI,
+      },
+      {
+        id: "gw3",
+        text:
+          market === "fi"
+            ? "En käytä hiljaisuutta tai mielenpahoittamista rangaistuksena kumppanilleni."
+            : market === "ru"
+            ? "Я не использую молчание или обиду как способ наказать партнёра."
+            : "I don't use silence or sulking to punish my partner.",
+        textRu: "Я не использую молчание или обиду как способ наказать партнёра.",
+        textEn: "I don't use silence or sulking to punish my partner.",
+        textFi: "En käytä hiljaisuutta tai mielenpahoittamista rangaistuksena kumppanilleni.",
+        options: market === "fi" ? SCALE_OPTIONS_FI : market === "ru" ? SCALE_OPTIONS_RU : SCALE_OPTIONS_EN,
+        optionsRu: SCALE_OPTIONS_RU,
+        optionsEn: SCALE_OPTIONS_EN,
+        optionsFi: SCALE_OPTIONS_FI,
+      },
+      {
+        id: "gw4",
+        text:
+          market === "fi"
+            ? "Luotan kumppaniini enkä tarkista hänen puhelintaan tai viestejään."
+            : market === "ru"
+            ? "Я доверяю партнёру и не проверяю его телефон и переписки."
+            : "I trust my partner and don't check his phone or messages.",
+        textRu: "Я доверяю партнёру и не проверяю его телефон и переписки.",
+        textEn: "I trust my partner and don't check his phone or messages.",
+        textFi: "Luotan kumppaniini enkä tarkista hänen puhelintaan tai viestejään.",
+        options: market === "fi" ? SCALE_OPTIONS_FI : market === "ru" ? SCALE_OPTIONS_RU : SCALE_OPTIONS_EN,
+        optionsRu: SCALE_OPTIONS_RU,
+        optionsEn: SCALE_OPTIONS_EN,
+        optionsFi: SCALE_OPTIONS_FI,
+      },
+      {
+        id: "gw5",
+        text:
+          market === "fi"
+            ? "Myönnän virheeni sen sijaan, että syyttäisin kumppaniani."
+            : market === "ru"
+            ? "Я признаю свои ошибки, а не перекладываю вину на партнёра."
+            : "I own my mistakes instead of blaming my partner.",
+        textRu: "Я признаю свои ошибки, а не перекладываю вину на партнёра.",
+        textEn: "I own my mistakes instead of blaming my partner.",
+        textFi: "Myönnän virheeni sen sijaan, että syyttäisin kumppaniani.",
+        options: market === "fi" ? SCALE_OPTIONS_FI : market === "ru" ? SCALE_OPTIONS_RU : SCALE_OPTIONS_EN,
+        optionsRu: SCALE_OPTIONS_RU,
+        optionsEn: SCALE_OPTIONS_EN,
+        optionsFi: SCALE_OPTIONS_FI,
+      },
+      {
+        id: "gw6",
+        text:
+          market === "fi"
+            ? "Kunnioitan hänen henkilökohtaista tilaansa ja aikaansa ystävien kanssa."
+            : market === "ru"
+            ? "Я уважаю его личное пространство и время с друзьями."
+            : "I respect his personal space and time with friends.",
+        textRu: "Я уважаю его личное пространство и время с друзьями.",
+        textEn: "I respect his personal space and time with friends.",
+        textFi: "Kunnioitan hänen henkilökohtaista tilaansa ja aikaansa ystävien kanssa.",
+        options: market === "fi" ? SCALE_OPTIONS_FI : market === "ru" ? SCALE_OPTIONS_RU : SCALE_OPTIONS_EN,
+        optionsRu: SCALE_OPTIONS_RU,
+        optionsEn: SCALE_OPTIONS_EN,
+        optionsFi: SCALE_OPTIONS_FI,
+      },
+      {
+        id: "gw7",
+        text:
+          market === "fi"
+            ? "Olen rehellinen tunteistani, vaikka se olisi epämukavaa."
+            : market === "ru"
+            ? "Я честна о своих чувствах, даже когда это неудобно."
+            : "I'm honest about my feelings even when it's uncomfortable.",
+        textRu: "Я честна о своих чувствах, даже когда это неудобно.",
+        textEn: "I'm honest about my feelings even when it's uncomfortable.",
+        textFi: "Olen rehellinen tunteistani, vaikka se olisi epämukavaa.",
+        options: market === "fi" ? SCALE_OPTIONS_FI : market === "ru" ? SCALE_OPTIONS_RU : SCALE_OPTIONS_EN,
+        optionsRu: SCALE_OPTIONS_RU,
+        optionsEn: SCALE_OPTIONS_EN,
+        optionsFi: SCALE_OPTIONS_FI,
+      },
+      {
+        id: "gw8",
+        text:
+          market === "fi"
+            ? "Arvostan ääneen hänen vaivannäköään sen sijaan, että pitäisin sitä itsestäänselvyytenä."
+            : market === "ru"
+            ? "Я вслух ценю его усилия, а не считаю их самим собой разумеющимися."
+            : "I openly appreciate his efforts instead of taking them for granted.",
+        textRu: "Я вслух ценю его усилия, а не считаю их самим собой разумеющимися.",
+        textEn: "I openly appreciate his efforts instead of taking them for granted.",
+        textFi: "Arvostan ääneen hänen vaivannäköään sen sijaan, että pitäisin sitä itsestäänselvyytenä.",
+        options: market === "fi" ? SCALE_OPTIONS_FI : market === "ru" ? SCALE_OPTIONS_RU : SCALE_OPTIONS_EN,
+        optionsRu: SCALE_OPTIONS_RU,
+        optionsEn: SCALE_OPTIONS_EN,
+        optionsFi: SCALE_OPTIONS_FI,
       },
     ],
   },
@@ -3557,6 +3869,85 @@ const TRUST_LEVEL_RESULTS: Record<Market, TestResult[]> = {
 function getScaleResult(totalScore: number, maxScore: number, market: Market): TestResult {
   const ratio = totalScore / maxScore;
   const results = TRUST_LEVEL_RESULTS[market];
+
+  if (ratio < 0.45) return results[0];
+  if (ratio < 0.75) return results[1];
+  return results[2];
+}
+
+// "Ты грин флаг или ред флаг?" — общий результат для мужской и
+// женской версии теста (см. green-red-flag-men/green-red-flag-women в
+// TESTS ниже): вопросы у них разные, но обе устроены как утверждения
+// о собственном поведении в паре (SCALE_OPTIONS, "Всегда" = здоровое
+// поведение), поэтому считаются той же формулой отношения к
+// максимуму, что и trust-level, — getScaleResult не подходит, потому
+// что он жёстко завязан на TRUST_LEVEL_RESULTS.
+const GREEN_FLAG_RESULTS: Record<Market, TestResult[]> = {
+  ru: [
+    {
+      title: "Красный флаг 🚩",
+      subtitle: "Есть поведение, которое стоит пересмотреть",
+      description:
+        "По твоим ответам в поведении в паре сейчас больше паттернов, которые обычно создают напряжение и недоверие, чем поддерживающих. Это не приговор — конкретные привычки можно менять, начиная с одной-двух самых частых ситуаций.",
+    },
+    {
+      title: "Есть над чем поработать 🟡",
+      subtitle: "Смесь зелёных и красных сигналов",
+      description:
+        "У тебя уже есть здоровые привычки в отношениях, но иногда проскакивают реакции, которые партнёру могут казаться тревожными сигналами. Стоит обратить внимание на ситуации, где ты отвечал(а) не так часто, как хотелось бы.",
+    },
+    {
+      title: "Зелёный флаг 💚",
+      subtitle: "В целом — надёжный и бережный партнёр",
+      description:
+        "Судя по ответам, ты чаще всего ведёшь себя так, как создаёт доверие и безопасность в отношениях: держишь слово, признаёшь ошибки и уважаешь границы партнёра. Это сильная основа для здоровых отношений.",
+    },
+  ],
+  en: [
+    {
+      title: "Red flag 🚩",
+      subtitle: "Some behavior is worth rethinking",
+      description:
+        "Based on your answers, your relationship behavior right now leans more toward patterns that usually create tension and distrust than supportive ones. That's not a life sentence — specific habits can change, starting with the one or two most frequent situations.",
+    },
+    {
+      title: "A mixed bag 🟡",
+      subtitle: "A blend of green and red signals",
+      description:
+        "You already have healthy relationship habits, but some reactions slip through that a partner might read as warning signs. Worth paying attention to the situations where you answered less often than you'd like.",
+    },
+    {
+      title: "Green flag 💚",
+      subtitle: "Overall a reliable, caring partner",
+      description:
+        "Based on your answers, you mostly act in ways that build trust and safety in a relationship: you keep your word, own your mistakes, and respect your partner's boundaries. That's a strong foundation for a healthy relationship.",
+    },
+  ],
+  fi: [
+    {
+      title: "Punainen lippu 🚩",
+      subtitle: "Osaa käytöksestä kannattaa tarkastella uudelleen",
+      description:
+        "Vastauksiesi perusteella käytökseesi parisuhteessa liittyy juuri nyt enemmän jännitettä ja epäluottamusta luovia kaavoja kuin tukevia. Tämä ei ole tuomio — yksittäisiä tapoja voi muuttaa, aloittaen yhdestä tai kahdesta yleisimmästä tilanteesta.",
+    },
+    {
+      title: "On vielä työstettävää 🟡",
+      subtitle: "Sekoitus vihreitä ja punaisia signaaleja",
+      description:
+        "Sinulla on jo terveitä tapoja suhteessa, mutta joskus esiin tulee reaktioita, jotka kumppani saattaa tulkita varoitusmerkeiksi. Kannattaa kiinnittää huomiota tilanteisiin, joissa vastasit harvemmin kuin toivoisit.",
+    },
+    {
+      title: "Vihreä lippu 💚",
+      subtitle: "Kaiken kaikkiaan luotettava ja huolehtiva kumppani",
+      description:
+        "Vastaustesi perusteella toimit useimmiten tavoilla, jotka rakentavat luottamusta ja turvaa suhteessa: pidät sanasi, myönnät virheesi ja kunnioitat kumppanisi rajoja. Tämä on vahva perusta terveelle suhteelle.",
+    },
+  ],
+};
+
+function getGreenFlagResult(totalScore: number, maxScore: number, market: Market): TestResult {
+  const ratio = totalScore / maxScore;
+  const results = GREEN_FLAG_RESULTS[market];
 
   if (ratio < 0.45) return results[0];
   if (ratio < 0.75) return results[1];
@@ -9972,6 +10363,7 @@ function MainMenu({
   onNavigate,
   onOpenDating,
   onOpenPet,
+  onOpenGreenFlagTest,
   theme,
   onToggleTheme,
   t,
@@ -9984,6 +10376,7 @@ function MainMenu({
   onNavigate: (screen: Screen) => void;
   onOpenDating: () => void;
   onOpenPet: () => void;
+  onOpenGreenFlagTest: () => void;
   // Оба undefined на iOS (тема там не включена) — кнопка переключения
   // просто не рисуется рядом с шестерёнкой.
   theme?: "light" | "dark";
@@ -10317,6 +10710,54 @@ function MainMenu({
             }}
           >
             {t.aiPsychologist.menuSubtitle}
+          </div>
+        </div>
+
+        <div style={{ fontSize: 20, color: accent, flexShrink: 0 }}>→</div>
+      </button>
+
+      <button
+        type="button"
+        onClick={onOpenGreenFlagTest}
+        style={{
+          ...cardBaseStyle(),
+          width: "100%",
+          padding: 16,
+          marginBottom: 12,
+          textAlign: "left",
+          cursor: "pointer",
+          border: "1px solid rgba(255,255,255,0.4)",
+          background: isDark
+            ? "linear-gradient(135deg, rgba(255,110,110,0.18), rgba(110,220,150,0.16))"
+            : "linear-gradient(135deg, rgba(255,110,110,0.22), rgba(110,220,150,0.20))",
+          display: "flex",
+          alignItems: "center",
+          gap: 12,
+        }}
+      >
+        <div style={{ fontSize: 30, flexShrink: 0 }}>🚩</div>
+
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ fontSize: 15, fontWeight: 900, color: ink }}>
+            {getMarket() === "fi"
+              ? "Oletko vihreä vai punainen lippu?"
+              : getMarket() === "en"
+                ? "Are you a green flag or a red flag?"
+                : "Ты грин флаг или ред флаг?"}
+          </div>
+          <div
+            style={{
+              marginTop: 2,
+              fontSize: 12.5,
+              color: muted,
+              lineHeight: 1.35,
+            }}
+          >
+            {getMarket() === "fi"
+              ? "Rehellinen testi omasta käytöksestäsi suhteessa"
+              : getMarket() === "en"
+                ? "An honest test about your own relationship behavior"
+                : "Честный тест про твоё поведение в отношениях"}
           </div>
         </div>
 
@@ -14298,17 +14739,31 @@ function TestsScreen({
   onBack,
   onCompleteTest,
   theme,
+  initialTestId,
+  onInitialTestConsumed,
 }: {
   completedTestIds: string[];
   onBack: () => void;
   onCompleteTest: (test: TestDefinition, answers: number[]) => Promise<void>;
   // Undefined на iOS (тема там не включена) — читается как "light".
   theme?: "light" | "dark";
+  // Прямой переход в конкретный тест (баннер на главном экране) —
+  // см. handleOpenGreenFlagTest/testsInitialId в Page().
+  initialTestId?: string | null;
+  onInitialTestConsumed?: () => void;
 }) {
-  const [activeTestId, setActiveTestId] = useState<string | null>(null);
+  const [activeTestId, setActiveTestId] = useState<string | null>(initialTestId ?? null);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [answers, setAnswers] = useState<number[]>([]);
   const [finished, setFinished] = useState(false);
+
+  useEffect(() => {
+    if (initialTestId) onInitialTestConsumed?.();
+    // Только при монтировании — activeTestId уже захватил initialTestId
+    // в свой initial state выше, дальнейшие изменения initialTestId
+    // (после сброса родителем в null) не должны ничего переоткрывать.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const market = getMarket();
 const t = market === "fi" ? TEXT_FI : market === "en" ? TEXT_EN : TEXT_RU;
@@ -14380,6 +14835,12 @@ function selectOption(optionIndex: number) {
       const totalScore = answers.reduce((sum, value) => sum + value, 0);
       const maxScore = activeTest.questions.length * 4;
       return getScaleResult(totalScore, maxScore, market);
+    }
+
+    if (activeTest.kind === "green-flag") {
+      const totalScore = answers.reduce((sum, value) => sum + value, 0);
+      const maxScore = activeTest.questions.length * 4;
+      return getGreenFlagResult(totalScore, maxScore, market);
     }
 
     if (activeTest.kind === "love-language") {
@@ -22546,6 +23007,22 @@ function applyPetStateResult(result: any): boolean {
   return true;
 }
 
+// Баннер "Ты грин флаг или ред флаг?" на главном экране — сразу
+// открывает нужную (мужскую/женскую) версию теста, а не просто список
+// тестов, где её ещё надо найти. Пол неизвестен (ещё не выбран) —
+// откатываемся на обычный список тестов без предвыбора, а не гадаем.
+function handleOpenGreenFlagTest() {
+  const gender = appState.profile.gender;
+  if (!gender) {
+    setTestsBackScreen("menu");
+    setScreen("tests");
+    return;
+  }
+  setTestsInitialId(gender === "boy" ? "green-red-flag-men" : "green-red-flag-women");
+  setTestsBackScreen("menu");
+  setScreen("tests");
+}
+
 async function handleOpenPet() {
   setScreen("pet");
 
@@ -23377,6 +23854,12 @@ function dismissPairProposalBanner(matchId: string) {
   // психологического портрета в Профиле ("Пройти оставшиеся тесты" /
   // клик по непройденному тесту), а не только из "polls-tests-menu".
   const [testsBackScreen, setTestsBackScreen] = useState<Screen>("polls-tests-menu");
+  // Прямой переход в конкретный тест с главного экрана (баннер "Ты
+  // грин флаг или ред флаг?") — TestsScreen читает это как начальный
+  // activeTestId один раз при монтировании, дальше сама же и сбрасывает
+  // через onInitialTestConsumed, чтобы обычный заход в "Тесты" (не
+  // через баннер) не открывал этот же тест повторно.
+  const [testsInitialId, setTestsInitialId] = useState<string | null>(null);
   // Тот же принцип для "gender-select" — раньше выбор пола ВСЕГДА вёл
   // на "menu", даже если человек попал сюда не при первом запуске, а
   // например поменял пол из Настроек аккаунта (после выбора его
@@ -24758,6 +25241,7 @@ if (finishedAllTests && !appState.completionBonusesClaimed.tests) {
     appState={appState}
     onOpenDating={handleOpenDating}
     onOpenPet={handleOpenPet}
+    onOpenGreenFlagTest={handleOpenGreenFlagTest}
     theme={theme}
     onToggleTheme={toggleTheme}
    onNavigate={(next) => {
@@ -24832,6 +25316,8 @@ showPaywall={() => {
     onBack={() => setScreen(testsBackScreen)}
     onCompleteTest={handleCompleteTest}
     theme={theme}
+    initialTestId={testsInitialId}
+    onInitialTestConsumed={() => setTestsInitialId(null)}
   />
 )}
 
