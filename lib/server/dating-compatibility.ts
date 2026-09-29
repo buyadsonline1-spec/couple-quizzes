@@ -34,14 +34,53 @@ const COMPATIBILITY_THEME_GROUPS = [
 ];
 
 // Психологические тесты (не парные опросы) тоже считаются точками
-// сравнения — тот же результат, где оба ответили ближе, даёт более
-// высокую совместимость по этому "тесту", ровно как и с темами
-// опросов ниже. ID совпадают с TESTS в app/page.tsx.
+// сравнения. ID совпадают с TESTS в app/page.tsx.
 const COMPATIBILITY_TEST_IDS = [
   "trust-level",
   "love-language",
   "personality-strengths",
 ];
+
+// trust-level — обычная порядковая Likert-шкала (Никогда..Всегда,
+// 0-4), там расстояние |a-b| действительно означает "насколько
+// по-разному" ответили — calculatePollMatchPercent подходит.
+// love-language и personality-strengths устроены иначе: индекс
+// ответа — это НОМЕР ОДНОЙ ИЗ 5 НИЧЕМ НЕ УПОРЯДОЧЕННЫХ КАТЕГОРИЙ
+// (слова/прикосновения/подарки/время/забота, и т.п.), а не точка на
+// шкале. Через calculatePollMatchPercent пара "прикосновения(1) vs
+// подарки(2)" (diff=1) получала бы 75%, а "слова(0) vs забота(4)"
+// (diff=4) — 0%, хотя обе пары просто выбрали РАЗНЫЕ категории и по
+// смыслу одинаково "не совпали". Считаем эти два теста отдельно —
+// простым совпадением индекса вопрос-к-вопросу (100% если тот же
+// вариант, иначе 0%), это и есть корректная метрика для номинальных
+// категорий.
+const CATEGORICAL_TEST_IDS = new Set(["love-language", "personality-strengths"]);
+
+function calculateCategoricalMatchPercent(
+  answersA: number[] | undefined,
+  answersB: number[] | undefined
+): number | null {
+  if (!answersA || !answersB) return null;
+  if (!answersA.length || !answersB.length) return null;
+
+  const length = Math.min(answersA.length, answersB.length);
+  if (!length) return null;
+
+  let matches = 0;
+  let compared = 0;
+
+  for (let i = 0; i < length; i++) {
+    const a = Number(answersA[i]);
+    const b = Number(answersB[i]);
+
+    if (!Number.isFinite(a) || !Number.isFinite(b)) continue;
+
+    compared += 1;
+    if (a === b) matches += 1;
+  }
+
+  return compared > 0 ? Math.round((matches / compared) * 100) : null;
+}
 
 function calculatePollMatchPercent(
   answersA: number[] | undefined,
@@ -123,10 +162,9 @@ export function calculateDatingCompatibility(
 
   if (testAnswersA && testAnswersB) {
     for (const testId of COMPATIBILITY_TEST_IDS) {
-      const percent = calculatePollMatchPercent(
-        testAnswersA[testId],
-        testAnswersB[testId]
-      );
+      const percent = CATEGORICAL_TEST_IDS.has(testId)
+        ? calculateCategoricalMatchPercent(testAnswersA[testId], testAnswersB[testId])
+        : calculatePollMatchPercent(testAnswersA[testId], testAnswersB[testId]);
 
       if (percent !== null) {
         themeScores.push(percent);
