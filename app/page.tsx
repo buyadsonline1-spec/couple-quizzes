@@ -17196,34 +17196,23 @@ function resolveItemAnchor(
 }
 
 const PET_HAT_ANCHOR: Record<string, PetItemAnchor> = {
-  hat_cap: { top: "-2%", rotate: -6, sizeFactor: 0.26 },
-  hat_top: { top: "-3%", rotate: -4, sizeFactor: 0.3 },
-  hat_crown: { top: "-3%", rotate: 0, sizeFactor: 0.3 },
-  hat_beanie: { top: "-3%", rotate: -4, sizeFactor: 0.28 },
-  hat_flower: { top: "3%", rotate: 0, sizeFactor: 0.3 },
-  hat_party: { top: "-4%", rotate: 6, sizeFactor: 0.26 },
-  hat_wizard: { top: "-6%", rotate: -3, sizeFactor: 0.28 },
-  hat_bandana: { top: "-1%", rotate: 0, sizeFactor: 0.3 },
-  hat_cowboy: { top: "-3%", rotate: 0, sizeFactor: 0.32 },
-  hat_unicorn: { top: "-8%", rotate: 0, sizeFactor: 0.28 },
-  hat_astro: { top: "-5%", rotate: 0, sizeFactor: 0.3 },
+  hat_cap: { top: "14%", rotate: -6, sizeFactor: 0.26 },
+  hat_top: { top: "13%", rotate: -4, sizeFactor: 0.3 },
+  hat_crown: { top: "13%", rotate: 0, sizeFactor: 0.3 },
+  hat_beanie: { top: "13%", rotate: -4, sizeFactor: 0.28 },
+  hat_flower: { top: "19%", rotate: 0, sizeFactor: 0.3 },
+  hat_party: { top: "12%", rotate: 6, sizeFactor: 0.26 },
+  hat_wizard: { top: "10%", rotate: -3, sizeFactor: 0.28 },
+  hat_bandana: { top: "15%", rotate: 0, sizeFactor: 0.3 },
+  hat_cowboy: { top: "13%", rotate: 0, sizeFactor: 0.32 },
+  hat_unicorn: { top: "8%", rotate: 0, sizeFactor: 0.28 },
+  hat_astro: { top: "11%", rotate: 0, sizeFactor: 0.3 },
 };
-const PET_HAT_ANCHOR_DEFAULT: PetItemAnchor = { top: "-4%", rotate: -8, sizeFactor: 0.28 };
-const PET_HAT_ANCHOR_OVERRIDES: PetItemAnchorOverrides = {
-  rabbit: {
-    hat_cap: { top: "12%" },
-    hat_top: { top: "12%" },
-    hat_crown: { top: "11%" },
-    hat_beanie: { top: "10%" },
-    hat_flower: { top: "16%" },
-    hat_party: { top: "11%" },
-    hat_wizard: { top: "10%" },
-    hat_bandana: { top: "13%" },
-    hat_cowboy: { top: "12%" },
-    hat_unicorn: { top: "8%" },
-    hat_astro: { top: "10%" },
-  },
-};
+const PET_HAT_ANCHOR_DEFAULT: PetItemAnchor = { top: "12%", rotate: -8, sizeFactor: 0.28 };
+// Все 6 видов — перекрашенный один и тот же нормализованный силуэт
+// призрака, поэтому старые поправки под пропорции конкретных животных
+// больше не нужны (см. аналогичный комментарий у PET_JACKET_ANCHOR_OVERRIDES).
+const PET_HAT_ANCHOR_OVERRIDES: PetItemAnchorOverrides = {};
 
 const PET_ACCESSORY_ANCHOR: Record<string, PetItemAnchor> = {
   // Очки — на уровень глаз, а не на грудь.
@@ -17252,37 +17241,9 @@ const PET_ACCESSORY_ANCHOR_OVERRIDES: PetItemAnchorOverrides = {
   // У бегемота и совы подбородок/клюв заканчиваются чуть ниже, чем у
   // остальных — общий top для шеи (47-48%) сажал бантик/шарф/ошейник
   // прямо на рот вместо шеи под ним.
-  hippo: {
-    acc_bow: { top: "54%" },
-    acc_scarf: { top: "55%" },
-    acc_collar: { top: "55%" },
-    acc_necklace: { top: "55%" },
-    acc_daisy: { top: "54%" },
-    acc_medal: { top: "61%" },
-    acc_bling: { top: "61%" },
-  },
-  owl: {
-    acc_bow: { top: "52%" },
-    acc_scarf: { top: "53%" },
-    acc_collar: { top: "53%" },
-    acc_necklace: { top: "53%" },
-    acc_daisy: { top: "52%" },
-    acc_medal: { top: "58%" },
-    acc_bling: { top: "58%" },
-  },
-  rabbit: {
-    acc_sunglasses: { top: "37%" },
-    acc_glasses: { top: "37%" },
-    acc_headphones: { top: "23%" },
-    acc_monocle: { top: "37%" },
-    acc_bow: { top: "65%" },
-    acc_scarf: { top: "65%" },
-    acc_collar: { top: "65%" },
-    acc_necklace: { top: "65%" },
-    acc_daisy: { top: "65%" },
-    acc_medal: { top: "71%" },
-    acc_bling: { top: "71%" },
-  },
+  // Все 6 видов — перекрашенный один и тот же нормализованный силуэт
+  // призрака, поэтому поправки под пропорции конкретных животных
+  // (бегемот/сова/кролик) больше не нужны.
 };
 
 // top здесь — ЦЕНТР куртки (как у аксессуаров, см. resolveItemAnchor +
@@ -17301,46 +17262,11 @@ const PET_JACKET_ANCHOR: Record<string, PetItemAnchor> = {
   jacket_superhero: { top: "71%", sizeFactor: 0.6 },
 };
 const PET_JACKET_ANCHOR_DEFAULT: PetItemAnchor = { top: "70%", sizeFactor: 0.45 };
-const PET_JACKET_ANCHOR_OVERRIDES: PetItemAnchorOverrides = {
-  // Подбородок/грудь у бегемота и совы ниже, чем у остальных — та же
-  // поправка, что и у аксессуаров (см. PET_ACCESSORY_ANCHOR_OVERRIDES).
-  hippo: {
-    jacket_bomber: { top: "76%" },
-    jacket_denim: { top: "76%" },
-    jacket_hoodie: { top: "74%" },
-    jacket_puffer: { top: "77%" },
-    jacket_raincoat: { top: "76%" },
-    jacket_vest: { top: "77%" },
-    jacket_tshirt: { top: "75%" },
-    jacket_tux: { top: "75%" },
-    jacket_superhero: { top: "77%" },
-  },
-  owl: {
-    jacket_bomber: { top: "74%" },
-    jacket_denim: { top: "74%" },
-    jacket_hoodie: { top: "72%" },
-    jacket_puffer: { top: "75%" },
-    jacket_raincoat: { top: "74%" },
-    jacket_vest: { top: "75%" },
-    jacket_tshirt: { top: "73%" },
-    jacket_tux: { top: "73%" },
-    jacket_superhero: { top: "75%" },
-  },
-  // Кролик — тело и шея визуально начинаются заметно ниже (высокие
-  // уши-стойки съедают верхние ~28% кадра, см. комментарий у
-  // PetItemAnchor выше).
-  rabbit: {
-    jacket_bomber: { top: "84%" },
-    jacket_denim: { top: "84%" },
-    jacket_hoodie: { top: "82%" },
-    jacket_puffer: { top: "85%" },
-    jacket_raincoat: { top: "84%" },
-    jacket_vest: { top: "85%" },
-    jacket_tshirt: { top: "83%" },
-    jacket_tux: { top: "83%" },
-    jacket_superhero: { top: "85%" },
-  },
-};
+// Все 6 видов — теперь просто перекрашенный один и тот же силуэт
+// призрака с нормализованным (одинаковым для всех цветов) bbox
+// картинки, так что старые поправки под пропорции конкретных животных
+// (бегемот/сова/кролик) больше не нужны — единый anchor подходит всем.
+const PET_JACKET_ANCHOR_OVERRIDES: PetItemAnchorOverrides = {};
 
 // Настоящие нарисованные предметы (те же SVG-фигуры, что рисуются на
 // SVG-питомце — PetHatOverlay/PetAccessoryOverlay/PetJacketOverlay
@@ -17377,16 +17303,25 @@ const PET_ACCESSORY_BBOX: Record<string, [number, number, number, number]> = {
 };
 
 const PET_JACKET_BBOX: Record<string, [number, number, number, number]> = {
-  jacket_bomber: [40, 138, 120, 57],
-  jacket_denim: [42, 136, 116, 60],
-  jacket_hoodie: [45, 118, 110, 80],
-  jacket_puffer: [50, 134, 100, 63],
-  jacket_raincoat: [44, 138, 112, 58],
-  jacket_vest: [52, 136, 96, 61],
-  jacket_tshirt: [44, 136, 112, 62],
-  jacket_tux: [42, 138, 116, 58],
-  jacket_superhero: [38, 136, 124, 62],
+  jacket_bomber: [38, 128, 124, 76],
+  jacket_denim: [38, 128, 124, 76],
+  jacket_hoodie: [38, 112, 124, 92],
+  jacket_puffer: [38, 128, 124, 76],
+  jacket_raincoat: [38, 128, 124, 76],
+  jacket_vest: [38, 128, 124, 76],
+  jacket_tshirt: [38, 128, 124, 76],
+  jacket_tux: [38, 128, 124, 76],
+  jacket_superhero: [36, 128, 128, 76],
 };
+
+// Круглый силуэт-призрак без плеч/талии — плоские прямоугольные
+// "куртки" (задуманные под прямостоящее животное) на нём выглядели
+// приклеенным коробом поверх живота. Общая скруглённая база (капля с
+// v-образным вырезом сверху и округлым низом) под форму тела призрака
+// используется всеми куртками; декор каждой куртки обрезается по этой
+// же форме через clipPath, чтобы ничего не торчало за её край.
+const PET_JACKET_BODY_PATH =
+  "M42,155 Q42,138 65,140 Q100,130 135,140 Q158,138 158,155 Q158,185 130,195 Q100,200 70,195 Q42,185 42,155 Z";
 
 // Рендерит один предмет из каталога как самостоятельную маленькую
 // иконку (не эмодзи) — вырезает его bbox из общей SVG-сетки шапок/
@@ -17867,16 +17802,18 @@ function PetJacketOverlay({ jacket }: { jacket: string }) {
             <stop offset="0%" stopColor="#5f9975" />
             <stop offset="100%" stopColor="#3d6349" />
           </linearGradient>
+          <clipPath id="petJacketClipBomber">
+            <path d={PET_JACKET_BODY_PATH} />
+          </clipPath>
         </defs>
-        <path
-          d="M42,152 Q42,137 57,137 L77,137 Q100,147 123,137 L143,137 Q158,137 158,152 L158,183 Q158,194 148,194 L52,194 Q42,194 42,183 Z"
-          fill="url(#petJacketGradBomber)"
-        />
-        <path d="M50,144 Q100,156 150,144" stroke="#ffffff" strokeWidth="2" opacity="0.3" fill="none" strokeLinecap="round" />
-        <rect x="42" y="152" width="15" height="34" rx="7.5" fill="#345940" />
-        <rect x="143" y="152" width="15" height="34" rx="7.5" fill="#345940" />
-        <rect x="72" y="137" width="56" height="9" rx="4.5" fill="#345940" />
-        <rect x="95" y="150" width="10" height="42" rx="3" fill="#345940" opacity="0.55" />
+        <path d={PET_JACKET_BODY_PATH} fill="url(#petJacketGradBomber)" />
+        <g clipPath="url(#petJacketClipBomber)">
+          <path d="M50,144 Q100,156 150,144" stroke="#ffffff" strokeWidth="2" opacity="0.3" fill="none" strokeLinecap="round" />
+          <rect x="42" y="150" width="15" height="40" rx="7.5" fill="#345940" />
+          <rect x="143" y="150" width="15" height="40" rx="7.5" fill="#345940" />
+          <rect x="72" y="135" width="56" height="9" rx="4.5" fill="#345940" />
+          <rect x="95" y="150" width="10" height="46" rx="3" fill="#345940" opacity="0.55" />
+        </g>
       </g>
     );
   }
@@ -17888,16 +17825,18 @@ function PetJacketOverlay({ jacket }: { jacket: string }) {
             <stop offset="0%" stopColor="#729bc9" />
             <stop offset="100%" stopColor="#4c6c93" />
           </linearGradient>
+          <clipPath id="petJacketClipDenim">
+            <path d={PET_JACKET_BODY_PATH} />
+          </clipPath>
         </defs>
-        <path
-          d="M44,150 Q72,138 100,148 Q128,138 156,150 L156,188 Q156,195 148,195 L52,195 Q44,195 44,188 Z"
-          fill="url(#petJacketGradDenim)"
-        />
-        <path d="M72,139 Q84,150 60,162 Q56,150 72,139 Z" fill="#3f5c7d" />
-        <path d="M128,139 Q116,150 140,162 Q144,150 128,139 Z" fill="#3f5c7d" />
-        <rect x="62" y="169" width="17" height="13" rx="3" fill="#3f5c7d" />
-        <rect x="121" y="169" width="17" height="13" rx="3" fill="#3f5c7d" />
-        <path d="M50,158 L50,188 M150,158 L150,188" stroke="#e8d9a8" strokeWidth="1.5" opacity="0.4" strokeDasharray="3 3" />
+        <path d={PET_JACKET_BODY_PATH} fill="url(#petJacketGradDenim)" />
+        <g clipPath="url(#petJacketClipDenim)">
+          <path d="M72,139 Q84,150 60,162 Q56,150 72,139 Z" fill="#3f5c7d" />
+          <path d="M128,139 Q116,150 140,162 Q144,150 128,139 Z" fill="#3f5c7d" />
+          <rect x="62" y="172" width="17" height="13" rx="3" fill="#3f5c7d" />
+          <rect x="121" y="172" width="17" height="13" rx="3" fill="#3f5c7d" />
+          <path d="M50,158 L50,190 M150,158 L150,190" stroke="#e8d9a8" strokeWidth="1.5" opacity="0.4" strokeDasharray="3 3" />
+        </g>
       </g>
     );
   }
@@ -17909,15 +17848,17 @@ function PetJacketOverlay({ jacket }: { jacket: string }) {
             <stop offset="0%" stopColor="#a3abb6" />
             <stop offset="100%" stopColor="#7d848f" />
           </linearGradient>
+          <clipPath id="petJacketClipHoodie">
+            <path d={PET_JACKET_BODY_PATH} />
+          </clipPath>
         </defs>
-        <path d="M63,137 Q100,122 137,137 Q100,133 63,137 Z" fill="#7d848f" />
-        <path
-          d="M46,151 Q46,137 63,137 Q100,151 137,137 Q154,137 154,151 L154,191 Q154,197 146,197 L54,197 Q46,197 46,191 Z"
-          fill="url(#petJacketGradHoodie)"
-        />
-        <line x1="92" y1="151" x2="90" y2="167" stroke="#ffffff" strokeWidth="3" strokeLinecap="round" opacity="0.85" />
-        <line x1="108" y1="151" x2="110" y2="167" stroke="#ffffff" strokeWidth="3" strokeLinecap="round" opacity="0.85" />
-        <rect x="79" y="171" width="42" height="19" rx="9" fill="#6c7480" />
+        <path d="M60,145 Q100,120 140,145 Q100,131 60,145 Z" fill="#7d848f" />
+        <path d={PET_JACKET_BODY_PATH} fill="url(#petJacketGradHoodie)" />
+        <g clipPath="url(#petJacketClipHoodie)">
+          <line x1="92" y1="151" x2="90" y2="167" stroke="#ffffff" strokeWidth="3" strokeLinecap="round" opacity="0.85" />
+          <line x1="108" y1="151" x2="110" y2="167" stroke="#ffffff" strokeWidth="3" strokeLinecap="round" opacity="0.85" />
+          <rect x="79" y="174" width="42" height="19" rx="9" fill="#6c7480" />
+        </g>
       </g>
     );
   }
@@ -17929,19 +17870,21 @@ function PetJacketOverlay({ jacket }: { jacket: string }) {
             <stop offset="0%" stopColor="#e46060" />
             <stop offset="100%" stopColor="#c23f3f" />
           </linearGradient>
+          <clipPath id="petJacketClipPuffer">
+            <path d={PET_JACKET_BODY_PATH} />
+          </clipPath>
         </defs>
         {/* Стёганые "баффлы" вместо плоского цвета + тонких линий —
             каждый сегмент отдельным скруглённым прямоугольником, чтобы
             читалась пухлая объёмная простёжка, а не разлинованный лист. */}
-        <path
-          d="M51,150 Q51,136 66,136 L134,136 Q149,136 149,150 L149,189 Q149,197 141,197 L59,197 Q51,197 51,189 Z"
-          fill="url(#petJacketGradPuffer)"
-        />
-        <rect x="53" y="138" width="94" height="14" rx="7" fill="#ffffff" opacity="0.16" />
-        <rect x="53" y="155" width="94" height="13" rx="6.5" fill="#00000012" />
-        <rect x="53" y="171" width="94" height="13" rx="6.5" fill="#ffffff" opacity="0.1" />
-        <rect x="53" y="184" width="94" height="12" rx="6" fill="#00000012" />
-        <rect x="94" y="136" width="12" height="61" rx="5" fill="#a63535" opacity="0.55" />
+        <path d={PET_JACKET_BODY_PATH} fill="url(#petJacketGradPuffer)" />
+        <g clipPath="url(#petJacketClipPuffer)">
+          <rect x="45" y="132" width="110" height="16" rx="8" fill="#ffffff" opacity="0.16" />
+          <rect x="42" y="150" width="116" height="14" rx="7" fill="#00000012" />
+          <rect x="42" y="166" width="116" height="14" rx="7" fill="#ffffff" opacity="0.1" />
+          <rect x="45" y="182" width="110" height="16" rx="8" fill="#00000012" />
+          <rect x="94" y="132" width="12" height="66" rx="5" fill="#a63535" opacity="0.55" />
+        </g>
       </g>
     );
   }
@@ -17953,16 +17896,18 @@ function PetJacketOverlay({ jacket }: { jacket: string }) {
             <stop offset="0%" stopColor="#ffd76b" />
             <stop offset="100%" stopColor="#f0b429" />
           </linearGradient>
+          <clipPath id="petJacketClipRaincoat">
+            <path d={PET_JACKET_BODY_PATH} />
+          </clipPath>
         </defs>
-        <path
-          d="M44,151 Q72,139 100,149 Q128,139 156,151 L156,190 Q156,196 148,196 L52,196 Q44,196 44,190 Z"
-          fill="url(#petJacketGradRaincoat)"
-        />
-        <path d="M72,140 L88,156 L60,159 Z" fill="#d99a1f" />
-        <path d="M128,140 L112,156 L140,159 Z" fill="#d99a1f" />
-        <circle cx="100" cy="157" r="4" fill="#d99a1f" />
-        <circle cx="100" cy="170" r="4" fill="#d99a1f" />
-        <circle cx="100" cy="183" r="4" fill="#d99a1f" />
+        <path d={PET_JACKET_BODY_PATH} fill="url(#petJacketGradRaincoat)" />
+        <g clipPath="url(#petJacketClipRaincoat)">
+          <path d="M72,140 L88,156 L60,159 Z" fill="#d99a1f" />
+          <path d="M128,140 L112,156 L140,159 Z" fill="#d99a1f" />
+          <circle cx="100" cy="158" r="4" fill="#d99a1f" />
+          <circle cx="100" cy="172" r="4" fill="#d99a1f" />
+          <circle cx="100" cy="186" r="4" fill="#d99a1f" />
+        </g>
       </g>
     );
   }
@@ -17974,14 +17919,16 @@ function PetJacketOverlay({ jacket }: { jacket: string }) {
             <stop offset="0%" stopColor="#93a35f" />
             <stop offset="100%" stopColor="#6b7a42" />
           </linearGradient>
+          <clipPath id="petJacketClipVest">
+            <path d={PET_JACKET_BODY_PATH} />
+          </clipPath>
         </defs>
-        <path
-          d="M52,149 Q52,137 65,137 L135,137 Q148,137 148,149 L148,189 Q148,197 140,197 L60,197 Q52,197 52,189 Z"
-          fill="url(#petJacketGradVest)"
-        />
-        <rect x="94" y="137" width="11" height="60" rx="4" fill="#4f5c30" opacity="0.6" />
-        <rect x="62" y="168" width="20" height="15" rx="3" fill="#4f5c30" />
-        <rect x="118" y="168" width="20" height="15" rx="3" fill="#4f5c30" />
+        <path d={PET_JACKET_BODY_PATH} fill="url(#petJacketGradVest)" />
+        <g clipPath="url(#petJacketClipVest)">
+          <rect x="94" y="132" width="11" height="66" rx="4" fill="#4f5c30" opacity="0.6" />
+          <rect x="62" y="170" width="20" height="15" rx="3" fill="#4f5c30" />
+          <rect x="118" y="170" width="20" height="15" rx="3" fill="#4f5c30" />
+        </g>
       </g>
     );
   }
@@ -17993,12 +17940,14 @@ function PetJacketOverlay({ jacket }: { jacket: string }) {
             <stop offset="0%" stopColor="#6de0f0" />
             <stop offset="100%" stopColor="#3fb8dd" />
           </linearGradient>
+          <clipPath id="petJacketClipTshirt">
+            <path d={PET_JACKET_BODY_PATH} />
+          </clipPath>
         </defs>
-        <path
-          d="M46,150 Q46,138 60,138 L80,138 Q100,146 120,138 L140,138 Q154,138 154,150 L154,190 Q154,197 146,197 L54,197 Q46,197 46,190 Z"
-          fill="url(#petJacketGradTshirt)"
-        />
-        <ellipse cx="100" cy="140" rx="14" ry="5" fill="#ffffff" opacity="0.5" />
+        <path d={PET_JACKET_BODY_PATH} fill="url(#petJacketGradTshirt)" />
+        <g clipPath="url(#petJacketClipTshirt)">
+          <ellipse cx="100" cy="141" rx="14" ry="5" fill="#ffffff" opacity="0.5" />
+        </g>
       </g>
     );
   }
@@ -18010,15 +17959,17 @@ function PetJacketOverlay({ jacket }: { jacket: string }) {
             <stop offset="0%" stopColor="#3a3a3a" />
             <stop offset="100%" stopColor="#1a1a1a" />
           </linearGradient>
+          <clipPath id="petJacketClipTux">
+            <path d={PET_JACKET_BODY_PATH} />
+          </clipPath>
         </defs>
-        <path
-          d="M44,150 Q72,138 100,148 Q128,138 156,150 L156,190 Q156,196 148,196 L52,196 Q44,196 44,190 Z"
-          fill="url(#petJacketGradTux)"
-        />
-        <path d="M90,140 L100,152 L110,140 L104,190 L96,190 Z" fill="#ffffff" />
-        <path d="M92,148 L100,154 L108,148 L104,158 L96,158 Z" fill="#1a1a1a" />
-        <path d="M72,139 Q84,150 60,162 Q56,150 72,139 Z" fill="#0d0d0d" />
-        <path d="M128,139 Q116,150 140,162 Q144,150 128,139 Z" fill="#0d0d0d" />
+        <path d={PET_JACKET_BODY_PATH} fill="url(#petJacketGradTux)" />
+        <g clipPath="url(#petJacketClipTux)">
+          <path d="M90,140 L100,153 L110,140 L104,195 L96,195 Z" fill="#ffffff" />
+          <path d="M92,148 L100,154 L108,148 L104,158 L96,158 Z" fill="#1a1a1a" />
+          <path d="M72,139 Q84,150 60,162 Q56,150 72,139 Z" fill="#0d0d0d" />
+          <path d="M128,139 Q116,150 140,162 Q144,150 128,139 Z" fill="#0d0d0d" />
+        </g>
       </g>
     );
   }
@@ -18030,16 +17981,18 @@ function PetJacketOverlay({ jacket }: { jacket: string }) {
             <stop offset="0%" stopColor="#5a7fd6" />
             <stop offset="100%" stopColor="#3a5aab" />
           </linearGradient>
+          <clipPath id="petJacketClipHero">
+            <path d={PET_JACKET_BODY_PATH} />
+          </clipPath>
         </defs>
         {/* Плащ рисуется первым (сзади торса), шире самого тела — по
             бокам должны быть видны его уголки, иначе от него ничего
             не останется после обрезки по силуэту питомца. */}
-        <path d="M50,140 L38,196 L70,180 L100,197 L130,180 L162,196 L150,140 Z" fill="#c23f3f" />
-        <path
-          d="M52,149 Q52,137 65,137 L135,137 Q148,137 148,149 L148,189 Q148,197 140,197 L60,197 Q52,197 52,189 Z"
-          fill="url(#petJacketGradHero)"
-        />
-        <path d="M100,150 L106,162 L118,162 L108,170 L112,182 L100,174 L88,182 L92,170 L82,162 L94,162 Z" fill="#ffd54f" />
+        <path d="M50,140 L38,198 L70,182 L100,199 L130,182 L162,198 L150,140 Z" fill="#c23f3f" />
+        <path d={PET_JACKET_BODY_PATH} fill="url(#petJacketGradHero)" />
+        <g clipPath="url(#petJacketClipHero)">
+          <path d="M100,150 L106,162 L118,162 L108,170 L112,182 L100,174 L88,182 L92,170 L82,162 L94,162 Z" fill="#ffd54f" />
+        </g>
       </g>
     );
   }
@@ -21058,7 +21011,6 @@ function getTelegramUserSafe(fallbackUser: TgUser | null): TgUser | null {
 
 
 export default function Page() {
-
   const [appState, setAppState] = useState<AppState>(DEFAULT_STATE);
   const [selectedLang, setSelectedLang] = useState<Market>("ru");
   // Тёмная тема ("Полуночная ягода") — Telegram-only, тот же паттерн
