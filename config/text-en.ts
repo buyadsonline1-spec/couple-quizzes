@@ -295,6 +295,7 @@ export const TEXT_EN = {
       bonusPointsMessage: "Bonus: +{value} coins!",
       bonusSpinMessage:
         "Bonus: +1 free spin! Your next spin will be free and won't use up your daily limit.",
+      bonusItemMessage: "Bonus: {title} for your pet!",
       prizeWonMessage: "You won a prize: {title} ({categoryTitle})",
       wonRewardsTitle: "Prizes won",
       emptyPrizesText: "Nothing here yet. Earn coins and spin the wheel.",
@@ -307,6 +308,7 @@ export const TEXT_EN = {
       managerMessageTemplate: "Hello! I won a prize: {title} 🎁",
       bonusPointsClaimedText: "The coins are already on your balance — spend them or spin again right away!",
       bonusSpinClaimedText: "Your free spin is already banked — use it whenever you like.",
+      bonusItemClaimedText: "The item is already in your pet's closet — check the shop to try it on!",
       bonusContinueButton: "Awesome! 🎉",
     },
   },

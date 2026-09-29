@@ -145,7 +145,7 @@ type AppStats = {
   rewardsRedeemed: number;
 };
 
-type WheelOutcomeType = "prize" | "bonus_points" | "bonus_spin";
+type WheelOutcomeType = "prize" | "bonus_points" | "bonus_spin" | "bonus_item";
 
 type WonReward = {
   // Уникальный ключ выигрыша — именно spinId, а не itemId: один и тот
@@ -161,8 +161,9 @@ type WonReward = {
   spinsRemainingToday: number;
   market: Market;
   // 70% вращений — это не настоящий приз, а один из двух видов бонуса:
-  // +500 очков сразу, либо +1 в банк бесплатных вращений (bonusSpinCredits) —
-  // следующее вращение из банка бесплатно и не тратит дневной лимит.
+  // +100/+250 очков сразу, либо случайная вещь для питомца (bonus_item).
+  // bonus_spin (старый "+1 бесплатный прокрут") сервер больше не выдаёт,
+  // но тип оставлен — у части игроков в истории ещё есть такие записи.
   outcomeType: WheelOutcomeType;
   bonusValue: number | null;
   spinSource: "paid" | "bonus_credit";
@@ -14928,6 +14929,10 @@ const visibleRewards = rewardsExpanded
         );
       } else if (result.outcomeType === "bonus_spin") {
         setMessage(t.rewards.wheelScreen.bonusSpinMessage);
+      } else if (result.outcomeType === "bonus_item") {
+        setMessage(
+          t.rewards.wheelScreen.bonusItemMessage.replace("{title}", result.title)
+        );
       } else {
         setMessage(
           t.rewards.wheelScreen.prizeWonMessage
@@ -15333,7 +15338,9 @@ const visibleRewards = rewardsExpanded
           ? t.rewards.wheelScreen.bonusPointsClaimedText
           : selectedReward.outcomeType === "bonus_spin"
             ? t.rewards.wheelScreen.bonusSpinClaimedText
-            : t.rewards.wheelScreen.wonPrizeText}
+            : selectedReward.outcomeType === "bonus_item"
+              ? t.rewards.wheelScreen.bonusItemClaimedText
+              : t.rewards.wheelScreen.wonPrizeText}
       </div>
 
       {/* 🔘 кнопка */}
@@ -15341,7 +15348,8 @@ const visibleRewards = rewardsExpanded
         onClick={() => {
           if (
             selectedReward.outcomeType === "bonus_points" ||
-            selectedReward.outcomeType === "bonus_spin"
+            selectedReward.outcomeType === "bonus_spin" ||
+            selectedReward.outcomeType === "bonus_item"
           ) {
             setShowRewardScreen(false);
             return;
@@ -15372,7 +15380,9 @@ const visibleRewards = rewardsExpanded
           fontSize: 16,
         }}
       >
-        {selectedReward.outcomeType === "bonus_points" || selectedReward.outcomeType === "bonus_spin"
+        {selectedReward.outcomeType === "bonus_points" ||
+        selectedReward.outcomeType === "bonus_spin" ||
+        selectedReward.outcomeType === "bonus_item"
           ? t.rewards.wheelScreen.bonusContinueButton
           : t.rewards.wheelScreen.claimPrizeButton}
       </button>

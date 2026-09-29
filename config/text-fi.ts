@@ -299,6 +299,7 @@ export const TEXT_FI = {
       bonusPointsMessage: "Bonus: +{value} kolikkoa!",
       bonusSpinMessage:
         "Bonus: +1 ilmainen pyöräytys! Seuraava pyöräytys on ilmainen eikä kuluta päivittäistä rajaasi.",
+      bonusItemMessage: "Bonus: {title} lemmikillesi!",
       prizeWonMessage: "Voitit palkinnon: {title} ({categoryTitle})",
       wonRewardsTitle: "Voitetut palkinnot",
       emptyPrizesText: "Täällä ei ole vielä mitään. Ansaitse kolikoita ja pyöritä pyörää.",
@@ -311,6 +312,7 @@ export const TEXT_FI = {
       managerMessageTemplate: "Hei! Voitin palkinnon: {title} 🎁",
       bonusPointsClaimedText: "Kolikot on jo lisätty saldoosi — voit käyttää ne heti tai pyörittää uudelleen!",
       bonusSpinClaimedText: "Ilmainen pyöräytys on jo pankissasi — käytä se milloin haluat.",
+      bonusItemClaimedText: "Esine on jo lemmikkisi kaapissa — käy kaupassa sovittamassa se!",
       bonusContinueButton: "Mahtavaa! 🎉",
     },
   },

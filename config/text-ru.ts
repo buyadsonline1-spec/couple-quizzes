@@ -298,6 +298,7 @@ export const TEXT_RU = {
       bonusPointsMessage: "Бонус: +{value} монет!",
       bonusSpinMessage:
         "Бонус: +1 бесплатный прокрут! Следующее вращение будет бесплатным и не потратит дневной лимит.",
+      bonusItemMessage: "Бонус: {title} для питомца!",
       prizeWonMessage: "Тебе выпал приз: {title} ({categoryTitle})",
       wonRewardsTitle: "Выпавшие призы",
       emptyPrizesText: "Пока здесь пусто. Заработай монеты и крутанни колесо.",
@@ -313,6 +314,7 @@ export const TEXT_RU = {
       // не звать писать менеджеру за тем, что уже само зачислилось.
       bonusPointsClaimedText: "Монеты уже зачислены на баланс — можно сразу тратить и крутить ещё раз!",
       bonusSpinClaimedText: "Бесплатный прокрут уже в вашем банке — используйте его в любое время.",
+      bonusItemClaimedText: "Вещь уже добавлена в шкаф питомца — загляни в магазин, чтобы примерить!",
       bonusContinueButton: "Ура, отлично! 🎉",
     },
   },
