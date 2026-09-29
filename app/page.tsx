@@ -17071,57 +17071,57 @@ const PET_SPECIES_OPTIONS: Array<{
 }> = [
   {
     id: "dog",
-    emoji: "🐶",
-    labelRu: "Собака",
-    labelEn: "Dog",
-    labelFi: "Koira",
-    gradient: "linear-gradient(135deg, #f6a94d, #ffcf5c)",
-    glow: "rgba(246,169,77,0.35)",
-  },
-  {
-    id: "cat",
-    emoji: "🐱",
-    labelRu: "Кошка",
-    labelEn: "Cat",
-    labelFi: "Kissa",
+    emoji: "👻",
+    labelRu: "Лиловый",
+    labelEn: "Violet",
+    labelFi: "Violetti",
     gradient: "linear-gradient(135deg, #8f6bff, #c084fc)",
     glow: "rgba(143,107,255,0.35)",
   },
   {
+    id: "cat",
+    emoji: "👻",
+    labelRu: "Розовый",
+    labelEn: "Pink",
+    labelFi: "Pinkki",
+    gradient: "linear-gradient(135deg, #ff6ec7, #ff9bd6)",
+    glow: "rgba(255,110,199,0.35)",
+  },
+  {
     id: "rabbit",
-    emoji: "🐰",
-    labelRu: "Кролик",
-    labelEn: "Rabbit",
-    labelFi: "Kani",
-    gradient: "linear-gradient(135deg, #ff8fc4, #ffb3d9)",
-    glow: "rgba(255,143,196,0.35)",
+    emoji: "👻",
+    labelRu: "Голубой",
+    labelEn: "Blue",
+    labelFi: "Sininen",
+    gradient: "linear-gradient(135deg, #4c9bff, #7fc4ff)",
+    glow: "rgba(76,155,255,0.35)",
   },
   {
     id: "cow",
-    emoji: "🐮",
-    labelRu: "Корова",
-    labelEn: "Cow",
-    labelFi: "Lehmä",
-    gradient: "linear-gradient(135deg, #c9a06a, #f0d9b5)",
-    glow: "rgba(201,160,106,0.35)",
+    emoji: "👻",
+    labelRu: "Мятный",
+    labelEn: "Mint",
+    labelFi: "Mintty",
+    gradient: "linear-gradient(135deg, #2dd4bf, #7ee8d8)",
+    glow: "rgba(45,212,191,0.35)",
   },
   {
     id: "hippo",
-    emoji: "🦛",
-    labelRu: "Бегемот",
-    labelEn: "Hippo",
-    labelFi: "Virtahepo",
-    gradient: "linear-gradient(135deg, #4dd0c4, #7fe0d6)",
-    glow: "rgba(77,208,196,0.35)",
+    emoji: "👻",
+    labelRu: "Персиковый",
+    labelEn: "Peach",
+    labelFi: "Persikka",
+    gradient: "linear-gradient(135deg, #ffb45c, #ffd98a)",
+    glow: "rgba(255,180,92,0.35)",
   },
   {
     id: "owl",
-    emoji: "🦉",
-    labelRu: "Сова",
-    labelEn: "Owl",
-    labelFi: "Pöllö",
-    gradient: "linear-gradient(135deg, #6366f1, #a78bfa)",
-    glow: "rgba(99,102,241,0.35)",
+    emoji: "👻",
+    labelRu: "Коралловый",
+    labelEn: "Coral",
+    labelFi: "Koralli",
+    gradient: "linear-gradient(135deg, #ff7a5c, #ff9d85)",
+    glow: "rgba(255,122,92,0.35)",
   },
 ];
 
@@ -17129,17 +17129,38 @@ function speciesLabel(option: (typeof PET_SPECIES_OPTIONS)[number], market: Mark
   return market === "fi" ? option.labelFi : market === "en" ? option.labelEn : option.labelRu;
 }
 
-// Настоящие сгенерированные изображения питомцев (3D-игрушечный стиль,
-// прозрачный фон) — для видов, где ассет уже готов. Остальные виды
-// (пока только корова) продолжают рисоваться вручную через PetFaceBody
-// ниже, так что добавление нового фото сюда — это всё, что нужно для
-// переключения вида с SVG-заглушки на настоящую картинку.
+// Раньше при заведении питомца выбирали вид из сетки 6 карточек — с
+// призраками-близнецами (один и тот же силуэт, разница только в
+// цвете) это уже не выбор "какое животное", а просто "какой цвет",
+// поэтому по просьбе Артёма заменили на случайного персонажа с кнопкой
+// "Другой" — можно перебрасывать, пока не понравится.
+function pickRandomSpecies(exclude?: PetSpecies): PetSpecies {
+  const pool = exclude
+    ? PET_SPECIES_OPTIONS.filter((option) => option.id !== exclude)
+    : PET_SPECIES_OPTIONS;
+  const choice = pool[Math.floor(Math.random() * pool.length)] ?? PET_SPECIES_OPTIONS[0];
+  return choice.id;
+}
+
+// Питомцы-призраки (3D-игрушечный стиль, прозрачный фон) — единый
+// простой силуэт (голова слитно с телом, без ушей/рогов/лап разной
+// формы) в 6 цветах вместо 6 разных животных. Раньше тут было 6 разных
+// животных с совершенно разными пропорциями (уши кролика, клюв совы,
+// подбородок бегемота и т.д.), из-за чего каждую вещь приходилось
+// точечно подгонять под каждый вид отдельно (см. PET_*_ANCHOR_OVERRIDES
+// ниже — тот код оставлен нетронутым на случай отката, но с этим
+// набором картинок больше не задействуется, потому что один и тот же
+// силуэт у всех 6 цветов). id видов (dog/cat/rabbit/cow/hippo/owl)
+// оставлены прежними намеренно — это просто ключи "слотов", уже
+// сохранённые в БД у существующих питомцев; менять их означало бы
+// миграцию данных, а тут это не нужно — переехала только картинка.
 const PET_PHOTO_SRC: Partial<Record<PetSpecies, string>> = {
-  dog: "/pets/dog.png",
-  cat: "/pets/cat.png",
-  rabbit: "/pets/rabbit.png",
-  hippo: "/pets/hippo.png",
-  owl: "/pets/owl.png",
+  dog: "/pets/ghost/purple.png",
+  cat: "/pets/ghost/pink.png",
+  rabbit: "/pets/ghost/blue.png",
+  cow: "/pets/ghost/mint.png",
+  hippo: "/pets/ghost/peach.png",
+  owl: "/pets/ghost/coral.png",
 };
 
 // Где именно "приклеить" наклейку шапки/аксессуара/куртки поверх
@@ -17222,7 +17243,7 @@ const PET_ACCESSORY_ANCHOR: Record<string, PetItemAnchor> = {
   // обрезан по этой половине сетки, поэтому центр по X сдвинут вправо
   // (left), иначе он центрировался между глаз и выглядел как
   // бесхозный кружок над переносицей, а не монокль на глазу.
-  acc_monocle: { top: "27%", left: "65%", sizeFactor: 0.22 },
+  acc_monocle: { top: "24%", left: "60%", sizeFactor: 0.22 },
   acc_medal: { top: "55%", sizeFactor: 0.24 },
   acc_bling: { top: "55%", sizeFactor: 0.26 },
 };
@@ -18239,7 +18260,7 @@ function PetScreen({
   const market = getMarket();
 
   const [step, setStep] = useState<"species" | "details">("species");
-  const [selectedSpecies, setSelectedSpecies] = useState<PetSpecies | null>(null);
+  const [selectedSpecies, setSelectedSpecies] = useState<PetSpecies>(() => pickRandomSpecies());
   const [selectedGender, setSelectedGender] = useState<PetGender | null>(null);
   const [name, setName] = useState("");
   const [shopSlot, setShopSlot] = useState<PetItemSlot | null>(null);
@@ -18350,46 +18371,34 @@ function PetScreen({
           </div>
 
           <div style={{ ...cardBaseStyle(), padding: 20 }}>
-            <div style={{ fontSize: 14, fontWeight: 800, color: muted, marginBottom: 12 }}>
-              {market === "fi" ? "Valitse laji" : market === "en" ? "Choose a species" : "Выберите питомца"}
+            <div style={{ fontSize: 14, fontWeight: 800, color: muted, marginBottom: 12, textAlign: "center" }}>
+              {market === "fi" ? "Tässä on hahmosi" : market === "en" ? "Here's your character" : "Вот ваш персонаж"}
             </div>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 10 }}>
-              {PET_SPECIES_OPTIONS.map((option) => {
-                const active = selectedSpecies === option.id;
-                return (
-                  <button
-                    key={option.id}
-                    type="button"
-                    onClick={() => setSelectedSpecies(option.id)}
-                    className={active ? "pet-species-active" : undefined}
-                    style={{
-                      border: active
-                        ? "2px solid rgba(143,107,255,0.55)"
-                        : isDark
-                          ? "2px solid rgba(255,255,255,0.12)"
-                          : "2px solid transparent",
-                      borderRadius: 18,
-                      padding: "16px 8px",
-                      background: active
-                        ? option.gradient
-                        : isDark
-                          ? "rgba(255,255,255,0.08)"
-                          : "rgba(255,255,255,0.28)",
-                      boxShadow: active ? `0 10px 24px ${option.glow}` : "none",
-                      display: "flex",
-                      flexDirection: "column",
-                      alignItems: "center",
-                      gap: 6,
-                      cursor: "pointer",
-                    }}
-                  >
-                    <PetFace species={option.id} size={44} />
-                    <div style={{ fontSize: 11.5, fontWeight: 800, color: active ? "#fff" : ink }}>
-                      {speciesLabel(option, market)}
-                    </div>
-                  </button>
-                );
-              })}
+            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 10 }}>
+              <div
+                style={{
+                  width: 120,
+                  height: 120,
+                  borderRadius: "50%",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  background: PET_SPECIES_OPTIONS.find((o) => o.id === selectedSpecies)?.gradient,
+                  boxShadow: `0 10px 24px ${PET_SPECIES_OPTIONS.find((o) => o.id === selectedSpecies)?.glow}`,
+                }}
+              >
+                <PetFace species={selectedSpecies} size={92} />
+              </div>
+              <div style={{ fontSize: 13, fontWeight: 800, color: ink }}>
+                {speciesLabel(PET_SPECIES_OPTIONS.find((o) => o.id === selectedSpecies)!, market)}
+              </div>
+              <button
+                type="button"
+                onClick={() => setSelectedSpecies((prev) => pickRandomSpecies(prev))}
+                style={{ ...secondaryButtonStyle, padding: "8px 18px", fontSize: 13, width: "auto" }}
+              >
+                🔀 {market === "fi" ? "Toinen hahmo" : market === "en" ? "Different one" : "Другой персонаж"}
+              </button>
             </div>
 
             <div style={{ fontSize: 12.5, fontWeight: 800, color: muted, margin: "16px 0 8px" }}>
@@ -18563,57 +18572,38 @@ function PetScreen({
 
         {step === "species" ? (
           <div style={{ ...cardBaseStyle(), padding: 20 }}>
-            <div style={{ fontSize: 14, fontWeight: 800, color: muted, marginBottom: 12 }}>
-              {market === "fi" ? "Valitse laji" : market === "en" ? "Choose a species" : "Выберите питомца"}
+            <div style={{ fontSize: 14, fontWeight: 800, color: muted, marginBottom: 12, textAlign: "center" }}>
+              {market === "fi" ? "Tässä on hahmosi" : market === "en" ? "Here's your character" : "Вот ваш персонаж"}
             </div>
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: "repeat(3, 1fr)",
-                gap: 10,
-              }}
-            >
-              {PET_SPECIES_OPTIONS.map((option) => {
-                const active = selectedSpecies === option.id;
-                return (
-                  <button
-                    key={option.id}
-                    type="button"
-                    onClick={() => setSelectedSpecies(option.id)}
-                    className={active ? "pet-species-active" : undefined}
-                    style={{
-                      border: active
-                        ? "2px solid rgba(143,107,255,0.55)"
-                        : isDark
-                          ? "2px solid rgba(255,255,255,0.12)"
-                          : "2px solid transparent",
-                      borderRadius: 18,
-                      padding: "16px 8px",
-                      background: active
-                        ? option.gradient
-                        : isDark
-                          ? "rgba(255,255,255,0.08)"
-                          : "rgba(255,255,255,0.28)",
-                      boxShadow: active ? `0 10px 24px ${option.glow}` : "none",
-                      display: "flex",
-                      flexDirection: "column",
-                      alignItems: "center",
-                      gap: 6,
-                      cursor: "pointer",
-                    }}
-                  >
-                    <PetFace species={option.id} size={44} />
-                    <div style={{ fontSize: 11.5, fontWeight: 800, color: active ? "#fff" : ink }}>
-                      {speciesLabel(option, market)}
-                    </div>
-                  </button>
-                );
-              })}
+            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 10 }}>
+              <div
+                style={{
+                  width: 120,
+                  height: 120,
+                  borderRadius: "50%",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  background: PET_SPECIES_OPTIONS.find((o) => o.id === selectedSpecies)?.gradient,
+                  boxShadow: `0 10px 24px ${PET_SPECIES_OPTIONS.find((o) => o.id === selectedSpecies)?.glow}`,
+                }}
+              >
+                <PetFace species={selectedSpecies} size={92} />
+              </div>
+              <div style={{ fontSize: 13, fontWeight: 800, color: ink }}>
+                {speciesLabel(PET_SPECIES_OPTIONS.find((o) => o.id === selectedSpecies)!, market)}
+              </div>
+              <button
+                type="button"
+                onClick={() => setSelectedSpecies((prev) => pickRandomSpecies(prev))}
+                style={{ ...secondaryButtonStyle, padding: "8px 18px", fontSize: 13, width: "auto" }}
+              >
+                🔀 {market === "fi" ? "Toinen hahmo" : market === "en" ? "Different one" : "Другой персонаж"}
+              </button>
             </div>
 
             <button
               type="button"
-              disabled={!selectedSpecies}
               onClick={() => setStep("details")}
               style={{
                 ...getPrimaryButtonStyle(isDark),
@@ -18751,7 +18741,7 @@ function PetScreen({
   // без скролла. 220px — компромисс между тем и другим (свёрнутые по
   // умолчанию секции магазина освобождают достаточно места, чтобы
   // питомца можно было чуть увеличить обратно).
-  const ringSize = 248;
+  const ringSize = 272;
   const ringStroke = 9;
   const ringRadius = (ringSize - ringStroke) / 2;
   const ringCircumference = 2 * Math.PI * ringRadius;
