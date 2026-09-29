@@ -545,6 +545,16 @@ export const TEXT_RU = {
     portraitSubtitle: "Из результатов твоих тестов — те же данные используются для подбора анкет в Знакомствах",
     portraitCta: "Пройти оставшиеся тесты",
     portraitNotDoneYet: "Ещё не пройден",
+    portraitDetailsCta: "Смотреть подробный разбор →",
+    portraitPageTitle: "Твой психологический портрет",
+    portraitPageIntro:
+      "Разбор по трём тестам — доверие в отношениях, язык любви и твоя сильная сторона. Чем больше тестов пройдено, тем точнее картина.",
+    portraitSynthesis:
+      "Похоже, ты — {personality} человек с {trust}, а твой язык любви — «{loveLanguage}».",
+    portraitProgressLabel: "Пройдено тестов: {done} из {total}",
+    portraitTakeTestButton: "Пройти тест",
+    portraitDistributionLabel: "Как распределились ответы",
+    portraitSecondaryLabel: "Дополнительно",
   },
 
   notifications: {

@@ -120,7 +120,8 @@ type Screen =
   | "dating-boost"
   | "polls-tests-menu"
   | "pair-profile-menu"
-  | "pet";
+  | "pet"
+  | "psych-portrait";
 
 
 
@@ -20074,14 +20075,287 @@ function PsychologicalPortraitCard({
         })}
       </div>
 
+      {completedTestIds.length > 0 && (
+        <button
+          onClick={() => onNavigate("psych-portrait")}
+          style={{
+            width: "100%",
+            marginTop: 14,
+            padding: "10px 12px",
+            borderRadius: 14,
+            border: "none",
+            background: "transparent",
+            color: accent,
+            fontWeight: 800,
+            fontSize: 13.5,
+            cursor: "pointer",
+            textAlign: "center",
+          }}
+        >
+          {t.profile.portraitDetailsCta}
+        </button>
+      )}
+
       {anyIncomplete && (
         <button
           onClick={() => onNavigate("tests")}
-          style={{ ...getPrimaryButtonStyle(isDark), width: "100%", marginTop: 14 }}
+          style={{ ...getPrimaryButtonStyle(isDark), width: "100%", marginTop: anyIncomplete && completedTestIds.length > 0 ? 4 : 14 }}
         >
           {t.profile.portraitCta}
         </button>
       )}
+    </div>
+  );
+}
+
+// Отдельная страница подробного разбора психологического портрета —
+// та же тройка тестов (trust-level/love-language/personality-strengths),
+// но с полным текстом результата (не одним словом, как в карточке на
+// профиле) и распределением ответов по вариантам, плюс "синтез" одной
+// фразой из всех трёх результатов сразу, когда пройдены все.
+// getScaleResult/getLoveLanguageResult/getPersonalityResult — те же
+// функции, что считают результат сразу после прохождения теста (см.
+// их определения выше), поэтому текст здесь никогда не разъедется с
+// тем, что человек уже видел при прохождении.
+function PsychPortraitScreen({
+  completedTestIds,
+  onBack,
+  onNavigate,
+  theme,
+}: {
+  completedTestIds: string[];
+  onBack: () => void;
+  onNavigate: (screen: Screen) => void;
+  // Undefined на iOS (тема там не включена) — читается как "light".
+  theme?: "light" | "dark";
+}) {
+  const market = getMarket();
+  const t = market === "fi" ? TEXT_FI : market === "en" ? TEXT_EN : TEXT_RU;
+  const isDark = theme === "dark";
+  const ink = isDark ? "#e6d4f0" : "#1f1d3a";
+  const muted = isDark ? "#c9b3e0" : "#5a5378";
+  const accent = isDark ? "#e0b3ff" : "#6b46ff";
+
+  const [rawAnswers, setRawAnswers] = useState<Record<string, number[]> | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    (async () => {
+      const initData = await getInitDataAsync();
+      if (!initData) {
+        if (!cancelled) setLoading(false);
+        return;
+      }
+
+      try {
+        const response = await fetch("/api/profile/portrait", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ initData, market }),
+        });
+        const data = await response.json();
+        if (!cancelled && data?.ok) setRawAnswers(data.rawAnswers ?? {});
+      } catch (error) {
+        console.error("psych portrait fetch error:", error);
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const trustAnswers = rawAnswers?.["trust-level"];
+  const loveAnswers = rawAnswers?.["love-language"];
+  const personalityAnswers = rawAnswers?.["personality-strengths"];
+
+  const trustResult =
+    trustAnswers && trustAnswers.length > 0
+      ? getScaleResult(trustAnswers.reduce((sum, v) => sum + v, 0), trustAnswers.length * 4, market)
+      : null;
+  const loveResult =
+    loveAnswers && loveAnswers.length > 0 ? getLoveLanguageResult(loveAnswers, market) : null;
+  const personalityResult =
+    personalityAnswers && personalityAnswers.length > 0
+      ? getPersonalityResult(personalityAnswers, market)
+      : null;
+
+  function countsFor(answers: number[] | undefined, bucketCount: number): number[] {
+    const counts = new Array(bucketCount).fill(0);
+    (answers ?? []).forEach((idx) => {
+      if (idx >= 0 && idx < bucketCount) counts[idx] += 1;
+    });
+    return counts;
+  }
+
+  const loveLabels =
+    market === "fi"
+      ? ["Kannustavat sanat", "Kosketus", "Lahjat", "Yhteinen aika", "Palvelusteot"]
+      : market === "en"
+        ? ["Words of affirmation", "Touch", "Gifts", "Quality time", "Acts of service"]
+        : ["Слова поддержки", "Прикосновения", "Подарки", "Время вместе", "Помощь и забота"];
+  const personalityLabels =
+    market === "fi"
+      ? ["Huolehtivainen", "Itsevarma", "Romanttinen", "Rauhallinen", "Energinen"]
+      : market === "en"
+        ? ["Caring", "Confident", "Romantic", "Calm", "Energetic"]
+        : ["Заботливый", "Уверенный", "Романтичный", "Спокойный", "Энергичный"];
+
+  const doneCount = [trustResult, loveResult, personalityResult].filter(Boolean).length;
+
+  function DistributionBars({ labels, counts }: { labels: string[]; counts: number[] }) {
+    const max = Math.max(1, ...counts);
+    return (
+      <div style={{ display: "grid", gap: 6, marginTop: 10 }}>
+        {labels.map((label, i) => (
+          <div key={label} style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <div style={{ width: 92, flexShrink: 0, fontSize: 11.5, color: muted, fontWeight: 700 }}>
+              {label}
+            </div>
+            <div style={{ flex: 1, height: 8, borderRadius: 999, background: isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.06)", overflow: "hidden" }}>
+              <div
+                style={{
+                  width: `${(counts[i] / max) * 100}%`,
+                  height: "100%",
+                  borderRadius: 999,
+                  background: "linear-gradient(90deg,#8f6bff,#ff76ba)",
+                }}
+              />
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+  }
+
+  function ResultSection({
+    icon,
+    testId,
+    title,
+    result,
+    distribution,
+  }: {
+    icon: string;
+    testId: string;
+    title: string;
+    result: TestResult | null;
+    distribution?: { labels: string[]; counts: number[] };
+  }) {
+    return (
+      <div style={{ ...cardBaseStyle(), padding: 18 }}>
+        <div style={{ fontSize: 14, fontWeight: 800, color: muted }}>
+          {icon} {title}
+        </div>
+        {result ? (
+          <>
+            <div style={{ marginTop: 6, fontSize: 20, fontWeight: 900, color: ink }}>
+              {result.title}
+            </div>
+            <div style={{ marginTop: 2, fontSize: 13, fontWeight: 700, color: accent }}>
+              {result.subtitle}
+            </div>
+            <div style={{ marginTop: 8, fontSize: 14, color: muted, lineHeight: 1.5 }}>
+              {result.description}
+            </div>
+            {distribution && (
+              <>
+                <div style={{ marginTop: 14, fontSize: 11.5, fontWeight: 700, color: muted, textTransform: "uppercase", letterSpacing: 0.3 }}>
+                  {t.profile.portraitDistributionLabel}
+                </div>
+                <DistributionBars labels={distribution.labels} counts={distribution.counts} />
+              </>
+            )}
+          </>
+        ) : (
+          <button
+            type="button"
+            onClick={() => onNavigate("tests")}
+            style={{ ...getPrimaryButtonStyle(isDark), width: "100%", marginTop: 12 }}
+          >
+            {t.profile.portraitTakeTestButton}
+          </button>
+        )}
+      </div>
+    );
+  }
+
+  return (
+    <div style={{ padding: 16, display: "grid", gap: 14 }}>
+      <div
+        style={{
+          ...cardBaseStyle(),
+          padding: 20,
+          background: "linear-gradient(160deg, rgba(255,145,190,0.20), rgba(143,107,255,0.18))",
+        }}
+      >
+        <div style={{ fontSize: 22, fontWeight: 900, color: ink }}>
+          🧠 {t.profile.portraitPageTitle}
+        </div>
+        <div style={{ marginTop: 8, fontSize: 14, color: muted, lineHeight: 1.5 }}>
+          {loading ? "…" : t.profile.portraitPageIntro}
+        </div>
+        <div style={{ marginTop: 10, fontSize: 12.5, fontWeight: 700, color: accent }}>
+          {t.profile.portraitProgressLabel
+            .replace("{done}", String(doneCount))
+            .replace("{total}", "3")}
+        </div>
+      </div>
+
+      {doneCount === 3 && trustResult && loveResult && personalityResult && (
+        <div
+          style={{
+            ...cardBaseStyle(),
+            padding: 18,
+            background: "linear-gradient(160deg, rgba(143,107,255,0.16), rgba(255,118,186,0.16))",
+          }}
+        >
+          <div style={{ fontSize: 15, fontWeight: 800, color: ink, lineHeight: 1.5 }}>
+            ✨{" "}
+            {t.profile.portraitSynthesis
+              .replace("{personality}", personalityResult.title.toLowerCase())
+              .replace("{trust}", trustResult.title.toLowerCase())
+              .replace("{loveLanguage}", loveResult.title)}
+          </div>
+        </div>
+      )}
+
+      <ResultSection
+        icon="🤝"
+        testId="trust-level"
+        title={TESTS.find((test) => test.id === "trust-level")?.title ?? ""}
+        result={trustResult}
+      />
+
+      <ResultSection
+        icon="💛"
+        testId="love-language"
+        title={TESTS.find((test) => test.id === "love-language")?.title ?? ""}
+        result={loveResult}
+        distribution={
+          loveAnswers ? { labels: loveLabels, counts: countsFor(loveAnswers, 5) } : undefined
+        }
+      />
+
+      <ResultSection
+        icon="💪"
+        testId="personality-strengths"
+        title={TESTS.find((test) => test.id === "personality-strengths")?.title ?? ""}
+        result={personalityResult}
+        distribution={
+          personalityAnswers
+            ? { labels: personalityLabels, counts: countsFor(personalityAnswers, 5) }
+            : undefined
+        }
+      />
+
+      <button onClick={onBack} style={{ ...secondaryButtonStyle, width: "100%" }}>
+        {t.common.back}
+      </button>
     </div>
   );
 }
@@ -24762,6 +25036,20 @@ showPaywall={() => {
   <PairLevelInfoScreen
     pairLevel={getPairLevelInfo(animatedPairPoints)}
     onBack={() => setScreen("pair")}
+    theme={theme}
+  />
+)}
+
+{screen === "psych-portrait" && (
+  <PsychPortraitScreen
+    completedTestIds={appState.completedTestIds}
+    onNavigate={(next) => {
+      if (next === "tests") {
+        setTestsBackScreen("psych-portrait");
+      }
+      setScreen(next);
+    }}
+    onBack={() => setScreen("profile")}
     theme={theme}
   />
 )}

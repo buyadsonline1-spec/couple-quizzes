@@ -531,6 +531,16 @@ export const TEXT_EN = {
     portraitSubtitle: "From your test results — the same data used to match profiles in Dating",
     portraitCta: "Take the remaining tests",
     portraitNotDoneYet: "Not taken yet",
+    portraitDetailsCta: "See the full breakdown →",
+    portraitPageTitle: "Your relationship portrait",
+    portraitPageIntro:
+      "A breakdown across three tests — trust in relationships, your love language, and your leading strength. The more tests you take, the more accurate the picture.",
+    portraitSynthesis:
+      "Looks like you're a {personality} person with {trust}, and your love language is \"{loveLanguage}\".",
+    portraitProgressLabel: "Tests taken: {done} of {total}",
+    portraitTakeTestButton: "Take the test",
+    portraitDistributionLabel: "How your answers broke down",
+    portraitSecondaryLabel: "Secondary",
   },
 
   notifications: {

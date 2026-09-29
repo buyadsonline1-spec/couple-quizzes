@@ -536,6 +536,16 @@ export const TEXT_FI = {
     portraitSubtitle: "Testiesi tuloksista — samoja tietoja käytetään Treffien profiilien sovittamiseen",
     portraitCta: "Tee loput testit",
     portraitNotDoneYet: "Ei vielä tehty",
+    portraitDetailsCta: "Katso tarkempi erittely →",
+    portraitPageTitle: "Parisuhdeprofiilisi",
+    portraitPageIntro:
+      "Erittely kolmesta testistä — luottamus suhteessa, rakkauden kielesi ja johtava vahvuutesi. Mitä useamman testin teet, sitä tarkempi kuva on.",
+    portraitSynthesis:
+      "Vaikutat olevan {personality} ihminen, jolla on {trust}, ja rakkauden kielesi on ”{loveLanguage}”.",
+    portraitProgressLabel: "Tehtyjä testejä: {done}/{total}",
+    portraitTakeTestButton: "Tee testi",
+    portraitDistributionLabel: "Miten vastauksesi jakautuivat",
+    portraitSecondaryLabel: "Toissijainen",
   },
 
   notifications: {

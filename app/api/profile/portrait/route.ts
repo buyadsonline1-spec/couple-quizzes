@@ -37,7 +37,20 @@ export async function POST(request: NextRequest) {
     );
     const summary = buildPersonalitySummary(submissions, market);
 
-    return NextResponse.json({ ok: true, summary });
+    // Сырые ответы — для страницы подробного разбора (см.
+    // PsychPortraitScreen в app/page.tsx), которая сама считает полный
+    // TestResult (title/subtitle/description + распределение по
+    // вариантам) теми же функциями, что и экран сразу после
+    // прохождения теста, вместо дублирования текстов результатов
+    // здесь на сервере.
+    const rawAnswers: Record<string, number[]> = {};
+    for (const sub of submissions) {
+      if (Array.isArray(sub.answers)) {
+        rawAnswers[sub.test_id] = sub.answers.map((v) => Number(v));
+      }
+    }
+
+    return NextResponse.json({ ok: true, summary, rawAnswers });
   } catch (error) {
     console.error("PROFILE PORTRAIT ERROR:", error);
     return NextResponse.json(
