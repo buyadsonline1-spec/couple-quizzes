@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/server/supabase-admin";
 import { validateRequestAuth } from "@/lib/server/telegram-auth";
 
-const VALID_SLOTS = new Set(["hat", "accessory", "jacket", "room"]);
+const VALID_SLOTS = new Set(["hat", "accessory", "jacket", "held", "room"]);
 
 export async function POST(request: NextRequest) {
   try {

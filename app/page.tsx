@@ -16861,7 +16861,7 @@ return (
 type PetSpecies = "dog" | "cat" | "rabbit" | "cow" | "hippo" | "owl";
 type PetGender = "boy" | "girl";
 
-type PetItemSlot = "hat" | "accessory" | "jacket" | "room";
+type PetItemSlot = "hat" | "accessory" | "jacket" | "held" | "room";
 
 type PetState = {
   species: PetSpecies;
@@ -16873,6 +16873,10 @@ type PetState = {
   equippedHat: string | null;
   equippedAccessory: string | null;
   equippedJacket: string | null;
+  // "Держит в руке" — новый слот поверх шапки/аксессуара/куртки,
+  // появился вместе с редизайном питомца на силуэт с руками (теперь
+  // есть куда положить предмет, а не только надеть).
+  equippedHeld: string | null;
   equippedRoom: string | null;
   ownedItems: string[];
 };
@@ -16949,6 +16953,16 @@ const PET_SHOP_ITEMS: PetShopItem[] = [
   { id: "jacket_puffer", slot: "jacket", price: 0, emoji: "🧥", nameRu: "Пуховик", nameEn: "Puffer vest", nameFi: "Toppaliivi", priceStars: 45 },
   { id: "jacket_tux", slot: "jacket", price: 0, emoji: "🤵", nameRu: "Смокинг", nameEn: "Tuxedo", nameFi: "Smokki", priceStars: 55 },
   { id: "jacket_superhero", slot: "jacket", price: 0, emoji: "🦸", nameRu: "Плащ супергероя", nameEn: "Superhero cape", nameFi: "Supersankariviitta", priceStars: 50 },
+  // "Держит в руке" — новый слот, появился вместе с редизайном
+  // питомца на силуэт с руками (см. PET_HELD_ANCHOR).
+  { id: "held_balloon", slot: "held", price: 0, emoji: "🎈", nameRu: "Шарик", nameEn: "Balloon", nameFi: "Ilmapallo", unlockPetLevel: 2 },
+  { id: "held_gift", slot: "held", price: 0, emoji: "🎁", nameRu: "Подарок", nameEn: "Gift", nameFi: "Lahja", unlockStreakDays: 3 },
+  { id: "held_icecream", slot: "held", price: 150, emoji: "🍦", nameRu: "Мороженое", nameEn: "Ice cream", nameFi: "Jäätelö" },
+  { id: "held_coffee", slot: "held", price: 150, emoji: "☕", nameRu: "Кофе", nameEn: "Coffee", nameFi: "Kahvi" },
+  { id: "held_flowers", slot: "held", price: 200, emoji: "💐", nameRu: "Букет", nameEn: "Bouquet", nameFi: "Kukkakimppu" },
+  { id: "held_ball", slot: "held", price: 200, emoji: "🏀", nameRu: "Мяч", nameEn: "Ball", nameFi: "Pallo" },
+  { id: "held_book", slot: "held", price: 0, emoji: "📖", nameRu: "Книга", nameEn: "Book", nameFi: "Kirja", unlockPetLevel: 4 },
+  { id: "held_phone", slot: "held", price: 0, emoji: "📱", nameRu: "Телефон", nameEn: "Phone", nameFi: "Puhelin", priceStars: 30 },
   {
     id: "room_meadow",
     slot: "room",
@@ -17323,6 +17337,34 @@ const PET_JACKET_BBOX: Record<string, [number, number, number, number]> = {
 const PET_JACKET_BODY_PATH =
   "M42,155 Q42,138 65,140 Q100,130 135,140 Q158,138 158,155 Q158,185 130,195 Q100,200 70,195 Q42,185 42,155 Z";
 
+// "Держит в руке" — появился вместе с руками на новом силуэте
+// призрака (см. PET_PHOTO_SRC). top/left — точка в правой (по нашему
+// виду — левой) ладошке; sizeFactor у всех одинаковый, т.к. предметы
+// рисуются в одной координатной сетке (см. PET_HELD_BBOX).
+const PET_HELD_ANCHOR_DEFAULT: PetItemAnchor = { top: "63%", left: "24%", rotate: -6, sizeFactor: 0.32 };
+const PET_HELD_ANCHOR: Record<string, PetItemAnchor> = {
+  held_balloon: { top: "55%", left: "24%", rotate: 0, sizeFactor: 0.36 },
+  held_gift: { top: "64%", left: "24%", rotate: 0, sizeFactor: 0.3 },
+  held_icecream: { top: "60%", left: "24%", rotate: -8, sizeFactor: 0.3 },
+  held_coffee: { top: "66%", left: "25%", rotate: 0, sizeFactor: 0.28 },
+  held_flowers: { top: "63%", left: "24%", rotate: -6, sizeFactor: 0.34 },
+  held_ball: { top: "62%", left: "24%", rotate: 0, sizeFactor: 0.3 },
+  held_book: { top: "63%", left: "24%", rotate: -4, sizeFactor: 0.32 },
+  held_phone: { top: "63%", left: "24%", rotate: 0, sizeFactor: 0.24 },
+};
+const PET_HELD_ANCHOR_OVERRIDES: PetItemAnchorOverrides = {};
+
+const PET_HELD_BBOX: Record<string, [number, number, number, number]> = {
+  held_balloon: [70, 20, 60, 90],
+  held_gift: [65, 130, 70, 62],
+  held_icecream: [72, 110, 56, 84],
+  held_coffee: [72, 120, 56, 72],
+  held_flowers: [60, 110, 80, 82],
+  held_ball: [66, 126, 68, 68],
+  held_book: [58, 132, 84, 56],
+  held_phone: [78, 122, 44, 70],
+};
+
 // Рендерит один предмет из каталога как самостоятельную маленькую
 // иконку (не эмодзи) — вырезает его bbox из общей SVG-сетки шапок/
 // аксессуаров/курток и масштабирует под нужную ширину, сохраняя
@@ -17332,12 +17374,18 @@ function PetItemIcon({
   itemId,
   width,
 }: {
-  kind: "hat" | "accessory" | "jacket";
+  kind: "hat" | "accessory" | "jacket" | "held";
   itemId: string;
   width: number;
 }) {
   const bboxMap =
-    kind === "hat" ? PET_HAT_BBOX : kind === "accessory" ? PET_ACCESSORY_BBOX : PET_JACKET_BBOX;
+    kind === "hat"
+      ? PET_HAT_BBOX
+      : kind === "accessory"
+      ? PET_ACCESSORY_BBOX
+      : kind === "jacket"
+      ? PET_JACKET_BBOX
+      : PET_HELD_BBOX;
   const bbox = bboxMap[itemId] ?? [60, 60, 80, 80];
   const [, , bw, bh] = bbox;
   const height = width * (bh / bw);
@@ -17347,8 +17395,10 @@ function PetItemIcon({
         <PetHatOverlay hat={itemId} />
       ) : kind === "accessory" ? (
         <PetAccessoryOverlay accessory={itemId} />
-      ) : (
+      ) : kind === "jacket" ? (
         <PetJacketOverlay jacket={itemId} />
+      ) : (
+        <PetHeldOverlay held={itemId} />
       )}
     </svg>
   );
@@ -17999,12 +18049,133 @@ function PetJacketOverlay({ jacket }: { jacket: string }) {
   return null;
 }
 
+function PetHeldOverlay({ held }: { held: string }) {
+  if (held === "held_balloon") {
+    return (
+      <g>
+        <defs>
+          <radialGradient id="petHeldGradBalloon" cx="35%" cy="30%" r="75%">
+            <stop offset="0%" stopColor="#ff9ad1" />
+            <stop offset="100%" stopColor="#e8479e" />
+          </radialGradient>
+        </defs>
+        <path d="M100,88 Q92,96 96,108 L104,108 Q108,96 100,88 Z" fill="#c23a7f" />
+        <path d="M100,20 C70,20 62,52 72,74 C80,90 92,92 100,92 C108,92 120,90 128,74 C138,52 130,20 100,20 Z" fill="url(#petHeldGradBalloon)" />
+        <ellipse cx="84" cy="42" rx="10" ry="16" fill="#ffffff" opacity="0.35" />
+      </g>
+    );
+  }
+  if (held === "held_gift") {
+    return (
+      <g>
+        <defs>
+          <linearGradient id="petHeldGradGift" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="#ff7fb0" />
+            <stop offset="100%" stopColor="#e8479e" />
+          </linearGradient>
+        </defs>
+        <rect x="65" y="150" width="70" height="42" rx="6" fill="url(#petHeldGradGift)" />
+        <rect x="65" y="150" width="70" height="12" rx="4" fill="#ffe066" />
+        <rect x="94" y="150" width="12" height="42" fill="#ffe066" />
+        <path d="M100,150 Q80,128 68,138 Q72,152 100,150 Z" fill="#ffe066" />
+        <path d="M100,150 Q120,128 132,138 Q128,152 100,150 Z" fill="#ffe066" />
+      </g>
+    );
+  }
+  if (held === "held_icecream") {
+    return (
+      <g>
+        <defs>
+          <linearGradient id="petHeldGradScoop" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="#ffd7e8" />
+            <stop offset="100%" stopColor="#ff9ad1" />
+          </linearGradient>
+        </defs>
+        <path d="M76,194 L88,130 L112,130 L124,194 Z" fill="#e0a35c" />
+        <path d="M80,188 L120,188 M78,176 L122,176 M80,164 L120,164" stroke="#c17a3f" strokeWidth="2" opacity="0.6" />
+        <circle cx="100" cy="118" r="26" fill="url(#petHeldGradScoop)" />
+        <circle cx="91" cy="108" r="7" fill="#ffffff" opacity="0.45" />
+      </g>
+    );
+  }
+  if (held === "held_coffee") {
+    return (
+      <g>
+        <defs>
+          <linearGradient id="petHeldGradCup" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="#ffffff" />
+            <stop offset="100%" stopColor="#e6e6e6" />
+          </linearGradient>
+        </defs>
+        <path d="M78,132 L122,132 L116,190 Q116,196 108,196 L92,196 Q84,196 84,190 Z" fill="url(#petHeldGradCup)" />
+        <ellipse cx="100" cy="132" rx="22" ry="6" fill="#6b4a2f" />
+        <path d="M122,144 Q140,146 138,162 Q136,176 118,176" stroke="#e6e6e6" strokeWidth="6" fill="none" strokeLinecap="round" />
+        <path d="M92,122 Q88,112 94,104 M108,122 Q104,112 110,104" stroke="#cfcfcf" strokeWidth="3" fill="none" strokeLinecap="round" opacity="0.8" />
+      </g>
+    );
+  }
+  if (held === "held_flowers") {
+    return (
+      <g>
+        <path d="M85,192 L100,140 L115,192 Z" fill="#ffe066" />
+        <path d="M100,150 L100,110 M88,155 L78,120 M112,155 L122,120" stroke="#5a8f52" strokeWidth="3" fill="none" strokeLinecap="round" />
+        <circle cx="100" cy="102" r="14" fill="#ff7fb0" />
+        <circle cx="78" cy="112" r="11" fill="#ffb648" />
+        <circle cx="122" cy="112" r="11" fill="#8f6bff" />
+        <circle cx="100" cy="102" r="5" fill="#ffe066" />
+        <circle cx="78" cy="112" r="4" fill="#ffe066" />
+        <circle cx="122" cy="112" r="4" fill="#ffe066" />
+      </g>
+    );
+  }
+  if (held === "held_ball") {
+    return (
+      <g>
+        <defs>
+          <radialGradient id="petHeldGradBall" cx="35%" cy="30%" r="75%">
+            <stop offset="0%" stopColor="#ffb066" />
+            <stop offset="100%" stopColor="#e37a2c" />
+          </radialGradient>
+        </defs>
+        <circle cx="100" cy="160" r="34" fill="url(#petHeldGradBall)" />
+        <path d="M66,160 L134,160 M100,126 L100,194 M76,136 Q100,160 76,184 M124,136 Q100,160 124,184" stroke="#7a3f10" strokeWidth="2.5" fill="none" />
+      </g>
+    );
+  }
+  if (held === "held_book") {
+    return (
+      <g>
+        <defs>
+          <linearGradient id="petHeldGradBook" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="#7fa9e0" />
+            <stop offset="100%" stopColor="#4c74b3" />
+          </linearGradient>
+        </defs>
+        <rect x="58" y="140" width="84" height="46" rx="4" fill="url(#petHeldGradBook)" />
+        <rect x="96" y="140" width="4" height="46" fill="#2f5182" />
+        <path d="M64,146 L92,146 M64,154 L92,154 M108,146 L136,146 M108,154 L136,154" stroke="#ffffff" strokeWidth="2" opacity="0.5" />
+      </g>
+    );
+  }
+  if (held === "held_phone") {
+    return (
+      <g>
+        <rect x="78" y="122" width="44" height="70" rx="10" fill="#2b2b33" />
+        <rect x="82" y="130" width="36" height="52" rx="2" fill="#8fd3ff" />
+        <rect x="94" y="184" width="12" height="3" rx="1.5" fill="#555" />
+      </g>
+    );
+  }
+  return null;
+}
+
 function PetFace({
   species,
   size,
   hat,
   accessory,
   jacket,
+  held,
   scale = 1,
 }: {
   species: PetSpecies;
@@ -18012,6 +18183,7 @@ function PetFace({
   hat?: string | null;
   accessory?: string | null;
   jacket?: string | null;
+  held?: string | null;
   // Стадия роста (см. getPetGrowthStage) — визуально уменьшает
   // питомца на ранних уровнях, не трогая сам ассет.
   scale?: number;
@@ -18020,6 +18192,7 @@ function PetFace({
   const hatItem = hat ? PET_SHOP_ITEMS.find((item) => item.id === hat) : null;
   const accessoryItem = accessory ? PET_SHOP_ITEMS.find((item) => item.id === accessory) : null;
   const jacketItem = jacket ? PET_SHOP_ITEMS.find((item) => item.id === jacket) : null;
+  const heldItem = held ? PET_SHOP_ITEMS.find((item) => item.id === held) : null;
 
   if (photoSrc) {
     // Настоящее фото питомца: шапка/аксессуар/куртка рисуются как
@@ -18065,6 +18238,29 @@ function PetFace({
                 }}
               >
                 <PetItemIcon kind="jacket" itemId={jacketItem.id} width={size * anchor.sizeFactor} />
+              </div>
+            );
+          })()}
+        {heldItem &&
+          (() => {
+            const anchor = resolveItemAnchor(
+              PET_HELD_ANCHOR,
+              PET_HELD_ANCHOR_DEFAULT,
+              PET_HELD_ANCHOR_OVERRIDES,
+              species,
+              heldItem.id
+            );
+            return (
+              <div
+                style={{
+                  position: "absolute",
+                  top: anchor.top,
+                  left: anchor.left ?? "50%",
+                  transform: `translate(-50%, -50%)${anchor.rotate ? ` rotate(${anchor.rotate}deg)` : ""}`,
+                  filter: "drop-shadow(0 2px 4px rgba(0,0,0,0.25))",
+                }}
+              >
+                <PetItemIcon kind="held" itemId={heldItem.id} width={size * anchor.sizeFactor} />
               </div>
             );
           })()}
@@ -18765,6 +18961,7 @@ function PetScreen({
         (item.slot === "hat" && pet?.equippedHat === item.id) ||
         (item.slot === "accessory" && pet?.equippedAccessory === item.id) ||
         (item.slot === "jacket" && pet?.equippedJacket === item.id) ||
+        (item.slot === "held" && pet?.equippedHeld === item.id) ||
         (item.slot === "room" && pet?.equippedRoom === item.id);
       onEquipItem(item.slot, isEquipped ? null : item.id);
       return;
@@ -18831,6 +19028,7 @@ function PetScreen({
             (slot === "hat" && pet?.equippedHat === item.id) ||
             (slot === "accessory" && pet?.equippedAccessory === item.id) ||
             (slot === "jacket" && pet?.equippedJacket === item.id) ||
+            (slot === "held" && pet?.equippedHeld === item.id) ||
             (slot === "room" && pet?.equippedRoom === item.id);
           const lockRequirement = owned ? null : getLockRequirement(item);
           const affordable = item.priceStars ? true : soloPoints >= item.price;
@@ -19254,6 +19452,7 @@ function PetScreen({
               hat={pet.equippedHat}
               accessory={pet.equippedAccessory}
               jacket={pet.equippedJacket}
+              held={pet.equippedHeld}
               scale={growthStage.scale}
             />
           </div>
@@ -19322,6 +19521,11 @@ function PetScreen({
         market === "fi" ? "Asusteet" : market === "en" ? "Accessories" : "Аксессуары"
       )}
       {renderShopSection("jacket", "🧥", market === "fi" ? "Takit" : market === "en" ? "Jackets" : "Куртки")}
+      {renderShopSection(
+        "held",
+        "🎈",
+        market === "fi" ? "Käsissä" : market === "en" ? "Held items" : "В руках"
+      )}
       {renderShopSection("room", "🏠", market === "fi" ? "Huone" : market === "en" ? "Room" : "Комната")}
 
       <div style={{ fontSize: 11, color: muted, textAlign: "center" }}>
@@ -22037,6 +22241,7 @@ function applyPetStateResult(result: any): boolean {
         equippedHat: result.pet.equippedHat ?? null,
         equippedAccessory: result.pet.equippedAccessory ?? null,
         equippedJacket: result.pet.equippedJacket ?? null,
+        equippedHeld: result.pet.equippedHeld ?? null,
         equippedRoom: result.pet.equippedRoom ?? null,
         ownedItems: result.pet.ownedItems ?? [],
       }
