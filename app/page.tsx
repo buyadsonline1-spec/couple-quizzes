@@ -23944,7 +23944,13 @@ function dismissPairProposalBanner(matchId: string) {
   }, [screen, appState.isPremium, activeChatMatch?.matchId]);
 
   const [user, setUser] = useState<TgUser | null>(null);
-  const [showDailyBonus, setShowDailyBonus] = useState(true);
+  const [showDailyBonus, setShowDailyBonus] = useState(false);
+  // Окно дневной бонуса показываем только после того, как сервер
+  // подтвердил, что сегодня награда ещё не забрана (см. bootstrap) —
+  // localStorage один на устройство и может быть пустым или устаревшим
+  // (другое устройство, очистка данных), из-за чего окно выскакивало
+  // зря, хотя награда за сегодня уже получена.
+  const [dailyBonusStateChecked, setDailyBonusStateChecked] = useState(false);
   const [claimableDay, setClaimableDay] = useState(1);
   const [bonusClaimAvailable, setBonusClaimAvailable] = useState(true);
   const [showLevelUp, setShowLevelUp] = useState(false);
@@ -23981,7 +23987,7 @@ useEffect(() => {
 
 
 useEffect(() => {
-  if (!mounted) return;
+  if (!mounted || !dailyBonusStateChecked) return;
 
   const today = getTodayLocalDateString();
 
@@ -23999,7 +24005,7 @@ useEffect(() => {
       lastDailyBonusPopupDate: today,
     }));
   }
-}, [mounted, appState.dailyBonus.lastClaimDate]);
+}, [mounted, dailyBonusStateChecked, appState.dailyBonus.lastClaimDate]);
 
 const [levelUpData, setLevelUpData] = useState<{ level: number; title: string } | null>(null);
 
@@ -24057,12 +24063,9 @@ const nextDay = getNextStreakDay(
 
 
 
-const today = getTodayLocalDateString();
-const alreadyOpenedToday = saved.lastDailyBonusPopupDate === today;
-
 setClaimableDay(nextDay);
 setBonusClaimAvailable(!alreadyClaimed);
-setShowDailyBonus(!alreadyClaimed && !alreadyOpenedToday);
+// Показ решает effect выше — только после ответа сервера.
 
 if (!telegramUser?.id) {
   await new Promise((resolve) => setTimeout(resolve, 600));
@@ -24161,6 +24164,7 @@ try {
     if (serverAlreadyClaimed) {
       setShowDailyBonus(false);
     }
+    setDailyBonusStateChecked(true);
   }
 } catch (error) {
   console.error("daily bonus state request error:", error);
@@ -24982,7 +24986,11 @@ if (finishedAllTests && !appState.completionBonusesClaimed.tests) {
   await claimCompletionBonus("tests");
 }
 
-  setScreen("menu");
+  // Раньше здесь был безусловный setScreen("menu"). Но TestsScreen
+  // (handleFinish) не ждёт эту функцию и сразу возвращает человека к
+  // списку тестов, а начисление/refreshPairData занимают несколько
+  // секунд — в итоге через пару секунд его выкидывало на главный
+  // экран прямо из списка тестов (или из уже начатого другого теста).
 };
 
 
