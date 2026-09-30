@@ -5,6 +5,7 @@ import { getCurrentWeekKey } from "@/lib/server/week-key";
 import {
   TEST_REWARD,
   TEST_IDS,
+  REQUIRED_TEST_COUNT,
   POLL_REWARD,
   POLL_IDS,
   COMPLETION_BONUS,
@@ -133,7 +134,7 @@ export async function POST(request: NextRequest) {
     // позиции этого типа (не просто локальный флаг с устройства).
     if (activityType === "completion") {
       const prefix = id === "polls" ? "poll:" : "test:";
-      const requiredCount = id === "polls" ? POLL_IDS.length : TEST_IDS.length;
+      const requiredCount = id === "polls" ? POLL_IDS.length : REQUIRED_TEST_COUNT;
 
       const { count, error: countError } = await supabaseAdmin
         .from("activity_point_claims")
