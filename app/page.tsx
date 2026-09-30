@@ -10483,6 +10483,15 @@ function MainMenu({
 
   {hasPair ? (
   <div
+  role="button"
+  tabIndex={0}
+  onClick={() => onNavigate("pair-level-info")}
+  onKeyDown={(e) => {
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      onNavigate("pair-level-info");
+    }
+  }}
   style={{
     marginTop: 10,
     padding: "12px 12px",
@@ -10490,6 +10499,7 @@ function MainMenu({
     background: "rgba(255,255,255,0.26)",
     width: "100%",
     boxSizing: "border-box",
+    cursor: "pointer",
   }}
 >
 
@@ -18098,6 +18108,11 @@ function PetFaceBody({ species }: { species: PetSpecies }) {
   );
 }
 
+// Временно скрываем полки магазина питомца "Шапки", "Аксессуары" и
+// "Куртки" (остаются "В руках" и "Комната") — пока они дорабатываются.
+// Уже купленные/надетые вещи продолжают отображаться на питомце.
+const SHOW_HIDDEN_PET_SHOP_SECTIONS = false;
+
 // Аксессуары рисуются поверх лица одним и тем же набором координат
 // для всех видов (голова у всех центрирована примерно в той же
 // области холста) — не идеально точная подгонка под каждый силуэт,
@@ -20034,13 +20049,19 @@ function PetScreen({
           внутри себя раздвигает всю сетку шире экрана. На десктопе
           это незаметно, а на iPhone (Safari) даёт видимый сдвиг всего
           экрана вбок при открытии питомца. */}
-      {renderShopSection("hat", "🎩", market === "fi" ? "Hatut" : market === "en" ? "Hats" : "Шапки")}
-      {renderShopSection(
-        "accessory",
-        "🎀",
-        market === "fi" ? "Asusteet" : market === "en" ? "Accessories" : "Аксессуары"
-      )}
-      {renderShopSection("jacket", "🧥", market === "fi" ? "Takit" : market === "en" ? "Jackets" : "Куртки")}
+      {/* Шапки/аксессуары/куртки временно скрыты с полок (пока дорабатываем)
+          — код и данные на месте, чтобы вернуть, достаточно поставить
+          SHOW_HIDDEN_PET_SHOP_SECTIONS = true (рядом с PetScreen). */}
+      {SHOW_HIDDEN_PET_SHOP_SECTIONS &&
+        renderShopSection("hat", "🎩", market === "fi" ? "Hatut" : market === "en" ? "Hats" : "Шапки")}
+      {SHOW_HIDDEN_PET_SHOP_SECTIONS &&
+        renderShopSection(
+          "accessory",
+          "🎀",
+          market === "fi" ? "Asusteet" : market === "en" ? "Accessories" : "Аксессуары"
+        )}
+      {SHOW_HIDDEN_PET_SHOP_SECTIONS &&
+        renderShopSection("jacket", "🧥", market === "fi" ? "Takit" : market === "en" ? "Jackets" : "Куртки")}
       {renderShopSection(
         "held",
         "🎈",
@@ -23901,6 +23922,9 @@ function dismissPairProposalBanner(matchId: string) {
   // психологического портрета в Профиле ("Пройти оставшиеся тесты" /
   // клик по непройденному тесту), а не только из "polls-tests-menu".
   const [testsBackScreen, setTestsBackScreen] = useState<Screen>("polls-tests-menu");
+  // "pair-level-info" открывается и с экрана пары, и с плашки уровня
+  // на главном экране — "Назад" возвращает туда, откуда пришли.
+  const [pairLevelInfoBackScreen, setPairLevelInfoBackScreen] = useState<Screen>("pair");
   // Прямой переход в конкретный тест с главного экрана (баннер "Ты
   // грин флаг или ред флаг?") — TestsScreen читает это как начальный
   // activeTestId один раз при монтировании, дальше сама же и сбрасывает
@@ -25310,6 +25334,9 @@ if (finishedAllTests && !appState.completionBonusesClaimed.tests) {
   if (next === "account-settings") {
     setSettingsBackScreen("menu");
   }
+  if (next === "pair-level-info") {
+    setPairLevelInfoBackScreen("menu");
+  }
   setScreen(next);
 }}
   />
@@ -25500,7 +25527,10 @@ showPaywall={() => {
   onOpenInvite={() => setScreen("pair-invite")}
   onOpenDailyQuestion={() => setScreen("daily-pair-question")}
   onOpenCompatibilityInfo={() => setScreen("pair-compatibility-info")}
-  onOpenLevelInfo={() => setScreen("pair-level-info")}
+  onOpenLevelInfo={() => {
+    setPairLevelInfoBackScreen("pair");
+    setScreen("pair-level-info");
+  }}
   onLeavePair={handleLeavePair}
   onOpenPolls={() => {
     // "polls" как единого экрана не существует — как и в MainMenu,
@@ -25579,7 +25609,7 @@ showPaywall={() => {
 {screen === "pair-level-info" && (
   <PairLevelInfoScreen
     pairLevel={getPairLevelInfo(animatedPairPoints)}
-    onBack={() => setScreen("pair")}
+    onBack={() => setScreen(pairLevelInfoBackScreen)}
     theme={theme}
   />
 )}
