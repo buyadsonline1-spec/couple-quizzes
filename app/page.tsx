@@ -363,6 +363,9 @@ type TestDefinition = {
   kind: TestKind;
   // Если задано — тест виден только пользователям этого пола.
   gender?: "boy" | "girl";
+  // Картинки на экране результата для kind "green-flag":
+  // [красный, смешанный, зелёный] — тот же порядок, что в GREEN_FLAG_RESULTS.
+  resultImages?: [string, string, string];
   questions: TestQuestion[];
 };
 
@@ -1464,6 +1467,11 @@ const TESTS: TestDefinition[] = [
   {
     id: "green-red-flag-women",
     gender: "girl",
+    resultImages: [
+      "/images/tests/flag-women-red.webp",
+      "/images/tests/flag-women-mixed.webp",
+      "/images/tests/flag-women-green.webp",
+    ],
     title:
       market === "fi"
         ? "Vihreä lippu vai punainen lippu? (Naisille)"
@@ -3949,13 +3957,15 @@ const GREEN_FLAG_RESULTS: Record<Market, TestResult[]> = {
   ],
 };
 
-function getGreenFlagResult(totalScore: number, maxScore: number, market: Market): TestResult {
+function getGreenFlagTier(totalScore: number, maxScore: number): 0 | 1 | 2 {
   const ratio = totalScore / maxScore;
-  const results = GREEN_FLAG_RESULTS[market];
+  if (ratio < 0.45) return 0;
+  if (ratio < 0.75) return 1;
+  return 2;
+}
 
-  if (ratio < 0.45) return results[0];
-  if (ratio < 0.75) return results[1];
-  return results[2];
+function getGreenFlagResult(totalScore: number, maxScore: number, market: Market): TestResult {
+  return GREEN_FLAG_RESULTS[market][getGreenFlagTier(totalScore, maxScore)];
 }
 
 const LOVE_LANGUAGE_CONTENT: Record<
@@ -15047,10 +15057,33 @@ if (!activeTestId) {
 
   if (finished) {
     const result = getResult();
+    const resultImage =
+      activeTest.kind === "green-flag" && activeTest.resultImages
+        ? activeTest.resultImages[
+            getGreenFlagTier(
+              answers.reduce((sum, value) => sum + value, 0),
+              activeTest.questions.length * 4
+            )
+          ]
+        : null;
 
     return (
       <div style={{ padding: 16 }}>
         <div style={{ ...cardBaseStyle(), padding: 20 }}>
+          {resultImage && (
+            <img
+              src={resultImage}
+              alt={result.title}
+              style={{
+                display: "block",
+                width: "auto",
+                height: "min(30vh, 240px)",
+                maxWidth: "100%",
+                objectFit: "contain",
+                margin: "0 auto 4px",
+              }}
+            />
+          )}
           <div style={{ fontSize: 30, fontWeight: 900, color: ink }}>
             {market === "fi" ? "Testin tulos ✨" : market === "en" ? "Test Result ✨" : "Результат теста ✨"}
           </div>
