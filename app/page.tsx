@@ -361,6 +361,8 @@ type TestDefinition = {
   descriptionFi: string;
   reward: number;
   kind: TestKind;
+  // Если задано — тест виден только пользователям этого пола.
+  gender?: "boy" | "girl";
   questions: TestQuestion[];
 };
 
@@ -1304,6 +1306,7 @@ const TESTS: TestDefinition[] = [
   },
   {
     id: "green-red-flag-men",
+    gender: "boy",
     title:
       market === "fi"
         ? "Vihreä lippu vai punainen lippu? (Miehille)"
@@ -1460,6 +1463,7 @@ const TESTS: TestDefinition[] = [
   },
   {
     id: "green-red-flag-women",
+    gender: "girl",
     title:
       market === "fi"
         ? "Vihreä lippu vai punainen lippu? (Naisille)"
@@ -14741,7 +14745,9 @@ function TestsScreen({
   theme,
   initialTestId,
   onInitialTestConsumed,
+  gender,
 }: {
+  gender?: "boy" | "girl" | null;
   completedTestIds: string[];
   onBack: () => void;
   onCompleteTest: (test: TestDefinition, answers: number[]) => Promise<void>;
@@ -14924,7 +14930,7 @@ if (!activeTestId) {
         </div>
       </div>
 
-      {TESTS.map((test) => {
+      {TESTS.filter((test) => !test.gender || !gender || test.gender === gender).map((test) => {
         const completed = completedTestIds.includes(test.id);
 
         return (
@@ -24920,7 +24926,9 @@ return {
 
 
 
-const allTestIds = TESTS.map((item) => item.id);
+const allTestIds = TESTS.filter(
+  (item) => !item.gender || !appState.profile.gender || item.gender === appState.profile.gender
+).map((item) => item.id);
 const nextCompletedTestIds = alreadyCompleted
   ? appState.completedTestIds
   : [...appState.completedTestIds, test.id];
@@ -25318,6 +25326,7 @@ showPaywall={() => {
     theme={theme}
     initialTestId={testsInitialId}
     onInitialTestConsumed={() => setTestsInitialId(null)}
+    gender={appState.profile.gender}
   />
 )}
 
