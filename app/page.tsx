@@ -1310,15 +1310,20 @@ const TESTS: TestDefinition[] = [
   {
     id: "green-red-flag-men",
     gender: "boy",
+    resultImages: [
+      "/images/tests/flag-men-red.webp",
+      "/images/tests/flag-men-mixed.webp",
+      "/images/tests/flag-men-green.webp",
+    ],
     title:
       market === "fi"
-        ? "Vihreä lippu vai punainen lippu? (Miehille)"
+        ? "Vihreä lippu vai punainen lippu?"
         : market === "ru"
-        ? "Зелёный флаг или красный флаг? (для мужчин)"
-        : "Green Flag or Red Flag? (For Men)",
-    titleRu: "Зелёный флаг или красный флаг? (для мужчин)",
-    titleEn: "Green Flag or Red Flag? (For Men)",
-    titleFi: "Vihreä lippu vai punainen lippu? (Miehille)",
+        ? "Зелёный флаг или красный флаг?"
+        : "Green Flag or Red Flag?",
+    titleRu: "Зелёный флаг или красный флаг?",
+    titleEn: "Green Flag or Red Flag?",
+    titleFi: "Vihreä lippu vai punainen lippu?",
     description:
       market === "fi"
         ? "Rehellinen testi siitä, millaista käytöstä tuot suhteeseen — luottamusta rakentavaa vai sitä murentavaa."
@@ -1474,13 +1479,13 @@ const TESTS: TestDefinition[] = [
     ],
     title:
       market === "fi"
-        ? "Vihreä lippu vai punainen lippu? (Naisille)"
+        ? "Vihreä lippu vai punainen lippu?"
         : market === "ru"
-        ? "Зелёный флаг или красный флаг? (для женщин)"
-        : "Green Flag or Red Flag? (For Women)",
-    titleRu: "Зелёный флаг или красный флаг? (для женщин)",
-    titleEn: "Green Flag or Red Flag? (For Women)",
-    titleFi: "Vihreä lippu vai punainen lippu? (Naisille)",
+        ? "Зелёный флаг или красный флаг?"
+        : "Green Flag or Red Flag?",
+    titleRu: "Зелёный флаг или красный флаг?",
+    titleEn: "Green Flag or Red Flag?",
+    titleFi: "Vihreä lippu vai punainen lippu?",
     description:
       market === "fi"
         ? "Rehellinen testi siitä, millaista käytöstä tuot suhteeseen — luottamusta rakentavaa vai sitä murentavaa."

@@ -12,7 +12,14 @@ export const TEST_IDS = [
   "trust-level",
   "love-language",
   "personality-strengths",
+  // Тест показывается только своему полу (TestDefinition.gender в
+  // app/page.tsx) — каждый пользователь может пройти лишь один из двух.
+  "green-red-flag-men",
+  "green-red-flag-women",
 ] as const;
+// Сколько тестов нужно пройти для бонуса "все тесты": общие + один
+// гендерный тест (второй пользователю недоступен).
+export const REQUIRED_TEST_COUNT = TEST_IDS.length - 1;
 
 export const POLL_REWARD = 60;
 // 14 тем опросов, каждая даёт пару "boy-<key>"/"girl-<key>" (см. POLL_THEMES
