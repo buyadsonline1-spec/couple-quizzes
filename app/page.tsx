@@ -10735,53 +10735,57 @@ function MainMenu({
         <div style={{ fontSize: 20, color: accent, flexShrink: 0 }}>→</div>
       </button>
 
-      <button
-        type="button"
-        onClick={onOpenGreenFlagTest}
-        style={{
-          ...cardBaseStyle(),
-          width: "100%",
-          padding: 16,
-          marginBottom: 12,
-          textAlign: "left",
-          cursor: "pointer",
-          border: "1px solid rgba(255,255,255,0.4)",
-          background: isDark
-            ? "linear-gradient(135deg, rgba(255,110,110,0.18), rgba(110,220,150,0.16))"
-            : "linear-gradient(135deg, rgba(255,110,110,0.22), rgba(110,220,150,0.20))",
-          display: "flex",
-          alignItems: "center",
-          gap: 12,
-        }}
-      >
-        <div style={{ fontSize: 30, flexShrink: 0 }}>🚩</div>
+      {!appState.completedTestIds.some(
+        (id) => id === "green-red-flag-men" || id === "green-red-flag-women"
+      ) && (
+        <button
+          type="button"
+          onClick={onOpenGreenFlagTest}
+          style={{
+            ...cardBaseStyle(),
+            width: "100%",
+            padding: 16,
+            marginBottom: 12,
+            textAlign: "left",
+            cursor: "pointer",
+            border: "1px solid rgba(255,255,255,0.4)",
+            background: isDark
+              ? "linear-gradient(135deg, rgba(255,110,110,0.18), rgba(110,220,150,0.16))"
+              : "linear-gradient(135deg, rgba(255,110,110,0.22), rgba(110,220,150,0.20))",
+            display: "flex",
+            alignItems: "center",
+            gap: 12,
+          }}
+        >
+          <div style={{ fontSize: 30, flexShrink: 0 }}>🚩</div>
 
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontSize: 15, fontWeight: 900, color: ink }}>
-            {getMarket() === "fi"
-              ? "Oletko vihreä vai punainen lippu?"
-              : getMarket() === "en"
-                ? "Are you a green flag or a red flag?"
-                : "Ты грин флаг или ред флаг?"}
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontSize: 15, fontWeight: 900, color: ink }}>
+              {getMarket() === "fi"
+                ? "Oletko vihreä vai punainen lippu?"
+                : getMarket() === "en"
+                  ? "Are you a green flag or a red flag?"
+                  : "Ты грин флаг или ред флаг?"}
+            </div>
+            <div
+              style={{
+                marginTop: 2,
+                fontSize: 12.5,
+                color: muted,
+                lineHeight: 1.35,
+              }}
+            >
+              {getMarket() === "fi"
+                ? "Rehellinen testi omasta käytöksestäsi suhteessa"
+                : getMarket() === "en"
+                  ? "An honest test about your own relationship behavior"
+                  : "Честный тест про твоё поведение в отношениях"}
+            </div>
           </div>
-          <div
-            style={{
-              marginTop: 2,
-              fontSize: 12.5,
-              color: muted,
-              lineHeight: 1.35,
-            }}
-          >
-            {getMarket() === "fi"
-              ? "Rehellinen testi omasta käytöksestäsi suhteessa"
-              : getMarket() === "en"
-                ? "An honest test about your own relationship behavior"
-                : "Честный тест про твоё поведение в отношениях"}
-          </div>
-        </div>
 
-        <div style={{ fontSize: 20, color: accent, flexShrink: 0 }}>→</div>
-      </button>
+          <div style={{ fontSize: 20, color: accent, flexShrink: 0 }}>→</div>
+        </button>
+      )}
 
       <button
         type="button"
@@ -21042,7 +21046,6 @@ const t = market === "fi" ? TEXT_FI : market === "en" ? TEXT_EN : TEXT_RU;
               уменьшается при покупках, например вещей для питомца) —
               см. supabase/lifetime_points_stat.sql. */}
           <StatRow label={t.profile.totalPoints} value={soloPointsLifetime} />
-          <StatRow label={t.profile.currentBalance} value={points} />
         </div>
       </div>
 
