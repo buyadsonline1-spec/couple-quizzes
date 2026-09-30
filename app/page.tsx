@@ -18098,6 +18098,11 @@ function PetFaceBody({ species }: { species: PetSpecies }) {
   );
 }
 
+// Временно скрываем полки магазина питомца "Шапки", "Аксессуары" и
+// "Куртки" (остаются "В руках" и "Комната") — пока они дорабатываются.
+// Уже купленные/надетые вещи продолжают отображаться на питомце.
+const SHOW_HIDDEN_PET_SHOP_SECTIONS = false;
+
 // Аксессуары рисуются поверх лица одним и тем же набором координат
 // для всех видов (голова у всех центрирована примерно в той же
 // области холста) — не идеально точная подгонка под каждый силуэт,
@@ -20034,13 +20039,19 @@ function PetScreen({
           внутри себя раздвигает всю сетку шире экрана. На десктопе
           это незаметно, а на iPhone (Safari) даёт видимый сдвиг всего
           экрана вбок при открытии питомца. */}
-      {renderShopSection("hat", "🎩", market === "fi" ? "Hatut" : market === "en" ? "Hats" : "Шапки")}
-      {renderShopSection(
-        "accessory",
-        "🎀",
-        market === "fi" ? "Asusteet" : market === "en" ? "Accessories" : "Аксессуары"
-      )}
-      {renderShopSection("jacket", "🧥", market === "fi" ? "Takit" : market === "en" ? "Jackets" : "Куртки")}
+      {/* Шапки/аксессуары/куртки временно скрыты с полок (пока дорабатываем)
+          — код и данные на месте, чтобы вернуть, достаточно поставить
+          SHOW_HIDDEN_PET_SHOP_SECTIONS = true (рядом с PetScreen). */}
+      {SHOW_HIDDEN_PET_SHOP_SECTIONS &&
+        renderShopSection("hat", "🎩", market === "fi" ? "Hatut" : market === "en" ? "Hats" : "Шапки")}
+      {SHOW_HIDDEN_PET_SHOP_SECTIONS &&
+        renderShopSection(
+          "accessory",
+          "🎀",
+          market === "fi" ? "Asusteet" : market === "en" ? "Accessories" : "Аксессуары"
+        )}
+      {SHOW_HIDDEN_PET_SHOP_SECTIONS &&
+        renderShopSection("jacket", "🧥", market === "fi" ? "Takit" : market === "en" ? "Jackets" : "Куртки")}
       {renderShopSection(
         "held",
         "🎈",
