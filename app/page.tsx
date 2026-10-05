@@ -14185,12 +14185,16 @@ function HeartClickerGameScreen({
 
   const ROUND_SECONDS = 15;
 
-  type Phase = "intro" | "playing" | "result" | "leaderboard";
+  type Phase = "intro" | "countdown" | "playing" | "result" | "leaderboard";
   const [phase, setPhase] = useState<Phase>("intro");
+  // "3…2…1…Поехали!" перед раундом — раньше "Начать" сразу запускало
+  // 15-секундный таймер, и первая секунда-две уходила на то, чтобы
+  // сориентироваться и найти сердце пальцем, а не на реальные тапы.
+  const [countdownValue, setCountdownValue] = useState(3);
   const [taps, setTaps] = useState(0);
   const [timeLeft, setTimeLeft] = useState(ROUND_SECONDS);
   const [heartScale, setHeartScale] = useState(1);
-  const [bursts, setBursts] = useState<{ id: number; x: number; y: number }[]>([]);
+  const [bursts, setBursts] = useState<{ id: number; x: number; y: number; label: string }[]>([]);
   const [result, setResult] = useState<{
     taps: number;
     pointsAwarded: number;
@@ -14211,10 +14215,12 @@ function HeartClickerGameScreen({
 
   const tapsRef = useRef(0);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const countdownTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
+      if (countdownTimerRef.current) clearInterval(countdownTimerRef.current);
     };
   }, []);
 
@@ -14301,6 +14307,27 @@ function HeartClickerGameScreen({
     setResult(null);
     setErrorReason(null);
     setBursts([]);
+    setPhase("countdown");
+    setCountdownValue(3);
+
+    if (countdownTimerRef.current) clearInterval(countdownTimerRef.current);
+    countdownTimerRef.current = setInterval(() => {
+      setCountdownValue((prev) => {
+        if (prev <= 1) {
+          if (countdownTimerRef.current) clearInterval(countdownTimerRef.current);
+          // Короткая пауза на "Поехали!" перед тем, как реально
+          // переключиться на playing — иначе countdownValue=0 и смена
+          // фазы происходят в одном тике и текст "Поехали!" ни разу не
+          // успевает отрисоваться.
+          setTimeout(beginTapping, 500);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 600);
+  }
+
+  function beginTapping() {
     setPhase("playing");
 
     if (timerRef.current) clearInterval(timerRef.current);
@@ -14319,15 +14346,21 @@ function HeartClickerGameScreen({
   function handleTap(e: React.MouseEvent<HTMLButtonElement>) {
     if (phase !== "playing") return;
     tapsRef.current += 1;
-    setTaps(tapsRef.current);
-    setHeartScale(1.18);
-    setTimeout(() => setHeartScale(1), 90);
+    const nextTaps = tapsRef.current;
+    setTaps(nextTaps);
+    // Каждый 10й тап — чуть более заметный отклик (крупнее масштаб +
+    // "🔥 комбо" вместо обычного "+2"), чтобы частый тап ощущался
+    // ценнее редкого, а не просто быстрее набирал то же самое "+2".
+    const isMilestone = nextTaps % 10 === 0;
+    setHeartScale(isMilestone ? 1.3 : 1.18);
+    setTimeout(() => setHeartScale(1), isMilestone ? 140 : 90);
 
     const rect = e.currentTarget.getBoundingClientRect();
     const id = Date.now() + Math.random();
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
-    setBursts((prev) => [...prev, { id, x, y }]);
+    const label = isMilestone ? `🔥 ${nextTaps}` : "+2";
+    setBursts((prev) => [...prev, { id, x, y, label }]);
     setTimeout(() => {
       setBursts((prev) => prev.filter((b) => b.id !== id));
     }, 650);
@@ -14483,6 +14516,46 @@ function HeartClickerGameScreen({
     );
   }
 
+  if (phase === "countdown") {
+    return (
+      <div
+        style={{
+          padding: 16,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          height: "100dvh",
+          boxSizing: "border-box",
+        }}
+      >
+        <div
+          key={countdownValue}
+          style={{
+            fontSize: 96,
+            fontWeight: 900,
+            color: accent,
+            animation: "heartClickerCountdownPulse 0.6s ease-out",
+          }}
+        >
+          {countdownValue > 0
+            ? countdownValue
+            : market === "fi"
+              ? "Mene!"
+              : market === "en"
+                ? "Go!"
+                : "Поехали!"}
+        </div>
+        <style>{`
+          @keyframes heartClickerCountdownPulse {
+            0% { opacity: 0; transform: scale(0.6); }
+            40% { opacity: 1; transform: scale(1.15); }
+            100% { opacity: 1; transform: scale(1); }
+          }
+        `}</style>
+      </div>
+    );
+  }
+
   if (phase === "playing") {
     const progress = ((ROUND_SECONDS - timeLeft) / ROUND_SECONDS) * 100;
     return (
@@ -14564,14 +14637,14 @@ function HeartClickerGameScreen({
                   position: "absolute",
                   left: burst.x,
                   top: burst.y,
-                  fontSize: 20,
+                  fontSize: burst.label.startsWith("🔥") ? 26 : 20,
                   fontWeight: 900,
                   color: "#ff5c8a",
                   pointerEvents: "none",
                   animation: "heartClickerBurst 0.65s ease-out forwards",
                 }}
               >
-                +2
+                {burst.label}
               </div>
             ))}
           </button>
