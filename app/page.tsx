@@ -22409,19 +22409,48 @@ useEffect(() => {
 // Раньше пол сохранялся только в localStorage — на iOS каждая
 // переустановка тестового билда стирала его, и экран выбора пола
 // всплывал заново при каждом запуске (см. supabase/
-// profile_gender_persist.sql). Сохраняем на сервере тоже; ошибку
-// здесь намеренно не показываем пользователю — экран уже переключён
-// локально, а bootstrap при следующем запуске просто попробует снова
-// получить пустой gender и спросит ещё раз, не более того.
-async function persistGenderSelection(gender: "boy" | "girl") {
+// profile_gender_persist.sql). Сохраняем на сервере тоже.
+//
+// gender-select — почти всегда самый первый экран, с которым
+// взаимодействует новый пользователь, то есть срабатывает в первую
+// же секунду-две после холодного старта — ровно то самое узкое окно,
+// где на iOS getInitDataAsync() ещё может не дождаться
+// onAuthStateChange (см. комментарий в lib/platform.ts) даже со своим
+// одним повтором через 400мс. Раньше это тихо проваливалось навсегда
+// (комментарий ниже рассчитывал на повторный запрос при следующем
+// bootstrap, но реального повторного PUSH'а на сервер при этом не
+// было — только чтение, поэтому экран выбора пола мог всплывать
+// заново при каждом запуске). Теперь настойчиво повторяем попытку
+// сохранения — несколько раз с паузой, а не один раз с мгновенным
+// отказом.
+async function persistGenderSelection(gender: "boy" | "girl", attempt = 0): Promise<void> {
   const initData = await getInitDataAsync();
-  if (!initData) return;
+  if (!initData) {
+    if (attempt < 5) {
+      await new Promise((resolve) => setTimeout(resolve, 600));
+      return persistGenderSelection(gender, attempt + 1);
+    }
+    console.error("persistGenderSelection: no initData after retries");
+    return;
+  }
 
-  fetch("/api/profile/update-gender", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ initData, gender }),
-  }).catch((error) => console.error("update-gender error:", error));
+  try {
+    const response = await fetch("/api/profile/update-gender", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ initData, gender }),
+    });
+    if (!response.ok && attempt < 5) {
+      await new Promise((resolve) => setTimeout(resolve, 600));
+      return persistGenderSelection(gender, attempt + 1);
+    }
+  } catch (error) {
+    console.error("update-gender error:", error);
+    if (attempt < 5) {
+      await new Promise((resolve) => setTimeout(resolve, 600));
+      return persistGenderSelection(gender, attempt + 1);
+    }
+  }
 }
 
 
@@ -24327,6 +24356,14 @@ if (genderFromDb === "boy" || genderFromDb === "girl") {
     profile: { ...prev.profile, gender: genderFromDb },
   }));
   setScreen((prev) => (prev === "gender-select" ? "menu" : prev));
+} else if (saved.profile.gender === "boy" || saved.profile.gender === "girl") {
+  // Самолечение: локально пол уже выбран, а сервер его почему-то не
+  // знает — значит самая первая попытка persistGenderSelection() в
+  // своё время не долетела (см. комментарий там). Bootstrap здесь
+  // гарантированно идёт уже ПОСЛЕ восстановления Supabase-сессии, так
+  // что initData точно готов — дожимаем сохранение сейчас, а не ждём
+  // ещё один запуск приложения.
+  persistGenderSelection(saved.profile.gender);
 }
 
 if (startParam?.startsWith("ref_")) {
