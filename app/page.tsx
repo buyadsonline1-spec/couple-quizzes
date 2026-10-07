@@ -2969,15 +2969,19 @@ const GAMES: Game[] = [
     questions: [],
   },
 
-    {
-    id: "90-questions",
-    title: market === "fi" ? "90 kysymystä" : market === "en" ? "90 Questions" : "90 вопросов",
+  // "90 вопросов" заменена на квиз-дуэль по просьбе — карта и её
+  // контент (LoveQuestionsGameScreen, LOVE_QUESTIONS) не удалены,
+  // просто больше не в списке, тот же принцип, что и у "Я никогда
+  // не..." выше.
+  {
+    id: "sync-quiz",
+    title: market === "fi" ? "Kuka tuntee kenet paremmin?" : market === "en" ? "Who Knows Who Better?" : "Кто кого знает лучше?",
     description:
       market === "fi"
-        ? "Satunnaisia syviä kysymyksiä rakkaudesta, tunteista ja suhteista."
+        ? "6 kysymystä kahdelle — vastatkaa samaan aikaan ja katsokaa, kuinka moni meni yhteen."
         : market === "en"
-          ? "Random deep questions about love, feelings, and relationships."
-          : "Случайные глубокие вопросы про любовь, чувства и отношения.",
+          ? "6 questions for two — both answer at once, see how many match."
+          : "6 вопросов на двоих — отвечаете одновременно и смотрите, сколько совпало.",
     reward: 0,
     questions: [],
   },
@@ -12538,6 +12542,17 @@ if (activeGame?.id === "heart-clicker") {
   );
 }
 
+if (activeGame?.id === "sync-quiz") {
+  return (
+    <SyncQuizGameScreen
+      onBack={() => setActiveGameId(null)}
+      onClaimStepReward={onClaimStepReward}
+      t={t}
+      theme={theme}
+    />
+  );
+}
+
 
   if (finished && activeGame) {
     const total = activeGame.questions.length;
@@ -12997,6 +13012,619 @@ function shuffle<T>(array: T[]): T[] {
   return copy;
 }
 
+
+type SyncQuizQuestion = {
+  id: string;
+  textRu: string;
+  textEn: string;
+  textFi: string;
+  optionsRu: string[];
+  optionsEn: string[];
+  optionsFi: string[];
+};
+
+// "Кто кого знает лучше?" — пул вопросов для квиз-дуэли (см.
+// SyncQuizGameScreen ниже). Сервер (start_pair_quiz_duel) выбирает 6
+// случайных индексов из этого массива и хранит только их — текст
+// живёт на клиенте, тот же принцип, что и у вопроса дня.
+const SYNC_QUIZ_QUESTIONS: SyncQuizQuestion[] = [
+  {
+    id: "friday-night",
+    textRu: "Идеальный вечер пятницы — это…",
+    textEn: "The ideal Friday night is…",
+    textFi: "Täydellinen perjantai-ilta on…",
+    optionsRu: ["Дома с сериалом", "В гостях у друзей", "Свидание в городе", "Активный отдых"],
+    optionsEn: ["Home with a show", "At friends' place", "A date downtown", "Something active"],
+    optionsFi: ["Kotona sarjan ääressä", "Kavereilla kylässä", "Treffit kaupungilla", "Jotain aktiivista"],
+  },
+  {
+    id: "million",
+    textRu: "Если бы у нас был лишний миллион — на что бы потратили?",
+    textEn: "If we had a spare million — what would we spend it on?",
+    textFi: "Jos meillä olisi ylimääräinen miljoona — mihin käyttäisimme sen?",
+    optionsRu: ["Путешествия", "Жильё", "Накопления", "Исполнение мечты каждого"],
+    optionsEn: ["Travel", "Housing", "Savings", "Each other's dream project"],
+    optionsFi: ["Matkustamiseen", "Asuntoon", "Säästöihin", "Kummankin unelmaan"],
+  },
+  {
+    id: "vacation-planner",
+    textRu: "Кто в паре обычно решает, куда поехать в отпуск?",
+    textEn: "Who usually decides where we go on vacation?",
+    textFi: "Kuka yleensä päättää, minne lähdemme lomalle?",
+    optionsRu: ["Я", "Партнёр", "Решаем вместе", "Как получится"],
+    optionsEn: ["Me", "My partner", "We decide together", "Whatever happens"],
+    optionsFi: ["Minä", "Kumppanini", "Päätämme yhdessä", "Miten sattuu"],
+  },
+  {
+    id: "our-food",
+    textRu: "Какая еда реально наша?",
+    textEn: "What food is really \"us\"?",
+    textFi: "Mikä ruoka on oikeasti \"meidän juttumme\"?",
+    optionsRu: ["Пицца", "Суши", "Домашняя кухня", "Фастфуд"],
+    optionsEn: ["Pizza", "Sushi", "Home cooking", "Fast food"],
+    optionsFi: ["Pizza", "Sushi", "Kotiruoka", "Pikaruoka"],
+  },
+  {
+    id: "evening-pick",
+    textRu: "Что бы вы выбрали на вечер?",
+    textEn: "What would you pick for the evening?",
+    textFi: "Minkä valitsisitte illaksi?",
+    optionsRu: ["Кино", "Прогулку", "Готовку вместе", "Игру или настолку"],
+    optionsEn: ["A movie", "A walk", "Cooking together", "A game"],
+    optionsFi: ["Leffan", "Kävelyn", "Yhdessä ruoanlaiton", "Pelin"],
+  },
+  {
+    id: "make-up",
+    textRu: "Как вы обычно миритесь после ссоры?",
+    textEn: "How do you usually make up after a fight?",
+    textFi: "Miten yleensä sovitte riidan jälkeen?",
+    optionsRu: ["Обнимашки", "Серьёзный разговор", "Даём друг другу время", "Шуткой/юмором"],
+    optionsEn: ["A hug", "A real talk", "Give each other space", "With a joke"],
+    optionsFi: ["Halauksella", "Kunnon keskustelulla", "Annamme tilaa", "Vitsillä"],
+  },
+  {
+    id: "mornings",
+    textRu: "Какое утро у нас типичное?",
+    textEn: "What's a typical morning for us?",
+    textFi: "Millainen on tyypillinen aamumme?",
+    optionsRu: ["Долгие сборы", "Быстро и чётко", "Кофе и тишина", "Полный хаос"],
+    optionsEn: ["Slow and long", "Quick and sharp", "Coffee and silence", "Total chaos"],
+    optionsFi: ["Hidas ja pitkä", "Nopea ja jämäkkä", "Kahvia ja hiljaisuutta", "Täyttä kaaosta"],
+  },
+  {
+    id: "pet",
+    textRu: "Если бы завели питомца — то кого?",
+    textEn: "If we got a pet — what would it be?",
+    textFi: "Jos ottaisimme lemmikin — mikä se olisi?",
+    optionsRu: ["Собаку", "Кошку", "Что-то экзотичное", "Никого"],
+    optionsEn: ["A dog", "A cat", "Something exotic", "No pet"],
+    optionsFi: ["Koiran", "Kissan", "Jotain eksoottista", "Ei mitään"],
+  },
+  {
+    id: "dream-vacation",
+    textRu: "Идеальный отпуск — это…",
+    textEn: "The ideal vacation is…",
+    textFi: "Täydellinen loma on…",
+    optionsRu: ["Пляж", "Новый город", "Горы и природа", "Ничего не делать дома"],
+    optionsEn: ["A beach", "A new city", "Mountains and nature", "Doing nothing at home"],
+    optionsFi: ["Ranta", "Uusi kaupunki", "Vuoret ja luonto", "Kotona lorvimista"],
+  },
+  {
+    id: "date-initiative",
+    textRu: "Кто чаще проявляет инициативу на свидание?",
+    textEn: "Who usually initiates a date?",
+    textFi: "Kuka yleensä ehdottaa treffejä?",
+    optionsRu: ["Я", "Партнёр", "Поровну", "Уже никто 😄"],
+    optionsEn: ["Me", "My partner", "Both equally", "Nobody anymore 😄"],
+    optionsFi: ["Minä", "Kumppanini", "Tasapuolisesti", "Ei kumpikaan enää 😄"],
+  },
+  {
+    id: "romantic",
+    textRu: "Что для нас романтичнее?",
+    textEn: "What feels more romantic to us?",
+    textFi: "Kumpi tuntuu meistä romanttisemmalta?",
+    optionsRu: ["Цветы", "Тёплые слова", "Подарок", "Время вместе"],
+    optionsEn: ["Flowers", "Kind words", "A gift", "Time together"],
+    optionsFi: ["Kukat", "Lämpimät sanat", "Lahja", "Yhteinen aika"],
+  },
+  {
+    id: "movie-genre",
+    textRu: "Какой жанр мы бы выбрали вместе?",
+    textEn: "What genre would we pick together?",
+    textFi: "Minkä genren valitsisimme yhdessä?",
+    optionsRu: ["Комедию", "Романтику", "Ужасы", "Боевик"],
+    optionsEn: ["Comedy", "Romance", "Horror", "Action"],
+    optionsFi: ["Komedian", "Romantiikan", "Kauhun", "Toiminnan"],
+  },
+  {
+    id: "cooking-often",
+    textRu: "Сколько раз в неделю мы готовим дома?",
+    textEn: "How often do we cook at home per week?",
+    textFi: "Kuinka usein viikossa laitamme ruokaa kotona?",
+    optionsRu: ["Почти каждый день", "Иногда", "Редко", "Почти никогда"],
+    optionsEn: ["Almost daily", "Sometimes", "Rarely", "Almost never"],
+    optionsFi: ["Melkein päivittäin", "Joskus", "Harvoin", "Melkein ei koskaan"],
+  },
+  {
+    id: "surprise-day-off",
+    textRu: "Неожиданный свободный день — чем займёмся?",
+    textEn: "A surprise day off — what do we do?",
+    textFi: "Yllättävä vapaapäivä — mitä teemme?",
+    optionsRu: ["Выспимся", "Поедем куда-то", "Встретимся с друзьями", "Займёмся делами по дому"],
+    optionsEn: ["Sleep in", "Go somewhere", "See friends", "House projects"],
+    optionsFi: ["Nukumme pitkään", "Lähdemme jonnekin", "Tapaamme kavereita", "Kotihommia"],
+  },
+  {
+    id: "fight-topic",
+    textRu: "Самый частый повод для ссоры у нас?",
+    textEn: "Our most common reason to argue?",
+    textFi: "Yleisin riitamme aihe?",
+    optionsRu: ["Быт", "Мало времени вместе", "Деньги", "Мелочи"],
+    optionsEn: ["Chores", "Not enough time together", "Money", "Little things"],
+    optionsFi: ["Kotityöt", "Liian vähän yhteistä aikaa", "Raha", "Pienet asiat"],
+  },
+  {
+    id: "gift-type",
+    textRu: "Какой подарок больше всего порадует?",
+    textEn: "What kind of gift would make us happiest?",
+    textFi: "Millainen lahja ilahduttaisi eniten?",
+    optionsRu: ["Что-то практичное", "Впечатления", "Что-то сентиментальное", "Сертификат/деньги"],
+    optionsEn: ["Something practical", "An experience", "Something sentimental", "A gift card/cash"],
+    optionsFi: ["Jotain käytännöllistä", "Elämyksen", "Jotain tunteikasta", "Lahjakortin/rahaa"],
+  },
+  {
+    id: "compliments",
+    textRu: "Как часто мы говорим друг другу комплименты?",
+    textEn: "How often do we compliment each other?",
+    textFi: "Kuinka usein complimentoimme toisiamme?",
+    optionsRu: ["Каждый день", "Часто", "Иногда", "Редко"],
+    optionsEn: ["Every day", "Often", "Sometimes", "Rarely"],
+    optionsFi: ["Joka päivä", "Usein", "Joskus", "Harvoin"],
+  },
+  {
+    id: "party-size",
+    textRu: "Идеальная компания в гостях — это…",
+    textEn: "The ideal gathering size is…",
+    textFi: "Ihanteellinen porukan koko on…",
+    optionsRu: ["Только мы вдвоём", "2-4 человека", "Большая компания", "Без разницы"],
+    optionsEn: ["Just the two of us", "2-4 people", "A big group", "Doesn't matter"],
+    optionsFi: ["Vain me kaksi", "2-4 henkeä", "Iso porukka", "Sama se"],
+  },
+  {
+    id: "planner",
+    textRu: "Кто из нас лучше планирует?",
+    textEn: "Who's the better planner of us two?",
+    textFi: "Kumpi meistä suunnittelee paremmin?",
+    optionsRu: ["Я", "Партнёр", "Оба одинаково хорошо", "Никто 😄"],
+    optionsEn: ["Me", "My partner", "Both equally", "Neither of us 😄"],
+    optionsFi: ["Minä", "Kumppanini", "Molemmat yhtä hyvin", "Ei kumpikaan 😄"],
+  },
+  {
+    id: "rainy-evening",
+    textRu: "Любимый способ провести вечер в дождь?",
+    textEn: "Favorite way to spend a rainy evening?",
+    textFi: "Suosikkitapa viettää sateinen ilta?",
+    optionsRu: ["Плед и кино", "Книга", "Готовка", "Просто поспать"],
+    optionsEn: ["Blanket and a movie", "A book", "Cooking", "Just sleep"],
+    optionsFi: ["Peitto ja leffa", "Kirja", "Ruoanlaitto", "Nukkuminen"],
+  },
+];
+
+function syncQuizQuestionText(q: SyncQuizQuestion, market: Market): string {
+  return market === "fi" ? q.textFi : market === "en" ? q.textEn : q.textRu;
+}
+
+function syncQuizQuestionOptions(q: SyncQuizQuestion, market: Market): string[] {
+  return market === "fi" ? q.optionsFi : market === "en" ? q.optionsEn : q.optionsRu;
+}
+
+type SyncQuizPositionState = {
+  position: number;
+  myAnswerIndex: number | null;
+  partnerAnswerIndex: number | null;
+};
+
+// "Кто кого знает лучше?" — квиз-дуэль на 6 вопросов, заменяет в списке
+// игр "90 вопросов" (см. SYNC_QUIZ_QUESTIONS выше). Оба партнёра
+// отвечают каждый в своём темпе — не обязательно быть в сети
+// одновременно: ответивший первым просто видит "Ждём партнёра" и
+// лёгкий поллинг (тот же принцип 3-4 секунды, что и в чате Знакомств),
+// сервер сравнивает ответы и в state всегда знает, кто на каком
+// вопросе. Очки — тем же механизмом, что и у старых "90 вопросов"
+// (onClaimStepReward, по одному разу за ключ sync-quiz:<duelId>:<pos>).
+function SyncQuizGameScreen({
+  onBack,
+  onClaimStepReward,
+  t,
+  theme,
+}: {
+  onBack: () => void;
+  onClaimStepReward: (key: string) => Promise<boolean>;
+  t: any;
+  // Undefined на iOS (тема там не включена) — читается как "light".
+  theme?: "light" | "dark";
+}) {
+  const market = getMarket();
+  const isDark = theme === "dark";
+  const ink = isDark ? "#e6d4f0" : "#1f1d3a";
+  const muted = isDark ? "#c9b3e0" : "#5a5378";
+  const accent = isDark ? "#ff9ec4" : "#ff5c8a";
+
+  type Phase = "loading" | "no-pair" | "error" | "question" | "waiting" | "reveal" | "results";
+  const [phase, setPhase] = useState<Phase>("loading");
+  const [duelId, setDuelId] = useState<string | null>(null);
+  const [poolIndices, setPoolIndices] = useState<number[]>([]);
+  const [positions, setPositions] = useState<SyncQuizPositionState[]>([]);
+  const [position, setPosition] = useState(0);
+  const [selectedOption, setSelectedOption] = useState<number | null>(null);
+  const [submitting, setSubmitting] = useState(false);
+
+  const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (pollRef.current) clearInterval(pollRef.current);
+    };
+  }, []);
+
+  function firstIncompletePosition(list: SyncQuizPositionState[]): {
+    index: number;
+    kind: "question" | "waiting" | "done";
+  } {
+    for (let i = 0; i < list.length; i++) {
+      if (list[i].myAnswerIndex === null) return { index: i, kind: "question" };
+      if (list[i].partnerAnswerIndex === null) return { index: i, kind: "waiting" };
+    }
+    return { index: list.length, kind: "done" };
+  }
+
+  async function loadState(id: string) {
+    const initData = await getInitDataAsync();
+    if (!initData) return;
+    const response = await fetch("/api/games/sync-quiz/state", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ initData, duelId: id }),
+    });
+    const data = await response.json();
+    if (!data?.ok) {
+      setPhase("error");
+      return;
+    }
+    setPositions(data.positions ?? []);
+    const next = firstIncompletePosition(data.positions ?? []);
+    setPosition(Math.min(next.index, (data.positions?.length ?? 1) - 1));
+    if (next.kind === "done") setPhase("results");
+    else if (next.kind === "waiting") startPolling(id, next.index);
+    else setPhase("question");
+  }
+
+  function startPolling(id: string, pos: number) {
+    setPhase("waiting");
+    if (pollRef.current) clearInterval(pollRef.current);
+    pollRef.current = setInterval(async () => {
+      const initData = await getInitDataAsync();
+      if (!initData) return;
+      const response = await fetch("/api/games/sync-quiz/state", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ initData, duelId: id }),
+      });
+      const data = await response.json();
+      if (!data?.ok) return;
+      setPositions(data.positions ?? []);
+      const row: SyncQuizPositionState | undefined = data.positions?.[pos];
+      if (row && row.partnerAnswerIndex !== null) {
+        if (pollRef.current) clearInterval(pollRef.current);
+        onClaimStepReward(`sync-quiz:${id}:${pos}`);
+        setPhase("reveal");
+      }
+    }, 3000);
+  }
+
+  async function beginDuel() {
+    setPhase("loading");
+    const initData = await getInitDataAsync();
+    if (!initData) {
+      setPhase("error");
+      return;
+    }
+    const startResponse = await fetch("/api/games/sync-quiz/start", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ initData, poolSize: SYNC_QUIZ_QUESTIONS.length }),
+    });
+    const startData = await startResponse.json();
+    if (!startData?.ok) {
+      setPhase(startData?.reason === "no-pair" ? "no-pair" : "error");
+      return;
+    }
+    setDuelId(startData.duelId);
+    setPoolIndices(startData.poolIndices ?? []);
+    await loadState(startData.duelId);
+  }
+
+  useEffect(() => {
+    beginDuel();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  async function handlePick(optionIndex: number) {
+    if (submitting || !duelId) return;
+    setSelectedOption(optionIndex);
+    setSubmitting(true);
+
+    const initData = await getInitDataAsync();
+    if (!initData) {
+      setSubmitting(false);
+      return;
+    }
+
+    const response = await fetch("/api/games/sync-quiz/answer", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        initData,
+        duelId,
+        questionPosition: position,
+        answerIndex: optionIndex,
+      }),
+    });
+    const data = await response.json();
+    setSubmitting(false);
+
+    if (!data?.ok) return;
+
+    setPositions((prev) =>
+      prev.map((p) =>
+        p.position === position
+          ? { ...p, myAnswerIndex: optionIndex, partnerAnswerIndex: data.partnerAnswerIndex ?? p.partnerAnswerIndex }
+          : p
+      )
+    );
+
+    if (data.waitingForPartner) {
+      startPolling(duelId, position);
+    } else {
+      onClaimStepReward(`sync-quiz:${duelId}:${position}`);
+      setPhase("reveal");
+    }
+  }
+
+  function handleNextPosition() {
+    setSelectedOption(null);
+    const nextIndex = position + 1;
+    if (nextIndex >= poolIndices.length) {
+      setPhase("results");
+      return;
+    }
+    setPosition(nextIndex);
+    const row = positions[nextIndex];
+    if (row?.myAnswerIndex !== null && row?.myAnswerIndex !== undefined) {
+      if (row.partnerAnswerIndex !== null) {
+        setPhase("reveal");
+      } else {
+        startPolling(duelId!, nextIndex);
+      }
+    } else {
+      setPhase("question");
+    }
+  }
+
+  const title =
+    market === "fi" ? "Kuka tuntee kenet paremmin?" : market === "en" ? "Who Knows Who Better?" : "Кто кого знает лучше?";
+
+  if (phase === "loading") {
+    return (
+      <div style={{ padding: 16, display: "grid", gap: 14 }}>
+        <div style={{ ...cardBaseStyle(), padding: 24, textAlign: "center", color: muted }}>
+          {t.common.loading}
+        </div>
+      </div>
+    );
+  }
+
+  if (phase === "no-pair") {
+    return (
+      <div style={{ padding: 16, display: "grid", gap: 14 }}>
+        <div style={{ ...cardBaseStyle(), padding: 24, textAlign: "center" }}>
+          <div style={{ fontSize: 36 }}>💞</div>
+          <div style={{ marginTop: 8, fontSize: 16, fontWeight: 900, color: ink }}>
+            {market === "fi" ? "Tämä peli on pareille" : market === "en" ? "This game is for couples" : "Эта игра для пары"}
+          </div>
+          <div style={{ marginTop: 6, fontSize: 13, color: muted, lineHeight: 1.4 }}>
+            {market === "fi"
+              ? "Muodosta pari pelataksesi yhdessä."
+              : market === "en"
+                ? "Pair up with your partner to play together."
+                : "Заведи пару, чтобы играть вдвоём."}
+          </div>
+        </div>
+        <button onClick={onBack} style={secondaryButtonStyle}>
+          {t.common.back}
+        </button>
+      </div>
+    );
+  }
+
+  if (phase === "error") {
+    return (
+      <div style={{ padding: 16, display: "grid", gap: 14 }}>
+        <div style={{ ...cardBaseStyle(), padding: 24, textAlign: "center", color: muted }}>
+          {market === "fi" ? "Jotain meni pieleen." : market === "en" ? "Something went wrong." : "Что-то пошло не так."}
+        </div>
+        <button onClick={onBack} style={secondaryButtonStyle}>
+          {t.common.back}
+        </button>
+      </div>
+    );
+  }
+
+  if (phase === "results") {
+    const matches = positions.filter(
+      (p) => p.myAnswerIndex !== null && p.myAnswerIndex === p.partnerAnswerIndex
+    ).length;
+    const total = poolIndices.length || 6;
+    const ratio = matches / total;
+    const resultTitle =
+      ratio >= 0.75
+        ? market === "fi" ? "Olette tiimi! 💚" : market === "en" ? "You're in sync! 💚" : "Вы на одной волне! 💚"
+        : ratio >= 0.4
+          ? market === "fi" ? "Неплохо, но есть куда расти" : market === "en" ? "Good, with room to grow" : "Неплохо, но есть куда расти 🟡"
+          : market === "fi" ? "Ison eron löysitte 🤔" : market === "en" ? "Lots to discover about each other 🤔" : "Много интересного друг о друге узнали 🤔";
+
+    return (
+      <div style={{ padding: 16, display: "grid", gap: 14 }}>
+        <div style={{ ...cardBaseStyle(), padding: 24, textAlign: "center" }}>
+          <div style={{ fontSize: 40 }}>🎉</div>
+          <div style={{ marginTop: 8, fontSize: 28, fontWeight: 900, color: accent }}>
+            {matches} / {total}
+          </div>
+          <div style={{ marginTop: 6, fontSize: 15, fontWeight: 900, color: ink }}>
+            {resultTitle}
+          </div>
+        </div>
+        <button onClick={beginDuel} style={{ ...getPrimaryButtonStyle(isDark), width: "100%" }}>
+          {market === "fi" ? "Pelaa uudelleen" : market === "en" ? "Play again" : "Сыграть ещё раз"}
+        </button>
+        <button onClick={onBack} style={secondaryButtonStyle}>
+          {t.common.back}
+        </button>
+      </div>
+    );
+  }
+
+  const poolIndex = poolIndices[position];
+  const question = poolIndex !== undefined ? SYNC_QUIZ_QUESTIONS[poolIndex] : null;
+  const row = positions[position];
+
+  if (!question) {
+    return (
+      <div style={{ padding: 16, display: "grid", gap: 14 }}>
+        <div style={{ ...cardBaseStyle(), padding: 24, textAlign: "center", color: muted }}>
+          {t.common.loading}
+        </div>
+      </div>
+    );
+  }
+
+  const questionText = syncQuizQuestionText(question, market);
+  const options = syncQuizQuestionOptions(question, market);
+
+  return (
+    <div style={{ padding: 16, display: "grid", gap: 14 }}>
+      <div>
+        <div style={{ fontSize: 12.5, fontWeight: 800, color: muted }}>
+          {title} · {position + 1}/{poolIndices.length}
+        </div>
+      </div>
+
+      <div style={{ ...cardBaseStyle(), padding: 20 }}>
+        <div style={{ fontSize: 18, fontWeight: 900, color: ink, lineHeight: 1.35 }}>
+          {questionText}
+        </div>
+
+        {phase === "waiting" && (
+          <div style={{ marginTop: 16, textAlign: "center", color: muted, fontSize: 13.5 }}>
+            ⏳{" "}
+            {market === "fi"
+              ? "Odotetaan kumppanin vastausta…"
+              : market === "en"
+                ? "Waiting for your partner's answer…"
+                : "Ждём ответ партнёра…"}
+          </div>
+        )}
+
+        {phase === "question" && (
+          <div style={{ display: "grid", gap: 8, marginTop: 16 }}>
+            {options.map((option, index) => (
+              <button
+                key={index}
+                type="button"
+                disabled={submitting}
+                onClick={() => handlePick(index)}
+                style={{
+                  padding: "12px 14px",
+                  borderRadius: 14,
+                  border: "none",
+                  textAlign: "left",
+                  fontSize: 14,
+                  fontWeight: 700,
+                  color: ink,
+                  background: isDark ? "rgba(255,255,255,0.08)" : "rgba(255,255,255,0.5)",
+                  cursor: submitting ? "default" : "pointer",
+                  opacity: submitting ? 0.6 : 1,
+                }}
+              >
+                {option}
+              </button>
+            ))}
+          </div>
+        )}
+
+        {phase === "reveal" && row && (
+          <div style={{ marginTop: 16 }}>
+            {row.myAnswerIndex === row.partnerAnswerIndex ? (
+              <div style={{ textAlign: "center", padding: "10px 0" }}>
+                <div style={{ fontSize: 32 }}>💚</div>
+                <div style={{ marginTop: 4, fontSize: 14, fontWeight: 900, color: ink }}>
+                  {market === "fi" ? "Sama vastaus!" : market === "en" ? "Same answer!" : "Совпало!"}
+                </div>
+                <div style={{ marginTop: 4, fontSize: 13, color: muted }}>
+                  {row.myAnswerIndex !== null ? options[row.myAnswerIndex] : ""}
+                </div>
+              </div>
+            ) : (
+              <div style={{ display: "grid", gap: 8 }}>
+                <div
+                  style={{
+                    padding: "10px 14px",
+                    borderRadius: 14,
+                    background: isDark ? "rgba(255,255,255,0.08)" : "rgba(255,255,255,0.5)",
+                  }}
+                >
+                  <div style={{ fontSize: 11, fontWeight: 800, color: muted }}>
+                    {market === "fi" ? "Sinä" : market === "en" ? "You" : "Ты"}
+                  </div>
+                  <div style={{ fontSize: 14, fontWeight: 700, color: ink }}>
+                    {row.myAnswerIndex !== null ? options[row.myAnswerIndex] : ""}
+                  </div>
+                </div>
+                <div
+                  style={{
+                    padding: "10px 14px",
+                    borderRadius: 14,
+                    background: isDark ? "rgba(255,255,255,0.08)" : "rgba(255,255,255,0.5)",
+                  }}
+                >
+                  <div style={{ fontSize: 11, fontWeight: 800, color: muted }}>
+                    {market === "fi" ? "Kumppani" : market === "en" ? "Partner" : "Партнёр"}
+                  </div>
+                  <div style={{ fontSize: 14, fontWeight: 700, color: ink }}>
+                    {row.partnerAnswerIndex !== null ? options[row.partnerAnswerIndex] : ""}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            <button
+              onClick={handleNextPosition}
+              style={{ ...getPrimaryButtonStyle(isDark), width: "100%", marginTop: 16 }}
+            >
+              {position + 1 >= poolIndices.length
+                ? market === "fi" ? "Tulokset" : market === "en" ? "See results" : "Результаты"
+                : market === "fi" ? "Seuraava" : market === "en" ? "Next" : "Дальше"}
+            </button>
+          </div>
+        )}
+      </div>
+
+      <button onClick={onBack} style={secondaryButtonStyle}>
+        {t.common.back}
+      </button>
+    </div>
+  );
+}
 
 function LoveQuestionsGameScreen({
   reward,
