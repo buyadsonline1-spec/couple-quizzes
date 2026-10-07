@@ -140,6 +140,13 @@ declare
   v_pair_id uuid;
   v_duel record;
   v_existing record;
+  -- Явно типизированные переменные: select ... into <typed var> делает
+  -- assignment cast, а прямое сравнение record.field = bigint-параметр
+  -- падает с "operator does not exist: text = bigint", т.к. реальный
+  -- тип partner_1_telegram_id/partner_2_telegram_id в БД — text (см.
+  -- тот же приём в daily_pair_question_server_side.sql).
+  v_partner_1_telegram_id bigint;
+  v_partner_2_telegram_id bigint;
   v_partner_telegram_id bigint;
   v_partner_answer record;
 begin
@@ -174,10 +181,13 @@ begin
     values (p_duel_id, p_telegram_id, p_question_position, p_answer_index);
   end if;
 
-  select case when p.partner_1_telegram_id = p_telegram_id then p.partner_2_telegram_id else p.partner_1_telegram_id end
-    into v_partner_telegram_id
-    from public.pairs p
-    where p.id = v_pair_id;
+  select partner_1_telegram_id, partner_2_telegram_id
+    into v_partner_1_telegram_id, v_partner_2_telegram_id
+    from public.pairs
+    where id = v_pair_id;
+
+  v_partner_telegram_id :=
+    case when v_partner_1_telegram_id = p_telegram_id then v_partner_2_telegram_id else v_partner_1_telegram_id end;
 
   select * into v_partner_answer
     from public.pair_quiz_duel_answers
@@ -219,6 +229,10 @@ as $$
 declare
   v_pair_id uuid;
   v_duel record;
+  -- См. комментарий в submit_pair_quiz_duel_answer — те же типизированные
+  -- переменные вместо прямого сравнения record.field = bigint.
+  v_partner_1_telegram_id bigint;
+  v_partner_2_telegram_id bigint;
   v_partner_telegram_id bigint;
   v_positions jsonb;
 begin
@@ -232,10 +246,13 @@ begin
     return jsonb_build_object('ok', false, 'reason', 'duel-not-found');
   end if;
 
-  select case when p.partner_1_telegram_id = p_telegram_id then p.partner_2_telegram_id else p.partner_1_telegram_id end
-    into v_partner_telegram_id
-    from public.pairs p
-    where p.id = v_pair_id;
+  select partner_1_telegram_id, partner_2_telegram_id
+    into v_partner_1_telegram_id, v_partner_2_telegram_id
+    from public.pairs
+    where id = v_pair_id;
+
+  v_partner_telegram_id :=
+    case when v_partner_1_telegram_id = p_telegram_id then v_partner_2_telegram_id else v_partner_1_telegram_id end;
 
   select coalesce(jsonb_agg(
       jsonb_build_object(
