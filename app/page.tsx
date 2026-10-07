@@ -13679,6 +13679,7 @@ function SyncQuizGameScreen({
   const [position, setPosition] = useState(0);
   const [selectedOption, setSelectedOption] = useState<number | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [inviteStatus, setInviteStatus] = useState<"idle" | "sending" | "sent">("idle");
 
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
@@ -13809,6 +13810,27 @@ function SyncQuizGameScreen({
     } else {
       onClaimStepReward(`sync-quiz:${duelId}:${position}`);
       setPhase("reveal");
+    }
+  }
+
+  async function handleInvitePartner() {
+    if (inviteStatus === "sending") return;
+    setInviteStatus("sending");
+    const initData = await getInitDataAsync();
+    if (!initData) {
+      setInviteStatus("idle");
+      return;
+    }
+    try {
+      const response = await fetch("/api/games/sync-quiz/invite", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ initData }),
+      });
+      const data = await response.json();
+      setInviteStatus(data?.ok ? "sent" : "idle");
+    } catch {
+      setInviteStatus("idle");
     }
   }
 
@@ -13946,13 +13968,44 @@ function SyncQuizGameScreen({
         </div>
 
         {phase === "waiting" && (
-          <div style={{ marginTop: 16, textAlign: "center", color: muted, fontSize: 13.5 }}>
-            ⏳{" "}
-            {market === "fi"
-              ? "Odotetaan kumppanin vastausta…"
-              : market === "en"
-                ? "Waiting for your partner's answer…"
-                : "Ждём ответ партнёра…"}
+          <div style={{ marginTop: 16, textAlign: "center" }}>
+            <div style={{ color: muted, fontSize: 13.5 }}>
+              ⏳{" "}
+              {market === "fi"
+                ? "Odotetaan kumppanin vastausta…"
+                : market === "en"
+                  ? "Waiting for your partner's answer…"
+                  : "Ждём ответ партнёра…"}
+            </div>
+            <div style={{ marginTop: 4, color: muted, fontSize: 12, lineHeight: 1.4 }}>
+              {market === "fi"
+                ? "Hän ei ehkä tiedä pelistä vielä — kumppanin pitää avata tämä peli Pelit-osiosta vastatakseen."
+                : market === "en"
+                  ? "They might not know yet — your partner needs to open this game from the Games tab to answer."
+                  : "Партнёр, возможно, ещё не знает об игре — ему нужно открыть её в разделе «Игры», чтобы ответить."}
+            </div>
+            <button
+              onClick={handleInvitePartner}
+              disabled={inviteStatus === "sending" || inviteStatus === "sent"}
+              style={{
+                marginTop: 10,
+                border: "none",
+                borderRadius: 999,
+                padding: "8px 16px",
+                fontSize: 12.5,
+                fontWeight: 800,
+                color: inviteStatus === "sent" ? muted : "#fff",
+                background: inviteStatus === "sent" ? (isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.06)") : getPrimaryButtonStyle(isDark).background,
+                cursor: inviteStatus === "sending" || inviteStatus === "sent" ? "default" : "pointer",
+                opacity: inviteStatus === "sending" ? 0.7 : 1,
+              }}
+            >
+              {inviteStatus === "sent"
+                ? market === "fi" ? "✓ Lähetetty" : market === "en" ? "✓ Sent" : "✓ Отправлено"
+                : inviteStatus === "sending"
+                  ? market === "fi" ? "Lähetetään…" : market === "en" ? "Sending…" : "Отправляем…"
+                  : market === "fi" ? "🔔 Muistuta kumppania" : market === "en" ? "🔔 Nudge your partner" : "🔔 Напомнить партнёру"}
+            </button>
           </div>
         )}
 

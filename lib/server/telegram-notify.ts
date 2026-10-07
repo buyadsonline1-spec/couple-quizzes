@@ -59,3 +59,11 @@ export async function sendTelegramMessage(
 export function getDatingAppLink(): string {
   return `https://t.me/${BOT_USERNAME}?startapp=dating`;
 }
+
+// Просто открыть бота/приложение без конкретного startapp-экрана —
+// Mini App всегда открывается на последнем активном разделе ("Игры"
+// остаётся выбранным, если юзер был там), так что отдельный deep-link
+// на конкретную игру не нужен.
+export function getAppLink(): string {
+  return `https://t.me/${BOT_USERNAME}`;
+}
