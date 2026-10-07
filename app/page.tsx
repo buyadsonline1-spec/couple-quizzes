@@ -7093,6 +7093,398 @@ function DatingMatchesScreen({
   );
 }
 
+type DatingIcebreakerQuestion = {
+  id: string;
+  textRu: string;
+  textEn: string;
+  textFi: string;
+  optionsRu: [string, string];
+  optionsEn: [string, string];
+  optionsFi: [string, string];
+};
+
+// "Это или то" — пул вопросов айсбрейкера для чата Знакомств (см.
+// DatingIcebreakerPanel ниже). Та же идея, что и у SYNC_QUIZ_QUESTIONS
+// пары, но бинарный выбор (2 варианта, не 4) и вопросы попроще — это
+// для только что совпавших людей, а не для давно знающей друг друга
+// пары.
+const DATING_ICEBREAKER_QUESTIONS: DatingIcebreakerQuestion[] = [
+  { id: "morning-evening", textRu: "Утро или вечер?", textEn: "Morning or evening?", textFi: "Aamu vai ilta?", optionsRu: ["Утро", "Вечер"], optionsEn: ["Morning", "Evening"], optionsFi: ["Aamu", "Ilta"] },
+  { id: "mountains-sea", textRu: "Горы или море?", textEn: "Mountains or sea?", textFi: "Vuoret vai meri?", optionsRu: ["Горы", "Море"], optionsEn: ["Mountains", "Sea"], optionsFi: ["Vuoret", "Meri"] },
+  { id: "coffee-tea", textRu: "Кофе или чай?", textEn: "Coffee or tea?", textFi: "Kahvi vai tee?", optionsRu: ["Кофе", "Чай"], optionsEn: ["Coffee", "Tea"], optionsFi: ["Kahvi", "Tee"] },
+  { id: "book-movie", textRu: "Книга или фильм?", textEn: "A book or a movie?", textFi: "Kirja vai elokuva?", optionsRu: ["Книга", "Фильм"], optionsEn: ["Book", "Movie"], optionsFi: ["Kirja", "Elokuva"] },
+  { id: "city-nature", textRu: "Город или природа?", textEn: "City or nature?", textFi: "Kaupunki vai luonto?", optionsRu: ["Город", "Природа"], optionsEn: ["City", "Nature"], optionsFi: ["Kaupunki", "Luonto"] },
+  { id: "sweet-salty", textRu: "Сладкое или солёное?", textEn: "Sweet or salty?", textFi: "Makea vai suolainen?", optionsRu: ["Сладкое", "Солёное"], optionsEn: ["Sweet", "Salty"], optionsFi: ["Makea", "Suolainen"] },
+  { id: "summer-winter", textRu: "Лето или зима?", textEn: "Summer or winter?", textFi: "Kesä vai talvi?", optionsRu: ["Лето", "Зима"], optionsEn: ["Summer", "Winter"], optionsFi: ["Kesä", "Talvi"] },
+  { id: "text-call", textRu: "Переписка или звонок?", textEn: "Texting or calling?", textFi: "Viestit vai puhelu?", optionsRu: ["Переписка", "Звонок"], optionsEn: ["Texting", "Calling"], optionsFi: ["Viestit", "Puhelu"] },
+  { id: "dogs-cats", textRu: "Собаки или кошки?", textEn: "Dogs or cats?", textFi: "Koirat vai kissat?", optionsRu: ["Собаки", "Кошки"], optionsEn: ["Dogs", "Cats"], optionsFi: ["Koirat", "Kissat"] },
+  { id: "active-lazy", textRu: "Активный отдых или ленивый день?", textEn: "Active day or a lazy one?", textFi: "Aktiivinen päivä vai laiska päivä?", optionsRu: ["Активный отдых", "Ленивый день"], optionsEn: ["Active day", "Lazy day"], optionsFi: ["Aktiivinen", "Laiska"] },
+  { id: "surprise-plan", textRu: "Сюрпризы или планы заранее?", textEn: "Surprises or planning ahead?", textFi: "Yllätykset vai etukäteissuunnittelu?", optionsRu: ["Сюрпризы", "Планы заранее"], optionsEn: ["Surprises", "Plan ahead"], optionsFi: ["Yllätykset", "Suunnittelu"] },
+  { id: "party-quiet", textRu: "Вечеринка или тихий вечер вдвоём?", textEn: "A party or a quiet night in?", textFi: "Bileet vai rauhallinen ilta kahdestaan?", optionsRu: ["Вечеринка", "Тихий вечер вдвоём"], optionsEn: ["A party", "Quiet night in"], optionsFi: ["Bileet", "Rauhallinen ilta"] },
+  { id: "pizza-sushi", textRu: "Пицца или суши?", textEn: "Pizza or sushi?", textFi: "Pizza vai sushi?", optionsRu: ["Пицца", "Суши"], optionsEn: ["Pizza", "Sushi"], optionsFi: ["Pizza", "Sushi"] },
+  { id: "walk-drive", textRu: "Пешком или на машине?", textEn: "Walking or driving?", textFi: "Kävellen vai autolla?", optionsRu: ["Пешком", "На машине"], optionsEn: ["Walking", "Driving"], optionsFi: ["Kävellen", "Autolla"] },
+  { id: "cook-order", textRu: "Готовить дома или заказать еду?", textEn: "Cook at home or order in?", textFi: "Ruoanlaitto kotona vai tilaus?", optionsRu: ["Готовить", "Заказать"], optionsEn: ["Cook", "Order in"], optionsFi: ["Ruoanlaitto", "Tilaus"] },
+  { id: "early-night", textRu: "Ранняя пташка или сова?", textEn: "Early bird or night owl?", textFi: "Aamuvirkku vai yökyöpeli?", optionsRu: ["Ранняя пташка", "Сова"], optionsEn: ["Early bird", "Night owl"], optionsFi: ["Aamuvirkku", "Yökyöpeli"] },
+  { id: "backpack-allinclusive", textRu: "Рюкзак и приключения или отель all inclusive?", textEn: "Backpacking or an all-inclusive hotel?", textFi: "Reppureissu vai all inclusive -hotelli?", optionsRu: ["Рюкзак и приключения", "Отель all inclusive"], optionsEn: ["Backpacking", "All-inclusive hotel"], optionsFi: ["Reppureissu", "All inclusive"] },
+  { id: "daily-deep", textRu: "Переписываться каждый день понемногу или редко но подолгу?", textEn: "Short messages daily or long ones occasionally?", textFi: "Lyhyet viestit päivittäin vai pitkät harvemmin?", optionsRu: ["Понемногу каждый день", "Редко но подолгу"], optionsEn: ["A little every day", "Rarely but a lot"], optionsFi: ["Vähän joka päivä", "Harvoin mutta paljon"] },
+  { id: "cafe-walk-date", textRu: "Первая встреча — в кафе или на прогулке?", textEn: "First meetup — a café or a walk?", textFi: "Ensitreffit — kahvila vai kävely?", optionsRu: ["Кафе", "Прогулка"], optionsEn: ["A café", "A walk"], optionsFi: ["Kahvila", "Kävely"] },
+  { id: "funny-serious", textRu: "Смешной или серьёзный разговор на первом свидании?", textEn: "Funny or serious conversation on a first date?", textFi: "Hauska vai vakava keskustelu ensitreffeillä?", optionsRu: ["Смешной", "Серьёзный"], optionsEn: ["Funny", "Serious"], optionsFi: ["Hauska", "Vakava"] },
+  { id: "window-aisle", textRu: "В самолёте — у окна или у прохода?", textEn: "On a flight — window or aisle?", textFi: "Lentokoneessa — ikkuna vai käytävä?", optionsRu: ["У окна", "У прохода"], optionsEn: ["Window", "Aisle"], optionsFi: ["Ikkuna", "Käytävä"] },
+  { id: "concert-cinema", textRu: "Концерт или кино?", textEn: "A concert or a movie?", textFi: "Konsertti vai elokuva?", optionsRu: ["Концерт", "Кино"], optionsEn: ["Concert", "Movie"], optionsFi: ["Konsertti", "Elokuva"] },
+  { id: "spontaneous-routine", textRu: "Спонтанность или рутина и стабильность?", textEn: "Spontaneity or routine and stability?", textFi: "Spontaanius vai rutiini ja vakaus?", optionsRu: ["Спонтанность", "Рутина и стабильность"], optionsEn: ["Spontaneity", "Routine"], optionsFi: ["Spontaanius", "Rutiini"] },
+  { id: "gift-time", textRu: "Подарок или время вместе?", textEn: "A gift or time together?", textFi: "Lahja vai yhteinen aika?", optionsRu: ["Подарок", "Время вместе"], optionsEn: ["A gift", "Time together"], optionsFi: ["Lahja", "Yhteinen aika"] },
+];
+
+function datingIcebreakerText(q: DatingIcebreakerQuestion, market: Market): string {
+  return market === "fi" ? q.textFi : market === "en" ? q.textEn : q.textRu;
+}
+
+function datingIcebreakerOptions(q: DatingIcebreakerQuestion, market: Market): [string, string] {
+  return market === "fi" ? q.optionsFi : market === "en" ? q.optionsEn : q.optionsRu;
+}
+
+type DatingIcebreakerPositionState = {
+  position: number;
+  myAnswerIndex: number | null;
+  partnerAnswerIndex: number | null;
+};
+
+// Панель "Это или то" внутри DatingChatScreen — тот же state machine,
+// что и у SyncQuizGameScreen (question -> waiting -> reveal ->
+// results), но scoped по match_id вместо pair_id и с бинарным
+// (0/1) выбором вместо 4 вариантов. См. supabase/dating_icebreaker_game.sql.
+function DatingIcebreakerPanel({
+  matchId,
+  myTelegramId,
+  onClose,
+  t,
+  theme,
+}: {
+  matchId: string;
+  myTelegramId: number | null;
+  onClose: () => void;
+  t: any;
+  // Undefined на iOS (тема там не включена) — читается как "light".
+  theme?: "light" | "dark";
+}) {
+  const market = getMarket();
+  const isDark = theme === "dark";
+  const ink = isDark ? "#e6d4f0" : "#1f1d3a";
+  const muted = isDark ? "#c9b3e0" : "#5a5378";
+  const accent = isDark ? "#ff9ec4" : "#ff5c8a";
+  const primaryGradient = isDark
+    ? "linear-gradient(135deg, #5f3dc4, #a3407e)"
+    : "linear-gradient(135deg, #8f6bff, #ff76ba)";
+
+  type Phase = "loading" | "error" | "question" | "waiting" | "reveal" | "results";
+  const [phase, setPhase] = useState<Phase>("loading");
+  const [gameId, setGameId] = useState<string | null>(null);
+  const [poolIndices, setPoolIndices] = useState<number[]>([]);
+  const [positions, setPositions] = useState<DatingIcebreakerPositionState[]>([]);
+  const [position, setPosition] = useState(0);
+  const [submitting, setSubmitting] = useState(false);
+
+  const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (pollRef.current) clearInterval(pollRef.current);
+    };
+  }, []);
+
+  function firstIncompletePosition(list: DatingIcebreakerPositionState[]): {
+    index: number;
+    kind: "question" | "waiting" | "done";
+  } {
+    for (let i = 0; i < list.length; i++) {
+      if (list[i].myAnswerIndex === null) return { index: i, kind: "question" };
+      if (list[i].partnerAnswerIndex === null) return { index: i, kind: "waiting" };
+    }
+    return { index: list.length, kind: "done" };
+  }
+
+  async function loadState(id: string) {
+    const initData = await getInitDataAsync();
+    if (!initData) return;
+    const response = await fetch("/api/dating/icebreaker/state", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ initData, gameId: id }),
+    });
+    const data = await response.json();
+    if (!data?.ok) {
+      setPhase("error");
+      return;
+    }
+    setPositions(data.positions ?? []);
+    const next = firstIncompletePosition(data.positions ?? []);
+    setPosition(Math.min(next.index, (data.positions?.length ?? 1) - 1));
+    if (next.kind === "done") setPhase("results");
+    else if (next.kind === "waiting") startPolling(id, next.index);
+    else setPhase("question");
+  }
+
+  function startPolling(id: string, pos: number) {
+    setPhase("waiting");
+    if (pollRef.current) clearInterval(pollRef.current);
+    pollRef.current = setInterval(async () => {
+      const initData = await getInitDataAsync();
+      if (!initData) return;
+      const response = await fetch("/api/dating/icebreaker/state", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ initData, gameId: id }),
+      });
+      const data = await response.json();
+      if (!data?.ok) return;
+      setPositions(data.positions ?? []);
+      const row: DatingIcebreakerPositionState | undefined = data.positions?.[pos];
+      if (row && row.partnerAnswerIndex !== null) {
+        if (pollRef.current) clearInterval(pollRef.current);
+        setPhase("reveal");
+      }
+    }, 3000);
+  }
+
+  async function beginGame() {
+    setPhase("loading");
+    const initData = await getInitDataAsync();
+    if (!initData) {
+      setPhase("error");
+      return;
+    }
+    const startResponse = await fetch("/api/dating/icebreaker/start", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ initData, matchId, poolSize: DATING_ICEBREAKER_QUESTIONS.length }),
+    });
+    const startData = await startResponse.json();
+    if (!startData?.ok) {
+      setPhase("error");
+      return;
+    }
+    setGameId(startData.gameId);
+    setPoolIndices(startData.poolIndices ?? []);
+    await loadState(startData.gameId);
+  }
+
+  useEffect(() => {
+    beginGame();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  async function handlePick(optionIndex: number) {
+    if (submitting || !gameId) return;
+    setSubmitting(true);
+
+    const initData = await getInitDataAsync();
+    if (!initData) {
+      setSubmitting(false);
+      return;
+    }
+
+    const response = await fetch("/api/dating/icebreaker/answer", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ initData, gameId, questionPosition: position, answerIndex: optionIndex }),
+    });
+    const data = await response.json();
+    setSubmitting(false);
+
+    if (!data?.ok) return;
+
+    setPositions((prev) =>
+      prev.map((p) =>
+        p.position === position
+          ? { ...p, myAnswerIndex: optionIndex, partnerAnswerIndex: data.partnerAnswerIndex ?? p.partnerAnswerIndex }
+          : p
+      )
+    );
+
+    if (data.waitingForPartner) {
+      startPolling(gameId, position);
+    } else {
+      setPhase("reveal");
+    }
+  }
+
+  function handleNextPosition() {
+    const nextIndex = position + 1;
+    if (nextIndex >= poolIndices.length) {
+      setPhase("results");
+      return;
+    }
+    setPosition(nextIndex);
+    const row = positions[nextIndex];
+    if (row?.myAnswerIndex !== null && row?.myAnswerIndex !== undefined) {
+      if (row.partnerAnswerIndex !== null) {
+        setPhase("reveal");
+      } else {
+        startPolling(gameId!, nextIndex);
+      }
+    } else {
+      setPhase("question");
+    }
+  }
+
+  const title =
+    market === "fi" ? "Tämä vai tuo?" : market === "en" ? "This or That?" : "Это или то?";
+
+  let body: React.ReactNode;
+
+  if (phase === "loading") {
+    body = <div style={{ color: muted, fontSize: 13 }}>{t.common.loading}</div>;
+  } else if (phase === "error") {
+    body = (
+      <div style={{ color: muted, fontSize: 13, textAlign: "center" }}>
+        {market === "fi" ? "Jotain meni pieleen." : market === "en" ? "Something went wrong." : "Что-то пошло не так."}
+      </div>
+    );
+  } else if (phase === "results") {
+    const matches = positions.filter(
+      (p) => p.myAnswerIndex !== null && p.myAnswerIndex === p.partnerAnswerIndex
+    ).length;
+    const total = poolIndices.length || 6;
+    body = (
+      <div style={{ textAlign: "center" }}>
+        <div style={{ fontSize: 34 }}>🎉</div>
+        <div style={{ marginTop: 6, fontSize: 24, fontWeight: 900, color: accent }}>
+          {matches} / {total}
+        </div>
+        <div style={{ marginTop: 4, fontSize: 13, color: muted }}>
+          {market === "fi" ? "osumaa — hyvä juttu puhua!" : market === "en" ? "matches — great conversation starter!" : "совпадений — есть о чём поговорить!"}
+        </div>
+        <button onClick={beginGame} style={{ ...getPrimaryButtonStyle(isDark), width: "100%", marginTop: 16 }}>
+          {market === "fi" ? "Pelaa uudelleen" : market === "en" ? "Play again" : "Сыграть ещё раз"}
+        </button>
+      </div>
+    );
+  } else {
+    const poolIndex = poolIndices[position];
+    const question = poolIndex !== undefined ? DATING_ICEBREAKER_QUESTIONS[poolIndex] : null;
+    const row = positions[position];
+
+    if (!question) {
+      body = <div style={{ color: muted, fontSize: 13 }}>{t.common.loading}</div>;
+    } else {
+      const questionText = datingIcebreakerText(question, market);
+      const options = datingIcebreakerOptions(question, market);
+
+      body = (
+        <>
+          <div style={{ fontSize: 11.5, fontWeight: 800, color: muted }}>
+            {position + 1}/{poolIndices.length}
+          </div>
+          <div style={{ marginTop: 4, fontSize: 17, fontWeight: 900, color: ink, lineHeight: 1.3 }}>
+            {questionText}
+          </div>
+
+          {phase === "waiting" && (
+            <div style={{ marginTop: 14, textAlign: "center", color: muted, fontSize: 13 }}>
+              ⏳{" "}
+              {market === "fi"
+                ? "Odotetaan kumppanin vastausta…"
+                : market === "en"
+                  ? "Waiting for their answer…"
+                  : "Ждём ответ собеседника…"}
+            </div>
+          )}
+
+          {phase === "question" && (
+            <div style={{ display: "flex", gap: 8, marginTop: 14 }}>
+              {options.map((option, index) => (
+                <button
+                  key={index}
+                  type="button"
+                  disabled={submitting}
+                  onClick={() => handlePick(index)}
+                  style={{
+                    flex: 1,
+                    padding: "12px 10px",
+                    borderRadius: 14,
+                    border: "none",
+                    textAlign: "center",
+                    fontSize: 13.5,
+                    fontWeight: 800,
+                    color: ink,
+                    background: isDark ? "rgba(255,255,255,0.1)" : "rgba(255,255,255,0.55)",
+                    cursor: submitting ? "default" : "pointer",
+                    opacity: submitting ? 0.6 : 1,
+                  }}
+                >
+                  {option}
+                </button>
+              ))}
+            </div>
+          )}
+
+          {phase === "reveal" && row && (
+            <div style={{ marginTop: 14 }}>
+              {row.myAnswerIndex === row.partnerAnswerIndex ? (
+                <div style={{ textAlign: "center", padding: "6px 0" }}>
+                  <div style={{ fontSize: 26 }}>💚</div>
+                  <div style={{ marginTop: 2, fontSize: 13, fontWeight: 900, color: ink }}>
+                    {market === "fi" ? "Sama vastaus!" : market === "en" ? "Same answer!" : "Совпало!"}{" "}
+                    {row.myAnswerIndex !== null ? options[row.myAnswerIndex] : ""}
+                  </div>
+                </div>
+              ) : (
+                <div style={{ display: "flex", gap: 8 }}>
+                  <div style={{ flex: 1, padding: "8px 10px", borderRadius: 12, background: isDark ? "rgba(255,255,255,0.08)" : "rgba(255,255,255,0.5)", textAlign: "center" }}>
+                    <div style={{ fontSize: 10, fontWeight: 800, color: muted }}>
+                      {market === "fi" ? "Sinä" : market === "en" ? "You" : "Ты"}
+                    </div>
+                    <div style={{ fontSize: 12.5, fontWeight: 700, color: ink }}>
+                      {row.myAnswerIndex !== null ? options[row.myAnswerIndex] : ""}
+                    </div>
+                  </div>
+                  <div style={{ flex: 1, padding: "8px 10px", borderRadius: 12, background: isDark ? "rgba(255,255,255,0.08)" : "rgba(255,255,255,0.5)", textAlign: "center" }}>
+                    <div style={{ fontSize: 10, fontWeight: 800, color: muted }}>
+                      {match_partner_label(market)}
+                    </div>
+                    <div style={{ fontSize: 12.5, fontWeight: 700, color: ink }}>
+                      {row.partnerAnswerIndex !== null ? options[row.partnerAnswerIndex] : ""}
+                    </div>
+                  </div>
+                </div>
+              )}
+              <button
+                onClick={handleNextPosition}
+                style={{ ...getPrimaryButtonStyle(isDark), width: "100%", marginTop: 14 }}
+              >
+                {position + 1 >= poolIndices.length
+                  ? market === "fi" ? "Tulokset" : market === "en" ? "See results" : "Результаты"
+                  : market === "fi" ? "Seuraava" : market === "en" ? "Next" : "Дальше"}
+              </button>
+            </div>
+          )}
+        </>
+      );
+    }
+  }
+
+  return (
+    <div style={{ flex: 1, minHeight: 0, overflowY: "auto", padding: 16, display: "grid", gap: 12, alignContent: "start" }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+        <div style={{ fontSize: 15, fontWeight: 900, color: ink }}>
+          🎮 {title}
+        </div>
+        <button
+          onClick={onClose}
+          style={{ border: "none", background: "none", fontSize: 13, fontWeight: 800, color: accent, cursor: "pointer" }}
+        >
+          {market === "fi" ? "Takaisin chattiin" : market === "en" ? "Back to chat" : "Назад к переписке"}
+        </button>
+      </div>
+      <div style={{ ...cardBaseStyle(), padding: 18 }}>{body}</div>
+    </div>
+  );
+}
+
+function match_partner_label(market: Market): string {
+  return market === "fi" ? "Hän" : market === "en" ? "Them" : "Собеседник";
+}
+
 function DatingChatScreen({
   match,
   messages,
@@ -7146,6 +7538,10 @@ function DatingChatScreen({
   const [text, setText] = useState("");
   const [showMenu, setShowMenu] = useState(false);
   const [confirmAction, setConfirmAction] = useState<"block" | "report" | null>(null);
+  // Айсбрейкер "Это или то" — закрывает разрыв "мэтч есть, а написать
+  // первым неловко"; доступен всем (даже без Premium, в отличие от
+  // самой переписки) — см. DatingIcebreakerPanel ниже.
+  const [showIcebreaker, setShowIcebreaker] = useState(false);
   const scrollBottomRef = useRef<HTMLDivElement | null>(null);
 
   async function handleSend() {
@@ -7220,6 +7616,23 @@ function DatingChatScreen({
         <div style={{ fontSize: 15, fontWeight: 900, color: ink }}>
           {match.partnerDisplayName}
         </div>
+        <button
+          onClick={() => setShowIcebreaker((prev) => !prev)}
+          aria-label={t.dating.icebreakerGameButton}
+          style={{
+            marginLeft: "auto",
+            border: "none",
+            background: showIcebreaker ? primaryGradient : "none",
+            borderRadius: 999,
+            fontSize: 18,
+            color: showIcebreaker ? "#fff" : muted,
+            cursor: "pointer",
+            width: 34,
+            height: 34,
+          }}
+        >
+          🎮
+        </button>
         <button
           onClick={() => setShowMenu((prev) => !prev)}
           style={{
@@ -7407,7 +7820,15 @@ function DatingChatScreen({
         </div>
       )}
 
-      {locked ? (
+      {showIcebreaker ? (
+        <DatingIcebreakerPanel
+          matchId={match.matchId}
+          myTelegramId={myTelegramId}
+          onClose={() => setShowIcebreaker(false)}
+          t={t}
+          theme={theme}
+        />
+      ) : locked ? (
         <div style={{ flex: 1, padding: 16, display: "grid", gap: 12, alignContent: "start" }}>
           <div style={{ ...cardBaseStyle(), padding: 18, textAlign: "center" }}>
             <div style={{ fontSize: 30, marginBottom: 6 }}>🔒</div>

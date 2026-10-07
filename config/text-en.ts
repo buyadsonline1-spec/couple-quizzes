@@ -76,6 +76,7 @@ export const TEXT_EN = {
     dailyLimitText: "Come back tomorrow for a fresh limit — or get Premium to browse without limits.",
     dailyLimitUnlockButton: "Remove the limit with Premium",
 
+    icebreakerGameButton: "Icebreaker game",
     likesButton: "Likes",
     likesTitle: "Likes",
     likesHint: "These profiles already liked you — like back to match",

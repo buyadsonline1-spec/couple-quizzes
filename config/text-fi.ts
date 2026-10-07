@@ -80,6 +80,7 @@ export const TEXT_FI = {
     dailyLimitText: "Tule takaisin huomenna, kun raja nollautuu — tai hanki Premium ja selaa rajattomasti.",
     dailyLimitUnlockButton: "Poista raja Premiumilla",
 
+    icebreakerGameButton: "Jäänmurtajapeli",
     likesButton: "Tykkäykset",
     likesTitle: "Tykkäykset",
     likesHint: "Nämä profiilit ovat jo tykänneet sinusta — tykkää takaisin ja saatte osuman",

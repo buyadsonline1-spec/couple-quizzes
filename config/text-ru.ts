@@ -76,6 +76,7 @@ export const TEXT_RU = {
     dailyLimitText: "Возвращайся завтра — лимит обновится. Или оформи Premium и смотри анкеты без ограничений.",
     dailyLimitUnlockButton: "Снять лимит с Premium",
 
+    icebreakerGameButton: "Игра-знакомство",
     likesButton: "Лайки мне",
     likesTitle: "Лайки мне",
     likesHint: "Эти анкеты уже лайкнули тебя — ответь взаимностью",
