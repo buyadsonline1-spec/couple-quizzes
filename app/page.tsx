@@ -6340,6 +6340,7 @@ function DatingSwipeScreen({
   onOpenMatches,
   onEditProfile,
   onOpenLikes,
+  likesCount,
   onOpenBoost,
   onBack,
   swipesRemaining,
@@ -6363,6 +6364,9 @@ function DatingSwipeScreen({
   // "Лайки мне" (тот же компонент, другой источник candidates) кнопка
   // входа в лайки не нужна, поэтому проп опциональный.
   onOpenLikes?: () => void;
+  // Сколько человек лайкнули, а ответа от меня ещё не было — бейдж на
+  // кнопке ❤️ (0/undefined скрывает бейдж совсем).
+  likesCount?: number;
   onOpenBoost?: () => void;
   // Опционально — на основной ленте (корневой экран раздела в нижнем
   // баре) кнопка "назад" не нужна; на "Лайки мне" (вложенный экран)
@@ -6446,9 +6450,32 @@ function DatingSwipeScreen({
             <button
               onClick={onOpenLikes}
               aria-label={t.dating.likesButton}
-              style={iconButtonStyle}
+              style={{ ...iconButtonStyle, position: "relative" }}
             >
               ❤️
+              {!!likesCount && (
+                <span
+                  style={{
+                    position: "absolute",
+                    top: -4,
+                    right: -4,
+                    minWidth: 16,
+                    height: 16,
+                    padding: "0 3px",
+                    borderRadius: 999,
+                    background: "linear-gradient(135deg, #ff6e9c, #ff3d6e)",
+                    color: "#fff",
+                    fontSize: 10,
+                    fontWeight: 900,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    border: "1.5px solid rgba(255,255,255,0.85)",
+                  }}
+                >
+                  {likesCount > 9 ? "9+" : likesCount}
+                </span>
+              )}
             </button>
           )}
           <button onClick={onOpenMatches} style={iconButtonStyle}>
@@ -6894,8 +6921,41 @@ function DatingBoostScreen({
 }
 
 
+// "Непрочитанное" в списке мэтчей — чисто клиентский признак (на
+// сервере нет read_at на сообщениях, заводить ради одной лампочки в
+// списке отдельную таблицу/колонку избыточно): просто помним, когда
+// юзер последний раз ЗАХОДИЛ в чат с конкретным мэтчем, и сравниваем
+// с lastMessage.createdAt, который сервер уже и так отдаёт в
+// get_dating_matches.
+const DATING_CHAT_SEEN_KEY = "dating-chat-last-seen";
+
+function markDatingChatSeen(matchId: string) {
+  try {
+    const raw = window.localStorage.getItem(DATING_CHAT_SEEN_KEY);
+    const map = raw ? JSON.parse(raw) : {};
+    map[matchId] = new Date().toISOString();
+    window.localStorage.setItem(DATING_CHAT_SEEN_KEY, JSON.stringify(map));
+  } catch (error) {
+    console.error("markDatingChatSeen error:", error);
+  }
+}
+
+function isDatingChatUnread(match: DatingMatch, myTelegramId: number | null): boolean {
+  if (!match.lastMessage) return false;
+  if (match.lastMessage.senderTelegramId === myTelegramId) return false;
+  try {
+    const raw = window.localStorage.getItem(DATING_CHAT_SEEN_KEY);
+    const map = raw ? JSON.parse(raw) : {};
+    const lastSeen = map[match.matchId];
+    return !lastSeen || new Date(match.lastMessage.createdAt) > new Date(lastSeen);
+  } catch {
+    return true;
+  }
+}
+
 function DatingMatchesScreen({
   matches,
+  myTelegramId,
   onOpenChat,
   onOpenSwipe,
   onBack,
@@ -6903,6 +6963,7 @@ function DatingMatchesScreen({
   theme,
 }: {
   matches: DatingMatch[];
+  myTelegramId: number | null;
   onOpenChat: (match: DatingMatch) => void;
   onOpenSwipe: () => void;
   onBack: () => void;
@@ -6983,14 +7044,31 @@ function DatingMatchesScreen({
                 )}
               </div>
               <div style={{ minWidth: 0, flex: 1 }}>
-                <div style={{ fontSize: 15, fontWeight: 900, color: ink, marginBottom: 2 }}>
-                  {match.partnerDisplayName}
+                <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 2 }}>
+                  <div style={{ fontSize: 15, fontWeight: 900, color: ink }}>
+                    {match.partnerDisplayName}
+                  </div>
+                  {isDatingChatUnread(match, myTelegramId) && (
+                    <div
+                      style={{
+                        width: 8,
+                        height: 8,
+                        borderRadius: 999,
+                        background: "#ff3d6e",
+                        flexShrink: 0,
+                      }}
+                    />
+                  )}
                 </div>
                 <div
                   style={{
                     fontSize: 12.5,
-                    color: match.lastMessage ? muted : isDark ? "#ff8fc4" : "#ff5ea8",
-                    fontWeight: match.lastMessage ? 400 : 800,
+                    color: !match.lastMessage
+                      ? isDark ? "#ff8fc4" : "#ff5ea8"
+                      : isDatingChatUnread(match, myTelegramId)
+                        ? ink
+                        : muted,
+                    fontWeight: !match.lastMessage || isDatingChatUnread(match, myTelegramId) ? 800 : 400,
                     whiteSpace: "nowrap",
                     overflow: "hidden",
                     textOverflow: "ellipsis",
@@ -10930,12 +11008,16 @@ function BottomNavBar({
   onNavigateTab,
   theme,
   t,
+  datingLikesCount,
 }: {
   active: BottomNavTabId | null;
   onNavigateTab: (tab: BottomNavTabId) => void;
   // Undefined на iOS (тема там не включена) — читается как "light".
   theme?: "light" | "dark";
   t: any;
+  // Бейдж непрочитанных лайков на вкладке Знакомств — 0/undefined
+  // скрывает бейдж совсем.
+  datingLikesCount?: number;
 }) {
   // Раздел Знакомств теперь доступен и на iOS (свайпы, мэтчи, чат —
   // ничего из этого не завязано на способ оплаты). Платные действия
@@ -11005,15 +11087,41 @@ function BottomNavBar({
                 cursor: "pointer",
               }}
             >
-              <span
-                style={{
-                  fontSize: 19,
-                  lineHeight: 1,
-                  transform: isActive ? "scale(1.12)" : "scale(1)",
-                  transition: "transform 0.2s",
-                }}
-              >
-                {tab.icon}
+              <span style={{ position: "relative", lineHeight: 1 }}>
+                <span
+                  style={{
+                    fontSize: 19,
+                    lineHeight: 1,
+                    display: "inline-block",
+                    transform: isActive ? "scale(1.12)" : "scale(1)",
+                    transition: "transform 0.2s",
+                  }}
+                >
+                  {tab.icon}
+                </span>
+                {tab.id === "dating-swipe" && !!datingLikesCount && (
+                  <span
+                    style={{
+                      position: "absolute",
+                      top: -4,
+                      right: -8,
+                      minWidth: 15,
+                      height: 15,
+                      padding: "0 3px",
+                      borderRadius: 999,
+                      background: "linear-gradient(135deg, #ff6e9c, #ff3d6e)",
+                      color: "#fff",
+                      fontSize: 9.5,
+                      fontWeight: 900,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      border: "1.5px solid rgba(255,255,255,0.85)",
+                    }}
+                  >
+                    {datingLikesCount > 9 ? "9+" : datingLikesCount}
+                  </span>
+                )}
               </span>
               <span
                 style={{
@@ -23609,6 +23717,7 @@ async function handleOpenDatingChat(match: DatingMatch) {
   setActiveChatMessages([]);
   setActiveChatPairProposal(null);
   setScreen("dating-chat");
+  markDatingChatSeen(match.matchId);
 
   loadPairProposalStatus(match.matchId);
 
@@ -24068,6 +24177,23 @@ function dismissPairProposalBanner(matchId: string) {
     return () => clearInterval(intervalId);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [screen, appState.isPremium, activeChatMatch?.matchId]);
+
+  // Бейдж "новых лайков" (BottomNavBar/❤️ в DatingSwipeScreen) — раньше
+  // лайки грузились только когда человек САМ заходил на экран "Лайки
+  // мне", так что узнать о новом лайке можно было только случайно
+  // туда заглянув. Теперь подгружаем список фоном, пока есть анкета
+  // Знакомств, и периодически освежаем — просмотр самого экрана
+  // "Лайки мне" (loadDatingIncomingLikes) тоже пишет в то же состояние,
+  // так что счётчик там же естественно обнуляется после ответа на лайк
+  // (свайпнутые больше не возвращаются сервером).
+  useEffect(() => {
+    if (!datingProfile) return;
+
+    loadDatingIncomingLikes();
+    const intervalId = setInterval(loadDatingIncomingLikes, 60000);
+    return () => clearInterval(intervalId);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [!!datingProfile]);
 
   const [user, setUser] = useState<TgUser | null>(null);
   const [showDailyBonus, setShowDailyBonus] = useState(false);
@@ -25810,6 +25936,7 @@ showPaywall={() => {
       loadDatingIncomingLikes();
       setScreen("dating-likes");
     }}
+    likesCount={datingIncomingLikes.length}
     onOpenBoost={() => {
       loadDatingBoostStatus();
       setScreen("dating-boost");
@@ -25865,6 +25992,7 @@ showPaywall={() => {
   <DatingMatchesScreen
     t={t}
     matches={datingMatches}
+    myTelegramId={user?.id ?? null}
     onOpenChat={handleOpenDatingChat}
     onOpenSwipe={() => setScreen("dating-swipe")}
     onBack={() => setScreen("dating-swipe")}
@@ -26309,6 +26437,7 @@ showPaywall={() => {
     t={t}
     active={bottomNavTab}
     theme={theme}
+    datingLikesCount={datingIncomingLikes.length}
     onNavigateTab={(tab) => {
       if (tab === "dating-swipe") {
         // У Знакомств своя логика входа (анкета есть/нет ещё, подгрузка
