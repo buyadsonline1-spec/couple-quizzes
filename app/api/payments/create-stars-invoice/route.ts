@@ -22,7 +22,7 @@ const PLANS: Record<
     title: "Суперлайк",
     description: "Анкета сразу окажется в топе списка «Лайки мне» у получателя, с отдельным уведомлением",
     label: "Суперлайк",
-    amount: 50,
+    amount: 25,
     requiresTarget: true,
   },
   dating_boost_30m: {
