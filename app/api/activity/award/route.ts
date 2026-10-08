@@ -26,10 +26,18 @@ type ActivityType = "test" | "poll" | "game" | "game-step" | "completion";
 // клиент присылает лишь activityType+id, никогда явно сумму. Так даже
 // прямой вызов этого API (в обход UI) ограничен конечным набором реально
 // существующих активностей с их настоящей ценой, а не произвольным числом.
+// sync-quiz (pair_quiz_duel.sql) награждает за каждый вопрос дуэли
+// ключом "sync-quiz:<duelId>:<position>" — duelId случайный uuid на
+// каждую дуэль, его нельзя перечислить заранее как bottle:b1..b16 и
+// т.п. Вместо статического списка проверяем формат здесь и реальное
+// состояние дуэли в БД ниже (resolveReward сам ничего не трогает в
+// базе — только резолвит, что именно проверять).
+const SYNC_QUIZ_STEP_KEY = /^sync-quiz:([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}):([0-5])$/i;
+
 function resolveReward(
   activityType: ActivityType,
   id: string
-): { rewardKey: string; delta: number } | null {
+): { rewardKey: string; delta: number; syncQuizCheck?: { duelId: string; position: number } } | null {
   if (activityType === "test") {
     if (!TEST_IDS.includes(id as (typeof TEST_IDS)[number])) return null;
     return { rewardKey: `test:${id}`, delta: TEST_REWARD };
@@ -41,6 +49,15 @@ function resolveReward(
   }
 
   if (activityType === "game-step") {
+    const syncQuizMatch = id.match(SYNC_QUIZ_STEP_KEY);
+    if (syncQuizMatch) {
+      return {
+        rewardKey: `game-step:${id}`,
+        delta: GAME_STEP_REWARD,
+        syncQuizCheck: { duelId: syncQuizMatch[1], position: Number(syncQuizMatch[2]) },
+      };
+    }
+
     if (!VALID_GAME_STEP_KEYS.has(id)) return null;
     return { rewardKey: `game-step:${id}`, delta: GAME_STEP_REWARD };
   }
@@ -127,6 +144,45 @@ export async function POST(request: NextRequest) {
 
       if (!pairRow?.partner_2_telegram_id) {
         pairId = null;
+      }
+    }
+
+    // sync-quiz: duelId непредсказуем, поэтому нельзя доверять одному
+    // только формату ключа (иначе любой мог бы прислать
+    // "sync-quiz:<случайный-uuid>:0" и фармить очки бесконечно) —
+    // проверяем, что дуэль реально принадлежит паре звонящего и что
+    // на эту позицию реально ответили ОБА (т.е. reveal уже наступил).
+    if (resolved.syncQuizCheck) {
+      const { duelId, position } = resolved.syncQuizCheck;
+
+      const { data: duelRow, error: duelError } = await supabaseAdmin
+        .from("pair_quiz_duels")
+        .select("pair_id")
+        .eq("id", duelId)
+        .maybeSingle();
+
+      if (duelError) {
+        console.error("ACTIVITY AWARD sync-quiz duel lookup error:", duelError);
+        return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+      }
+
+      if (!duelRow || !pairId || duelRow.pair_id !== pairId) {
+        return NextResponse.json({ awarded: false, reason: "invalid-activity" }, { status: 400 });
+      }
+
+      const { count, error: answerCountError } = await supabaseAdmin
+        .from("pair_quiz_duel_answers")
+        .select("telegram_id", { count: "exact", head: true })
+        .eq("duel_id", duelId)
+        .eq("question_position", position);
+
+      if (answerCountError) {
+        console.error("ACTIVITY AWARD sync-quiz answers count error:", answerCountError);
+        return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+      }
+
+      if ((count ?? 0) < 2) {
+        return NextResponse.json({ awarded: false, reason: "not-revealed-yet" }, { status: 400 });
       }
     }
 
