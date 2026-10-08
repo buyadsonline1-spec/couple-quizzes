@@ -6086,7 +6086,8 @@ function DatingProfileScreen({
       !displayName.trim() ||
       !Number.isInteger(ageNumber) ||
       ageNumber < 18 ||
-      !city.trim()
+      !city.trim() ||
+      !photoUrl
     ) {
       setError(t.dating.saveError);
       return;
@@ -6585,6 +6586,7 @@ function DatingSwipeScreen({
                 <img
                   src={current.photoUrl}
                   alt=""
+                  decoding="async"
                   style={{
                     position: "absolute",
                     inset: 0,
@@ -7041,6 +7043,8 @@ function DatingMatchesScreen({
                   <img
                     src={match.partnerPhotoUrl}
                     alt=""
+                    loading="lazy"
+                    decoding="async"
                     style={{ width: "100%", height: "100%", objectFit: "cover" }}
                   />
                 ) : (
@@ -24752,14 +24756,53 @@ async function handleSaveDatingProfile(profile: {
   return true;
 }
 
+// Исходники с телефона легко весят 3-5МБ — отдаются как есть в
+// Supabase Storage без какого-либо ресайза на сервере, поэтому в
+// ленте свайпов каждая карточка реально качает оригинал. Сжимаем на
+// клиенте до разумного размера перед загрузкой (fallback — исходный
+// файл, если canvas/createImageBitmap почему-то недоступны).
+async function compressImageForUpload(
+  file: File,
+  maxDimension = 1280,
+  quality = 0.82
+): Promise<File> {
+  try {
+    const bitmap = await createImageBitmap(file);
+    const scale = Math.min(1, maxDimension / Math.max(bitmap.width, bitmap.height));
+    const width = Math.max(1, Math.round(bitmap.width * scale));
+    const height = Math.max(1, Math.round(bitmap.height * scale));
+
+    const canvas = document.createElement("canvas");
+    canvas.width = width;
+    canvas.height = height;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return file;
+    ctx.drawImage(bitmap, 0, 0, width, height);
+
+    const blob: Blob | null = await new Promise((resolve) =>
+      canvas.toBlob((b) => resolve(b), "image/jpeg", quality)
+    );
+    if (!blob || blob.size >= file.size) return file;
+
+    return new File([blob], file.name.replace(/\.\w+$/, "") + ".jpg", {
+      type: "image/jpeg",
+    });
+  } catch (error) {
+    console.error("compressImageForUpload error:", error);
+    return file;
+  }
+}
+
 async function handleUploadDatingPhoto(file: File): Promise<string | null> {
   const initData = await getInitDataAsync();
   if (!initData) return null;
 
   try {
+    const compressed = await compressImageForUpload(file);
+
     const form = new FormData();
     form.append("initData", initData);
-    form.append("file", file);
+    form.append("file", compressed);
 
     const response = await fetch("/api/dating/photo", {
       method: "POST",
