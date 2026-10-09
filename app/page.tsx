@@ -6799,7 +6799,16 @@ function DatingBoostScreen({
   const isDark = theme === "dark";
   const ink = isDark ? "#e6d4f0" : "#1f1d3a";
   const muted = isDark ? "#c9b3e0" : "#5a5378";
-  const isActive = !!boostedUntil && new Date(boostedUntil).getTime() > Date.now();
+  // Без этого тика экран, оставленный открытым, навсегда показывал бы
+  // "буст активен до HH:MM" даже после истечения — пересчитываем раз в
+  // 30с, а не читаем Date.now() прямо в рендере (нестабильно между
+  // рендерами и не триггерит обновление само по себе).
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => {
+    const interval = setInterval(() => setNow(Date.now()), 30000);
+    return () => clearInterval(interval);
+  }, []);
+  const isActive = !!boostedUntil && new Date(boostedUntil).getTime() > now;
   const activeUntilLabel = isActive
     ? new Date(boostedUntil!).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
     : null;
