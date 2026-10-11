@@ -456,6 +456,19 @@ export const TEXT_EN = {
     friendCodeAlreadyAlert: "You've already used an invite code before",
     friendCodeInvalidAlert: "That code wasn't found",
     friendCodeErrorAlert: "Couldn't send the code, try again later",
+    promoBannerTitle: "Promo: 3 friends → a month of Premium",
+    promoBannerSubtitle: "Only October 11-25",
+    promoTitle: "🎁 Invite 3 friends — get Premium",
+    promoDates: "Runs October 11-25, 2026",
+    promoCriteriaHint:
+      "A friend counts once they open the app via your link and complete at least one test or poll.",
+    promoProgressLabel: "Friends counted",
+    promoClaimButton: "Claim a month of Premium",
+    promoClaiming: "Claiming...",
+    promoClaimedTitle: "✅ Premium already claimed",
+    promoClaimedText: "Thanks for inviting friends! Premium is active.",
+    promoClaimSuccessAlert: "Congrats! A month of Premium is now active 🎉",
+    promoClaimErrorAlert: "Couldn't claim the reward. Try again.",
   },
 
   top: {

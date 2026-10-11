@@ -458,6 +458,19 @@ export const TEXT_FI = {
     friendCodeAlreadyAlert: "Olet jo käyttänyt kutsukoodia aiemmin",
     friendCodeInvalidAlert: "Koodia ei löytynyt",
     friendCodeErrorAlert: "Koodin lähetys epäonnistui, yritä myöhemmin uudelleen",
+    promoBannerTitle: "Kampanja: 3 ystävää → kuukausi Premiumia",
+    promoBannerSubtitle: "Vain 11.-25. lokakuuta",
+    promoTitle: "🎁 Kutsu 3 ystävää — saat Premiumin",
+    promoDates: "Voimassa 11.-25. lokakuuta 2026",
+    promoCriteriaHint:
+      "Ystävä lasketaan, kun hän avaa sovelluksen linkkisi kautta ja tekee vähintään yhden testin tai kyselyn.",
+    promoProgressLabel: "Ystäviä laskettu",
+    promoClaimButton: "Lunasta kuukausi Premiumia",
+    promoClaiming: "Lunastetaan...",
+    promoClaimedTitle: "✅ Premium jo lunastettu",
+    promoClaimedText: "Kiitos, että kutsut ystäviä! Premium on aktiivinen.",
+    promoClaimSuccessAlert: "Onneksi olkoon! Kuukausi Premiumia on nyt aktiivinen 🎉",
+    promoClaimErrorAlert: "Palkinnon lunastus epäonnistui. Yritä uudelleen.",
   },
 
   top: {

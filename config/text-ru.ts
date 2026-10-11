@@ -466,6 +466,19 @@ export const TEXT_RU = {
     friendCodeAlreadyAlert: "Вы уже использовали код приглашения раньше",
     friendCodeInvalidAlert: "Такой код не найден",
     friendCodeErrorAlert: "Не удалось отправить код, попробуйте позже",
+    promoBannerTitle: "Акция: 3 друга → Premium на месяц",
+    promoBannerSubtitle: "Только с 11 по 25 октября",
+    promoTitle: "🎁 Приведи 3 друзей — получи Premium",
+    promoDates: "Акция действует с 11 по 25 октября 2026",
+    promoCriteriaHint:
+      "Друг засчитывается, если открыл приложение по твоей ссылке и прошёл хотя бы один тест или опрос.",
+    promoProgressLabel: "Засчитано друзей",
+    promoClaimButton: "Забрать Premium на месяц",
+    promoClaiming: "Забираем...",
+    promoClaimedTitle: "✅ Premium уже получен",
+    promoClaimedText: "Спасибо, что приглашаешь друзей! Premium активен.",
+    promoClaimSuccessAlert: "Поздравляем! Premium на месяц активирован 🎉",
+    promoClaimErrorAlert: "Не удалось забрать награду. Попробуй ещё раз.",
   },
 
   top: {

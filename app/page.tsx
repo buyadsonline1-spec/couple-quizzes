@@ -10890,6 +10890,13 @@ function MenuButton({
 
 
 
+// Акция "3 друга -> Premium на месяц" (11-25.10.2026, см.
+// supabase/referral_promo_oct2026.sql) — конец дня 25.10 по Хельсинки
+// (UTC+3 зимой уже не действует в октябре, но +2 часа запаса ничего
+// не ломает: реальное окно проверяет сервер в RPC, этот таймстамп
+// только решает, показывать ли баннер на главном экране).
+const REFERRAL_PROMO_END_MS = new Date("2026-10-26T00:00:00+03:00").getTime();
+
 function MainMenu({
   points,
   user,
@@ -11260,6 +11267,37 @@ function MainMenu({
 
         <div style={{ fontSize: 20, color: accent, flexShrink: 0 }}>→</div>
       </button>
+
+      {Date.now() < REFERRAL_PROMO_END_MS && (
+        <button
+          type="button"
+          onClick={() => onNavigate("referrals")}
+          style={{
+            ...cardBaseStyle(),
+            width: "100%",
+            padding: 16,
+            marginBottom: 12,
+            textAlign: "left",
+            cursor: "pointer",
+            border: "1px solid rgba(255,196,0,0.4)",
+            background: "linear-gradient(135deg, rgba(255,214,92,0.3), rgba(255,138,92,0.22))",
+            display: "flex",
+            alignItems: "center",
+            gap: 12,
+          }}
+        >
+          <div style={{ fontSize: 30, flexShrink: 0 }}>🎁</div>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontSize: 15, fontWeight: 900, color: ink }}>
+              {t.referrals.promoBannerTitle}
+            </div>
+            <div style={{ marginTop: 2, fontSize: 12.5, color: muted, lineHeight: 1.35 }}>
+              {t.referrals.promoBannerSubtitle}
+            </div>
+          </div>
+          <div style={{ fontSize: 20, color: accent, flexShrink: 0 }}>→</div>
+        </button>
+      )}
 
       {!appState.completedTestIds.some(
         (id) => id === "green-red-flag-men" || id === "green-red-flag-women"
@@ -18483,6 +18521,70 @@ function ReferralsScreen({
   const [friendCode, setFriendCode] = useState("");
   const [claimingCode, setClaimingCode] = useState(false);
 
+  const [promoStatus, setPromoStatus] = useState<{
+    qualifiedCount: number;
+    requiredCount: number;
+    claimed: boolean;
+  } | null>(null);
+  const [claimingPromo, setClaimingPromo] = useState(false);
+
+  async function loadPromoStatus() {
+    const initData = await getInitDataAsync();
+    if (!initData) return;
+    try {
+      const response = await fetch("/api/referral/promo-status", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ initData }),
+      });
+      const data = await response.json();
+      if (data?.ok) {
+        setPromoStatus({
+          qualifiedCount: data.qualifiedCount,
+          requiredCount: data.requiredCount,
+          claimed: data.claimed,
+        });
+      }
+    } catch (error) {
+      console.error("loadPromoStatus error:", error);
+    }
+  }
+
+  useEffect(() => {
+    loadPromoStatus();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  async function handleClaimPromo() {
+    if (claimingPromo) return;
+    setClaimingPromo(true);
+    const initData = await getInitDataAsync();
+    if (!initData) {
+      setClaimingPromo(false);
+      return;
+    }
+    try {
+      const response = await fetch("/api/referral/promo-claim", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ initData }),
+      });
+      const data = await response.json();
+      if (data?.ok) {
+        alert(t.referrals.promoClaimSuccessAlert);
+        setPromoStatus((prev) => (prev ? { ...prev, claimed: true } : prev));
+      } else {
+        alert(t.referrals.promoClaimErrorAlert);
+        await loadPromoStatus();
+      }
+    } catch (error) {
+      console.error("handleClaimPromo error:", error);
+      alert(t.referrals.promoClaimErrorAlert);
+    } finally {
+      setClaimingPromo(false);
+    }
+  }
+
   const handleInvite = async () => {
     if (!user?.id) return;
 
@@ -18571,6 +18673,87 @@ return (
          {t.referrals.title}
       </div>
     </div>
+
+    {promoStatus && (Date.now() < REFERRAL_PROMO_END_MS || promoStatus.claimed) && (
+      <div
+        style={{
+          ...cardBaseStyle(),
+          padding: 18,
+          marginBottom: 14,
+          border: "1px solid rgba(255,196,0,0.4)",
+          background: "linear-gradient(135deg, rgba(255,214,92,0.3), rgba(255,138,92,0.22))",
+        }}
+      >
+        <div style={{ fontSize: 17, fontWeight: 900, color: ink }}>
+          {t.referrals.promoTitle}
+        </div>
+        <div style={{ marginTop: 6, fontSize: 12.5, color: muted, lineHeight: 1.4 }}>
+          {t.referrals.promoDates}
+        </div>
+        <div style={{ marginTop: 4, fontSize: 12, color: muted, lineHeight: 1.4 }}>
+          {t.referrals.promoCriteriaHint}
+        </div>
+
+        {promoStatus.claimed ? (
+          <div style={{ marginTop: 14, textAlign: "center" }}>
+            <div style={{ fontSize: 14, fontWeight: 900, color: ink }}>
+              {t.referrals.promoClaimedTitle}
+            </div>
+            <div style={{ marginTop: 4, fontSize: 12.5, color: muted }}>
+              {t.referrals.promoClaimedText}
+            </div>
+          </div>
+        ) : (
+          <>
+            <div style={{ marginTop: 14 }}>
+              <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12.5, fontWeight: 700, color: label }}>
+                <span>{t.referrals.promoProgressLabel}</span>
+                <span>
+                  {promoStatus.qualifiedCount}/{promoStatus.requiredCount}
+                </span>
+              </div>
+              <div
+                style={{
+                  marginTop: 6,
+                  height: 10,
+                  borderRadius: 999,
+                  background: isDark ? "rgba(255,255,255,0.14)" : "rgba(255,255,255,0.5)",
+                  overflow: "hidden",
+                }}
+              >
+                <div
+                  style={{
+                    height: "100%",
+                    borderRadius: 999,
+                    width: `${Math.min(100, (promoStatus.qualifiedCount / promoStatus.requiredCount) * 100)}%`,
+                    background: "linear-gradient(90deg, #ffd65c, #ff8a5c)",
+                    transition: "width 0.4s ease",
+                  }}
+                />
+              </div>
+            </div>
+
+            <button
+              onClick={handleClaimPromo}
+              disabled={claimingPromo || promoStatus.qualifiedCount < promoStatus.requiredCount}
+              style={{
+                ...getPrimaryButtonStyle(isDark),
+                width: "100%",
+                marginTop: 14,
+                opacity:
+                  claimingPromo || promoStatus.qualifiedCount < promoStatus.requiredCount ? 0.55 : 1,
+                cursor:
+                  claimingPromo || promoStatus.qualifiedCount < promoStatus.requiredCount
+                    ? "not-allowed"
+                    : "pointer",
+              }}
+            >
+              {claimingPromo ? t.referrals.promoClaiming : t.referrals.promoClaimButton}
+            </button>
+          </>
+        )}
+      </div>
+    )}
 
     {/* Основная карточка */}
     <div style={{ ...cardBaseStyle(), padding: 18 }}>
