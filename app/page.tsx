@@ -25863,6 +25863,13 @@ if (!nextPairState.pairId && startParam?.startsWith("invite_")) {
   }
 }
 
+// startapp=referrals — прямая ссылка на "Пригласить друзей" (рассылка
+// про акцию "3 друга -> Premium", см. supabase/referral_promo_oct2026.sql).
+// Только для уже онбордингнутых (saved.profile.gender) — иначе
+// перебивает экран выбора пола у по-настоящему первого визита.
+if (startParam === "referrals" && saved.profile.gender) {
+  setScreen("referrals");
+}
 
 setAppState((prev) => ({
   ...prev,
