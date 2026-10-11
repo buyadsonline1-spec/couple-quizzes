@@ -16073,6 +16073,11 @@ function TestsScreen({
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [answers, setAnswers] = useState<number[]>([]);
   const [finished, setFinished] = useState(false);
+  // Та же пагинация, что и в PollsScreen (POLLS_PER_PAGE) — список из
+  // 4 тестов (3 общих + 1 гендерный грин/ред флаг) на маленьком экране
+  // умещался впритык. При 3 на страницу грин-флаг-тест (последний в
+  // TESTS) естественно уходит на вторую страницу сам, без спецкейса по id.
+  const [testsPage, setTestsPage] = useState(1);
 
   useEffect(() => {
     if (initialTestId) onInitialTestConsumed?.();
@@ -16230,6 +16235,12 @@ async function handleFinish() {
 }
 
 if (!activeTestId) {
+  const visibleTests = TESTS.filter((test) => !test.gender || !gender || test.gender === gender);
+  const TESTS_PER_PAGE = 3;
+  const testsStartIndex = (testsPage - 1) * TESTS_PER_PAGE;
+  const testsTotalPages = Math.ceil(visibleTests.length / TESTS_PER_PAGE);
+  const testsPageItems = visibleTests.slice(testsStartIndex, testsStartIndex + TESTS_PER_PAGE);
+
   return (
     <div style={{ padding: 10, display: "grid", gap: 8 }}>
       <div style={{ ...cardBaseStyle(), padding: 12 }}>
@@ -16241,7 +16252,7 @@ if (!activeTestId) {
         </div>
       </div>
 
-      {TESTS.filter((test) => !test.gender || !gender || test.gender === gender).map((test) => {
+      {testsPageItems.map((test) => {
         const completed = completedTestIds.includes(test.id);
 
         return (
@@ -16343,6 +16354,42 @@ if (!activeTestId) {
           </div>
         );
       })}
+
+      {testsTotalPages > 1 && (
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "1fr 1fr",
+            gap: 10,
+          }}
+        >
+          <button
+            onClick={() => setTestsPage((prev) => Math.max(prev - 1, 1))}
+            disabled={testsPage === 1}
+            style={{
+              ...secondaryButtonStyle,
+              marginTop: 0,
+              opacity: testsPage === 1 ? 0.5 : 1,
+              cursor: testsPage === 1 ? "not-allowed" : "pointer",
+            }}
+          >
+            {market === "fi" ? "← Edellinen" : market === "en" ? "← Previous" : "← Предыдущая"}
+          </button>
+
+          <button
+            onClick={() => setTestsPage((prev) => Math.min(prev + 1, testsTotalPages))}
+            disabled={testsPage === testsTotalPages}
+            style={{
+              ...secondaryButtonStyle,
+              marginTop: 0,
+              opacity: testsPage === testsTotalPages ? 0.5 : 1,
+              cursor: testsPage === testsTotalPages ? "not-allowed" : "pointer",
+            }}
+          >
+            {market === "fi" ? "Seuraava →" : market === "en" ? "Next →" : "Следующая →"}
+          </button>
+        </div>
+      )}
 
       <button
   onClick={onBack}
