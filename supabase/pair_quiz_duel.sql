@@ -91,8 +91,13 @@ begin
       ) done;
 
     if v_answered_positions < array_length(v_duel.pool_indices, 1) then
+      -- isNew:false — продолжение уже существующей дуэли, звонящий
+      -- мог просто повторно открыть экран игры (useEffect на монтировании
+      -- всегда дёргает start). Партнёра тут уведомлять не нужно — он
+      -- уже знает об этой дуэли (иначе откуда бы взялся незавершённый
+      -- duel с его собственными ответами).
       return jsonb_build_object(
-        'ok', true, 'duelId', v_duel.id, 'poolIndices', to_jsonb(v_duel.pool_indices)
+        'ok', true, 'isNew', false, 'duelId', v_duel.id, 'poolIndices', to_jsonb(v_duel.pool_indices)
       );
     end if;
   end if;
@@ -110,7 +115,10 @@ begin
   values (v_pair_id, v_pool_indices)
   returning id into v_duel;
 
-  return jsonb_build_object('ok', true, 'duelId', v_duel.id, 'poolIndices', to_jsonb(v_pool_indices));
+  -- isNew:true — настоящий новый дуэль, только что создан. Только в
+  -- этом случае API route (app/api/games/sync-quiz/start) шлёт
+  -- партнёру авто-уведомление.
+  return jsonb_build_object('ok', true, 'isNew', true, 'duelId', v_duel.id, 'poolIndices', to_jsonb(v_pool_indices));
 end;
 $$;
 
