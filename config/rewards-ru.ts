@@ -1,12 +1,5 @@
 export const REWARD_CATEGORIES_RU =  [
   {
-    id: "dyson",
-    title: "Dyson",
-    emoji: "💨",
-    weight: 1,
-    items: [{ id: "dyson-hairdryer", title: "Фен Dyson", weight: 1 }],
-  },
-  {
     id: "spa",
     title: "SPA",
     emoji: "🧖",
