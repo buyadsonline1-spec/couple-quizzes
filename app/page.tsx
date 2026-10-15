@@ -23499,11 +23499,13 @@ function getTelegramUserSafe(fallbackUser: TgUser | null): TgUser | null {
 export default function Page() {
   const [appState, setAppState] = useState<AppState>(DEFAULT_STATE);
   const [selectedLang, setSelectedLang] = useState<Market>("ru");
-  // Тёмная тема ("Полуночная ягода") — Telegram-only, тот же паттерн
-  // хранения, что и язык (отдельный localStorage-ключ, не часть
-  // AppState). По умолчанию светлая; iOS-сборку не трогаем вообще —
-  // она сейчас на повторном ревью Apple.
-  const [theme, setTheme] = useState<"light" | "dark">("light");
+  // Тёмная тема ("Полуночная ягода") — тот же паттерн хранения, что и
+  // язык (отдельный localStorage-ключ, не часть AppState). Несмотря на
+  // старый комментарий тут, переключатель давно работает одинаково и
+  // на Telegram, и на iOS (onToggleTheme передаётся безусловно) — по
+  // просьбе теперь и дефолт темы везде один: тёмная, пока человек сам
+  // не переключит на светлую (тогда localStorage запомнит выбор).
+  const [theme, setTheme] = useState<"light" | "dark">("dark");
 
 const market = selectedLang;
 const t = market === "fi" ? TEXT_FI : market === "en" ? TEXT_EN : TEXT_RU;
@@ -23522,7 +23524,13 @@ const REWARD_CATEGORIES =
 
   try {
     const savedTheme = window.localStorage.getItem("couple-quizzes-theme");
+    // Раньше тут проверялось только "dark" (дефолт и так был light,
+    // "ничего не делать" само давало светлую). Теперь дефолт dark —
+    // нужно явно учитывать и сохранённый выбор "light", иначе тот, кто
+    // раньше осознанно переключился на светлую, увидел бы тёмную
+    // снова при следующем заходе.
     if (savedTheme === "dark") setTheme("dark");
+    else if (savedTheme === "light") setTheme("light");
   } catch (error) {
     console.error("theme localStorage read error:", error);
   }
