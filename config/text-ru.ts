@@ -466,7 +466,7 @@ export const TEXT_RU = {
     friendCodeAlreadyAlert: "Вы уже использовали код приглашения раньше",
     friendCodeInvalidAlert: "Такой код не найден",
     friendCodeErrorAlert: "Не удалось отправить код, попробуйте позже",
-    promoBannerTitle: "Акция: 3 друга → Premium на месяц",
+    promoBannerTitle: "3 друга → Premium на месяц",
     promoBannerSubtitle: "Только с 11 по 25 октября",
     promoTitle: "🎁 Приведи 3 друзей — получи Premium",
     promoDates: "Акция действует с 11 по 25 октября 2026",

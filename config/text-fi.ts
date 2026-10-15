@@ -458,7 +458,7 @@ export const TEXT_FI = {
     friendCodeAlreadyAlert: "Olet jo käyttänyt kutsukoodia aiemmin",
     friendCodeInvalidAlert: "Koodia ei löytynyt",
     friendCodeErrorAlert: "Koodin lähetys epäonnistui, yritä myöhemmin uudelleen",
-    promoBannerTitle: "Kampanja: 3 ystävää → kuukausi Premiumia",
+    promoBannerTitle: "3 ystävää → kuukausi Premiumia",
     promoBannerSubtitle: "Vain 11.-25. lokakuuta",
     promoTitle: "🎁 Kutsu 3 ystävää — saat Premiumin",
     promoDates: "Voimassa 11.-25. lokakuuta 2026",

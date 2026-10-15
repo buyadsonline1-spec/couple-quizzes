@@ -456,7 +456,7 @@ export const TEXT_EN = {
     friendCodeAlreadyAlert: "You've already used an invite code before",
     friendCodeInvalidAlert: "That code wasn't found",
     friendCodeErrorAlert: "Couldn't send the code, try again later",
-    promoBannerTitle: "Promo: 3 friends → a month of Premium",
+    promoBannerTitle: "3 friends → a month of Premium",
     promoBannerSubtitle: "Only October 11-25",
     promoTitle: "🎁 Invite 3 friends — get Premium",
     promoDates: "Runs October 11-25, 2026",
