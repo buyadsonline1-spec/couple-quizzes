@@ -60,6 +60,12 @@ export function getDatingAppLink(): string {
   return `https://t.me/${BOT_USERNAME}?startapp=dating`;
 }
 
+// Прямая ссылка на "Лайки мне" (startapp=dating-likes, см. обработку
+// startParam в app/page.tsx) — для уведомления о новом лайке.
+export function getDatingLikesAppLink(): string {
+  return `https://t.me/${BOT_USERNAME}?startapp=dating-likes`;
+}
+
 // Просто открыть бота/приложение без конкретного startapp-экрана —
 // Mini App всегда открывается на последнем активном разделе ("Игры"
 // остаётся выбранным, если юзер был там), так что отдельный deep-link

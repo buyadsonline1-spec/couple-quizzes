@@ -149,11 +149,25 @@ export function calculateDatingCompatibility(
 ): DatingCompatibilityResult {
   const themeScores: number[] = [];
 
+  // dating_profiles.gender (genderA/genderB здесь) — отдельное поле от
+  // profiles.gender, которым реально помечены сохранённые ответы на
+  // опросы (boy-<тема>/girl-<тема>, см. POLL_IDS) в момент их
+  // прохождения. Эти два поля не обязаны совпадать (человек мог
+  // сменить пол в настройках, или у него был временный сброс пола —
+  // такое бывало на iOS, см. фикс gender-select) — если слепо
+  // доверять genderA/genderB, ответы просто не найдутся по ключу, и
+  // совместимость тихо посчитается как 0%/"нет общих тем" вместо
+  // честной цифры. Сначала пробуем ожидаемый пол анкеты, если под ним
+  // пусто — пробуем другой: у реального человека ответы хранятся под
+  // ОДНИМ полом (тем, что было в profiles.gender на момент
+  // прохождения), так что один из двух вариантов обязательно сработает,
+  // если тесты вообще пройдены.
+  const otherGender = (g: "boy" | "girl") => (g === "boy" ? "girl" : "boy");
+
   for (const group of COMPATIBILITY_THEME_GROUPS) {
-    const percent = calculatePollMatchPercent(
-      answersA[`${genderA}-${group}`],
-      answersB[`${genderB}-${group}`]
-    );
+    const ansA = answersA[`${genderA}-${group}`] ?? answersA[`${otherGender(genderA)}-${group}`];
+    const ansB = answersB[`${genderB}-${group}`] ?? answersB[`${otherGender(genderB)}-${group}`];
+    const percent = calculatePollMatchPercent(ansA, ansB);
 
     if (percent !== null) {
       themeScores.push(percent);

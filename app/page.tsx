@@ -25863,6 +25863,16 @@ if (startParam === "referrals" && saved.profile.gender) {
   setScreen("referrals");
 }
 
+// startapp=dating-likes — прямая ссылка на "Лайки мне" (пуш при
+// получении лайка в Знакомствах, см. supabase/dating_like_webhook.sql
+// + app/api/dating/like-webhook). Та же логика, что и у кнопки
+// onOpenLikes в DatingSwipeScreen — подгружаем список ПЕРЕД переходом,
+// иначе экран на миг мелькнёт пустым.
+if (startParam === "dating-likes" && saved.profile.gender) {
+  loadDatingIncomingLikes();
+  setScreen("dating-likes");
+}
+
 setAppState((prev) => ({
   ...prev,
   pair: nextPairState,
