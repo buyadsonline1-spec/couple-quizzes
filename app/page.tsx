@@ -11291,9 +11291,6 @@ function MainMenu({
             <div style={{ fontSize: 15, fontWeight: 900, color: ink }}>
               {t.referrals.promoBannerTitle}
             </div>
-            <div style={{ marginTop: 2, fontSize: 12.5, color: muted, lineHeight: 1.35 }}>
-              {t.referrals.promoBannerSubtitle}
-            </div>
           </div>
           <div style={{ fontSize: 20, color: accent, flexShrink: 0 }}>→</div>
         </button>
